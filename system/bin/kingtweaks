@@ -1,0 +1,1436 @@
+#!/system/bin/sh
+# Written by Draco (tytydraco @github).
+# Modified by Pedrozzz (pedroginkgo @telegram).
+# Enable cloudflare DNS by ROM (xerta555 @github).
+# MMT Extended by Zackptg5 @ XDA
+
+write() {
+	# Bail out if file does not exist
+	[[ ! -f "$1" ]] && return 1
+
+	# Make file writable in case it is not already
+	chmod +w "$1" 2> /dev/null
+
+	# Write the new value and bail if there's an error
+	if ! echo "$2" > "$1" 2> /dev/null
+	then
+		echo "Failed: $1 → $2"
+		return 1
+	fi
+
+	# Log the success
+	echo "$1 → $2"
+}
+
+# Wait 60s into boot before applying changes
+while [[ `cat /proc/uptime | awk '{print $1}' | awk -F. '{print $1}'` -lt 60 ]]
+do
+	sleep 2
+done
+
+setprop persist.spectrum.kernel "KTS Reborn"
+setprop spectrum.support "1"
+
+boot_run_once=false
+spectrum_mode=$(getprop persist.spectrum.profile)
+[ -z "$spectrum_mode" ] && setprop persist.spectrum.profile "0"
+
+while true
+do
+    sleep 3
+    if $boot_run_once
+    then
+        [ "$(getprop persist.spectrum.profile)" == "$spectrum_mode" ] && continue
+    else
+        boot_run_once=true
+    fi
+    spectrum_mode=$(getprop persist.spectrum.profile)
+    case "$spectrum_mode" in
+       # Balanced Profile
+        "0") {
+        	# Duration in nanoseconds of one scheduling period
+SCHED_PERIOD="$((1 * 1000 * 1000))"
+
+# How many tasks should we have at a maximum in one scheduling period
+SCHED_TASKS="8"
+
+# Maximum unsigned integer size in C
+        	UINT_MAX="4294967295"
+        	
+# I/O Scheduler Tweaks.
+for queue in /sys/block/*/queue/
+do
+ avail_scheds="$(cat "${queue}scheduler")"
+ for sched in cfq noop zen anxiety fiops sio maple tripndroid kyber bfq mq-deadline none
+ do
+  if [[ "$avail_scheds" == *"$sched"* ]]
+  then
+   write "${queue}scheduler" "$sched"
+   break
+  fi
+ done
+ write "${queue}add_random" 0
+ write "${queue}iostats" 0
+ write "${queue}read_ahead_kb" 128
+ write "${queue}nr_requests" 64
+done
+
+# CPU Tweaks
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+	avail_govs=`cat "${cpu}scaling_available_governors"`
+	if [[ "$avail_govs" == *"schedutil"* ]]
+	then
+		write "${cpu}scaling_governor" schedutil
+		write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/iowait_boost_enable" "0"
+		write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/hispeed_load" "85"
+		write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
+	elif [[ "$avail_govs" == *"interactive"* ]]
+	then
+		write "${cpu}scaling_governor" interactive
+		write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}interactive/timer_slack" "-1"
+		write "${cpu}interactive/boost" "0"
+	    write "${cpu}interactive/boostpulse" "0"
+	    write "${cpu}interactive/fast_ramp_down" "0"
+		write "${cpu}interactive/sampling_rate" "10000"
+		write "${cpu}interactive/sampling_rate_min" "10000"
+		write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}interactive/go_hispeed_load" "85"
+		write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
+		fi
+	done
+	
+# GPU Tweaks.
+for gpu in /sys/class/kgsl/kgsl-3d0/
+do
+if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
+then
+write "${gpu}throttling" "1"
+write "${gpu}thermal_pwrlevel" "0"
+write "${gpu}devfreq/adrenoboost" "0"
+write "${gpu}force_no_nap" "0"
+write "${gpu}bus_split" "1"
+write "${gpu}devfreq/min_freq" "100000000"
+write "${gpu}devfreq/max_freq" "600000000"
+write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
+write "${gpu}force_bus_on" "0"
+write "${gpu}force_clk_on" "0"
+write "${gpu}force_rail_on" "0"
+fi
+done
+
+	for egpu in /sys/kernel/gpu/
+	do
+	if [[ -d "/sys/kernel/gpu" ]]
+	then
+	write "${egpu}gpu_min_freq" "100000000"
+	fi
+	done
+	
+# Enable adreno idler
+if [[ -d "/sys/module/adreno_idler" ]]
+then
+write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
+fi
+
+# Low Memory Killer tweaks.
+for lmk in /sys/module/lowmemorykiller/parameters/
+do
+if [[ -d "/sys/module/lowmemorykiller" ]]
+then
+write "${lmk}enable_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "1"
+write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
+fi
+done
+
+# Disable some debugging
+for bl in /sys/module/bluetooth/parameters/
+do
+if [[ -d /sys/module/bluetooth ]]
+then
+write "${bl}disable_ertm" "Y"
+write "${bl}disable_esco" "Y"
+fi
+done
+
+	# FS tweaks.
+	for fs in /proc/sys/fs/
+	do
+	if [[ -d "/proc/sys/fs" ]]
+	then
+	write "${fs}dir-notify-enable" "0"
+write "${fs}lease-break-time" "25"
+fi
+done
+
+# Enable dynamic_fsync.
+chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/dyn_fsync_active
+if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
+then
+write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
+fi
+
+# Scheduler tweaks. 
+for sched in /sys/kernel/debug/
+do
+if [[ -f "/sys/kernel/debug/sched_features" ]]
+then
+    write "${sched}sched_features" "NEXT_BUDDY"
+	write "${sched}sched_features" "TTWU_QUEUE"
+	write "${sched}sched_features" "HRTICK"
+	fi
+	done
+	
+	# OP Chain disable.
+	for opc in /sys/module/opchain/parameters/
+	do
+	if [[ -d "/sys/module/opchain" ]]
+	then
+	write "${opc}chain_on" "0"
+	fi
+	done
+	
+# Tweak some kernel settings to improve overall performance.
+for kts in /proc/sys/kernel/
+do
+if [[ -d "/proc/sys/kernel" ]] 
+then
+write "${kts}sched_child_runs_first" "1"
+write "${kts}perf_cpu_time_max_percent" "5"
+write "${kts}sched_autogroup_enabled" "1"
+write "${kts}random/read_wakeup_threshold" "64"
+write "${kts}random/write_wakeup_threshold" "256"
+write "${kts}sched_tunable_scaling" "0"
+write "${kts}sched_latency_ns" "$SCHED_PERIOD"
+write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
+write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
+write "${kts}sched_migration_cost_ns" "5000000"
+write "${kts}sched_min_task_util_for_colocation" "0"
+write "${kts}sched_nr_migrate" "8"
+write "${kts}sched_schedstats" "0"
+write "${kts}printk_devkmsg" "off"
+fi
+done
+
+# Set min clock in balance profile.
+for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+do
+if [[ -e "/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq" ]]
+then
+write "${minclk}scaling_min_freq" "300000"
+write "${minclk}scaling_max_freq" "20000000"
+fi
+done
+
+# Efficient CPU Set.
+for cs in /dev/cpuset/
+do
+if [[ -d "/dev/cpuset" ]]
+then
+write "${cs}game/cpus" "0-7"
+write "${cs}gamelite/cpus" "0-3,4-7"
+write "${cs}camera-daemon/cpus" "0-7"
+write "${cs}vr/cpus" "0-7"
+write "${cs}top-app/cpus" "0-7"
+write "${cs}audio-app/cpus" "1-2"
+write "${cs}background/cpus" "0-3"
+write "${cs}foreground/cpus" "0-7"
+fi
+done
+
+sync
+
+# VM settings to improve overall user experience and smoothness.
+for vm in /proc/sys/vm/
+do
+if [[ -d "/proc/sys/vm" ]]
+then
+write "${vm}drop_caches" "3"
+write "${vm}dirty_background_ratio" "10"
+write "${vm}dirty_ratio" "30"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}page-cluster" "0"
+write "${vm}stat_interval" "10"
+write "${vm}swap_ratio_enable" "1"
+write "${vm}swap_ratio" "100"
+write "${vm}swappiness" "100"
+write "${vm}vfs_cache_pressure" "200"
+fi
+done
+
+# MSM thermal
+if [[ -d "/sys/module/msm_thermal" ]]
+then
+write /sys/module/msm_thermal/vdd_restriction/enabled "0"
+write /sys/module/msm_thermal/core_control/enabled "1"
+write /sys/module/msm_thermal/parameters/enabled "Y"
+fi
+
+# Enable power efficient workqueue.
+for wqpw in /sys/module/workqueue/parameters/
+do
+if [[ -d "/sys/module/workqueue" ]]
+then 
+write "${wqpw}power_efficient" "Y"
+fi
+done
+
+# Fix DT2W.
+for dt in /sys/touchpanel/
+do
+if [[ -d "/sys/touchpanel" ]]
+then
+write "${dt}double_tap" "1"
+fi
+done
+
+if [[ -e "/proc/tp_gesture" ]]
+then
+write "/proc/tp_gesture" "1"
+fi
+
+# Disable touch boost on balance and battery profile.
+if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
+then
+write "/sys/module/msm_performance/parameters/touchboost" "0"
+fi
+
+# TCP Congestion Control
+for tcp in /proc/sys/net/ipv4/
+do
+if [[ -d "/proc/sys/net" ]]
+then
+write "${tcp}ip_no_pmtu_disc" "0"
+write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_timestamps" "0"
+write "${tcp}route.flush" "1"
+write "${tcp}tcp_rfc1337" "1"
+write "${tcp}tcp_tw_reuse" "1"
+write "${tcp}tcp_sack" "1"
+write "${tcp}tcp_fack" "1"
+write "${tcp}tcp_fastopen" "3"
+write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_syncookies" "0"
+write "${tcp}tcp_window_scaling" "1"
+write "${tcp}tcp_keepalive_probes" "10"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
+fi
+done
+
+# Set cloudflare DNS, thanks to ROM ( @github)
+if [ -a /system/etc/resolv.conf ]; then
+	mkdir -p $TMPDIR/system/etc/
+	printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" >> $TMPDIR/system/etc/resolv.conf
+	touch $TMPDIR/auto_mount
+fi
+
+iptables -t nat -A OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
+iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
+iptables -t nat -I OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
+iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
+
+# Touch calibration
+panel=$(cat /sys/class/graphics/fb0/modes)
+  if [[ "${panel:5:1}" == "x" ]]
+  then
+    panel=${panel:2:3}
+  else
+    panel=${panel:2:4}
+  fi
+  
+# Disable battery saver on all other profiles and keep only in battery profile.
+for bs in /sys/module/battery_saver/parameters/
+do
+if [[ -d /sys/module/battery_saver ]]
+then
+write "${bs}enabled" "N"
+fi
+done
+
+# Enable LPM in balanced / battery profile
+for lpm in /sys/module/lpm_levels/parameters/
+do
+if [[ -d /sys/module/lpm_levels ]]
+then
+write "${lpm}sleep_disabled" "N"
+fi
+done
+
+# Enable Fast Charging Rate
+for ffc in /sys/kernel/fast_charge/
+do
+if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
+then
+  write "${ffc}force_fast_charge" "1"
+  fi
+  done
+  
+  # GMS blocker 1.2 by @pedroginkgo
+busybox killall -9 com.google.android.gms
+busybox killall -9 com.google.android.gms.persistent
+busybox killall -9 com.google.process.gapps
+busybox killall -9 com.google.android.gsf
+busybox killall -9 com.google.android.gsf.persistent
+};;
+# Performance Profile
+        "1") {
+        	# Duration in nanoseconds of one scheduling period
+SCHED_PERIOD="$((1 * 1000 * 1000))"
+
+# How many tasks should we have at a maximum in one scheduling period
+SCHED_TASKS="8"
+
+# Maximum unsigned integer size in C
+        	UINT_MAX="4294967295"
+        	
+        	# Caf CPU Boost
+for caf in /sys/module/cpu_boost/parameters/
+do
+if [[ -d "/sys/module/cpu_boost/parameters" ]]
+then
+	write "${caf}input_boost_freq" "0:$UINT_MAX 1:$UINT_MAX 2:$UINT_MAX 3:$UINT_MAX 4:$UINT_MAX 5:$UINT_MAX 6:$UINT_MAX 7:$UINT_MAX"
+	write "${caf}input_boost_ms" "64"
+	fi
+done
+
+# CPU Boost
+for cib in /sys/module/cpu_input_boost/parameters/
+do
+if [[ -d "/sys/module/cpu_input_boost" ]]
+then
+write "${cib}input_boost_duration" "64"
+write "${cib}input_boost_freq_hp" "$UINT_MAX"
+write "${cib}input_boost_freq_lp" "$UINT_MAX"
+fi
+done
+
+# I/O Scheduler Tweaks.
+for queue in /sys/block/*/queue/
+do
+ avail_scheds="$(cat "${queue}scheduler")"
+ for sched in cfq noop zen anxiety fiops sio maple tripndroid kyber bfq mq-deadline none
+ do
+  if [[ "$avail_scheds" == *"$sched"* ]]
+  then
+   write "${queue}scheduler" "$sched"
+   break
+  fi
+ done
+ write "${queue}iostats" 0
+ write "${queue}add_random" 0
+ write "${queue}read_ahead_kb" 128
+ write "${queue}nr_requests" 64
+done
+
+# CPU Tweaks
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+	avail_govs=`cat "${cpu}scaling_available_governors"`
+	if [[ "$avail_govs" == *"schedutil"* ]]
+	then
+		write "${cpu}scaling_governor" schedutil
+		write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/iowait_boost_enable" "0"
+		write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/hispeed_load" "80"
+		write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
+	elif [[ "$avail_govs" == *"interactive"* ]]
+	then
+		write "${cpu}scaling_governor" interactive
+		write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}interactive/timer_slack" "-1"
+		write "${cpu}interactive/boost" "0"
+	    write "${cpu}interactive/boostpulse" "0"
+	    write "${cpu}interactive/fast_ramp_down" "0"
+		write "${cpu}interactive/sampling_rate" "5000"
+		write "${cpu}interactive/sampling_rate_min" "5000"
+		write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}interactive/go_hispeed_load" "80"
+		write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
+		fi
+	done
+	
+	
+# GPU Tweaks.
+for gpu in /sys/class/kgsl/kgsl-3d0/
+do
+if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
+then
+write "${gpu}throttling" "1"
+write "${gpu}thermal_pwrlevel" "1"
+write "${gpu}devfreq/adrenoboost" "0"
+write "${gpu}force_no_nap" "0"
+write "${gpu}bus_split" "1"
+write "${gpu}devfreq/min_freq" "100000000"
+write "${gpu}devfreq/max_freq" "745000000"
+write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
+write "${gpu}force_bus_on" "0"
+write "${gpu}force_clk_on" "0"
+write "${gpu}force_rail_on" "0"
+fi
+done
+
+for egpu in /sys/kernel/gpu/
+	do
+	if [[ -d "/sys/kernel/gpu" ]]
+	then
+	write "${egpu}gpu_min_freq" "100000000"
+	fi
+	done
+	
+# Enable adreno idler
+if [[ -d "/sys/module/adreno_idler" ]]
+then
+write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
+fi
+
+# Low Memory Killer Tweaks.
+for lmk in /sys/module/lowmemorykiller/parameters/
+do
+if [[ -d "/sys/module/lowmemorykiller" ]]
+then
+write "${lmk}enable_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "1"
+write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
+fi
+done
+
+# Disable some debugging
+for bl in /sys/module/bluetooth/parameters/
+do
+if [[ -d /sys/module/bluetooth ]]
+then
+write "${bl}disable_ertm" "Y"
+write "${bl}disable_esco" "Y"
+fi
+done
+
+	# FS Tweaks.
+	for fs in /proc/sys/fs/
+	do
+	if [[ -d "/proc/sys/fs" ]]
+	then
+	write "${fs}dir-notify-enable" "0"
+write "${fs}lease-break-time" "25"
+fi
+done
+
+# Enable dynamic_fsync.
+chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/dyn_fsync_active
+if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
+then
+write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
+fi
+
+# Scheduler features.
+for sched in /sys/kernel/debug/
+do
+if [[ -f "/sys/kernel/debug/sched_features" ]]
+then
+    write "${sched}sched_features" "NEXT_BUDDY"
+	write "${sched}sched_features" "TTWU_QUEUE"
+	write "${sched}sched_features" "HRTICK"
+	write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
+    write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+    fi
+	done
+	
+	# OP Tweaks
+	for opc in /sys/module/opchain/parameters/
+	do
+	if [[ -d "/sys/module/opchain" ]]
+	then
+	write "${opc}chain_on" "0"
+	fi
+	done
+	
+	# Tweak some kernel settings to improve overall performance.
+for kts in /proc/sys/kernel/
+do
+if [[ -d "/proc/sys/kernel" ]] 
+then
+write "${kts}sched_child_runs_first" "1"
+write "${kts}perf_cpu_time_max_percent" "5"
+write "${kts}sched_autogroup_enabled" "1"
+write "${kts}random/read_wakeup_threshold" "64"
+write "${kts}random/write_wakeup_threshold" "512"
+write "${kts}sched_tunable_scaling" "0"
+write "${kts}sched_latency_ns" "$SCHED_PERIOD"
+write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
+write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
+write "${kts}sched_migration_cost_ns" "5000000"
+write "${kts}sched_min_task_util_for_colocation" "0"
+write "${kts}sched_nr_migrate" "8"
+write "${kts}sched_schedstats" "0"
+write "${kts}printk_devkmsg" "off"
+fi
+done
+
+# Set max freq in performance / gaming profile.
+for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+do
+if [[ -e "/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq" ]]
+then
+write "${minclk}scaling_min_freq" "20000000"
+write "${minclk}scaling_max_freq" "20000000"
+fi
+done
+
+# Efficient CPU Set.
+for cs in /dev/cpuset/
+do
+if [[ -d "/dev/cpuset" ]]
+then
+write "${cs}game/cpus" "0-7"
+write "${cs}gamelite/cpus" "0-3,4-7"
+write "${cs}camera-daemon/cpus" "0-7"
+write "${cs}vr/cpus" "0-7"
+write "${cs}top-app/cpus" "0-7"
+write "${cs}audio-app/cpus" "1-2"
+write "${cs}background/cpus" "0-3"
+write "${cs}foreground/cpus" "0-7"
+fi
+done
+
+sync
+
+# VM settings to improve overall user experience and performance.
+for vm in /proc/sys/vm/
+do
+if [[ -d "/proc/sys/vm" ]]
+then
+write "${vm}drop_caches" "3"
+write "${vm}dirty_background_ratio" "10"
+write "${vm}dirty_ratio" "30"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}page-cluster" "0"
+write "${vm}stat_interval" "10"
+write "${vm}swappiness" "100"
+write "${vm}swap_ratio_enable" "1"
+write "${vm}swap_ratio" "100"
+write "${vm}vfs_cache_pressure" "200"
+fi
+done
+
+# MSM thermal
+if [[ -d "/sys/module/msm_thermal" ]]
+then
+write /sys/module/msm_thermal/vdd_restriction/enabled "0"
+write /sys/module/msm_thermal/core_control/enabled "0"
+write /sys/module/msm_thermal/parameters/enabled "N"
+fi
+
+# Workqueue enable power_efficient.
+for wqpw in /sys/module/workqueue/parameters/
+do
+if [[ -d "/sys/module/workqueue" ]]
+then 
+write "${wqpw}power_efficient" "Y"
+fi
+done
+
+# Fix DT2W
+for dt in /sys/touchpanel/
+do
+if [[ -d "/sys/touchpanel" ]]
+then
+write "${dt}double_tap" "1"
+fi
+done
+
+if [[ -f "/proc/tp_gesture" ]]
+then
+write "/proc/tp_gesture" "1"
+fi
+
+# Enable touch boost on gaming and performance profile.
+if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
+then
+write "/sys/module/msm_performance/parameters/touchboost" "1"
+fi
+
+# TCP Congestion Control
+for tcp in /proc/sys/net/ipv4/
+do
+if [[ -d "/proc/sys/net" ]]
+then
+write "${tcp}ip_no_pmtu_disc" "0"
+write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_timestamps" "0"
+write "${tcp}route.flush" "1"
+write "${tcp}tcp_rfc1337" "1"
+write "${tcp}tcp_tw_reuse" "1"
+write "${tcp}tcp_sack" "1"
+write "${tcp}tcp_fack" "1"
+write "${tcp}tcp_fastopen" "3"
+write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_syncookies" "0"
+write "${tcp}tcp_window_scaling" "1"
+write "${tcp}tcp_keepalive_probes" "10"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
+fi
+done
+
+# Set cloudflare DNS.
+if [ -a /system/etc/resolv.conf ]; then
+	mkdir -p $TMPDIR/system/etc/
+	printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" >> $TMPDIR/system/etc/resolv.conf
+	touch $TMPDIR/auto_mount
+fi
+
+iptables -t nat -A OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
+iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
+iptables -t nat -I OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
+iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
+
+# Touch calibration
+panel=$(cat /sys/class/graphics/fb0/modes)
+  if [ "${panel:5:1}" == "x" ]; then
+    panel=${panel:2:3}
+  else
+    panel=${panel:2:4}
+  fi
+
+# Disable battery saver on all other profiles and keep only in battery profile.
+for bs in /sys/module/battery_saver/parameters/
+do
+if [[ -d /sys/module/battery_saver ]]
+then
+write "${bs}enabled" "N"
+fi
+done
+
+# Disable LPM in gaming profile / performance profile
+for lpm in /sys/module/lpm_levels/parameters/
+do
+if [[ -d /sys/module/lpm_levels ]]
+then
+write "${lpm}sleep_disabled" "Y"
+fi
+done
+
+# Enable Fast Charging Rate
+for ffc in /sys/kernel/fast_charge/
+do
+if [[ -f "/sys/kernel/fast_charge/force_fast_charge" ]]
+then
+  write "${ffc}force_fast_charge" "1"
+  fi
+  done
+  
+  # GMS blocker 1.2 by @pedroginkgo
+busybox killall -9 com.google.android.gms
+busybox killall -9 com.google.android.gms.persistent
+busybox killall -9 com.google.process.gapps
+busybox killall -9 com.google.android.gsf
+busybox killall -9 com.google.android.gsf.persistent
+};;
+        # Battery Profile
+        "2") {
+        	# Duration in nanoseconds of one scheduling period
+SCHED_PERIOD="$((1 * 1000 * 1000))"
+
+# How many tasks should we have at a maximum in one scheduling period
+SCHED_TASKS="8"
+
+# Maximum unsigned integer size in C
+        	UINT_MAX="4294967295"
+        	
+			# I/O Scheduler Tweaks
+for queue in /sys/block/*/queue/
+do
+ avail_scheds="$(cat "${queue}scheduler")"
+ for sched in cfq noop zen anxiety fiops sio maple tripndroid kyber bfq mq-deadline none
+ do
+  if [[ "$avail_scheds" == *"$sched"* ]]
+  then
+   write "${queue}scheduler" "$sched"
+   break
+  fi
+ done
+ write "${queue}iostats" 0
+ write "${queue}add_random" 0
+ write "${queue}read_ahead_kb" 128
+ write "${queue}nr_requests" 64
+done
+
+# CPU Tweaks
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+	avail_govs=`cat "${cpu}scaling_available_governors"`
+	if [[ "$avail_govs" == *"schedutil"* ]]
+	then
+		write "${cpu}scaling_governor" schedutil
+		write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/iowait_boost_enable" "0"
+		write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/hispeed_load" "99"
+		write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
+	elif [[ "$avail_govs" == *"interactive"* ]]
+	then
+		write "${cpu}scaling_governor" interactive
+		write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}interactive/timer_slack" "-1"
+		write "${cpu}interactive/boost" "0"
+	    write "${cpu}interactive/boostpulse" "0"
+	    write "${cpu}interactive/fast_ramp_down" "0"
+		write "${cpu}interactive/sampling_rate" "10000"
+		write "${cpu}interactive/sampling_rate_min" "10000"
+		write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}interactive/go_hispeed_load" "99"
+		write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
+		fi
+	done
+	
+# GPU Tweaks
+for gpu in /sys/class/kgsl/kgsl-3d0/
+do
+if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
+then
+write "${gpu}throttling" "1"
+write "${gpu}thermal_pwrlevel" "3"
+write "${gpu}devfreq/adrenoboost" "0"
+write "${gpu}force_no_nap" "0"
+write "${gpu}bus_split" "1"
+write "${gpu}devfreq/min_freq" "100000000"
+write "${gpu}devfreq/max_freq" "465000000"
+write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
+write "${gpu}force_bus_on" "0"
+write "${gpu}force_clk_on" "0"
+write "${gpu}force_rail_on" "0"
+fi
+done
+
+for egpu in /sys/kernel/gpu/
+	do
+	if [[ -d "/sys/kernel/gpu" ]]
+	then
+	write "${egpu}gpu_min_freq" "100000000"
+	fi
+	done
+	
+# Enable adreno idler
+if [[ -d "/sys/module/adreno_idler" ]]
+then
+write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
+fi
+
+# Low Memory Killer settings
+for lmk in /sys/module/lowmemorykiller/parameters/
+do
+if [[ -d "/sys/module/lowmemorykiller" ]]
+then
+write "${lmk}enable_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "1"
+write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
+fi
+done
+
+# Disable some debugging
+for bl in /sys/module/bluetooth/parameters/
+do
+if [[ -d /sys/module/bluetooth ]]
+then
+write "${bl}disable_ertm" "Y"
+write "${bl}disable_esco" "Y"
+fi
+done
+
+	# FS Tweaks.
+	for fs in /proc/sys/fs/
+	do
+	if [[ -d "/proc/sys/fs" ]]
+	then
+	write "${fs}dir-notify-enable" "0"
+    write "${fs}lease-break-time" "25"
+    fi
+    done
+    
+    # Enable dynamic_fsync.
+chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/dyn_fsync_active
+if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
+then
+   write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
+   fi
+
+# Scheduler features.
+for sched in /sys/kernel/debug/
+do
+if [[ -f "/sys/kernel/debug/sched_features" ]]
+then
+    write "${sched}sched_features" "NEXT_BUDDY"
+	write "${sched}sched_features" "TTWU_QUEUE"
+	write "${sched}sched_features" "HRTICK"
+	write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
+    write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+    fi
+	done
+	
+	# OP Tweaks
+	for opc in /sys/module/opchain/parameters/
+	do
+	if [[ -d "/sys/module/opchain" ]]
+	then
+	write "${opc}chain_on" "0"
+	fi
+	done
+	
+	# Tweak some kernel settings to improve overall performance.
+for kts in /proc/sys/kernel/
+do
+if [[ -d "/proc/sys/kernel" ]] 
+then
+write "${kts}sched_child_runs_first" "1"
+write "${kts}perf_cpu_time_max_percent" "5"
+write "${kts}sched_autogroup_enabled" "1"
+write "${kts}random/read_wakeup_threshold" "64"
+write "${kts}random/write_wakeup_threshold" "128"
+write "${kts}sched_tunable_scaling" "0"
+write "${kts}sched_latency_ns" "$SCHED_PERIOD"
+write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
+write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
+write "${kts}sched_migration_cost_ns" "5000000"
+write "${kts}sched_min_task_util_for_colocation" "0"
+write "${kts}sched_nr_migrate" "8"
+write "${kts}sched_schedstats" "0"
+write "${kts}printk_devkmsg" "off"
+fi
+done
+
+# Set min clock in balance / battery profile.
+for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+do
+if [[ -e "/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq" ]]
+then
+write "${minclk}scaling_min_freq" "300000"
+write "${minclk}scaling_max_freq" "1300000"
+fi
+done
+
+# Efficient CPU Set.
+for cs in /dev/cpuset/
+do
+if [[ -d "/dev/cpuset" ]]
+then
+write "${cs}game/cpus" "0-7"
+write "${cs}gamelite/cpus" "0-3,4-7"
+write "${cs}camera-daemon/cpus" "0-7"
+write "${cs}vr/cpus" "0-7"
+write "${cs}top-app/cpus" "0-7"
+write "${cs}audio-app/cpus" "1-2"
+write "${cs}background/cpus" "0-3"
+write "${cs}foreground/cpus" "0-7"
+fi
+done
+
+sync
+
+# VM settings to improve overall user experience and performance.
+for vm in /proc/sys/vm/
+do
+if [[ -d "/proc/sys/vm" ]]
+then
+write "${vm}drop_caches" "3"
+write "${vm}dirty_background_ratio" "10"
+write "${vm}dirty_ratio" "30"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}page-cluster" "0"
+write "${vm}stat_interval" "10"
+write "${vm}swap_ratio_enable" "1"
+write "${vm}swap_ratio" "100"
+write "${vm}swappiness" "100"
+write "${vm}vfs_cache_pressure" "200"
+fi
+done
+
+# MSM thermal
+if [[ -d "/sys/module/msm_thermal" ]]
+then
+write /sys/module/msm_thermal/vdd_restriction/enabled "1"
+write /sys/module/msm_thermal/core_control/enabled "1"
+write /sys/module/msm_thermal/parameters/enabled "Y"
+fi
+
+# Workqueue enable power_efficient.
+for wqpw in /sys/module/workqueue/parameters/
+do
+if [[ -d "/sys/module/workqueue" ]]
+then 
+write "${wqpw}power_efficient" "Y"
+fi
+done
+
+# Fix DT2W
+for dt in /sys/touchpanel/
+do
+if [[ -d "/sys/touchpanel" ]]
+then
+write "${dt}double_tap" "1"
+fi
+done
+
+if [[ -f "/proc/tp_gesture" ]]
+then
+write "/proc/tp_gesture" "1"
+fi
+
+# Disable touch boost on battery and balance profile.
+if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
+then
+write "/sys/module/msm_performance/parameters/touchboost" "0"
+fi
+
+# TCP Congestion Control
+for tcp in /proc/sys/net/ipv4/
+do
+if [[ -d "/proc/sys/net" ]]
+then
+write "${tcp}ip_no_pmtu_disc" "0"
+write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_timestamps" "0"
+write "${tcp}route.flush" "1"
+write "${tcp}tcp_rfc1337" "1"
+write "${tcp}tcp_tw_reuse" "1"
+write "${tcp}tcp_sack" "1"
+write "${tcp}tcp_fack" "1"
+write "${tcp}tcp_fastopen" "3"
+write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_syncookies" "0"
+write "${tcp}tcp_window_scaling" "1"
+write "${tcp}tcp_keepalive_probes" "10"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
+fi
+done
+
+# Set cloudflare DNS. 
+if [ -a /system/etc/resolv.conf ]; then
+	mkdir -p $TMPDIR/system/etc/
+	printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" >> $TMPDIR/system/etc/resolv.conf
+	touch $TMPDIR/auto_mount
+fi
+
+iptables -t nat -A OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
+iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
+iptables -t nat -I OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
+iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
+
+# Touch calibration
+panel=$(cat /sys/class/graphics/fb0/modes)
+  if [[ "${panel:5:1}" == "x" ]]
+  then
+    panel=${panel:2:3}
+  else
+    panel=${panel:2:4}
+  fi
+  
+# Disable battery saver on all other profiles and keep only in battery profile.
+for bs in /sys/module/battery_saver/parameters/
+do
+if [[ -d /sys/module/battery_saver ]]
+then
+write "${bs}enabled" "Y"
+fi
+done
+
+# Enable LPM in battery / balanced profile
+for lpm in /sys/module/lpm_levels/parameters/
+do
+if [[ -d /sys/module/lpm_levels ]]
+then
+write "${lpm}sleep_disabled" "N"
+fi
+done
+
+# Enable Fast Charging Rate
+for ffc in /sys/kernel/fast_charge/
+do
+if [[ -f "/sys/kernel/fast_charge/force_fast_charge" ]]
+then
+  write "${ffc}force_fast_charge" "1"
+  fi
+  done
+  
+# GMS blocker 1.2 by @pedroginkgo
+busybox killall -9 com.google.android.gms
+busybox killall -9 com.google.android.gms.persistent
+busybox killall -9 com.google.process.gapps
+busybox killall -9 com.google.android.gsf
+busybox killall -9 com.google.android.gsf.persistent
+};;
+# Gaming Profile
+        "3") {
+        	# Duration in nanoseconds of one scheduling period
+SCHED_PERIOD="$((1 * 1000 * 1000))"
+
+# How many tasks should we have at a maximum in one scheduling period
+SCHED_TASKS="8"
+
+# Maximum unsigned integer size in C
+        	UINT_MAX="4294967295"
+        	
+        	# CAF CPU Boost
+for caf in /sys/module/cpu_boost/parameters/
+do
+if [[ -d "/sys/module/cpu_boost/parameters" ]]
+then
+	write "${caf}input_boost_freq" "0:$UINT_MAX 1:$UINT_MAX 2:$UINT_MAX 3:$UINT_MAX 4:$UINT_MAX 5:$UINT_MAX 6:$UINT_MAX 7:$UINT_MAX"
+	write "${caf}input_boost_ms" "64"
+	fi
+done
+
+# CPU Boost
+for cib in /sys/module/cpu_input_boost/parameters/
+do
+if [[ -d "/sys/module/cpu_input_boost" ]]
+then
+write "${cib}input_boost_duration" "64"
+write "${cib}input_boost_freq_hp" "$UINT_MAX"
+write "${cib}input_boost_freq_lp" "$UINT_MAX"
+fi
+done
+
+# I/O Scheduler Tweaks.
+for queue in /sys/block/*/queue/
+do
+ avail_scheds="$(cat "${queue}scheduler")"
+ for sched in cfq noop zen anxiety fiops sio maple tripndroid kyber bfq mq-deadline none
+ do
+  if [[ "$avail_scheds" == *"$sched"* ]]
+  then
+   write "${queue}scheduler" "$sched"
+   break
+  fi
+ done
+ write "${queue}iostats" 0
+ write "${queue}add_random" 0
+ write "${queue}read_ahead_kb" 128
+ write "${queue}nr_requests" 64
+done
+
+# CPU Tweaks
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+	avail_govs=`cat "${cpu}scaling_available_governors"`
+	if [[ "$avail_govs" == *"schedutil"* ]]
+	then
+		write "${cpu}scaling_governor" schedutil
+		write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/iowait_boost_enable" "0"
+		write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}schedutil/hispeed_load" "80"
+		write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
+	elif [[ "$avail_govs" == *"interactive"* ]]
+	then
+		write "${cpu}scaling_governor" interactive
+		write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}interactive/timer_slack" "-1"
+		write "${cpu}interactive/boost" "0"
+	    write "${cpu}interactive/boostpulse" "0"
+	    write "${cpu}interactive/fast_ramp_down" "0"
+		write "${cpu}interactive/sampling_rate" "5000"
+		write "${cpu}interactive/sampling_rate_min" "5000"
+		write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
+		write "${cpu}interactive/go_hispeed_load" "80"
+		write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
+		fi
+	done
+	
+# GPU Tweaks
+for gpu in /sys/class/kgsl/kgsl-3d0/
+do
+if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
+then
+write "${gpu}throttling" "0"
+write "${gpu}thermal_pwrlevel" "0"
+write "${gpu}devfreq/adrenoboost" "3"
+write "${gpu}force_no_nap" "1"
+write "${gpu}bus_split" "1"
+write "${gpu}force_bus_on" "1"
+write "${gpu}devfreq/min_freq" "$UINT_MAX"
+write "${gpu}devfreq/max_freq" "$UINT_MAX"
+write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/max_pwrlevel`
+write "${gpu}force_clk_on" "1"
+write "${gpu}force_rail_on" "1"
+fi
+done
+
+for egpu in /sys/kernel/gpu/
+	do
+	if [[ -d "/sys/kernel/gpu" ]]
+	then
+	write "${egpu}gpu_min_freq" "$UINT_MAX"
+	fi
+	done
+	
+# Enable adreno idler
+if [[ -d "/sys/module/adreno_idler" ]]
+then
+write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
+fi
+
+# Low Memory Killer settings
+for lmk in /sys/module/lowmemorykiller/parameters/
+do
+if [[ -d "/sys/module/lowmemorykiller" ]]
+then
+write "${lmk}enable_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "1"
+write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
+fi
+done
+
+# Disable some debugging
+for bl in /sys/module/bluetooth/parameters/
+do
+if [[ -d /sys/module/bluetooth ]]
+then
+write "${bl}disable_ertm" "Y"
+write "${bl}disable_esco" "Y"
+fi
+done
+
+	# FS Tweaks.
+	for fs in /proc/sys/fs/
+	do
+	if [[ -d "/proc/sys/fs" ]]
+	then
+	write "${fs}dir-notify-enable" "0"
+    write "${fs}lease-break-time" "25"
+    fi
+    done
+    
+    # Enable dynamic_fsync.
+chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/dyn_fsync_active
+if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
+then
+write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
+fi
+
+    # Scheduler features.
+    for sched in /sys/kernel/debug/
+    do
+    if [[ -f "/sys/kernel/debug/sched_features" ]]
+    then
+    write "${sched}sched_features" "NEXT_BUDDY"
+	write "${sched}sched_features" "TTWU_QUEUE"
+	write "${sched}sched_features" "HRTICK"
+	write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
+    write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+    fi
+	done
+	
+	# OP Chain disable.
+	for opc in /sys/module/opchain/parameters/
+	do
+	if [[ -d "/sys/module/opchain" ]]
+	then
+	write "${opc}chain_on" "0"
+	fi
+	done
+	
+	# Tweak some kernel settings to improve overall performance.
+for kts in /proc/sys/kernel/
+do
+if [[ -d "/proc/sys/kernel" ]] 
+then
+write "${kts}sched_child_runs_first" "1"
+write "${kts}perf_cpu_time_max_percent" "5"
+write "${kts}sched_autogroup_enabled" "1"
+write "${kts}random/read_wakeup_threshold" "64"
+write "${kts}random/write_wakeup_threshold" "512"
+write "${kts}sched_tunable_scaling" "0"
+write "${kts}sched_latency_ns" "$SCHED_PERIOD"
+write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
+write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
+write "${kts}sched_migration_cost_ns" "5000000"
+write "${kts}sched_min_task_util_for_colocation" "0"
+write "${kts}sched_nr_migrate" "8"
+write "${kts}sched_schedstats" "0"
+write "${kts}printk_devkmsg" "off"
+fi
+done
+
+# Set min clock in balance profile.
+for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+do
+if [[ -e "/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq" ]]
+then
+write "${minclk}scaling_min_freq" "20000000"
+write "${minclk}scaling_max_freq" "20000000"
+fi
+done
+
+# Efficient CPU Set.
+for cs in /dev/cpuset/
+do
+if [[ -d "/dev/cpuset" ]]
+then
+write "${cs}game/cpus" "0-7"
+write "${cs}gamelite/cpus" "0-3,4-7"
+write "${cs}camera-daemon/cpus" "0-7"
+write "${cs}vr/cpus" "0-7"
+write "${cs}top-app/cpus" "0-7"
+write "${cs}audio-app/cpus" "1-2"
+write "${cs}background/cpus" "0-3"
+write "${cs}foreground/cpus" "0-7"
+fi
+done
+
+sync
+
+# VM settings to improve overall user experience and performance.
+for vm in /proc/sys/vm/
+do
+if [[ -d "/proc/sys/vm" ]]
+then
+write "${vm}drop_caches" "3"
+write "${vm}dirty_background_ratio" "10"
+write "${vm}dirty_ratio" "30"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}page-cluster" "0"
+write "${vm}stat_interval" "10"
+write "${vm}swap_ratio_enable" "1"
+write "${vm}swap_ratio" "100"
+write "${vm}swappiness" "100"
+write "${vm}vfs_cache_pressure" "200"
+fi
+done
+
+# Touch calibration
+panel=$(cat /sys/class/graphics/fb0/modes)
+  if [[ "${panel:5:1}" == "x" ]]
+  then
+    panel=${panel:2:3}
+  else
+    panel=${panel:2:4}
+  fi
+
+# MSM thermal
+if [[ -d "/sys/module/msm_thermal" ]]
+then
+write /sys/module/msm_thermal/vdd_restriction/enabled "0"
+write /sys/module/msm_thermal/core_control/enabled "0"
+write /sys/module/msm_thermal/parameters/enabled "N"
+fi
+
+# Workqueue enable power efficient.
+for wqpw in /sys/module/workqueue/parameters/
+do
+if [[ -d "/sys/module/workqueue" ]]
+then 
+write "${wqpw}power_efficient" "Y"
+fi
+done
+
+# Fix DT2W
+if [[ -d "/sys/touchpanel" ]]
+then
+write "${dt}double_tap" "1"
+fi
+
+if [[ -f "/proc/tp_gesture" ]]
+then
+write "/proc/tp_gesture" "1"
+fi
+
+# Enable touch boost on gaming and performance profile.
+if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
+then
+write "/sys/module/msm_performance/parameters/touchboost" "1"
+fi
+
+# TCP Congestion Control
+for tcp in /proc/sys/net/ipv4/
+do
+if [[ -d "/proc/sys/net" ]]
+then
+write "${tcp}ip_no_pmtu_disc" "0"
+write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_timestamps" "0"
+write "${tcp}route.flush" "1"
+write "${tcp}tcp_rfc1337" "1"
+write "${tcp}tcp_tw_reuse" "1"
+write "${tcp}tcp_sack" "1"
+write "${tcp}tcp_fack" "1"
+write "${tcp}tcp_fastopen" "3"
+write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_syncookies" "0"
+write "${tcp}tcp_window_scaling" "1"
+write "${tcp}tcp_keepalive_probes" "10"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
+fi
+done
+
+# Set cloudflare DNS
+if [ -a /system/etc/resolv.conf ]; then
+	mkdir -p $TMPDIR/system/etc/
+	printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" >> $TMPDIR/system/etc/resolv.conf
+	touch $TMPDIR/auto_mount
+fi
+
+iptables -t nat -A OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
+iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
+iptables -t nat -I OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
+iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
+
+# Disable battery saver on all other profiles and keep only in battery profile.
+for bs in /sys/module/battery_saver/parameters/
+do
+if [[ -d /sys/module/battery_saver ]]
+then
+write "${bs}enabled" "N"
+fi
+done
+
+# Disable LPM in gaming profile / performance profile
+for lpm in /sys/module/lpm_levels/parameters/
+do
+if [[ -d /sys/module/lpm_levels ]]
+then
+write "${lpm}sleep_disabled" "Y"
+fi
+done
+
+# Enable USB fast charging
+for ffc in /sys/kernel/fast_charge/
+do
+if [[ -f "/sys/kernel/fast_charge/force_fast_charge" ]]
+then
+  write "${ffc}force_fast_charge" "1"
+  fi
+  done
+  
+  # GMS blocker 1.2 by @pedroginkgo
+busybox killall -9 com.google.android.gms
+busybox killall -9 com.google.android.gms.persistent
+busybox killall -9 com.google.process.gapps
+busybox killall -9 com.google.android.gsf
+busybox killall -9 com.google.android.gsf.persistent
+};;
+esac
+done
+exit 0
