@@ -1,7 +1,7 @@
 (English)
 
 King Tweaks is a magisk module project developed by me, pedrozzz.
-The King Tweaks have the objective of maximize user experience, ensuring a smoothness and good experience without leave to wish the performance.
+The King Tweaks have the objective of maximize user experience, ensuring a smoothness and good experience without leaving to wish the performance.
 To install is simple, just flash the zip in magisk and done (Installing the busybox before installing the module is recommended).
 
 You can find me on telegram: 
