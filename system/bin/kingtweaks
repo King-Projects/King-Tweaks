@@ -127,7 +127,8 @@ done
 	do
 	if [[ -d "/sys/kernel/gpu" ]]
 	then
-	write "${egpu}gpu_min_freq" "100000000"
+	write "${egpu}gpu_min_clock" "100000000"
+	write "${egpu}gpu_max_clock" "600000000"
 	fi
 	done
 	
@@ -322,7 +323,6 @@ write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
-write "${tcp}tcp_low_latency" "1"
 fi
 done
 
@@ -449,9 +449,10 @@ do
 		write "${cpu}scaling_governor" interactive
 		write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
 		write "${cpu}interactive/timer_slack" "-1"
-		write "${cpu}interactive/boost" "0"
-	    write "${cpu}interactive/boostpulse" "0"
-	    write "${cpu}interactive/fast_ramp_down" "0"
+		write "${cpu}interactive/boost" "1"
+	    write "${cpu}interactive/boostpulse" "1"
+	    write "${cpu}interactive/boostpulse_duration" "640000"
+	    write "${cpu}interactive/fast_ramp_down" "1"
 		write "${cpu}interactive/sampling_rate" "5000"
 		write "${cpu}interactive/sampling_rate_min" "5000"
 		write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
@@ -484,7 +485,8 @@ for egpu in /sys/kernel/gpu/
 	do
 	if [[ -d "/sys/kernel/gpu" ]]
 	then
-	write "${egpu}gpu_min_freq" "100000000"
+	write "${egpu}gpu_min_clock" "100000000"
+	write "${egpu}gpu_max_clock" "745000000"
 	fi
 	done
 	
@@ -820,7 +822,8 @@ for egpu in /sys/kernel/gpu/
 	do
 	if [[ -d "/sys/kernel/gpu" ]]
 	then
-	write "${egpu}gpu_min_freq" "100000000"
+	write "${egpu}gpu_min_clock" "100000000"
+	write "${egpu}gpu_max_clock" "465000000"
 	fi
 	done
 	
@@ -1144,9 +1147,10 @@ do
 		write "${cpu}scaling_governor" interactive
 		write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
 		write "${cpu}interactive/timer_slack" "-1"
-		write "${cpu}interactive/boost" "0"
-	    write "${cpu}interactive/boostpulse" "0"
-	    write "${cpu}interactive/fast_ramp_down" "0"
+		write "${cpu}interactive/boost" "1"
+	    write "${cpu}interactive/boostpulse" "1"
+	    write "${cpu}interactive/boostpulse_duration" "640000"
+	    write "${cpu}interactive/fast_ramp_down" "1"
 		write "${cpu}interactive/sampling_rate" "5000"
 		write "${cpu}interactive/sampling_rate_min" "5000"
 		write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
@@ -1178,8 +1182,8 @@ for egpu in /sys/kernel/gpu/
 	do
 	if [[ -d "/sys/kernel/gpu" ]]
 	then
-	write "${egpu}gpu_min_freq" "$UINT_MAX"
-	write "${egpu}gpu_max_freq" "$UINT_MAX"
+	write "${egpu}gpu_min_clock" "$UINT_MAX"
+	write "${egpu}gpu_max_clock" "$UINT_MAX"
 	fi
 	done
 	
