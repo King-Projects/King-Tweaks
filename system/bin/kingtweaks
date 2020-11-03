@@ -169,10 +169,10 @@ fi
 done
 
 # Enable dynamic_fsync.
-chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/dyn_fsync_active
 if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
 then
+chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/dyn_fsync_active
 write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
 fi
 
@@ -1179,6 +1179,7 @@ for egpu in /sys/kernel/gpu/
 	if [[ -d "/sys/kernel/gpu" ]]
 	then
 	write "${egpu}gpu_min_freq" "$UINT_MAX"
+	write "${egpu}gpu_max_freq" "$UINT_MAX"
 	fi
 	done
 	
@@ -1219,11 +1220,11 @@ done
     fi
     done
     
-    # Enable dynamic_fsync.
-chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/dyn_fsync_active
+# Enable dynamic_fsync.
 if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
 then
+chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/dyn_fsync_active
 write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
 fi
 
