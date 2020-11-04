@@ -1819,7 +1819,7 @@ kmsg "--------------------------------------------------------------------------
 kmsg "                                          DISABLING THERMAL-ENGINE AND PERFD...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Disable throttling and enable perfd.
+# Disable throttling and perfd.
 stop thermal-engine
 stop perfd
 
