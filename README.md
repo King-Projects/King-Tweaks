@@ -18,4 +18,6 @@ Thanks to [ROM](https://github.com/xerta555) by his [Cloudflare4Magisk](https://
 
 Thanks to [Zackptg5](https://github.com/Zackptg5) by his [MMT Extended](https://github.com/Zackptg5/MMT-Extended).
 
+Thanks to [eight](https://github.com/iamlazy123) by his [Lazy Tweaks](https://github.com/iamlazy123/lazytweaks).
+
 And everyone that support King Tweaks project. ❤️
