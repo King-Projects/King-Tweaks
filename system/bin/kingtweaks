@@ -393,11 +393,10 @@ kmsg "--------------------------------------------------------------------------
 # Scheduler tweaks. 
 for sched in /sys/kernel/debug/
 do
-if [[ -f "/sys/kernel/debug/sched_features" ]]
+if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
-write "${sched}sched_features" "HRTICK"
 fi
 done
  
@@ -978,12 +977,10 @@ kmsg "--------------------------------------------------------------------------
 # Scheduler features.
 for sched in /sys/kernel/debug/
 do
-if [[ -f "/sys/kernel/debug/sched_features" ]]
+if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
-write "${sched}sched_features" "HRTICK"
-write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 fi
 done
@@ -1536,11 +1533,10 @@ kmsg "--------------------------------------------------------------------------
 # Scheduler features.
 for sched in /sys/kernel/debug/
 do
-if [[ -f "/sys/kernel/debug/sched_features" ]]
+if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
-write "${sched}sched_features" "HRTICK"
 write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
 fi
 done
@@ -2135,8 +2131,6 @@ if [[ -f "/sys/kernel/debug/sched_features" ]]
 then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
-write "${sched}sched_features" "HRTICK"
-write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 fi
 done
