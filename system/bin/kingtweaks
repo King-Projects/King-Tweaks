@@ -4,29 +4,69 @@
 # Enable cloudflare DNS by ROM (xerta555 @github).
 # MMT Extended by Zackptg5 @ XDA
 
+mkdir /sdcard/KTS
+LOG=/sdcard/KTS/KTS.log
+rm $LOG
+
+# Log in white and continue (unnecessary)
+kmsg() {
+	echo -e "[-] $@" >> $LOG
+	echo -e "[-] $@"
+}
+
 write() {
 	# Bail out if file does not exist
 	[[ ! -f "$1" ]] && return 1
 
+	# Fetch the current key value
+	local curval=`cat "$1" 2> /dev/null`
+	
+	# Bail out if value is already set
+	[[ "$curval" == "$2" ]] && return 1
+	
 	# Make file writable in case it is not already
 	chmod +w "$1" 2> /dev/null
 
 	# Write the new value and bail if there's an error
 	if ! echo "$2" > "$1" 2> /dev/null
 	then
-		echo "Failed: $1 → $2"
+		kmsg "Failed: $1 -> $2"
 		return 1
 	fi
 
 	# Log the success
-	echo "$1 → $2"
+	kmsg "$1 $curval -> $2"
 }
+
+vibrate_cmode() {
+if [ -e /sys/class/leds/vibrator/duration ] &&  [ -e /sys/class/leds/vibrator/activate ];then
+	echo 400 > /sys/class/leds/vibrator/duration && echo 1 > /sys/class/leds/vibrator/activate
+fi
+}
+
+# Check for root permissions and bail if not granted
+if [[ "$(id -u)" -ne 0 ]]
+then
+	kmsg "No root permissions. Exiting."
+	exit 1
+fi
 
 # Wait 60s into boot before applying changes
 while [[ `cat /proc/uptime | awk '{print $1}' | awk -F. '{print $1}'` -lt 60 ]]
 do
 	sleep 2
 done
+
+kmsg " --------------------------------------------------------- Additional info ---------------------------------------------------------------------------------"
+kmsg "                                                  🕛 Date of execution: $(date)                                                                             "
+kmsg "                                                  🔧 Device kernel: `uname -a`                                                                              "
+kmsg "                                                  🛠️ SOC: $(getprop ro.board.platform)                                                                      "
+kmsg "                                                 ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                    "
+kmsg "                                                  🅰️ndroid Version: $(getprop ro.build.version.release)                                                     "
+kmsg "                                                  📱 Device: $(getprop ro.product.odm.model)                                                                "
+kmsg "                                                  👑 KTS Version: 1.7.9                                                                                     "
+kmsg " -----------------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg ""
 
 setprop persist.spectrum.kernel "KTS Reborn"
 setprop spectrum.support "1"
@@ -57,11 +97,14 @@ SCHED_TASKS="8"
 # Maximum unsigned integer size in C
         	UINT_MAX="4294967295"
         	
+        	start thermal-engine
+        	start perfd
+        	
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
  avail_scheds="$(cat "${queue}scheduler")"
- for sched in cfq noop zen anxiety fiops sio maple tripndroid kyber bfq mq-deadline none
+ for sched in zen anxiety cfq noop kyber bfq mq-deadline none
  do
   if [[ "$avail_scheds" == *"$sched"* ]]
   then
@@ -122,15 +165,6 @@ write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
 fi
 done
-
-	for egpu in /sys/kernel/gpu/
-	do
-	if [[ -d "/sys/kernel/gpu" ]]
-	then
-	write "${egpu}gpu_min_clock" "100000000"
-	write "${egpu}gpu_max_clock" "600000000"
-	fi
-	done
 	
 # Enable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -159,12 +193,131 @@ write "${bl}disable_esco" "Y"
 fi
 done
 
-	# FS tweaks.
-	for fs in /proc/sys/fs/
-	do
-	if [[ -d "/proc/sys/fs" ]]
-	then
-	write "${fs}dir-notify-enable" "0"
+write "/sys/module/earlysuspend/parameters/debug_mask" "0"
+write "/sys/module/alarm/parameters/debug_mask" "0"
+write "/sys/module/alarm_dev/parameters/debug_mask" "0"
+write "/sys/module/binder/parameters/debug_mask" "0"
+write "/sys/devices/system/edac/cpu/log_ce" "0"
+write "/sys/devices/system/edac/cpu/log_ue" "0"
+write "/sys/module/binder/parameters/debug_mask" "0"
+write "/sys/module/debug/parameters/enable_event_log" "0"
+write "/sys/module/dwc3/parameters/ep_addr_rxdbg_mask" "0"
+write "/sys/module/dwc3/parameters/ep_addr_txdbg_mask" "0"
+write "/sys/module/edac_core/parameters/edac_mc_log_ce" "0"
+write "/sys/module/edac_core/parameters/edac_mc_log_ue" "0"
+write "/sys/module/glink/parameters/debug_mask" "0"
+write "/sys/module/hid_apple/parameters/fnmode" "0"
+write "/sys/module/hid_magicmouse/parameters/emulate_3button" "N"
+write "/sys/module/hid_magicmouse/parameters/emulate_scroll_wheel" "N"
+write "/sys/module/ip6_tunnel/parameters/log_ecn_error" "N"
+write "/sys/module/lowmemorykiller/parameters/debug_level" "0"
+write "/sys/module/mdss_fb/parameters/backlight_dimmer" "N"
+write "/sys/module/msm_show_resume_irq/parameters/debug_mask" "0"
+write "/sys/module/msm_smd/parameters/debug_mask" "0"
+write "/sys/module/msm_smem/parameters/debug_mask" "0"
+write "/sys/module/otg_wakelock/parameters/enabled" "N" 
+write "/sys/module/service_locator/parameters/enable" "0"
+write "/sys/module/sit/parameters/log_ecn_error" "N"
+write "/sys/module/smem_log/parameters/log_enable" "0"
+write "/sys/module/smp2p/parameters/debug_mask" "0"
+write "/sys/module/touch_core_base/parameters/debug_mask" "0"
+write "/sys/module/usb_bam/parameters/enable_event_log" "0"
+write "/sys/module/printk/parameters/console_suspend" "Y"
+write "/proc/sys/debug/exception-trace" "0"
+write "/proc/sys/kernel/printk" "0 0 0 0"
+write "/proc/sys/kernel/compat-log" "0"
+
+if [ -e /sys/module/logger/parameters/log_mode ]
+then
+write "/sys/module/logger/parameters/log_mode" "2"
+fi
+
+if [ -e /sys/module/printk/parameters/console_suspend ] 
+then
+write "/sys/module/printk/parameters/console_suspend" "Y"
+fi
+
+for i in $(find /sys/ -name debug_mask)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name debug_level)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name edac_mc_log_ce)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name edac_mc_log_ue)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name enable_event_log) 
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name log_ecn_error)
+do
+write "$i" "N"
+done
+
+for i in $(find /sys/ -name snapshot_crashdumper)
+do
+write "$i" "0"
+done
+
+# =========
+# FIX DEEPSLEEP
+# =========
+for i in $(ls /sys/class/scsi_disk/)
+do
+lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
+done
+
+# Schedtune Tweaks
+for st in /dev/stune
+do
+if [[ -d "/dev/stune" ]]
+then
+write "${st}/background/schedtune.boost" "0"
+write "${st}/background/schedtune.prefer_idle" "0"
+write "${st}/background/schedtune.colocate" "0"
+write "${st}/background/schedtune.sched_boost" "0"
+
+write "${st}/foreground/schedtune.boost" "1"
+write "${st}/foreground/schedtune.prefer_idle" "1"
+write "${st}/foreground/schedtune.colocate" "0"
+write "${st}/foreground/schedtune.sched_boost" "0"
+
+write "${st}/rt/schedtune.boost" "0"
+write "${st}/rt/schedtune.prefer_idle" "0"
+write "${st}/rt/schedtune.colocate" "0"
+write "${st}/rt/schedtune.sched_boost" "0"
+
+write "${st}/top-app/schedtune.boost" "1"
+write "${st}/top-app/schedtune.prefer_idle" "1"
+write "${st}/top-app/schedtune.colocate" "0"
+write "${st}/top-app/schedtune.sched_boost" "1"
+
+write "${st}/schedtune.boost" "0"
+write "${st}/schedtune.prefer_idle" "0"
+write "${st}/schedtune.colocate" "0"
+write "${st}/schedtune.sched_boost" "0"
+fi
+done
+
+# FS tweaks.
+for fs in /proc/sys/fs/
+do
+if [[ -d "/proc/sys/fs" ]]
+then
+write "${fs}dir-notify-enable" "0"
 write "${fs}lease-break-time" "25"
 fi
 done
@@ -182,21 +335,21 @@ for sched in /sys/kernel/debug/
 do
 if [[ -f "/sys/kernel/debug/sched_features" ]]
 then
-    write "${sched}sched_features" "NEXT_BUDDY"
-	write "${sched}sched_features" "TTWU_QUEUE"
-	write "${sched}sched_features" "HRTICK"
-	fi
-	done
-	
-	# OP Chain disable.
-	for opc in /sys/module/opchain/parameters/
-	do
-	if [[ -d "/sys/module/opchain" ]]
-	then
-	write "${opc}chain_on" "0"
-	fi
-	done
-	
+ write "${sched}sched_features" "NEXT_BUDDY"
+ write "${sched}sched_features" "TTWU_QUEUE"
+ write "${sched}sched_features" "HRTICK"
+ fi
+ done
+ 
+ # OP Chain disable.
+ for opc in /sys/module/opchain/parameters/
+ do
+ if [[ -d "/sys/module/opchain" ]]
+ then
+ write "${opc}chain_on" "0"
+ fi
+ done
+ 
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
 do
@@ -323,6 +476,7 @@ write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
 fi
 done
 
@@ -380,6 +534,7 @@ busybox killall -9 com.google.android.gms.persistent
 busybox killall -9 com.google.process.gapps
 busybox killall -9 com.google.android.gsf
 busybox killall -9 com.google.android.gsf.persistent
+vibrate_cmode
 };;
 # Performance Profile
         "1") {
@@ -413,11 +568,14 @@ write "${cib}input_boost_freq_lp" "$UINT_MAX"
 fi
 done
 
+        	stop thermal-engine
+        	stop perfd
+        	
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
  avail_scheds="$(cat "${queue}scheduler")"
- for sched in cfq noop zen anxiety fiops sio maple tripndroid kyber bfq mq-deadline none
+ for sched in zen anxiety cfq noop kyber bfq mq-deadline none
  do
   if [[ "$avail_scheds" == *"$sched"* ]]
   then
@@ -425,8 +583,8 @@ do
    break
   fi
  done
- write "${queue}iostats" 0
  write "${queue}add_random" 0
+ write "${queue}iostats" 0
  write "${queue}read_ahead_kb" 128
  write "${queue}nr_requests" 64
 done
@@ -481,15 +639,6 @@ write "${gpu}force_rail_on" "0"
 fi
 done
 
-for egpu in /sys/kernel/gpu/
-	do
-	if [[ -d "/sys/kernel/gpu" ]]
-	then
-	write "${egpu}gpu_min_clock" "100000000"
-	write "${egpu}gpu_max_clock" "745000000"
-	fi
-	done
-	
 # Enable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
@@ -517,12 +666,131 @@ write "${bl}disable_esco" "Y"
 fi
 done
 
-	# FS Tweaks.
-	for fs in /proc/sys/fs/
-	do
-	if [[ -d "/proc/sys/fs" ]]
-	then
-	write "${fs}dir-notify-enable" "0"
+write "/sys/module/earlysuspend/parameters/debug_mask" "0"
+write "/sys/module/alarm/parameters/debug_mask" "0"
+write "/sys/module/alarm_dev/parameters/debug_mask" "0"
+write "/sys/module/binder/parameters/debug_mask" "0"
+write "/sys/devices/system/edac/cpu/log_ce" "0"
+write "/sys/devices/system/edac/cpu/log_ue" "0"
+write "/sys/module/binder/parameters/debug_mask" "0"
+write "/sys/module/debug/parameters/enable_event_log" "0"
+write "/sys/module/dwc3/parameters/ep_addr_rxdbg_mask" "0"
+write "/sys/module/dwc3/parameters/ep_addr_txdbg_mask" "0"
+write "/sys/module/edac_core/parameters/edac_mc_log_ce" "0"
+write "/sys/module/edac_core/parameters/edac_mc_log_ue" "0"
+write "/sys/module/glink/parameters/debug_mask" "0"
+write "/sys/module/hid_apple/parameters/fnmode" "0"
+write "/sys/module/hid_magicmouse/parameters/emulate_3button" "N"
+write "/sys/module/hid_magicmouse/parameters/emulate_scroll_wheel" "N"
+write "/sys/module/ip6_tunnel/parameters/log_ecn_error" "N"
+write "/sys/module/lowmemorykiller/parameters/debug_level" "0"
+write "/sys/module/mdss_fb/parameters/backlight_dimmer" "N"
+write "/sys/module/msm_show_resume_irq/parameters/debug_mask" "0"
+write "/sys/module/msm_smd/parameters/debug_mask" "0"
+write "/sys/module/msm_smem/parameters/debug_mask" "0"
+write "/sys/module/otg_wakelock/parameters/enabled" "N" 
+write "/sys/module/service_locator/parameters/enable" "0"
+write "/sys/module/sit/parameters/log_ecn_error" "N"
+write "/sys/module/smem_log/parameters/log_enable" "0"
+write "/sys/module/smp2p/parameters/debug_mask" "0"
+write "/sys/module/touch_core_base/parameters/debug_mask" "0"
+write "/sys/module/usb_bam/parameters/enable_event_log" "0"
+write "/sys/module/printk/parameters/console_suspend" "Y"
+write "/proc/sys/debug/exception-trace" "0"
+write "/proc/sys/kernel/printk" "0 0 0 0"
+write "/proc/sys/kernel/compat-log" "0"
+
+if [ -e /sys/module/logger/parameters/log_mode ]
+then
+write "/sys/module/logger/parameters/log_mode" "2"
+fi
+
+if [ -e /sys/module/printk/parameters/console_suspend ] 
+then
+write "/sys/module/printk/parameters/console_suspend" "Y"
+fi
+
+for i in $(find /sys/ -name debug_mask)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name debug_level)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name edac_mc_log_ce)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name edac_mc_log_ue)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name enable_event_log) 
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name log_ecn_error)
+do
+write "$i" "N"
+done
+
+for i in $(find /sys/ -name snapshot_crashdumper)
+do
+write "$i" "0"
+done
+
+# =========
+# FIX DEEPSLEEP
+# =========
+for i in $(ls /sys/class/scsi_disk/)
+do
+lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
+done
+
+# Schedtune Tweaks
+for st in /dev/stune
+do
+if [[ -d "/dev/stune" ]]
+then
+write "${st}/background/schedtune.boost" "0"
+write "${st}/background/schedtune.prefer_idle" "0"
+write "${st}/background/schedtune.colocate" "0"
+write "${st}/background/schedtune.sched_boost" "0"
+
+write "${st}/foreground/schedtune.boost" "10"
+write "${st}/foreground/schedtune.prefer_idle" "1"
+write "${st}/foreground/schedtune.colocate" "0"
+write "${st}/foreground/schedtune.sched_boost" "1"
+
+write "${st}/rt/schedtune.boost" "0"
+write "${st}/rt/schedtune.prefer_idle" "0"
+write "${st}/rt/schedtune.colocate" "0"
+write "${st}/rt/schedtune.sched_boost" "0"
+
+write "${st}/top-app/schedtune.boost" "40"
+write "${st}/top-app/schedtune.prefer_idle" "1"
+write "${st}/top-app/schedtune.colocate" "0"
+write "${st}/top-app/schedtune.sched_boost" "1"
+
+write "${st}/schedtune.boost" "0"
+write "${st}/schedtune.prefer_idle" "0"
+write "${st}/schedtune.colocate" "0"
+write "${st}/schedtune.sched_boost" "0"
+fi
+done
+
+# FS Tweaks.
+for fs in /proc/sys/fs/
+do
+if [[ -d "/proc/sys/fs" ]]
+then
+write "${fs}dir-notify-enable" "0"
 write "${fs}lease-break-time" "25"
 fi
 done
@@ -740,6 +1008,7 @@ busybox killall -9 com.google.android.gms.persistent
 busybox killall -9 com.google.process.gapps
 busybox killall -9 com.google.android.gsf
 busybox killall -9 com.google.android.gsf.persistent
+vibrate_cmode
 };;
         # Battery Profile
         "2") {
@@ -752,7 +1021,10 @@ SCHED_TASKS="8"
 # Maximum unsigned integer size in C
         	UINT_MAX="4294967295"
         	
-			# I/O Scheduler Tweaks
+        	start thermal-engine
+        	start perfd
+        	
+			# I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
  avail_scheds="$(cat "${queue}scheduler")"
@@ -764,8 +1036,8 @@ do
    break
   fi
  done
- write "${queue}iostats" 0
  write "${queue}add_random" 0
+ write "${queue}iostats" 0
  write "${queue}read_ahead_kb" 128
  write "${queue}nr_requests" 64
 done
@@ -818,22 +1090,13 @@ write "${gpu}force_rail_on" "0"
 fi
 done
 
-for egpu in /sys/kernel/gpu/
-	do
-	if [[ -d "/sys/kernel/gpu" ]]
-	then
-	write "${egpu}gpu_min_clock" "100000000"
-	write "${egpu}gpu_max_clock" "465000000"
-	fi
-	done
-	
 # Enable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
 fi
 
-# Low Memory Killer settings
+# Low Memory Killer tweaks
 for lmk in /sys/module/lowmemorykiller/parameters/
 do
 if [[ -d "/sys/module/lowmemorykiller" ]]
@@ -854,45 +1117,164 @@ write "${bl}disable_esco" "Y"
 fi
 done
 
-	# FS Tweaks.
-	for fs in /proc/sys/fs/
-	do
-	if [[ -d "/proc/sys/fs" ]]
-	then
-	write "${fs}dir-notify-enable" "0"
-    write "${fs}lease-break-time" "25"
-    fi
-    done
+write "/sys/module/earlysuspend/parameters/debug_mask" "0"
+write "/sys/module/alarm/parameters/debug_mask" "0"
+write "/sys/module/alarm_dev/parameters/debug_mask" "0"
+write "/sys/module/binder/parameters/debug_mask" "0"
+write "/sys/devices/system/edac/cpu/log_ce" "0"
+write "/sys/devices/system/edac/cpu/log_ue" "0"
+write "/sys/module/binder/parameters/debug_mask" "0"
+write "/sys/module/debug/parameters/enable_event_log" "0"
+write "/sys/module/dwc3/parameters/ep_addr_rxdbg_mask" "0"
+write "/sys/module/dwc3/parameters/ep_addr_txdbg_mask" "0"
+write "/sys/module/edac_core/parameters/edac_mc_log_ce" "0"
+write "/sys/module/edac_core/parameters/edac_mc_log_ue" "0"
+write "/sys/module/glink/parameters/debug_mask" "0"
+write "/sys/module/hid_apple/parameters/fnmode" "0"
+write "/sys/module/hid_magicmouse/parameters/emulate_3button" "N"
+write "/sys/module/hid_magicmouse/parameters/emulate_scroll_wheel" "N"
+write "/sys/module/ip6_tunnel/parameters/log_ecn_error" "N"
+write "/sys/module/lowmemorykiller/parameters/debug_level" "0"
+write "/sys/module/mdss_fb/parameters/backlight_dimmer" "N"
+write "/sys/module/msm_show_resume_irq/parameters/debug_mask" "0"
+write "/sys/module/msm_smd/parameters/debug_mask" "0"
+write "/sys/module/msm_smem/parameters/debug_mask" "0"
+write "/sys/module/otg_wakelock/parameters/enabled" "N" 
+write "/sys/module/service_locator/parameters/enable" "0"
+write "/sys/module/sit/parameters/log_ecn_error" "N"
+write "/sys/module/smem_log/parameters/log_enable" "0"
+write "/sys/module/smp2p/parameters/debug_mask" "0"
+write "/sys/module/touch_core_base/parameters/debug_mask" "0"
+write "/sys/module/usb_bam/parameters/enable_event_log" "0"
+write "/sys/module/printk/parameters/console_suspend" "Y"
+write "/proc/sys/debug/exception-trace" "0"
+write "/proc/sys/kernel/printk" "0 0 0 0"
+write "/proc/sys/kernel/compat-log" "0"
+
+if [ -e /sys/module/logger/parameters/log_mode ]
+then
+write "/sys/module/logger/parameters/log_mode" "2"
+fi
+
+if [ -e /sys/module/printk/parameters/console_suspend ] 
+then
+write "/sys/module/printk/parameters/console_suspend" "Y"
+fi
+
+for i in $(find /sys/ -name debug_mask)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name debug_level)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name edac_mc_log_ce)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name edac_mc_log_ue)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name enable_event_log) 
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name log_ecn_error)
+do
+write "$i" "N"
+done
+
+for i in $(find /sys/ -name snapshot_crashdumper)
+do
+write "$i" "0"
+done
+
+# =========
+# FIX DEEPSLEEP
+# =========
+for i in $(ls /sys/class/scsi_disk/)
+do
+lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
+done
+
+# Schedtune tweaks
+for st in /dev/stune
+do
+if [[ -d "/dev/stune" ]]
+then
+write "${st}/background/schedtune.boost" "0"
+write "${st}/background/schedtune.prefer_idle" "0"
+write "${st}/background/schedtune.colocate" "0"
+write "${st}/background/schedtune.sched_boost" "0"
+
+write "${st}/foreground/schedtune.boost" "1"
+write "${st}/foreground/schedtune.prefer_idle" "0"
+write "${st}/foreground/schedtune.colocate" "0"
+write "${st}/foreground/schedtune.sched_boost" "0"
+
+write "${st}/rt/schedtune.boost" "0"
+write "${st}/rt/schedtune.prefer_idle" "0"
+write "${st}/rt/schedtune.colocate" "0"
+write "${st}/rt/schedtune.sched_boost" "0"
+
+write "${st}/top-app/schedtune.boost" "1"
+write "${st}/top-app/schedtune.prefer_idle" "0"
+write "${st}/top-app/schedtune.colocate" "0"
+write "${st}/top-app/schedtune.sched_boost" "1"
+
+write "${st}/schedtune.boost" "0"
+write "${st}/schedtune.prefer_idle" "0"
+write "${st}/schedtune.colocate" "0"
+write "${st}/schedtune.sched_boost" "0"
+fi
+done
+
+# FS Tweaks.
+for fs in /proc/sys/fs/
+do
+if [[ -d "/proc/sys/fs" ]]
+then
+write "${fs}dir-notify-enable" "0"
+write "${fs}lease-break-time" "25"
+fi
+done
     
-    # Enable dynamic_fsync.
+# Enable dynamic_fsync.
 chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
 chown root /sys/kernel/dyn_fsync/dyn_fsync_active
 if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
 then
-   write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
-   fi
+write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
+fi
 
 # Scheduler features.
 for sched in /sys/kernel/debug/
 do
 if [[ -f "/sys/kernel/debug/sched_features" ]]
 then
-    write "${sched}sched_features" "NEXT_BUDDY"
-	write "${sched}sched_features" "TTWU_QUEUE"
-	write "${sched}sched_features" "HRTICK"
-	write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
-    write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
-    fi
-	done
+write "${sched}sched_features" "NEXT_BUDDY"
+write "${sched}sched_features" "TTWU_QUEUE"
+write "${sched}sched_features" "HRTICK"
+write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
+write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+fi
+done
 	
-	# OP Tweaks
-	for opc in /sys/module/opchain/parameters/
-	do
-	if [[ -d "/sys/module/opchain" ]]
-	then
-	write "${opc}chain_on" "0"
-	fi
-	done
+# OP Tweaks
+for opc in /sys/module/opchain/parameters/
+do
+if [[ -d "/sys/module/opchain" ]]
+then
+write "${opc}chain_on" "0"
+fi
+done
 	
 	# Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
@@ -974,7 +1356,7 @@ fi
 # Workqueue enable power_efficient.
 for wqpw in /sys/module/workqueue/parameters/
 do
-if [[ -d "/sys/module/workqueue" ]]
+if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "${wqpw}power_efficient" "Y"
 fi
@@ -989,7 +1371,7 @@ write "${dt}double_tap" "1"
 fi
 done
 
-if [[ -f "/proc/tp_gesture" ]]
+if [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
 fi
@@ -1000,7 +1382,7 @@ then
 write "/sys/module/msm_performance/parameters/touchboost" "0"
 fi
 
-# TCP Congestion Control
+# Internet Tweaks
 for tcp in /proc/sys/net/ipv4/
 do
 if [[ -d "/proc/sys/net" ]]
@@ -1022,6 +1404,12 @@ write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 fi
+done
+
+# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
+for i in $(find /sys/class/net -type l)
+do
+write "$i/tx_queue_len" "128"
 done
 
 # Set cloudflare DNS. 
@@ -1078,6 +1466,7 @@ busybox killall -9 com.google.android.gms.persistent
 busybox killall -9 com.google.process.gapps
 busybox killall -9 com.google.android.gsf
 busybox killall -9 com.google.android.gsf.persistent
+vibrate_cmode
 };;
 # Gaming Profile
         "3") {
@@ -1089,7 +1478,7 @@ SCHED_TASKS="8"
 
 # Maximum unsigned integer size in C
         	UINT_MAX="4294967295"
-        	
+        		
         	# CAF CPU Boost
 for caf in /sys/module/cpu_boost/parameters/
 do
@@ -1111,11 +1500,14 @@ write "${cib}input_boost_freq_lp" "$UINT_MAX"
 fi
 done
 
+        	stop thermal-engine
+        	stop perfd
+        	
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
  avail_scheds="$(cat "${queue}scheduler")"
- for sched in cfq noop zen anxiety fiops sio maple tripndroid kyber bfq mq-deadline none
+ for sched in zen anxiety cfq noop kyber bfq mq-deadline none
  do
   if [[ "$avail_scheds" == *"$sched"* ]]
   then
@@ -1123,8 +1515,8 @@ do
    break
   fi
  done
- write "${queue}iostats" 0
  write "${queue}add_random" 0
+ write "${queue}iostats" 0
  write "${queue}read_ahead_kb" 128
  write "${queue}nr_requests" 64
 done
@@ -1177,15 +1569,6 @@ write "${gpu}force_clk_on" "1"
 write "${gpu}force_rail_on" "1"
 fi
 done
-
-for egpu in /sys/kernel/gpu/
-	do
-	if [[ -d "/sys/kernel/gpu" ]]
-	then
-	write "${egpu}gpu_min_clock" "$UINT_MAX"
-	write "${egpu}gpu_max_clock" "$UINT_MAX"
-	fi
-	done
 	
 # Enable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -1214,15 +1597,134 @@ write "${bl}disable_esco" "Y"
 fi
 done
 
-	# FS Tweaks.
-	for fs in /proc/sys/fs/
-	do
-	if [[ -d "/proc/sys/fs" ]]
-	then
-	write "${fs}dir-notify-enable" "0"
-    write "${fs}lease-break-time" "25"
-    fi
-    done
+write "/sys/module/earlysuspend/parameters/debug_mask" "0"
+write "/sys/module/alarm/parameters/debug_mask" "0"
+write "/sys/module/alarm_dev/parameters/debug_mask" "0"
+write "/sys/module/binder/parameters/debug_mask" "0"
+write "/sys/devices/system/edac/cpu/log_ce" "0"
+write "/sys/devices/system/edac/cpu/log_ue" "0"
+write "/sys/module/binder/parameters/debug_mask" "0"
+write "/sys/module/debug/parameters/enable_event_log" "0"
+write "/sys/module/dwc3/parameters/ep_addr_rxdbg_mask" "0"
+write "/sys/module/dwc3/parameters/ep_addr_txdbg_mask" "0"
+write "/sys/module/edac_core/parameters/edac_mc_log_ce" "0"
+write "/sys/module/edac_core/parameters/edac_mc_log_ue" "0"
+write "/sys/module/glink/parameters/debug_mask" "0"
+write "/sys/module/hid_apple/parameters/fnmode" "0"
+write "/sys/module/hid_magicmouse/parameters/emulate_3button" "N"
+write "/sys/module/hid_magicmouse/parameters/emulate_scroll_wheel" "N"
+write "/sys/module/ip6_tunnel/parameters/log_ecn_error" "N"
+write "/sys/module/lowmemorykiller/parameters/debug_level" "0"
+write "/sys/module/mdss_fb/parameters/backlight_dimmer" "N"
+write "/sys/module/msm_show_resume_irq/parameters/debug_mask" "0"
+write "/sys/module/msm_smd/parameters/debug_mask" "0"
+write "/sys/module/msm_smem/parameters/debug_mask" "0"
+write "/sys/module/otg_wakelock/parameters/enabled" "N" 
+write "/sys/module/service_locator/parameters/enable" "0"
+write "/sys/module/sit/parameters/log_ecn_error" "N"
+write "/sys/module/smem_log/parameters/log_enable" "0"
+write "/sys/module/smp2p/parameters/debug_mask" "0"
+write "/sys/module/touch_core_base/parameters/debug_mask" "0"
+write "/sys/module/usb_bam/parameters/enable_event_log" "0"
+write "/sys/module/printk/parameters/console_suspend" "Y"
+write "/proc/sys/debug/exception-trace" "0"
+write "/proc/sys/kernel/printk" "0 0 0 0"
+write "/proc/sys/kernel/compat-log" "0"
+
+if [ -e /sys/module/logger/parameters/log_mode ]
+then
+write "/sys/module/logger/parameters/log_mode" "2"
+fi
+
+if [ -e /sys/module/printk/parameters/console_suspend ] 
+then
+write "/sys/module/printk/parameters/console_suspend" "Y"
+fi
+
+for i in $(find /sys/ -name debug_mask)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name debug_level)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name edac_mc_log_ce)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name edac_mc_log_ue)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name enable_event_log) 
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name log_ecn_error)
+do
+write "$i" "N"
+done
+
+for i in $(find /sys/ -name snapshot_crashdumper)
+do
+write "$i" "0"
+done
+
+# =========
+# FIX DEEPSLEEP
+# =========
+for i in $(ls /sys/class/scsi_disk/)
+do
+lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
+done
+
+# Schedtune tweaks
+for st in /dev/stune
+do
+if [[ -d "/dev/stune" ]]
+then
+write "${st}/background/schedtune.boost" "0"
+write "${st}/background/schedtune.prefer_idle" "0"
+write "${st}/background/schedtune.colocate" "0"
+write "${st}/background/schedtune.sched_boost" "0"
+
+write "${st}/foreground/schedtune.boost" "40"
+write "${st}/foreground/schedtune.prefer_idle" "1"
+write "${st}/foreground/schedtune.colocate" "0"
+write "${st}/foreground/schedtune.sched_boost" "1"
+
+write "${st}/rt/schedtune.boost" "0"
+write "${st}/rt/schedtune.prefer_idle" "0"
+write "${st}/rt/schedtune.colocate" "0"
+write "${st}/rt/schedtune.sched_boost" "0"
+
+write "${st}/top-app/schedtune.boost" "40"
+write "${st}/top-app/schedtune.prefer_idle" "1"
+write "${st}/top-app/schedtune.colocate" "0"
+write "${st}/top-app/schedtune.sched_boost" "1"
+
+write "${st}/schedtune.boost" "0"
+write "${st}/schedtune.prefer_idle" "0"
+write "${st}/schedtune.colocate" "0"
+write "${st}/schedtune.sched_boost" "0"
+fi
+done
+
+# FS Tweaks.
+for fs in /proc/sys/fs/
+do
+if [[ -d "/proc/sys/fs" ]]
+then
+write "${fs}dir-notify-enable" "0"
+write "${fs}lease-break-time" "25"
+fi
+done
     
 # Enable dynamic_fsync.
 if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
@@ -1390,6 +1892,12 @@ write "${tcp}tcp_low_latency" "1"
 fi
 done
 
+# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
+for i in $(find /sys/class/net -type l)
+do
+write "$i/tx_queue_len" "128"
+done
+
 # Set cloudflare DNS
 if [ -a /system/etc/resolv.conf ]; then
 	mkdir -p $TMPDIR/system/etc/
@@ -1425,17 +1933,19 @@ for ffc in /sys/kernel/fast_charge/
 do
 if [[ -f "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
-  write "${ffc}force_fast_charge" "1"
-  fi
-  done
+write "${ffc}force_fast_charge" "1"
+fi
+done
   
-  # GMS blocker 1.2 by @pedroginkgo
+# GMS blocker 1.2 by @pedroginkgo
 busybox killall -9 com.google.android.gms
 busybox killall -9 com.google.android.gms.persistent
 busybox killall -9 com.google.process.gapps
 busybox killall -9 com.google.android.gsf
 busybox killall -9 com.google.android.gsf.persistent
+vibrate_cmode
 };;
 esac
 done
+) &
 exit 0
