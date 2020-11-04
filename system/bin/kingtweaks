@@ -480,6 +480,12 @@ write "${tcp}tcp_low_latency" "1"
 fi
 done
 
+# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
+for i in $(find /sys/class/net -type l)
+do
+write "$i/tx_queue_len" "128"
+done
+
 # Set cloudflare DNS, thanks to ROM ( @github)
 if [ -a /system/etc/resolv.conf ]; then
 	mkdir -p $TMPDIR/system/etc/
@@ -1868,7 +1874,7 @@ then
 write "/sys/module/msm_performance/parameters/touchboost" "1"
 fi
 
-# TCP Congestion Control
+# Internet Tweaks
 for tcp in /proc/sys/net/ipv4/
 do
 if [[ -d "/proc/sys/net" ]]
