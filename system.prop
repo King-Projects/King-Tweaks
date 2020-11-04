@@ -5,11 +5,13 @@
 # King Tweaks Reborn
 ########################################################################################
 
+# Device Spoofing.
+ro.product.model=IN2025
+
 # Cloudflare DNS.
 net.eth0.dns1=1.1.1.1
 net.eth0.dns2=1.0.0.1
-net.dns1=1.1.1.1
-net.dns2=1.0.0.1
+net.dns2=1.1.1.1
 net.ppp0.dns1=1.1.1.1
 net.ppp0.dns2=1.0.0.1
 net.rmnet0.dns1=1.1.1.1

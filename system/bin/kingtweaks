@@ -11,8 +11,8 @@ rm $LOG
 
 # Log in white and continue (unnecessary)
 kmsg() {
-	echo -e "[-] $@" >> $LOG
-	echo -e "[-] $@"
+	echo -e "[*] `date +%Y-%m-%d.%H:%M:%S` $@" >> $LOG
+	echo -e "[*] $@"
 }
 
 write() {
@@ -40,9 +40,8 @@ write() {
 }
 
 vibrate_cmode() {
-if [ -e /sys/class/leds/vibrator/duration ] &&  [ -e /sys/class/leds/vibrator/activate ] 
-then
-write "/sys/class/leds/vibrator/duration" "400" && write "/sys/class/leds/vibrator/activate" "1"
+if [ -e /sys/class/leds/vibrator/duration ] &&  [ -e /sys/class/leds/vibrator/activate ];then
+	echo 400 > /sys/class/leds/vibrator/duration && echo 1 > /sys/class/leds/vibrator/activate
 fi
 }
 
@@ -59,14 +58,15 @@ do
 	sleep 2
 done
 
+kmsg ""
 kmsg "---------------------------------------------------------- Info --------------------------------------------------------------------------------------------"
-kmsg "                                                  🕛 Date of execution: $(date)                                                                             "
-kmsg "                                                  🔧 Device kernel: `uname -a`                                                                              "
-kmsg "                                                  🛠️ SOC: $(getprop ro.board.platform)                                                                      "
-kmsg "                                                  ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                   "
-kmsg "                                                  🅰️ndroid Version: $(getprop ro.build.version.release)                                                     "
-kmsg "                                                  📱 Device: $(getprop ro.product.odm.model)                                                                "
-kmsg "                                                  👑 KTS Version: 1.7.9                                                                                     "
+kmsg "                                            🕛 Date of execution: $(date)                                                                                   "
+kmsg "                                            🔧 Device kernel: `uname -a`                                                                                    "
+kmsg "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
+kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
+kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
+kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
+kmsg "                                            👑 KTS Version: 1.8                                                                                             "
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg ""
 
@@ -88,13 +88,13 @@ boot_run_once=true
 fi
 spectrum_mode=$(getprop persist.spectrum.profile)
 case "$spectrum_mode" in
-     # Balanced Profile
+     # Balance Profile
         "0") {
 	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg "                                           ENABLING BALANCE PROFILE...                                                                           "
+	kmsg "                                           ENABLING BALANCE PROFILE...                                                                    "
 	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-        	
-        	# Duration in nanoseconds of one scheduling period
+	
+	# Duration in nanoseconds of one scheduling period
 SCHED_PERIOD="$((1 * 1000 * 1000))"
 
 # How many tasks should we have at a maximum in one scheduling period
@@ -132,6 +132,15 @@ do
  write "${queue}read_ahead_kb" 128
  write "${queue}nr_requests" 64
 done
+
+# Reserve 90% IO bandwith for foreground tasks
+if [[ -d "/dev/blkio" ]]
+then
+write "/dev/blkio/blkio.weight" "1000"
+write "/dev/blkio/blkio.leaf_weight" "1000"
+write "/dev/blkio/background/blkio.weight" "100"
+write "/dev/blkio/background/blkio.leaf_weight" "100"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                         TWEAKING CPU...                                                                                         "
@@ -593,13 +602,17 @@ kmsg "--------------------------------------------------------------------------
 
 # Touch calibration
 panel=$(cat /sys/class/graphics/fb0/modes)
-  if [[ "${panel:5:1}" == "x" ]]
-  then
-    panel=${panel:2:3}
-  else
-    panel=${panel:2:4}
-  fi
+if [[ "${panel:5:1}" == "x" ]]
+then
+panel=${panel:2:3}
+else
+panel=${panel:2:4}
+fi
   
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING LPM...                                                                                        "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Enable LPM in balanced / battery profile
 for lpm in /sys/module/lpm_levels/parameters/
 do
@@ -608,14 +621,6 @@ then
 write "${lpm}sleep_disabled" "N"
 fi
 done
-
-# Reserve 90% IO bandwith for foreground tasks
-if [[ -d "/dev/blkio" ]]
-then
-write "/dev/blkio/blkio.weight" "1000"
-write "/dev/blkio/blkio.leaf_weight" "1000"
-write "/dev/blkio/background/blkio.weight" "100"
-write "/dev/blkio/background/blkio.leaf_weight" "100"
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          ENABLING FORCE FAST CHARGING...                                                                        "
@@ -641,8 +646,9 @@ busybox killall -9 com.google.process.gapps
 busybox killall -9 com.google.android.gsf
 busybox killall -9 com.google.android.gsf.persistent
 
-kmsg "END OF EXECUTION: $(date)"
-kmsg "PROFILE APPLIED WITH SUCCESS, ENJOY!"
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                     BALANCE PROFILE APPLIED WITH SUCCESS.                                                                       "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
     # Performance Profile
@@ -710,6 +716,15 @@ do
  write "${queue}read_ahead_kb" 128
  write "${queue}nr_requests" 64
 done
+
+# Reserve 90% IO bandwith for foreground tasks
+if [[ -d "/dev/blkio" ]]
+then
+write "/dev/blkio/blkio.weight" "1000"
+write "/dev/blkio/blkio.leaf_weight" "1000"
+write "/dev/blkio/background/blkio.weight" "100"
+write "/dev/blkio/background/blkio.leaf_weight" "100"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                         TWEAKING CPU...                                                                                         "
@@ -1174,6 +1189,10 @@ panel=$(cat /sys/class/graphics/fb0/modes)
     panel=${panel:2:4}
   fi
 
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING LPM...                                                                                       "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+  
 # Disable LPM in gaming profile / performance profile
 for lpm in /sys/module/lpm_levels/parameters/
 do
@@ -1207,8 +1226,9 @@ busybox killall -9 com.google.process.gapps
 busybox killall -9 com.google.android.gsf
 busybox killall -9 com.google.android.gsf.persistent
 
-kmsg "END OF EXECUTION: $(date)"
-kmsg "PROFILE APPLIED WITH SUCCESS, ENJOY!"
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                     PERFORMANCE PROFILE APPLIED WITH SUCCESS.                                                                   "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
     # Battery Profile
@@ -1255,6 +1275,15 @@ do
  write "${queue}read_ahead_kb" 128
  write "${queue}nr_requests" 64
 done
+
+# Reserve 90% IO bandwith for foreground tasks
+if [[ -d "/dev/blkio" ]]
+then
+write "/dev/blkio/blkio.weight" "1000"
+write "/dev/blkio/blkio.leaf_weight" "1000"
+write "/dev/blkio/background/blkio.weight" "100"
+write "/dev/blkio/background/blkio.leaf_weight" "100"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                         TWEAKING CPU...                                                                                         "
@@ -1500,6 +1529,10 @@ then
 write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
 fi
 
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Scheduler features.
 for sched in /sys/kernel/debug/
 do
@@ -1733,6 +1766,10 @@ write "${bs}enabled" "Y"
 fi
 done
 
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING LPM...                                                                                        "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Enable LPM in battery / balanced profile
 for lpm in /sys/module/lpm_levels/parameters/
 do
@@ -1762,8 +1799,9 @@ busybox killall -9 com.google.process.gapps
 busybox killall -9 com.google.android.gsf
 busybox killall -9 com.google.android.gsf.persistent
 
-kmsg "END OF EXECUTION: $(date)"
-kmsg "PROFILE APPLIED WITH SUCCESS, ENJOY!"
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                     BATTERY PROFILE APPLIED WITH SUCCESS.                                                                       "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
     # Gaming Profile
@@ -1831,6 +1869,15 @@ do
  write "${queue}read_ahead_kb" 128
  write "${queue}nr_requests" 64
 done
+
+# Reserve 90% IO bandwith for foreground tasks
+if [[ -d "/dev/blkio" ]]
+then
+write "/dev/blkio/blkio.weight" "1000"
+write "/dev/blkio/blkio.leaf_weight" "1000"
+write "/dev/blkio/background/blkio.weight" "100"
+write "/dev/blkio/background/blkio.leaf_weight" "100"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                         TWEAKING CPU...                                                                                         "
@@ -2289,11 +2336,15 @@ kmsg "--------------------------------------------------------------------------
 
 # Touch calibration
 panel=$(cat /sys/class/graphics/fb0/modes)
-  if [ "${panel:5:1}" == "x" ]; then
-    panel=${panel:2:3}
-  else
-    panel=${panel:2:4}
-  fi
+if [ "${panel:5:1}" == "x" ]; then
+panel=${panel:2:3}
+else
+panel=${panel:2:4}
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING LPM...                                                                                       "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable LPM in gaming profile / performance profile
 for lpm in /sys/module/lpm_levels/parameters/
@@ -2328,10 +2379,12 @@ busybox killall -9 com.google.process.gapps
 busybox killall -9 com.google.android.gsf
 busybox killall -9 com.google.android.gsf.persistent
 
-kmsg "END OF EXECUTION: $(date)"
-kmsg "PROFILE APPLIED WITH SUCCESS, ENJOY!"
+kmsg "------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                     GAMING PROFILE APPLIED WITH SUCCESS.                                                                       "
+kmsg "------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
 esac
 done
+) &
 exit 0

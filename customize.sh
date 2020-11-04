@@ -152,13 +152,13 @@ key_selector() {
 }
 
 ui_print ""
-ui_print "[*] Do you wanna install DRM L1 Patch? (Enable 1080p on Netflix)"
+ui_print "[*] Do you wanna install DRM L1 Patch? (Enable 1080p on Netflix) (DON'T USE IF YOU ALREADY HAVE DRM L1 WIDEVINE)."
 ui_print " Volume + = Yes"
 ui_print " Volume - = No"
 ui_print ""
 version="$(key_selector)"
 
-ui_print "[!] Your choice: $version"
+ui_print "[*] Your choice: $version"
 ui_print ""
 
 if [ "$version" == "Yes" ]
@@ -168,7 +168,7 @@ sleep 2
 mv $MODPATH/vendor $MODPATH/system
 
 else [ "$version" == "No" ]
-ui_print "[!] Aborting DRM L1 Widevine patch installation..."
+ui_print "[*] Aborting DRM L1 Widevine patch installation..."
 sleep 2
 busybox rm -rf $MODPATH/vendor
 fi
@@ -178,7 +178,9 @@ fstrim -v /system
 fstrim -v /data
 fstrim -v /cache
 ui_print ""
-ui_print "[*] You can access logs by writing kingtweaks in a root terminal."
+ui_print "[*] Logs are stored in your internal storage/KTS"
+sleep 1
+ui_print "You still can access it by writing kingtweaks in a root terminal (not recommended)."
 sleep 1
 ui_print ""
 echo "[*] Now, reboot."
