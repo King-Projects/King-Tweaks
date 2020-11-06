@@ -1,9 +1,6 @@
 #!/system/bin/sh
 # Written by Draco (tytydraco @github).
 # Modified by Pedrozzz (pedroginkgo @telegram).
-# Enable cloudflare DNS by ROM (xerta555 @github).
-# MMT Extended by Zackptg5 @ XDA
-# Thanks to iamlazy123 @ github by his lazy tweaks project.
 
 mkdir /sdcard/KTS
 LOG=/sdcard/KTS/KTS.log
@@ -12,7 +9,7 @@ rm $LOG
 # Log in white and continue (unnecessary)
 kmsg() {
 	echo -e "[*] `date +%Y-%m-%d.%H:%M:%S` $@" >> $LOG
-	echo -e "[*] $@"
+	echo -e "[*] `date +%Y-%m-%d.%H:%M:%S` $@"
 }
 
 write() {
@@ -40,8 +37,9 @@ write() {
 }
 
 vibrate_cmode() {
-if [ -e /sys/class/leds/vibrator/duration ] &&  [ -e /sys/class/leds/vibrator/activate ];then
-	echo 400 > /sys/class/leds/vibrator/duration && echo 1 > /sys/class/leds/vibrator/activate
+if [ -e /sys/class/leds/vibrator/duration ] &&  [ -e /sys/class/leds/vibrator/activate ]
+then
+echo 500 > /sys/class/leds/vibrator/duration && echo 1 > /sys/class/leds/vibrator/activate
 fi
 }
 
@@ -51,24 +49,6 @@ then
 	kmsg "No root permissions. Exiting."
 	exit 1
 fi
-
-# Wait 60s into boot before applying changes
-while [[ `cat /proc/uptime | awk '{print $1}' | awk -F. '{print $1}'` -lt 60 ]]
-do
-	sleep 2
-done
-
-kmsg ""
-kmsg "---------------------------------------------------------- Info --------------------------------------------------------------------------------------------"
-kmsg "                                            🕛 Date of execution: $(date)                                                                                   "
-kmsg "                                            🔧 Device kernel: `uname -a`                                                                                    "
-kmsg "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
-kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
-kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
-kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8                                                                                             "
-kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg ""
 
 setprop persist.spectrum.kernel "KTS Reborn"
 setprop spectrum.support "1"
@@ -90,8 +70,20 @@ spectrum_mode=$(getprop persist.spectrum.profile)
 case "$spectrum_mode" in
      # Balance Profile
         "0") {
+        	kmsg ""
+kmsg "---------------------------------------------------------- Info --------------------------------------------------------------------------------------------"
+kmsg "                                            🕛 Date of execution: $(date)                                                                                   "
+kmsg "                                            🔧 Device kernel: `uname -a`                                                                                    "
+kmsg "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
+kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
+kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
+kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
+kmsg "                                            👑 KTS Version: 1.8.1                                                                                           "
+kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg ""
+
 	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg "                                           ENABLING BALANCE PROFILE...                                                                    "
+	kmsg "                                        ENABLING BALANCE PROFILE...                                                                              "
 	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	
 	# Duration in nanoseconds of one scheduling period
@@ -174,6 +166,11 @@ write "${cpu}interactive/go_hispeed_load" "85"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
+
+write "/sys/devices/system/cpu/cpu1/online" "1"
+write "/sys/devices/system/cpu/cpu2/online" "1"
+write "/sys/devices/system/cpu/cpu5/online" "1"
+write "/sys/devices/system/cpu/cpu6/online" "1"
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          TWEAKING GPU...                                                                                        "
@@ -335,28 +332,18 @@ if [[ -d "/dev/stune" ]]
 then
 write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
-write "${st}/background/schedtune.colocate" "0"
-write "${st}/background/schedtune.sched_boost" "0"
 
 write "${st}/foreground/schedtune.boost" "1"
 write "${st}/foreground/schedtune.prefer_idle" "1"
-write "${st}/foreground/schedtune.colocate" "0"
-write "${st}/foreground/schedtune.sched_boost" "0"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
-write "${st}/rt/schedtune.colocate" "0"
-write "${st}/rt/schedtune.sched_boost" "0"
 
-write "${st}/top-app/schedtune.boost" "1"
+write "${st}/top-app/schedtune.boost" "5"
 write "${st}/top-app/schedtune.prefer_idle" "1"
-write "${st}/top-app/schedtune.colocate" "0"
-write "${st}/top-app/schedtune.sched_boost" "1"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
-write "${st}/schedtune.colocate" "0"
-write "${st}/schedtune.sched_boost" "0"
 fi
 done
 
@@ -401,7 +388,7 @@ fi
 done
  
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING ONEPLUS CHAIN                                                                                "
+kmsg "                                          DISABLING ONEPLUS CHAIN...                                                                             "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # OP Chain disable.
@@ -443,10 +430,10 @@ kmsg "--------------------------------------------------------------------------
 kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Set min clock in balance profile.
+# Set min and max clocks.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
-if [[ -e "/sys/devices/system/cpu/cpufreq/policy*/scaling_min_freq" ]]
+if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "20000000"
@@ -583,18 +570,6 @@ do
 write "$i/tx_queue_len" "128"
 done
 
-# Set cloudflare DNS, thanks to ROM ( @github)
-if [ -a /system/etc/resolv.conf ]; then
-	mkdir -p $TMPDIR/system/etc/
-	printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" >> $TMPDIR/system/etc/resolv.conf
-	touch $TMPDIR/auto_mount
-fi
-
-iptables -t nat -A OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
-iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
-iptables -t nat -I OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
-iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
-
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          CALIBRATING TOUCH...                                                                                   "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -652,8 +627,20 @@ vibrate_cmode
 };;
     # Performance Profile
         "1") {
+        	kmsg ""
+kmsg "---------------------------------------------------------- Info --------------------------------------------------------------------------------------------"
+kmsg "                                            🕛 Date of execution: $(date)                                                                                   "
+kmsg "                                            🔧 Device kernel: `uname -a`                                                                                    "
+kmsg "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
+kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
+kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
+kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
+kmsg "                                            👑 KTS Version: 1.8.1                                                                                           "
+kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg ""
+
 	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg "                                           ENABLING PERFORMANCE PROFILE...                                                                       "
+	kmsg "                                    ENABLING PERFORMANCE PROFILE...                                                                              "
 	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
        
         	# Duration in nanoseconds of one scheduling period
@@ -672,6 +659,10 @@ kmsg "--------------------------------------------------------------------------
 # Disable throttling and enable perfd.
 stop thermal-engine
 start perfd
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          TWEAKING CPU INPUT BOOST...                                                                            "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Caf CPU Boost
 for caf in /sys/module/cpu_boost/parameters/
@@ -738,7 +729,7 @@ then
 write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "0"
+write "${cpu}schedutil/iowait_boost_enable" "1"
 write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
@@ -759,6 +750,11 @@ write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 	
+write "/sys/devices/system/cpu/cpu1/online" "1"
+write "/sys/devices/system/cpu/cpu2/online" "1"
+write "/sys/devices/system/cpu/cpu5/online" "1"
+write "/sys/devices/system/cpu/cpu6/online" "1"
+
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          TWEAKING GPU...                                                                                        "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -774,7 +770,7 @@ write "${gpu}devfreq/adrenoboost" "0"
 write "${gpu}force_no_nap" "0"
 write "${gpu}bus_split" "1"
 write "${gpu}devfreq/min_freq" "100000000"
-write "${gpu}devfreq/max_freq" "745000000"
+write "${gpu}devfreq/max_freq" "950000000"
 write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
@@ -917,30 +913,20 @@ for st in /dev/stune
 do
 if [[ -d "/dev/stune" ]]
 then
-write "${st}/background/schedtune.boost" "0"
+write "${st}/background/schedtune.boost" "1"
 write "${st}/background/schedtune.prefer_idle" "0"
-write "${st}/background/schedtune.colocate" "0"
-write "${st}/background/schedtune.sched_boost" "0"
 
 write "${st}/foreground/schedtune.boost" "10"
 write "${st}/foreground/schedtune.prefer_idle" "1"
-write "${st}/foreground/schedtune.colocate" "0"
-write "${st}/foreground/schedtune.sched_boost" "1"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
-write "${st}/rt/schedtune.colocate" "0"
-write "${st}/rt/schedtune.sched_boost" "0"
 
 write "${st}/top-app/schedtune.boost" "40"
 write "${st}/top-app/schedtune.prefer_idle" "1"
-write "${st}/top-app/schedtune.colocate" "0"
-write "${st}/top-app/schedtune.sched_boost" "1"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
-write "${st}/schedtune.colocate" "0"
-write "${st}/schedtune.sched_boost" "0"
 fi
 done
 
@@ -963,12 +949,14 @@ kmsg "                                          ENABLING DYNAMIC FSYNC...       
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
-chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/dyn_fsync_active
+# Enable dynamic_fsync.
 if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
 then
+chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/dyn_fsync_active
 write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
 fi
+
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
@@ -986,7 +974,7 @@ fi
 done
 	
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING ONEPLUS CHAIN                                                                                "
+kmsg "                                          DISABLING ONEPLUS CHAIN...                                                                             "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # OP Tweaks
@@ -1028,10 +1016,10 @@ kmsg "--------------------------------------------------------------------------
 kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Set max freq in performance / gaming profile.
+# Set max clocks in gaming / performance profile.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
-if [[ -e "/sys/devices/system/cpu/cpufreq/policy*/scaling_min_freq" ]]
+if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "20000000"
 write "${minclk}scaling_max_freq" "20000000"
@@ -1162,18 +1150,6 @@ write "${tcp}tcp_low_latency" "1"
 fi
 done
 
-# Set cloudflare DNS.
-if [ -a /system/etc/resolv.conf ]; then
-	mkdir -p $TMPDIR/system/etc/
-	printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" >> $TMPDIR/system/etc/resolv.conf
-	touch $TMPDIR/auto_mount
-fi
-
-iptables -t nat -A OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
-iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
-iptables -t nat -I OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
-iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
-
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          CALIBRATING TOUCH...                                                                                   "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1230,11 +1206,23 @@ vibrate_cmode
 };;
     # Battery Profile
         "2") {
+        	kmsg ""
+kmsg "---------------------------------------------------------- Info --------------------------------------------------------------------------------------------"
+kmsg "                                            🕛 Date of execution: $(date)                                                                                   "
+kmsg "                                            🔧 Device kernel: `uname -a`                                                                                    "
+kmsg "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
+kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
+kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
+kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
+kmsg "                                            👑 KTS Version: 1.8.1                                                                                           "
+kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg ""
+
 	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg "                                           ENABLING BATTERY PROFILE...                                                                           "
+	kmsg "                                        ENABLING BATTERY PROFILE...                                                                              "
 	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
- 
-        	# Duration in nanoseconds of one scheduling period
+	
+	# Duration in nanoseconds of one scheduling period
 SCHED_PERIOD="$((1 * 1000 * 1000))"
 
 # How many tasks should we have at a maximum in one scheduling period
@@ -1242,7 +1230,10 @@ SCHED_TASKS="8"
 
 # Maximum unsigned integer size in C
 UINT_MAX="4294967295"
-        	
+
+# Variable to battery %
+percentage=$(cat /sys/class/power_supply/battery/capacity)
+
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1315,6 +1306,20 @@ write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 	
+if [[ $percentage -le "20" ]]
+then
+write "/sys/devices/system/cpu/cpu1/online" "0"
+write "/sys/devices/system/cpu/cpu2/online" "0"
+write "/sys/devices/system/cpu/cpu5/online" "0"
+write "/sys/devices/system/cpu/cpu6/online" "0"
+
+else [[ $percentage -ge "20" ]]
+write "/sys/devices/system/cpu/cpu1/online" "1"
+write "/sys/devices/system/cpu/cpu2/online" "1"
+write "/sys/devices/system/cpu/cpu5/online" "1"
+write "/sys/devices/system/cpu/cpu6/online" "1"
+fi
+
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          TWEAKING GPU...                                                                                        "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1330,11 +1335,22 @@ write "${gpu}devfreq/adrenoboost" "0"
 write "${gpu}force_no_nap" "0"
 write "${gpu}bus_split" "1"
 write "${gpu}devfreq/min_freq" "100000000"
-write "${gpu}devfreq/max_freq" "465000000"
 write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
+fi
+done
+
+# Set clock to 465 mhz in battery profile if battery < than 20% and 600 mhz if > 20%
+for gpu in /sys/class/kgsl/kgsl-3d0/
+do
+if [[ $percentage -le "50" && -e "${gpu}devfreq/max_freq" ]]
+then
+write "${gpu}devfreq/max_freq" "465000000"
+
+else [[ $percentage -ge "50" && -e "${gpu}devfreq/max_freq" ]]
+write "${gpu}devfreq/max_freq" "600000000"
 fi
 done
 
@@ -1475,28 +1491,18 @@ if [[ -d "/dev/stune" ]]
 then
 write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
-write "${st}/background/schedtune.colocate" "0"
-write "${st}/background/schedtune.sched_boost" "0"
 
-write "${st}/foreground/schedtune.boost" "1"
+write "${st}/foreground/schedtune.boost" "0"
 write "${st}/foreground/schedtune.prefer_idle" "0"
-write "${st}/foreground/schedtune.colocate" "0"
-write "${st}/foreground/schedtune.sched_boost" "0"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
-write "${st}/rt/schedtune.colocate" "0"
-write "${st}/rt/schedtune.sched_boost" "0"
 
 write "${st}/top-app/schedtune.boost" "1"
 write "${st}/top-app/schedtune.prefer_idle" "0"
-write "${st}/top-app/schedtune.colocate" "0"
-write "${st}/top-app/schedtune.sched_boost" "1"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
-write "${st}/schedtune.colocate" "0"
-write "${st}/schedtune.sched_boost" "0"
 fi
 done
 
@@ -1519,10 +1525,10 @@ kmsg "                                          ENABLING DYNAMIC FSYNC...       
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
-chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/dyn_fsync_active
 if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
 then
+chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/dyn_fsync_active
 write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
 fi
 
@@ -1542,7 +1548,7 @@ fi
 done
 	
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING ONEPLUS CHAIN                                                                                "
+kmsg "                                          DISABLING ONEPLUS CHAIN...                                                                             "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # OP Tweaks
@@ -1553,7 +1559,7 @@ then
 write "${opc}chain_on" "0"
 fi
 done
-	
+
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          TWEAKING KERNEL SETTINGS...                                                                            "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1584,11 +1590,15 @@ kmsg "--------------------------------------------------------------------------
 kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Set min clock in balance / battery profile.
+# Set min and max clocks.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
-if [[ -e "/sys/devices/system/cpu/cpufreq/policy*/scaling_min_freq" ]]
+if [[ $percentage -le "20" && -e "${minclk}scaling_min_freq" ]]
 then
+write "${minclk}scaling_min_freq" "300000"
+write "${minclk}scaling_max_freq" "20000000"
+
+else [[ $percentage -ge "20" && -e "${minclk}scaling_min_freq" ]]
 write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "1300000"
 fi
@@ -1724,18 +1734,6 @@ do
 write "$i/tx_queue_len" "128"
 done
 
-# Set cloudflare DNS. 
-if [ -a /system/etc/resolv.conf ]; then
-	mkdir -p $TMPDIR/system/etc/
-	printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" >> $TMPDIR/system/etc/resolv.conf
-	touch $TMPDIR/auto_mount
-fi
-
-iptables -t nat -A OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
-iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
-iptables -t nat -I OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
-iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
-
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          CALIBRATING TOUCH...                                                                                   "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1802,8 +1800,20 @@ vibrate_cmode
 };;
     # Gaming Profile
         "3") {
+        	kmsg ""
+kmsg "---------------------------------------------------------- Info --------------------------------------------------------------------------------------------"
+kmsg "                                            🕛 Date of execution: $(date)                                                                                   "
+kmsg "                                            🔧 Device kernel: `uname -a`                                                                                    "
+kmsg "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
+kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
+kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
+kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
+kmsg "                                            👑 KTS Version: 1.8.1                                                                                           "
+kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg ""
+
 	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg "                                                ENABLING GAMING PROFILE...                                                                       "
+	kmsg "                                           ENABLING GAMING PROFILE...                                                                            "
 	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
        
         	# Duration in nanoseconds of one scheduling period
@@ -1822,6 +1832,10 @@ kmsg "--------------------------------------------------------------------------
 # Disable throttling and perfd.
 stop thermal-engine
 stop perfd
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          TWEAKING CPU INPUT BOOST...                                                                            "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Caf CPU Boost
 for caf in /sys/module/cpu_boost/parameters/
@@ -1888,7 +1902,7 @@ then
 write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "0"
+write "${cpu}schedutil/iowait_boost_enable" "1"
 write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
@@ -1909,6 +1923,11 @@ write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 	
+write "/sys/devices/system/cpu/cpu1/online" "1"
+write "/sys/devices/system/cpu/cpu2/online" "1"
+write "/sys/devices/system/cpu/cpu5/online" "1"
+write "/sys/devices/system/cpu/cpu6/online" "1"
+
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          TWEAKING GPU...                                                                                        "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1943,7 +1962,7 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING LMK...                                                                                        "
+kmsg "                                             TWEAKING LMK...                                                                                     "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Low Memory Killer Tweaks.
@@ -2059,7 +2078,7 @@ lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
+kmsg "                                            APPLYING SCHEDTUNE TWEAKS...                                                                         "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Schedtune Tweaks
@@ -2067,35 +2086,25 @@ for st in /dev/stune
 do
 if [[ -d "/dev/stune" ]]
 then
-write "${st}/background/schedtune.boost" "0"
+write "${st}/background/schedtune.boost" "5"
 write "${st}/background/schedtune.prefer_idle" "0"
-write "${st}/background/schedtune.colocate" "0"
-write "${st}/background/schedtune.sched_boost" "0"
 
 write "${st}/foreground/schedtune.boost" "40"
 write "${st}/foreground/schedtune.prefer_idle" "1"
-write "${st}/foreground/schedtune.colocate" "0"
-write "${st}/foreground/schedtune.sched_boost" "1"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
-write "${st}/rt/schedtune.colocate" "0"
-write "${st}/rt/schedtune.sched_boost" "0"
 
 write "${st}/top-app/schedtune.boost" "40"
 write "${st}/top-app/schedtune.prefer_idle" "1"
-write "${st}/top-app/schedtune.colocate" "0"
-write "${st}/top-app/schedtune.sched_boost" "1"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
-write "${st}/schedtune.colocate" "0"
-write "${st}/schedtune.sched_boost" "0"
 fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING FS TWEAKS...                                                                                  "
+kmsg "                                            APPLYING FS TWEAKS...                                                                                "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # FS Tweaks.
@@ -2113,10 +2122,10 @@ kmsg "                                          ENABLING DYNAMIC FSYNC...       
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
-chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/dyn_fsync_active
 if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
 then
+chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/dyn_fsync_active
 write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
 fi
 
@@ -2136,7 +2145,7 @@ fi
 done
 	
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING ONEPLUS CHAIN                                                                                "
+kmsg "                                          DISABLING ONEPLUS CHAIN...                                                                             "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # OP Tweaks
@@ -2178,10 +2187,10 @@ kmsg "--------------------------------------------------------------------------
 kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Set max freq in performance / gaming profile.
+# Set max clocks in gaming / performance profile.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
-if [[ -e "/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq" ]]
+if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "20000000"
 write "${minclk}scaling_max_freq" "20000000"
@@ -2312,18 +2321,6 @@ write "${tcp}tcp_low_latency" "1"
 fi
 done
 
-# Set cloudflare DNS.
-if [ -a /system/etc/resolv.conf ]; then
-	mkdir -p $TMPDIR/system/etc/
-	printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" >> $TMPDIR/system/etc/resolv.conf
-	touch $TMPDIR/auto_mount
-fi
-
-iptables -t nat -A OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
-iptables -t nat -A OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
-iptables -t nat -I OUTPUT -p tcp --dport 53 -j DNAT --to-destination 1.1.1.1:53
-iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination 1.0.0.1:53
-
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          CALIBRATING TOUCH...                                                                                   "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2350,7 +2347,7 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING FORCE FAST CHARGING...                                                                        "
+kmsg "                                         ENABLING FORCE FAST CHARGING...                                                                         "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable Fast Charging Rate
@@ -2380,5 +2377,4 @@ vibrate_cmode
 };;
 esac
 done
-) &
 exit 0
