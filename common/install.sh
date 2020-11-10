@@ -61,10 +61,6 @@ sed -i '/ro.product.model=/s/.*/ro.product.model=SO-52A/' $MODPATH/system.prop
 elif [[ "$FCTEXTAD1" == "Black Desert Mobile Max Settings" ]]
 then
 sed -i '/ro.product.model=/s/.*/ro.product.model=SM-G975U/' $MODPATH/system.prop
-
-elif [[ "$FCTEXTAD1" == "None" ]]
-then
-busybox rm $MODPATH/system.prop
 fi
 
 ui_print "[*] Done!"

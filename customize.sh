@@ -114,7 +114,6 @@ loc=/data/adb/modules
 	fi
 	
 set_permissions() {
-	chmod 0755 $MODPATH/system/$b/*
   set_perm_recursive $MODPATH/system/bin root root 0777 0755
 }
 

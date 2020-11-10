@@ -1,8 +1,7 @@
 #!/system/bin/sh
 # Written by Draco (tytydraco @github).
 # Modified by pedrozzz (pedroginkgo @telegram).
-# Enable cloudflare DNS by ROM (xerta555 @github).
-# MMT Extended by Zackptg5 @ XDA
+# Wait for boot to finish completely
 
 wait_until_login() {
     # we doesn't have the permission to rw "/sdcard" before the user unlocks the screen
@@ -21,7 +20,7 @@ wait_until_login() {
 }
 
 wait_until_login
-sleep 60
+sleep 30
 
-# Setup Tweaks
+# Setup tweaks
 kingtweaks

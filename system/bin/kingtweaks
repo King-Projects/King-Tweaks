@@ -8,8 +8,8 @@ rm $LOG
 
 # Log in white and continue (unnecessary)
 kmsg() {
-	echo -e "[*] `date +%Y-%m-%d.%H:%M:%S` $@" >> $LOG
-	echo -e "[*] `date +%Y-%m-%d.%H:%M:%S` $@"
+	echo -e "`date +%Y-%m-%d_%H:%M:%S` [*] $@" >> $LOG
+	echo -e "`date +%Y-%m-%d_%H:%M:%S` [*] $@"
 }
 
 write() {
@@ -110,19 +110,19 @@ kmsg "--------------------------------------------------------------------------
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
- avail_scheds="$(cat "${queue}scheduler")"
- for sched in zen anxiety cfq noop kyber bfq mq-deadline none
- do
-  if [[ "$avail_scheds" == *"$sched"* ]]
-  then
-   write "${queue}scheduler" "$sched"
-   break
-  fi
- done
- write "${queue}add_random" 0
- write "${queue}iostats" 0
- write "${queue}read_ahead_kb" 128
- write "${queue}nr_requests" 64
+avail_scheds="$(cat "${queue}scheduler")"
+for sched in cfq noop zen anxiety deadline kyber bfq mq-deadline none
+do
+if [[ "$avail_scheds" == *"$sched"* ]]
+then
+write "${queue}scheduler" "$sched"
+break
+fi
+done 
+write "${queue}add_random" 0
+write "${queue}iostats" 0
+write "${queue}read_ahead_kb" 128
+write "${queue}nr_requests" 64
 done
 
 # Reserve 90% IO bandwith for foreground tasks
@@ -192,6 +192,8 @@ write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
+write "${gpu}snapshot/snapshot_crashdumper" "0"
+write "${gpu}devfreq/polling_interval" "10"
 fi
 done
 
@@ -215,7 +217,7 @@ do
 if [[ -d "/sys/module/lowmemorykiller" ]]
 then
 write "${lmk}enable_lmk" "1"
-write "${lmk}enable_adaptive_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "0"
 write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
 fi
 done
@@ -384,6 +386,8 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
+write "${sched}sched_features" "GENTLE_FAIR_SLEEPERS"
+write "${sched}sched_features" "WAKEUP_PREEMPTION"
 fi
 done
  
@@ -455,8 +459,8 @@ write "${cs}camera-daemon/cpus" "0-7"
 write "${cs}vr/cpus" "0-7"
 write "${cs}top-app/cpus" "0-7"
 write "${cs}audio-app/cpus" "1-2"
-write "${cs}background/cpus" "0-3"
-write "${cs}foreground/cpus" "0-7"
+write "${cs}background/cpus" "0-2"
+write "${cs}foreground/cpus" "0-3,5-7"
 fi
 done
 
@@ -546,7 +550,7 @@ do
 if [[ -d "/proc/sys/net" ]]
 then
 write "${tcp}ip_no_pmtu_disc" "0"
-write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_ecn" "2"
 write "${tcp}tcp_timestamps" "0"
 write "${tcp}route.flush" "1"
 write "${tcp}tcp_rfc1337" "1"
@@ -558,8 +562,8 @@ write "${tcp}tcp_tw_recycle" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
-write "${tcp}tcp_keepalive_intvl" "30"
-write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_keepalive_intvl" "60"
+write "${tcp}tcp_fin_timeout" "60"
 write "${tcp}tcp_low_latency" "1"
 fi
 done
@@ -567,7 +571,7 @@ done
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
 for i in $(find /sys/class/net -type l)
 do
-write "$i/tx_queue_len" "128"
+write "$i/tx_queue_len" "256"
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -582,6 +586,19 @@ panel=${panel:2:3}
 else
 panel=${panel:2:4}
 fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING BATTERY SAVER...                                                                              "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable battery saver
+for bs in /sys/module/battery_saver/parameters/
+do
+if [[ -d /sys/module/battery_saver ]]
+then
+write "${bs}enabled" "Y"
+fi
+done
   
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          ENABLING LPM...                                                                                        "
@@ -692,19 +709,19 @@ kmsg "--------------------------------------------------------------------------
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
- avail_scheds="$(cat "${queue}scheduler")"
- for sched in zen anxiety cfq noop kyber bfq mq-deadline none
- do
-  if [[ "$avail_scheds" == *"$sched"* ]]
-  then
-   write "${queue}scheduler" "$sched"
-   break
-  fi
- done
- write "${queue}add_random" 0
- write "${queue}iostats" 0
- write "${queue}read_ahead_kb" 128
- write "${queue}nr_requests" 64
+avail_scheds="$(cat "${queue}scheduler")"
+for sched in cfq noop zen anxiety deadline kyber bfq mq-deadline none
+do
+if [[ "$avail_scheds" == *"$sched"* ]]
+then
+write "${queue}scheduler" "$sched"
+break
+fi
+done
+write "${queue}add_random" 0
+write "${queue}iostats" 0
+write "${queue}read_ahead_kb" 128
+write "${queue}nr_requests" 64
 done
 
 # Reserve 90% IO bandwith for foreground tasks
@@ -775,6 +792,8 @@ write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
+write "${gpu}snapshot/snapshot_crashdumper" "0"
+write "${gpu}devfreq/polling_interval" "10"
 fi
 done
 
@@ -798,7 +817,7 @@ do
 if [[ -d "/sys/module/lowmemorykiller" ]]
 then
 write "${lmk}enable_lmk" "1"
-write "${lmk}enable_adaptive_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "0"
 write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
 fi
 done
@@ -916,7 +935,7 @@ then
 write "${st}/background/schedtune.boost" "1"
 write "${st}/background/schedtune.prefer_idle" "0"
 
-write "${st}/foreground/schedtune.boost" "10"
+write "${st}/foreground/schedtune.boost" "40"
 write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
@@ -970,6 +989,7 @@ then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+write "${sched}sched_features" "WAKEUP_PREEMPTION"
 fi
 done
 	
@@ -1041,8 +1061,8 @@ write "${cs}camera-daemon/cpus" "0-7"
 write "${cs}vr/cpus" "0-7"
 write "${cs}top-app/cpus" "0-7"
 write "${cs}audio-app/cpus" "1-2"
-write "${cs}background/cpus" "0-3"
-write "${cs}foreground/cpus" "0-7"
+write "${cs}background/cpus" "0-1"
+write "${cs}foreground/cpus" "0-3,6-7"
 fi
 done
 
@@ -1132,7 +1152,7 @@ do
 if [[ -d "/proc/sys/net" ]]
 then
 write "${tcp}ip_no_pmtu_disc" "0"
-write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_ecn" "2"
 write "${tcp}tcp_timestamps" "0"
 write "${tcp}route.flush" "1"
 write "${tcp}tcp_rfc1337" "1"
@@ -1144,10 +1164,16 @@ write "${tcp}tcp_tw_recycle" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
-write "${tcp}tcp_keepalive_intvl" "30"
-write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_keepalive_intvl" "60"
+write "${tcp}tcp_fin_timeout" "60"
 write "${tcp}tcp_low_latency" "1"
 fi
+done
+
+# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
+for i in $(find /sys/class/net -type l)
+do
+write "$i/tx_queue_len" "256"
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1156,11 +1182,24 @@ kmsg "--------------------------------------------------------------------------
 
 # Touch calibration
 panel=$(cat /sys/class/graphics/fb0/modes)
-  if [ "${panel:5:1}" == "x" ]; then
-    panel=${panel:2:3}
-  else
-    panel=${panel:2:4}
-  fi
+if [ "${panel:5:1}" == "x" ]; then
+panel=${panel:2:3}
+else
+panel=${panel:2:4}
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING BATTERY SAVER...                                                                             "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable battery saver
+for bs in /sys/module/battery_saver/parameters/
+do
+if [[ -d /sys/module/battery_saver ]]
+then
+write "${bs}enabled" "N"
+fi
+done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          DISABLING LPM...                                                                                       "
@@ -1249,19 +1288,19 @@ kmsg "--------------------------------------------------------------------------
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
- avail_scheds="$(cat "${queue}scheduler")"
- for sched in cfq noop zen anxiety fiops sio maple tripndroid kyber bfq mq-deadline none
- do
-  if [[ "$avail_scheds" == *"$sched"* ]]
-  then
-   write "${queue}scheduler" "$sched"
-   break
-  fi
- done
- write "${queue}add_random" 0
- write "${queue}iostats" 0
- write "${queue}read_ahead_kb" 128
- write "${queue}nr_requests" 64
+avail_scheds="$(cat "${queue}scheduler")"
+for sched in cfq noop zen anxiety deadline kyber bfq mq-deadline none
+do
+if [[ "$avail_scheds" == *"$sched"* ]]
+then
+write "${queue}scheduler" "$sched"
+break
+fi
+done
+write "${queue}add_random" 0
+write "${queue}iostats" 0
+write "${queue}read_ahead_kb" 128
+write "${queue}nr_requests" 64
 done
 
 # Reserve 90% IO bandwith for foreground tasks
@@ -1339,10 +1378,12 @@ write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
+write "${gpu}snapshot/snapshot_crashdumper" "0"
+write "${gpu}devfreq/polling_interval" "36"
 fi
 done
 
-# Set clock to 465 mhz in battery profile if battery < than 20% and 600 mhz if > 20%
+# Set max clock to 465 mhz in battery profile if battery < than 20% and 600 mhz if > 20%.
 for gpu in /sys/class/kgsl/kgsl-3d0/
 do
 if [[ $percentage -le "50" && -e "${gpu}devfreq/max_freq" ]]
@@ -1374,7 +1415,7 @@ do
 if [[ -d "/sys/module/lowmemorykiller" ]]
 then
 write "${lmk}enable_lmk" "1"
-write "${lmk}enable_adaptive_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "0"
 write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
 fi
 done
@@ -1492,7 +1533,7 @@ then
 write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
-write "${st}/foreground/schedtune.boost" "0"
+write "${st}/foreground/schedtune.boost" "1"
 write "${st}/foreground/schedtune.prefer_idle" "0"
 
 write "${st}/rt/schedtune.boost" "0"
@@ -1544,6 +1585,7 @@ then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
+write "${sched}sched_features" "GENTLE_FAIR_SLEEPERS"
 fi
 done
 	
@@ -1619,8 +1661,8 @@ write "${cs}camera-daemon/cpus" "0-7"
 write "${cs}vr/cpus" "0-7"
 write "${cs}top-app/cpus" "0-7"
 write "${cs}audio-app/cpus" "1-2"
-write "${cs}background/cpus" "0-3"
-write "${cs}foreground/cpus" "0-7"
+write "${cs}background/cpus" "0-1"
+write "${cs}foreground/cpus" "0-3,6-7"
 fi
 done
 
@@ -1710,7 +1752,7 @@ do
 if [[ -d "/proc/sys/net" ]]
 then
 write "${tcp}ip_no_pmtu_disc" "0"
-write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_ecn" "2"
 write "${tcp}tcp_timestamps" "0"
 write "${tcp}route.flush" "1"
 write "${tcp}tcp_rfc1337" "1"
@@ -1722,8 +1764,8 @@ write "${tcp}tcp_tw_recycle" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
-write "${tcp}tcp_keepalive_intvl" "30"
-write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_keepalive_intvl" "60"
+write "${tcp}tcp_fin_timeout" "60"
 write "${tcp}tcp_low_latency" "1"
 fi
 done
@@ -1731,7 +1773,7 @@ done
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
 for i in $(find /sys/class/net -type l)
 do
-write "$i/tx_queue_len" "128"
+write "$i/tx_queue_len" "256"
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1746,17 +1788,17 @@ panel=${panel:2:3}
 else
 panel=${panel:2:4}
 fi
-  
+
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING BATTERY SAVER...                                                                              "
+kmsg "                                          DISABLING BATTERY SAVER...                                                                             "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable battery saver
+# Disable battery saver
 for bs in /sys/module/battery_saver/parameters/
 do
 if [[ -d /sys/module/battery_saver ]]
 then
-write "${bs}enabled" "Y"
+write "${bs}enabled" "N"
 fi
 done
 
@@ -1865,19 +1907,19 @@ kmsg "--------------------------------------------------------------------------
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
- avail_scheds="$(cat "${queue}scheduler")"
- for sched in zen anxiety cfq noop kyber bfq mq-deadline none
- do
-  if [[ "$avail_scheds" == *"$sched"* ]]
-  then
-   write "${queue}scheduler" "$sched"
-   break
-  fi
- done
- write "${queue}add_random" 0
- write "${queue}iostats" 0
- write "${queue}read_ahead_kb" 128
- write "${queue}nr_requests" 64
+avail_scheds="$(cat "${queue}scheduler")"
+for sched in cfq noop zen anxiety deadline kyber bfq mq-deadline none
+do
+if [[ "$avail_scheds" == *"$sched"* ]]
+then
+write "${queue}scheduler" "$sched"
+break
+fi
+done
+write "${queue}add_random" 0
+write "${queue}iostats" 0
+write "${queue}read_ahead_kb" 128
+write "${queue}nr_requests" 64
 done
 
 # Reserve 90% IO bandwith for foreground tasks
@@ -1948,6 +1990,7 @@ write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/max_pwrlevel`
 write "${gpu}force_bus_on" "1"
 write "${gpu}force_clk_on" "1"
 write "${gpu}force_rail_on" "1"
+write "${gpu}devfreq/polling_interval" "5"
 fi
 done
 
@@ -1971,7 +2014,7 @@ do
 if [[ -d "/sys/module/lowmemorykiller" ]]
 then
 write "${lmk}enable_lmk" "1"
-write "${lmk}enable_adaptive_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "0"
 write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
 fi
 done
@@ -2086,7 +2129,7 @@ for st in /dev/stune
 do
 if [[ -d "/dev/stune" ]]
 then
-write "${st}/background/schedtune.boost" "5"
+write "${st}/background/schedtune.boost" "1"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "40"
@@ -2141,6 +2184,7 @@ then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+write "${sched}sched_features" "WAKEUP_PREEMPTION"
 fi
 done
 	
@@ -2212,8 +2256,8 @@ write "${cs}camera-daemon/cpus" "0-7"
 write "${cs}vr/cpus" "0-7"
 write "${cs}top-app/cpus" "0-7"
 write "${cs}audio-app/cpus" "1-2"
-write "${cs}background/cpus" "0-3"
-write "${cs}foreground/cpus" "0-7"
+write "${cs}background/cpus" "0-1"
+write "${cs}foreground/cpus" "0-3,6-7"
 fi
 done
 
@@ -2303,7 +2347,7 @@ do
 if [[ -d "/proc/sys/net" ]]
 then
 write "${tcp}ip_no_pmtu_disc" "0"
-write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_ecn" "2"
 write "${tcp}tcp_timestamps" "0"
 write "${tcp}route.flush" "1"
 write "${tcp}tcp_rfc1337" "1"
@@ -2315,10 +2359,16 @@ write "${tcp}tcp_tw_recycle" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
-write "${tcp}tcp_keepalive_intvl" "30"
-write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_keepalive_intvl" "60"
+write "${tcp}tcp_fin_timeout" "60"
 write "${tcp}tcp_low_latency" "1"
 fi
+done
+
+# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
+for i in $(find /sys/class/net -type l)
+do
+write "$i/tx_queue_len" "256"
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2332,6 +2382,15 @@ panel=${panel:2:3}
 else
 panel=${panel:2:4}
 fi
+
+# Disable battery saver
+for bs in /sys/module/battery_saver/parameters/
+do
+if [[ -d /sys/module/battery_saver ]]
+then
+write "${bs}enabled" "N"
+fi
+done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          DISABLING LPM...                                                                                       "
@@ -2377,4 +2436,3 @@ vibrate_cmode
 };;
 esac
 done
-exit 0
