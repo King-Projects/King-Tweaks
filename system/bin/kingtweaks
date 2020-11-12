@@ -67,6 +67,125 @@ else
 boot_run_once=true
 fi
 spectrum_mode=$(getprop persist.spectrum.profile)
+loc=/data/adb/modules
+
+# Detect other conflicting modules.
+if [[ -d $loc/injector ]]
+then
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+    
+elif [[ -d $loc/Pulsar_Engine ]]
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/zeetaatweaks ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/gaming ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/smext ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/fkm_spectrum_injector ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/NetworkTweak ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/MAGNETAR ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/FDE ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/lazy ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[  $(pm list package feravolt) ]] 
+then
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/ktweak ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ $(pm list package ktweak) ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/lspeed ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ $(pm list package lspeed) ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[  $(pm list package magnetarapp) ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ $(pm list package lsandroid) ]] 
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/sqinjector ]]    
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/ZeroLAG ]]    
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/AuroxT ]]    
+then 
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/ktks ]]
+then
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/ktksr ]]
+then
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ $(pm list package kitana) ]]
+then
+kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+fi
+	
 case "$spectrum_mode" in
      # Balance Profile
         "0") {
@@ -78,7 +197,7 @@ kmsg "                                            🛠️ SOC: $(getprop ro.boar
 kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.1                                                                                           "
+kmsg "                                            👑 KTS Version: 1.8.3                                                                                           "
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg ""
 
@@ -111,7 +230,7 @@ kmsg "--------------------------------------------------------------------------
 for queue in /sys/block/*/queue/
 do
 avail_scheds="$(cat "${queue}scheduler")"
-for sched in cfq noop zen anxiety deadline kyber bfq mq-deadline none
+for sched in cfq noop zen anxiety deadline kyber bfq bfq-sq mq-deadline none
 do
 if [[ "$avail_scheds" == *"$sched"* ]]
 then
@@ -121,6 +240,8 @@ fi
 done 
 write "${queue}add_random" 0
 write "${queue}iostats" 0
+write "${queue}nomerges" 2
+write "${queue}rq_affinity" 2
 write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
 done
@@ -157,7 +278,10 @@ write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
 write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/boost" "0"
+write "${cpu}interactive/use_migration_notif" "1" 
+write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
+write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "10000"
 write "${cpu}interactive/sampling_rate_min" "10000"
@@ -192,19 +316,42 @@ write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
-write "${gpu}snapshot/snapshot_crashdumper" "0"
 write "${gpu}devfreq/polling_interval" "10"
 fi
 done
 
+if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
+then
+write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+fi
+
+# Enable dvfs
+if [[ -e "/proc/mali/dvfs_enable" ]] 
+then
+write "/proc/mali/dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
+then
+write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
+then
+write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+fi
+
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING ADRENO IDLER...                                                                               "
+kmsg "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable adreno idler
+# Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "6000"
+write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -270,12 +417,17 @@ write "/proc/sys/debug/exception-trace" "0"
 write "/proc/sys/kernel/printk" "0 0 0 0"
 write "/proc/sys/kernel/compat-log" "0"
 
-if [ -e /sys/module/logger/parameters/log_mode ]
+if [[ -e "/sys/module/mali/parameters/mali_debug_level" ]] 
+then
+write "/sys/module/mali/parameters/mali_debug_level" "0"
+fi
+
+if [[ -e "/sys/module/logger/parameters/log_mode" ]] 
 then
 write "/sys/module/logger/parameters/log_mode" "2"
 fi
 
-if [ -e /sys/module/printk/parameters/console_suspend ] 
+if [[ -e "/sys/module/printk/parameters/console_suspend" ]] 
 then
 write "/sys/module/printk/parameters/console_suspend" "Y"
 fi
@@ -314,6 +466,11 @@ for i in $(find /sys/ -name snapshot_crashdumper)
 do
 write "$i" "0"
 done
+
+if [[ -e "/sys/module/ext4/parameters/mballoc_debug" ]] 
+then
+write "/sys/module/ext4/parameters/mballoc_debug" "0"
+fi
 
 # =========
 # FIX DEEPSLEEP
@@ -359,7 +516,7 @@ do
 if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
-write "${fs}lease-break-time" "25"
+write "${fs}lease-break-time" "20"
 fi
 done
 
@@ -368,11 +525,11 @@ kmsg "                                          ENABLING DYNAMIC FSYNC...       
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
-if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
+if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
-chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/dyn_fsync_active
-write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
+chmod 666 /sys/kernel/dyn_fsync/Dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
+write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -388,6 +545,7 @@ write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "GENTLE_FAIR_SLEEPERS"
 write "${sched}sched_features" "WAKEUP_PREEMPTION"
+write "${sched}sched_features" "ARCH_POWER" 
 fi
 done
  
@@ -411,13 +569,12 @@ kmsg "--------------------------------------------------------------------------
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
 do
-if [[ -d "/proc/sys/kernel" ]] 
-then
 write "${kts}sched_child_runs_first" "1"
 write "${kts}perf_cpu_time_max_percent" "5"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "256"
+sysctl -e -w kernel.random.urandom_min_reseed_secs=90
 write "${kts}sched_tunable_scaling" "0"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
 write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
@@ -426,9 +583,24 @@ write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
 write "${kts}sched_nr_migrate" "8"
 write "${kts}sched_schedstats" "0"
+write "${kts}sched_lib_mask_force" "0"
 write "${kts}printk_devkmsg" "off"
-fi
 done
+
+if [[ -e "/sys/power/pm_freeze_timeout" ]] 
+then
+write "/sys/power/pm_freeze_timeout" "2500"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING FINGERPRINT BOOST...                                                                          "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable fingerprint boost.
+if [[ -e "/sys/kernel/fp_boost/enabled" ]]
+then
+write "/sys/kernel/fp_boost/enabled" "1"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
@@ -445,34 +617,33 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING EFFICIENT CPUSET...                                                                           "
+kmsg "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Efficient CPU Set.
-for cs in /dev/cpuset/
-do
-if [[ -d "/dev/cpuset" ]]
+if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
-write "${cs}game/cpus" "0-7"
-write "${cs}gamelite/cpus" "0-3,4-7"
-write "${cs}camera-daemon/cpus" "0-7"
-write "${cs}vr/cpus" "0-7"
-write "${cs}top-app/cpus" "0-7"
-write "${cs}audio-app/cpus" "1-2"
-write "${cs}background/cpus" "0-2"
-write "${cs}foreground/cpus" "0-3,5-7"
+write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 fi
-done
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING KRAIT VOLTAGE BOOST...                                                                       "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable krait voltage boost
+if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
+then
+write "/sys/module/acpuclock_krait/parameters/boost" "N"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          APPLYING VM TWEAKS...                                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+sync
+
 # VM settings to improve overall user experience and smoothness.
 for vm in /proc/sys/vm/
 do
-if [[ -d "/proc/sys/vm" ]]
-then
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
@@ -483,8 +654,7 @@ write "${vm}stat_interval" "10"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
-write "${vm}vfs_cache_pressure" "200"
-fi
+write "${vm}vfs_cache_pressure" "60"
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -547,8 +717,6 @@ kmsg "--------------------------------------------------------------------------
 # Internet Tweaks
 for tcp in /proc/sys/net/ipv4/
 do
-if [[ -d "/proc/sys/net" ]]
-then
 write "${tcp}ip_no_pmtu_disc" "0"
 write "${tcp}tcp_ecn" "2"
 write "${tcp}tcp_timestamps" "0"
@@ -562,10 +730,10 @@ write "${tcp}tcp_tw_recycle" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
-write "${tcp}tcp_keepalive_intvl" "60"
-write "${tcp}tcp_fin_timeout" "60"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
-fi
+write "${tcp}tcp_congestion_control" "westwood"
 done
 
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
@@ -601,10 +769,20 @@ fi
 done
   
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING ARCH POWER                                                                                    "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable arch power
+if [[ -e "/sys/kernel/sched/arch_power" ]] 
+then
+write "/sys/kernel/sched/arch_power" "1"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          ENABLING LPM...                                                                                        "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable LPM in balanced / battery profile
+# Enable LPM sleep in balanced / battery profile
 for lpm in /sys/module/lpm_levels/parameters/
 do
 if [[ -d /sys/module/lpm_levels ]]
@@ -612,6 +790,24 @@ then
 write "${lpm}sleep_disabled" "N"
 fi
 done
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING PM2 IDLE SLEEP MODE...                                                                        "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
+then
+write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING LCD POWER REDUCE..                                                                           "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
+then
+write "/sys/class/lcd/panel/power_reduce" "0"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          ENABLING FORCE FAST CHARGING...                                                                        "
@@ -631,11 +827,11 @@ kmsg "                                          KILLING GMS PROCESSES...        
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GMS blocker 1.2 by @pedroginkgo
-busybox killall -9 com.google.android.gms
-busybox killall -9 com.google.android.gms.persistent
-busybox killall -9 com.google.process.gapps
-busybox killall -9 com.google.android.gsf
-busybox killall -9 com.google.android.gsf.persistent
+killall -9 com.google.android.gms
+killall -9 com.google.android.gms.persistent
+killall -9 com.google.process.gapps
+killall -9 com.google.android.gsf
+killall -9 com.google.android.gsf.persistent
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                     BALANCE PROFILE APPLIED WITH SUCCESS.                                                                       "
@@ -652,7 +848,7 @@ kmsg "                                            🛠️ SOC: $(getprop ro.boar
 kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.1                                                                                           "
+kmsg "                                            👑 KTS Version: 1.8.3                                                                                           "
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg ""
 
@@ -710,7 +906,7 @@ kmsg "--------------------------------------------------------------------------
 for queue in /sys/block/*/queue/
 do
 avail_scheds="$(cat "${queue}scheduler")"
-for sched in cfq noop zen anxiety deadline kyber bfq mq-deadline none
+for sched in cfq noop zen anxiety deadline kyber bfq bfq-sq mq-deadline none
 do
 if [[ "$avail_scheds" == *"$sched"* ]]
 then
@@ -720,6 +916,8 @@ fi
 done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
+write "${queue}nomerges" 2
+write "${queue}rq_affinity" 2
 write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
 done
@@ -746,7 +944,7 @@ then
 write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "1"
+write "${cpu}schedutil/iowait_boost_enable" "0"
 write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
@@ -758,7 +956,7 @@ write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/boost" "1"
 write "${cpu}interactive/boostpulse" "1"
 write "${cpu}interactive/boostpulse_duration" "640000"
-write "${cpu}interactive/fast_ramp_down" "1"
+write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "5000"
 write "${cpu}interactive/sampling_rate_min" "5000"
 write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
@@ -792,19 +990,42 @@ write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
-write "${gpu}snapshot/snapshot_crashdumper" "0"
 write "${gpu}devfreq/polling_interval" "10"
 fi
 done
 
+if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
+then
+write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+fi
+
+# Enable dvfs
+if [[ -e "/proc/mali/dvfs_enable" ]] 
+then
+write "/proc/mali/dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
+then
+write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
+then
+write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+fi
+
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING ADRENO IDLER...                                                                               "
+kmsg "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable adreno idler
+# Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "5000"
+write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "15"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -915,6 +1136,11 @@ do
 write "$i" "0"
 done
 
+if [[ -e "/sys/module/ext4/parameters/mballoc_debug" ]] 
+then
+write "/sys/module/ext4/parameters/mballoc_debug" "0"
+fi
+
 # =========
 # FIX DEEPSLEEP
 # =========
@@ -959,7 +1185,7 @@ do
 if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
-write "${fs}lease-break-time" "25"
+write "${fs}lease-break-time" "20"
 fi
 done
 
@@ -968,14 +1194,12 @@ kmsg "                                          ENABLING DYNAMIC FSYNC...       
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
-# Enable dynamic_fsync.
-if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
+if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
-chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/dyn_fsync_active
-write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
+chmod 666 /sys/kernel/dyn_fsync/Dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
+write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 fi
-
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
@@ -1013,13 +1237,12 @@ kmsg "--------------------------------------------------------------------------
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
 do
-if [[ -d "/proc/sys/kernel" ]] 
-then
 write "${kts}sched_child_runs_first" "1"
 write "${kts}perf_cpu_time_max_percent" "5"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "512"
+sysctl -e -w kernel.random.urandom_min_reseed_secs=90
 write "${kts}sched_tunable_scaling" "0"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
 write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
@@ -1028,9 +1251,24 @@ write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
 write "${kts}sched_nr_migrate" "8"
 write "${kts}sched_schedstats" "0"
+write "${kts}sched_lib_mask_force" "0"
 write "${kts}printk_devkmsg" "off"
-fi
 done
+
+if [[ -e "/sys/power/pm_freeze_timeout" ]] 
+then
+write "/sys/power/pm_freeze_timeout" "2500"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING FINGERPRINT BOOST...                                                                          "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable fingerprint boost.
+if [[ -e "/sys/kernel/fp_boost/enabled" ]]
+then
+write "/sys/kernel/fp_boost/enabled" "1"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
@@ -1047,37 +1285,36 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING EFFICIENT CPUSET...                                                                           "
+kmsg "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Efficient CPU Set.
-for cs in /dev/cpuset/
-do
-if [[ -d "/dev/cpuset" ]]
+if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
-write "${cs}game/cpus" "0-7"
-write "${cs}gamelite/cpus" "0-3,4-7"
-write "${cs}camera-daemon/cpus" "0-7"
-write "${cs}vr/cpus" "0-7"
-write "${cs}top-app/cpus" "0-7"
-write "${cs}audio-app/cpus" "1-2"
-write "${cs}background/cpus" "0-1"
-write "${cs}foreground/cpus" "0-3,6-7"
+write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 fi
-done
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING KRAIT VOLTAGE BOOST...                                                                        "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable krait voltage boost
+if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
+then
+write "/sys/module/acpuclock_krait/parameters/boost" "Y"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          APPLYING VM TWEAKS...                                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+sync
+
 # VM settings to improve overall user experience and performance.
 for vm in /proc/sys/vm/
 do
-if [[ -d "/proc/sys/vm" ]]
-then
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
-write "${vm}dirty_ratio" "30"
+write "${vm}dirty_ratio" "15"
 write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
@@ -1085,8 +1322,7 @@ write "${vm}stat_interval" "10"
 write "${vm}swappiness" "100"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
-write "${vm}vfs_cache_pressure" "200"
-fi
+write "${vm}vfs_cache_pressure" "75"
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1105,12 +1341,12 @@ kmsg "--------------------------------------------------------------------------
 kmsg "                                          ENABLING POWER EFFICIENT WORKQUEUE...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Workqueue enable power_efficient.
+# Workqueue disable power_efficient.
 for wqpw in /sys/module/workqueue/parameters/
 do
 if [[ -d "/sys/module/workqueue" ]]
 then 
-write "${wqpw}power_efficient" "Y"
+write "${wqpw}power_efficient" "N" 
 fi
 done
 
@@ -1149,8 +1385,6 @@ kmsg "--------------------------------------------------------------------------
 # Internet Tweaks
 for tcp in /proc/sys/net/ipv4/
 do
-if [[ -d "/proc/sys/net" ]]
-then
 write "${tcp}ip_no_pmtu_disc" "0"
 write "${tcp}tcp_ecn" "2"
 write "${tcp}tcp_timestamps" "0"
@@ -1164,10 +1398,10 @@ write "${tcp}tcp_tw_recycle" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
-write "${tcp}tcp_keepalive_intvl" "60"
-write "${tcp}tcp_fin_timeout" "60"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
-fi
+write "${tcp}tcp_congestion_control" "westwood"
 done
 
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
@@ -1202,6 +1436,16 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING ARCH POWER                                                                                    "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable arch power
+if [[ -e "/sys/kernel/sched/arch_power" ]] 
+then
+write "/sys/kernel/sched/arch_power" "1"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          DISABLING LPM...                                                                                       "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
   
@@ -1213,6 +1457,24 @@ then
 write "${lpm}sleep_disabled" "Y"
 fi
 done
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING PM2 IDLE SLEEP MODE...                                                                        "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
+then
+write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING LCD POWER REDUCE..                                                                           "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
+then
+write "/sys/class/lcd/panel/power_reduce" "0"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          ENABLING FORCE FAST CHARGING...                                                                        "
@@ -1232,11 +1494,11 @@ kmsg "                                          KILLING GMS PROCESSES...        
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GMS blocker 1.2 by @pedroginkgo
-busybox killall -9 com.google.android.gms
-busybox killall -9 com.google.android.gms.persistent
-busybox killall -9 com.google.process.gapps
-busybox killall -9 com.google.android.gsf
-busybox killall -9 com.google.android.gsf.persistent
+killall -9 com.google.android.gms
+killall -9 com.google.android.gms.persistent
+killall -9 com.google.process.gapps
+killall -9 com.google.android.gsf
+killall -9 com.google.android.gsf.persistent
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                     PERFORMANCE PROFILE APPLIED WITH SUCCESS.                                                                   "
@@ -1253,7 +1515,7 @@ kmsg "                                            🛠️ SOC: $(getprop ro.boar
 kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.1                                                                                           "
+kmsg "                                            👑 KTS Version: 1.8.3                                                                                           "
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg ""
 
@@ -1289,7 +1551,7 @@ kmsg "--------------------------------------------------------------------------
 for queue in /sys/block/*/queue/
 do
 avail_scheds="$(cat "${queue}scheduler")"
-for sched in cfq noop zen anxiety deadline kyber bfq mq-deadline none
+for sched in cfq noop zen anxiety deadline kyber bfq bfq-sq mq-deadline none
 do
 if [[ "$avail_scheds" == *"$sched"* ]]
 then
@@ -1299,6 +1561,8 @@ fi
 done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
+write "${queue}nomerges" 2
+write "${queue}rq_affinity" 2
 write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
 done
@@ -1335,7 +1599,10 @@ write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
 write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/boost" "0"
+write "${cpu}interactive/use_migration_notif" "1" 
+write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
+write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "10000"
 write "${cpu}interactive/sampling_rate_min" "10000"
@@ -1344,7 +1611,7 @@ write "${cpu}interactive/go_hispeed_load" "99"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
-	
+
 if [[ $percentage -le "20" ]]
 then
 write "/sys/devices/system/cpu/cpu1/online" "0"
@@ -1378,10 +1645,30 @@ write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
-write "${gpu}snapshot/snapshot_crashdumper" "0"
 write "${gpu}devfreq/polling_interval" "36"
 fi
 done
+
+if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
+then
+write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+fi
+
+# Enable dvfs
+if [[ -e "/proc/mali/dvfs_enable" ]] 
+then
+write "/proc/mali/dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
+then
+write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
+then
+write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+fi
 
 # Set max clock to 465 mhz in battery profile if battery < than 20% and 600 mhz if > 20%.
 for gpu in /sys/class/kgsl/kgsl-3d0/
@@ -1396,13 +1683,16 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING ADRENO IDLER...                                                                               "
+kmsg "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable adreno idler
+# Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "10000"
+write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "35"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1513,6 +1803,11 @@ do
 write "$i" "0"
 done
 
+if [[ -e "/sys/module/ext4/parameters/mballoc_debug" ]] 
+then
+write "/sys/module/ext4/parameters/mballoc_debug" "0"
+fi
+
 # =========
 # FIX DEEPSLEEP
 # =========
@@ -1557,7 +1852,7 @@ do
 if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
-write "${fs}lease-break-time" "25"
+write "${fs}lease-break-time" "20"
 fi
 done
     
@@ -1566,11 +1861,11 @@ kmsg "                                          ENABLING DYNAMIC FSYNC...       
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
-if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
+if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
-chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/dyn_fsync_active
-write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
+chmod 666 /sys/kernel/dyn_fsync/Dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
+write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1585,7 +1880,8 @@ then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
-write "${sched}sched_features" "GENTLE_FAIR_SLEEPERS"
+write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+write "${sched}sched_features" "ARCH_POWER" 
 fi
 done
 	
@@ -1609,13 +1905,12 @@ kmsg "--------------------------------------------------------------------------
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
 do
-if [[ -d "/proc/sys/kernel" ]] 
-then
 write "${kts}sched_child_runs_first" "1"
 write "${kts}perf_cpu_time_max_percent" "5"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "128"
+sysctl -e -w kernel.random.urandom_min_reseed_secs=90
 write "${kts}sched_tunable_scaling" "0"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
 write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
@@ -1624,9 +1919,24 @@ write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
 write "${kts}sched_nr_migrate" "8"
 write "${kts}sched_schedstats" "0"
+write "${kts}sched_lib_mask_force" "0"
 write "${kts}printk_devkmsg" "off"
-fi
 done
+
+if [[ -e "/sys/power/pm_freeze_timeout" ]] 
+then
+write "/sys/power/pm_freeze_timeout" "2500"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING FINGERPRINT BOOST...                                                                          "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable fingerprint boost.
+if [[ -e "/sys/kernel/fp_boost/enabled" ]]
+then
+write "/sys/kernel/fp_boost/enabled" "1"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
@@ -1647,34 +1957,33 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING EFFICIENT CPUSET...                                                                           "
+kmsg "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Efficient CPU Set.
-for cs in /dev/cpuset/
-do
-if [[ -d "/dev/cpuset" ]]
+if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
-write "${cs}game/cpus" "0-7"
-write "${cs}gamelite/cpus" "0-3,4-7"
-write "${cs}camera-daemon/cpus" "0-7"
-write "${cs}vr/cpus" "0-7"
-write "${cs}top-app/cpus" "0-7"
-write "${cs}audio-app/cpus" "1-2"
-write "${cs}background/cpus" "0-1"
-write "${cs}foreground/cpus" "0-3,6-7"
+write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 fi
-done
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING KRAIT VOLTAGE BOOST...                                                                       "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable krait voltage boost
+if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
+then
+write "/sys/module/acpuclock_krait/parameters/boost" "N"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          APPLYING VM TWEAKS...                                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+sync
+
 # VM settings to improve overall user experience and performance.
 for vm in /proc/sys/vm/
 do
-if [[ -d "/proc/sys/vm" ]]
-then
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
@@ -1685,11 +1994,31 @@ write "${vm}stat_interval" "10"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
-write "${vm}vfs_cache_pressure" "200"
-fi
+write "${vm}vfs_cache_pressure" "20"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING KSM...                                                                                       "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable KSM
+if [[ -e "/sys/kernel/mm/ksm/run" ]] 
+then
+write "/sys/kernel/mm/ksm/run" "0"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING UKSM...                                                                                      "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable UKSM
+if [[ -e "/sys/kernel/mm/uksm/run" ]] 
+then
+write "/sys/kernel/mm/uksm/run" "0"
+fi
+
+kmsg "-  ------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -1749,8 +2078,6 @@ kmsg "--------------------------------------------------------------------------
 # Internet Tweaks
 for tcp in /proc/sys/net/ipv4/
 do
-if [[ -d "/proc/sys/net" ]]
-then
 write "${tcp}ip_no_pmtu_disc" "0"
 write "${tcp}tcp_ecn" "2"
 write "${tcp}tcp_timestamps" "0"
@@ -1764,10 +2091,10 @@ write "${tcp}tcp_tw_recycle" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
-write "${tcp}tcp_keepalive_intvl" "60"
-write "${tcp}tcp_fin_timeout" "60"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
-fi
+write "${tcp}tcp_congestion_control" "westwood"
 done
 
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
@@ -1790,15 +2117,15 @@ panel=${panel:2:4}
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING BATTERY SAVER...                                                                             "
+kmsg "                                          ENABLING BATTERY SAVER...                                                                             "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Disable battery saver
+# Enable battery saver
 for bs in /sys/module/battery_saver/parameters/
 do
-if [[ -d /sys/module/battery_saver ]]
+if [[ -e "/sys/module/battery_saver/parameters/enabled" ]]
 then
-write "${bs}enabled" "N"
+write "${bs}enabled" "Y"
 fi
 done
 
@@ -1816,6 +2143,15 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING LCD POWER REDUCE..                                                                            "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
+then
+write "/sys/class/lcd/panel/power_reduce" "1"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          ENABLING FORCE FAST CHARGING...                                                                        "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -1828,12 +2164,16 @@ write "${ffc}force_fast_charge" "1"
 fi
 done
   
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          KILLING GMS PROCESSES...                                                                               "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # GMS blocker 1.2 by @pedroginkgo
-busybox killall -9 com.google.android.gms
-busybox killall -9 com.google.android.gms.persistent
-busybox killall -9 com.google.process.gapps
-busybox killall -9 com.google.android.gsf
-busybox killall -9 com.google.android.gsf.persistent
+killall -9 com.google.android.gms
+killall -9 com.google.android.gms.persistent
+killall -9 com.google.process.gapps
+killall -9 com.google.android.gsf
+killall -9 com.google.android.gsf.persistent
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                     BATTERY PROFILE APPLIED WITH SUCCESS.                                                                       "
@@ -1850,7 +2190,7 @@ kmsg "                                            🛠️ SOC: $(getprop ro.boar
 kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.1                                                                                           "
+kmsg "                                            👑 KTS Version: 1.8.3                                                                                           "
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg ""
 
@@ -1908,7 +2248,7 @@ kmsg "--------------------------------------------------------------------------
 for queue in /sys/block/*/queue/
 do
 avail_scheds="$(cat "${queue}scheduler")"
-for sched in cfq noop zen anxiety deadline kyber bfq mq-deadline none
+for sched in cfq noop zen anxiety deadline kyber bfq bfq-sq mq-deadline none
 do
 if [[ "$avail_scheds" == *"$sched"* ]]
 then
@@ -1918,6 +2258,8 @@ fi
 done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
+write "${queue}nomerges" 1
+write "${queue}rq_affinity" 2
 write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
 done
@@ -1944,7 +2286,7 @@ then
 write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "1"
+write "${cpu}schedutil/iowait_boost_enable" "0"
 write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
@@ -1964,7 +2306,7 @@ write "${cpu}interactive/go_hispeed_load" "80"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
-	
+
 write "/sys/devices/system/cpu/cpu1/online" "1"
 write "/sys/devices/system/cpu/cpu2/online" "1"
 write "/sys/devices/system/cpu/cpu5/online" "1"
@@ -1994,14 +2336,38 @@ write "${gpu}devfreq/polling_interval" "5"
 fi
 done
 
+if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
+then
+write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
+fi
+
+# Enable dvfs
+if [[ -e "/proc/mali/dvfs_enable" ]] 
+then
+write "/proc/mali/dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
+then
+write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
+then
+write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+fi
+
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING ADRENO IDLER...                                                                               "
+kmsg "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable adreno idler
+# Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "5000"
+write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "10"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2112,6 +2478,11 @@ do
 write "$i" "0"
 done
 
+if [[ -e "/sys/module/ext4/parameters/mballoc_debug" ]] 
+then
+write "/sys/module/ext4/parameters/mballoc_debug" "0"
+fi
+
 # =========
 # FIX DEEPSLEEP
 # =========
@@ -2156,7 +2527,7 @@ do
 if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
-write "${fs}lease-break-time" "25"
+write "${fs}lease-break-time" "20"
 fi
 done
 
@@ -2165,11 +2536,11 @@ kmsg "                                          ENABLING DYNAMIC FSYNC...       
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
-if [[ -e /sys/kernel/dyn_fsync/dyn_fsync_active ]]
+if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
-chmod 666 /sys/kernel/dyn_fsync/dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/dyn_fsync_active
-write "/sys/kernel/dyn_fsync/dyn_fsync_active" "1"
+chmod 666 /sys/kernel/dyn_fsync/Dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
+write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2184,7 +2555,7 @@ then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
-write "${sched}sched_features" "WAKEUP_PREEMPTION"
+write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
 fi
 done
 	
@@ -2208,13 +2579,12 @@ kmsg "--------------------------------------------------------------------------
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
 do
-if [[ -d "/proc/sys/kernel" ]] 
-then
 write "${kts}sched_child_runs_first" "1"
 write "${kts}perf_cpu_time_max_percent" "5"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "512"
+sysctl -e -w kernel.random.urandom_min_reseed_secs=90
 write "${kts}sched_tunable_scaling" "0"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
 write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
@@ -2223,9 +2593,24 @@ write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
 write "${kts}sched_nr_migrate" "8"
 write "${kts}sched_schedstats" "0"
+write "${kts}sched_lib_mask_force" "0"
 write "${kts}printk_devkmsg" "off"
-fi
 done
+
+if [[ -e "/sys/power/pm_freeze_timeout" ]] 
+then
+write "/sys/power/pm_freeze_timeout" "2500"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING FINGERPRINT BOOST...                                                                          "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable fingerprint boost.
+if [[ -e "/sys/kernel/fp_boost/enabled" ]]
+then
+write "/sys/kernel/fp_boost/enabled" "1"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
@@ -2242,37 +2627,36 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING EFFICIENT CPUSET...                                                                           "
+kmsg "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Efficient CPU Set.
-for cs in /dev/cpuset/
-do
-if [[ -d "/dev/cpuset" ]]
+if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
-write "${cs}game/cpus" "0-7"
-write "${cs}gamelite/cpus" "0-3,4-7"
-write "${cs}camera-daemon/cpus" "0-7"
-write "${cs}vr/cpus" "0-7"
-write "${cs}top-app/cpus" "0-7"
-write "${cs}audio-app/cpus" "1-2"
-write "${cs}background/cpus" "0-1"
-write "${cs}foreground/cpus" "0-3,6-7"
+write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 fi
-done
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING KRAIT VOLTAGE BOOST...                                                                        "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable krait voltage boost
+if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
+then
+write "/sys/module/acpuclock_krait/parameters/boost" "Y"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          APPLYING VM TWEAKS...                                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+sync
+
 # VM settings to improve overall user experience and performance.
 for vm in /proc/sys/vm/
 do
-if [[ -d "/proc/sys/vm" ]]
-then
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "10"
-write "${vm}dirty_ratio" "30"
+write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_ratio" "10"
 write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
@@ -2281,7 +2665,7 @@ write "${vm}swappiness" "100"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}vfs_cache_pressure" "200"
-fi
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2297,15 +2681,15 @@ write /sys/module/msm_thermal/parameters/enabled "N"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING POWER EFFICIENT WORKQUEUE...                                                                  "
+kmsg "                                          DISABLING POWER EFFICIENT WORKQUEUE...                                                                 "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Workqueue enable power_efficient.
+# Workqueue disable power_efficient.
 for wqpw in /sys/module/workqueue/parameters/
 do
 if [[ -d "/sys/module/workqueue" ]]
 then 
-write "${wqpw}power_efficient" "Y"
+write "${wqpw}power_efficient" "N" 
 fi
 done
 
@@ -2344,8 +2728,6 @@ kmsg "--------------------------------------------------------------------------
 # Internet Tweaks
 for tcp in /proc/sys/net/ipv4/
 do
-if [[ -d "/proc/sys/net" ]]
-then
 write "${tcp}ip_no_pmtu_disc" "0"
 write "${tcp}tcp_ecn" "2"
 write "${tcp}tcp_timestamps" "0"
@@ -2359,10 +2741,10 @@ write "${tcp}tcp_tw_recycle" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
-write "${tcp}tcp_keepalive_intvl" "60"
-write "${tcp}tcp_fin_timeout" "60"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
-fi
+write "${tcp}tcp_congestion_control" "westwood"
 done
 
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
@@ -2377,11 +2759,16 @@ kmsg "--------------------------------------------------------------------------
 
 # Touch calibration
 panel=$(cat /sys/class/graphics/fb0/modes)
-if [ "${panel:5:1}" == "x" ]; then
+if [ "${panel:5:1}" == "x" ]
+then
 panel=${panel:2:3}
 else
 panel=${panel:2:4}
 fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING BATTERY SAVER...                                                                             "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable battery saver
 for bs in /sys/module/battery_saver/parameters/
@@ -2391,6 +2778,16 @@ then
 write "${bs}enabled" "N"
 fi
 done
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING ARCH POWER                                                                                    "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable arch power
+if [[ -e "/sys/kernel/sched/arch_power" ]] 
+then
+write "/sys/kernel/sched/arch_power" "1"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          DISABLING LPM...                                                                                       "
@@ -2404,6 +2801,24 @@ then
 write "${lpm}sleep_disabled" "Y"
 fi
 done
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING PM2 IDLE SLEEP MODE...                                                                        "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
+then
+write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
+fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          DISABLING LCD POWER REDUCE..                                                                           "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
+then
+write "/sys/class/lcd/panel/power_reduce" "0"
+fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                         ENABLING FORCE FAST CHARGING...                                                                         "
@@ -2423,11 +2838,11 @@ kmsg "                                          KILLING GMS PROCESSES...        
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GMS blocker 1.2 by @pedroginkgo
-busybox killall -9 com.google.android.gms
-busybox killall -9 com.google.android.gms.persistent
-busybox killall -9 com.google.process.gapps
-busybox killall -9 com.google.android.gsf
-busybox killall -9 com.google.android.gsf.persistent
+killall -9 com.google.android.gms
+killall -9 com.google.android.gms.persistent
+killall -9 com.google.process.gapps
+killall -9 com.google.android.gsf
+killall -9 com.google.android.gsf.persistent
 
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                     GAMING PROFILE APPLIED WITH SUCCESS.                                                                       "
@@ -2436,3 +2851,4 @@ vibrate_cmode
 };;
 esac
 done
+) &

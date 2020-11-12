@@ -24,94 +24,98 @@ sleep 1
 
 loc=/data/adb/modules
 
-    if [[ -d $loc/injector ]]
-    then
-    abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+if [[ -d $loc/injector ]]
+then
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
     
-	elif [[ -d $loc/Pulsar_Engine ]]
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/Pulsar_Engine ]]
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/zeetaatweaks ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/zeetaatweaks ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/gaming ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/gaming ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/smext ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/smext ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/fkm_spectrum_injector ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/fkm_spectrum_injector ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/NetworkTweak ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/NetworkTweak ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/MAGNETAR ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/MAGNETAR ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/FDE ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/FDE ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[  $(pm list package feravolt) ]] 
-	then
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/lazy ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/ktweak ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[  $(pm list package feravolt) ]] 
+then
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ $(pm list package ktweak) ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/ktweak ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/lspeed ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ $(pm list package ktweak) ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ $(pm list package lspeed) ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/lspeed ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[  $(pm list package magnetarapp) ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ $(pm list package lspeed) ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ $(pm list package lsandroid) ]] 
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[  $(pm list package magnetarapp) ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/sqinjector ]]    
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ $(pm list package lsandroid) ]] 
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/ZeroLAG ]]    
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/sqinjector ]]    
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/AuroxT ]]    
-	then 
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/ZeroLAG ]]    
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/ktks ]]
-	then
-	abort "[!] A old version of King Tweaks is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/AuroxT ]]    
+then 
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
-	elif [[ -d $loc/ktksr ]]
-	then
-	abort "[!] A old version of King Tweaks is installed, please remove and then install King Tweaks again."
+elif [[ -d $loc/ktks ]]
+then
+abort "[!] A old version of King Tweaks is installed, please remove and then install King Tweaks again."
 	
-	elif [[ $(pm list package kitana) ]]
-	then
-	abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
-	fi
+elif [[ -d $loc/ktksr ]]
+then
+abort "[!] A old version of King Tweaks is installed, please remove and then install King Tweaks again."
+	
+elif [[ $(pm list package kitana) ]]
+then
+abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
+fi
 	
 set_permissions() {
   set_perm_recursive $MODPATH/system/bin root root 0777 0755

@@ -5,4 +5,5 @@
 # King Tweaks Reborn
 ########################################################################################
 
-ro.product.model=
+ro.product.model
+ro.product.device
