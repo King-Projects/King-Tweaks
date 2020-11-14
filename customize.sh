@@ -1,6 +1,6 @@
 # !/system/bin/sh
 # Written by Draco (tytydraco @ github).
-# Modified by pedrozzz (pedroginkgo @ telegram).
+# Modified by pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
 
 ui_print ""
 ui_print "╭╮╭━╮ ╭━━━━╮ ╭━━━╮"
@@ -11,11 +11,10 @@ ui_print "┃┃┃╰╮ ╱╱┃┃╱╱ ┃╰━╯┃"
 ui_print "╰╯╰━╯ ╱╱╰╯╱╱ ╰━━━╯"
 ui_print "╱╱╱╱╱ ╱╱╱╱╱╱ ╱╱╱╱╱"
 ui_print "╱╱╱╱╱ ╱╱╱╱╱╱ ╱╱╱╱╱"
-sleep 1
 ui_print "by pedrozzz (pedrozzz0 @ github)"
 ui_print ""
 sleep 1
-ui_print "Thanks a lot to Eight (iamlazy123 @ github)"
+ui_print "Thanks to Eight (iamlazy123 @ github)"
 ui_print ""
 sleep 1
 ui_print "KTweak by draco (tytydraco @ github)"
@@ -97,10 +96,6 @@ then
 abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	
 elif [[ -d $loc/ZeroLAG ]]    
-then 
-abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
-	
-elif [[ -d $loc/AuroxT ]]    
 then 
 abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
 	

@@ -1,6 +1,6 @@
 #!/system/bin/sh
-# Written by Draco (tytydraco @github).
-# Modified by Pedrozzz (pedroginkgo @telegram).
+# Written by Draco (tytydraco @ github).
+# Modified by Pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
 
 mkdir /sdcard/KTS
 LOG=/sdcard/KTS/KTS.log
@@ -8,8 +8,8 @@ rm $LOG
 
 # Log in white and continue (unnecessary)
 kmsg() {
-	echo -e "`date +%Y-%m-%d_%H:%M:%S` [*] $@" >> $LOG
-	echo -e "`date +%Y-%m-%d_%H:%M:%S` [*] $@"
+	echo -e "[*] $@" >> $LOG
+	echo -e "[*] $@"
 }
 
 write() {
@@ -145,7 +145,7 @@ then
 kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
 exit 1
 	
-elif [[  $(pm list package magnetarapp) ]] 
+elif [[ $(pm list package magnetarapp) ]] 
 then 
 kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
 exit 1
@@ -161,11 +161,6 @@ kmsg "A conflicting module/app is installed, please remove and then reboot to mo
 exit 1
 	
 elif [[ -d $loc/ZeroLAG ]]    
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/AuroxT ]]    
 then 
 kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
 exit 1
@@ -197,7 +192,7 @@ kmsg "                                            🛠️ SOC: $(getprop ro.boar
 kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.3                                                                                           "
+kmsg "                                            👑 KTS Version: 1.8.4                                                                                           "
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg ""
 
@@ -240,7 +235,7 @@ fi
 done 
 write "${queue}add_random" 0
 write "${queue}iostats" 0
-write "${queue}nomerges" 2
+write "${queue}nomerges" 1
 write "${queue}rq_affinity" 2
 write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
@@ -311,7 +306,7 @@ write "${gpu}devfreq/adrenoboost" "0"
 write "${gpu}force_no_nap" "0"
 write "${gpu}bus_split" "1"
 write "${gpu}devfreq/min_freq" "100000000"
-write "${gpu}devfreq/max_freq" "600000000"
+write "${gpu}devfreq/max_freq" "$UINT_MAX"
 write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
@@ -376,7 +371,7 @@ kmsg "--------------------------------------------------------------------------
 # Disable debuggers.
 for bl in /sys/module/bluetooth/parameters/
 do
-if [[ -d /sys/module/bluetooth ]]
+if [[ -e "${bl}disable_ertm" ]]
 then
 write "${bl}disable_ertm" "Y"
 write "${bl}disable_esco" "Y"
@@ -545,7 +540,7 @@ write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "GENTLE_FAIR_SLEEPERS"
 write "${sched}sched_features" "WAKEUP_PREEMPTION"
-write "${sched}sched_features" "ARCH_POWER" 
+write "${sched}sched_features" "ARCH_POWER"
 fi
 done
  
@@ -583,7 +578,6 @@ write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
 write "${kts}sched_nr_migrate" "8"
 write "${kts}sched_schedstats" "0"
-write "${kts}sched_lib_mask_force" "0"
 write "${kts}printk_devkmsg" "off"
 done
 
@@ -617,7 +611,7 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
+kmsg "                                          ENDISABLING CPUIDLE USE DEEPEST STATE...                                                                 "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
@@ -655,6 +649,7 @@ write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
 write "${vm}vfs_cache_pressure" "60"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -676,7 +671,7 @@ kmsg "--------------------------------------------------------------------------
 # Enable power efficient workqueue.
 for wqpw in /sys/module/workqueue/parameters/
 do
-if [[ -d "/sys/module/workqueue" ]]
+if [[ -e "${wqpw}power_efficient" ]]
 then 
 write "${wqpw}power_efficient" "Y"
 fi
@@ -689,7 +684,7 @@ kmsg "--------------------------------------------------------------------------
 # Fix DT2W.
 for dt in /sys/touchpanel/
 do
-if [[ -d "/sys/touchpanel" ]]
+if [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "${dt}double_tap" "1"
 fi
@@ -756,38 +751,59 @@ panel=${panel:2:4}
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          RENICING SOME PROCESSES...                                                                             "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+### Phone dialer app ###
+renice -1 `pidof com.android.phone`
+
+### System apps ###
+renice -1 `pidof com.android.mms` # Text message app
+renice -1 `pidof com.swype.android.inputmethod` # Keyboard
+renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
+renice -1 `pidof com.android.systemui` # Status bar
+renice -1 `pidof com.android.settings` # Settings menu
+renice -1 `pidof com.android.vending` # Market app
+renice -1 `pidof com.sec.android.app.camera` # Camera app
+renice -1 `pidof android.process.acore`
+renice -1 `pidof kondemand/0`
+renice -1 `pidof ksmartass_up/0`
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          ENABLING BATTERY SAVER...                                                                              "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable battery saver
 for bs in /sys/module/battery_saver/parameters/
 do
-if [[ -d /sys/module/battery_saver ]]
+if [[ -e "/sys/module/battery_saver/parameters/enabled" ]]
 then
 write "${bs}enabled" "Y"
 fi
 done
-  
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING ARCH POWER                                                                                    "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable arch power
-if [[ -e "/sys/kernel/sched/arch_power" ]] 
-then
-write "/sys/kernel/sched/arch_power" "1"
-fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING LPM...                                                                                        "
+kmsg "                                          ENABLING LPM SLEEP...                                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable LPM sleep in balanced / battery profile
 for lpm in /sys/module/lpm_levels/parameters/
 do
-if [[ -d /sys/module/lpm_levels ]]
+if [[ -d "/sys/module/lpm_levels" ]]
 then
 write "${lpm}sleep_disabled" "N"
+write "/sys/module/lpm_levels/system/pwr/cpu0/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu1/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu2/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu3/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu4/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu5/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu6/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu7/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/pwr-l2-dynret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/perf-l2-dynret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/pwr-l2-ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled" "Y"
 fi
 done
 
@@ -801,7 +817,7 @@ write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING LCD POWER REDUCE..                                                                           "
+kmsg "                                          DISABLING LCD POWER REDUCE...                                                                          "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
@@ -836,6 +852,10 @@ killall -9 com.google.android.gsf.persistent
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                     BALANCE PROFILE APPLIED WITH SUCCESS.                                                                       "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          END OF EXECUTION: $(date)                                                                              "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
     # Performance Profile
@@ -848,7 +868,7 @@ kmsg "                                            🛠️ SOC: $(getprop ro.boar
 kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.3                                                                                           "
+kmsg "                                            👑 KTS Version: 1.8.4                                                                                           "
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg ""
 
@@ -880,7 +900,7 @@ kmsg "--------------------------------------------------------------------------
 # Caf CPU Boost
 for caf in /sys/module/cpu_boost/parameters/
 do
-if [[ -d "/sys/module/cpu_boost/parameters" ]]
+if [[ -d "/sys/module/cpu_boo/parametersst" ]]
 then
 write "${caf}input_boost_freq" "0:$UINT_MAX 1:$UINT_MAX 2:$UINT_MAX 3:$UINT_MAX 4:$UINT_MAX 5:$UINT_MAX 6:$UINT_MAX 7:$UINT_MAX"
 write "${caf}input_boost_ms" "64"
@@ -916,7 +936,7 @@ fi
 done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
-write "${queue}nomerges" 2
+write "${queue}nomerges" 1
 write "${queue}rq_affinity" 2
 write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
@@ -1050,7 +1070,7 @@ kmsg "--------------------------------------------------------------------------
 # Disable debuggers.
 for bl in /sys/module/bluetooth/parameters/
 do
-if [[ -d /sys/module/bluetooth ]]
+if [[ -e "${bl}disable_ertm" ]]
 then
 write "${bl}disable_ertm" "Y"
 write "${bl}disable_esco" "Y"
@@ -1158,7 +1178,7 @@ for st in /dev/stune
 do
 if [[ -d "/dev/stune" ]]
 then
-write "${st}/background/schedtune.boost" "1"
+write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "40"
@@ -1213,7 +1233,7 @@ then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
-write "${sched}sched_features" "WAKEUP_PREEMPTION"
+write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
 fi
 done
 	
@@ -1251,7 +1271,6 @@ write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
 write "${kts}sched_nr_migrate" "8"
 write "${kts}sched_schedstats" "0"
-write "${kts}sched_lib_mask_force" "0"
 write "${kts}printk_devkmsg" "off"
 done
 
@@ -1285,12 +1304,12 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
+kmsg "                                         DISABLING CPUIDLE USE DEEPEST STATE...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
-write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
+write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1323,6 +1342,7 @@ write "${vm}swappiness" "100"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}vfs_cache_pressure" "75"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1338,13 +1358,13 @@ write /sys/module/msm_thermal/parameters/enabled "N"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING POWER EFFICIENT WORKQUEUE...                                                                  "
+kmsg "                                          DISABLING POWER EFFICIENT WORKQUEUE...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Workqueue disable power_efficient.
 for wqpw in /sys/module/workqueue/parameters/
 do
-if [[ -d "/sys/module/workqueue" ]]
+if [[ -e "${wqpw}power_efficient" ]]
 then 
 write "${wqpw}power_efficient" "N" 
 fi
@@ -1357,13 +1377,13 @@ kmsg "--------------------------------------------------------------------------
 # Fix DT2W
 for dt in /sys/touchpanel/
 do
-if [[ -d "/sys/touchpanel" ]]
+if [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "${dt}double_tap" "1"
 fi
 done
 
-if [[ -f "/proc/tp_gesture" ]]
+if [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
 fi
@@ -1416,11 +1436,31 @@ kmsg "--------------------------------------------------------------------------
 
 # Touch calibration
 panel=$(cat /sys/class/graphics/fb0/modes)
-if [ "${panel:5:1}" == "x" ]; then
+if [[ "${panel:5:1}" == "x" ]]
+then
 panel=${panel:2:3}
 else
 panel=${panel:2:4}
 fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          RENICING SOME PROCESSES...                                                                             "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+### Phone dialer app ###
+renice -1 `pidof com.android.phone`
+
+### System apps ###
+renice -1 `pidof com.android.mms` # Text message app
+renice -1 `pidof com.swype.android.inputmethod` # Keyboard
+renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
+renice -1 `pidof com.android.systemui` # Status bar
+renice -1 `pidof com.android.settings` # Settings menu
+renice -1 `pidof com.android.vending` # Market app
+renice -1 `pidof com.sec.android.app.camera` # Camera app
+renice -1 `pidof android.process.acore`
+renice -1 `pidof kondemand/0`
+renice -1 `pidof ksmartass_up/0`
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          DISABLING BATTERY SAVER...                                                                             "
@@ -1429,42 +1469,54 @@ kmsg "--------------------------------------------------------------------------
 # Disable battery saver
 for bs in /sys/module/battery_saver/parameters/
 do
-if [[ -d /sys/module/battery_saver ]]
+if [[ -d "/sys/module/battery_saver" ]]
 then
 write "${bs}enabled" "N"
 fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING ARCH POWER                                                                                    "
+kmsg "                                          DISABLING ARCH POWER...                                                                                "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable arch power
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
 then
-write "/sys/kernel/sched/arch_power" "1"
+write "/sys/kernel/sched/arch_power" "0"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING LPM...                                                                                       "
+kmsg "                                          DISABLING LPM SLEEP...                                                                                 "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
   
 # Disable LPM in gaming profile / performance profile
 for lpm in /sys/module/lpm_levels/parameters/
 do
-if [[ -d /sys/module/lpm_levels ]]
+if [[ -d "/sys/module/lpm_levels" ]]
 then
 write "${lpm}sleep_disabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu0/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/pwr/cpu1/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/pwr/cpu2/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/pwr/cpu3/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/cpu4/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/cpu5/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/cpu6/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/cpu7/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/pwr/pwr-l2-dynret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/perf-l2-dynret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/pwr/pwr-l2-ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled" "N"
 fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING PM2 IDLE SLEEP MODE...                                                                        "
+kmsg "                                          DISABLING PM2 IDLE SLEEP MODE...                                                                       "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
-write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
+write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1503,6 +1555,10 @@ killall -9 com.google.android.gsf.persistent
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                     PERFORMANCE PROFILE APPLIED WITH SUCCESS.                                                                   "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          END OF EXECUTION: $(date)                                                                              "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
     # Battery Profile
@@ -1515,7 +1571,7 @@ kmsg "                                            🛠️ SOC: $(getprop ro.boar
 kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.3                                                                                           "
+kmsg "                                            👑 KTS Version: 1.8.4                                                                                           "
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg ""
 
@@ -1561,7 +1617,7 @@ fi
 done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
-write "${queue}nomerges" 2
+write "${queue}nomerges" 1
 write "${queue}rq_affinity" 2
 write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
@@ -1645,7 +1701,7 @@ write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
-write "${gpu}devfreq/polling_interval" "36"
+write "${gpu}devfreq/polling_interval" "26"
 fi
 done
 
@@ -1670,15 +1726,15 @@ then
 write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
-# Set max clock to 465 mhz in battery profile if battery < than 20% and 600 mhz if > 20%.
+# Set max clock to 600 mhz in battery profile if battery < than 20% and 745 mhz if > 20%.
 for gpu in /sys/class/kgsl/kgsl-3d0/
 do
 if [[ $percentage -le "50" && -e "${gpu}devfreq/max_freq" ]]
 then
-write "${gpu}devfreq/max_freq" "465000000"
+write "${gpu}devfreq/max_freq" "600000000"
 
 else [[ $percentage -ge "50" && -e "${gpu}devfreq/max_freq" ]]
-write "${gpu}devfreq/max_freq" "600000000"
+write "${gpu}devfreq/max_freq" "745000000"
 fi
 done
 
@@ -1717,7 +1773,7 @@ kmsg "--------------------------------------------------------------------------
 # Disable debuggers.
 for bl in /sys/module/bluetooth/parameters/
 do
-if [[ -d /sys/module/bluetooth ]]
+if [[ -e "${bl}disable_ertm" ]]
 then
 write "${bl}disable_ertm" "Y"
 write "${bl}disable_esco" "Y"
@@ -1919,7 +1975,6 @@ write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
 write "${kts}sched_nr_migrate" "8"
 write "${kts}sched_schedstats" "0"
-write "${kts}sched_lib_mask_force" "0"
 write "${kts}printk_devkmsg" "off"
 done
 
@@ -1952,7 +2007,7 @@ write "${minclk}scaling_max_freq" "20000000"
 
 else [[ $percentage -ge "20" && -e "${minclk}scaling_min_freq" ]]
 write "${minclk}scaling_min_freq" "300000"
-write "${minclk}scaling_max_freq" "1300000"
+write "${minclk}scaling_max_freq" "1600000"
 fi
 done
 
@@ -2037,7 +2092,7 @@ kmsg "--------------------------------------------------------------------------
 # Workqueue enable power_efficient.
 for wqpw in /sys/module/workqueue/parameters/
 do
-if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
+if [[ -e "${wqpw}power_efficient" ]]
 then 
 write "${wqpw}power_efficient" "Y"
 fi
@@ -2050,7 +2105,7 @@ kmsg "--------------------------------------------------------------------------
 # Fix DT2W
 for dt in /sys/touchpanel/
 do
-if [[ -d "/sys/touchpanel" ]]
+if [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "${dt}double_tap" "1"
 fi
@@ -2117,33 +2172,64 @@ panel=${panel:2:4}
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING BATTERY SAVER...                                                                             "
+kmsg "                                          RENICING SOME PROCESSES...                                                                             "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+### Phone dialer app ###
+renice -1 `pidof com.android.phone`
+
+### System apps ###
+renice -1 `pidof com.android.mms` # Text message app
+renice -1 `pidof com.swype.android.inputmethod` # Keyboard
+renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
+renice -1 `pidof com.android.systemui` # Status bar
+renice -1 `pidof com.android.settings` # Settings menu
+renice -1 `pidof com.android.vending` # Market app
+renice -1 `pidof com.sec.android.app.camera` # Camera app
+renice -1 `pidof android.process.acore`
+renice -1 `pidof kondemand/0`
+renice -1 `pidof ksmartass_up/0`
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          ENABLING BATTERY SAVER...                                                                              "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable battery saver
 for bs in /sys/module/battery_saver/parameters/
 do
-if [[ -e "/sys/module/battery_saver/parameters/enabled" ]]
+if [[ -d "/sys/module/battery_saver" ]]
 then
 write "${bs}enabled" "Y"
 fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING LPM...                                                                                        "
+kmsg "                                          ENABLING LPM SLEEP...                                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable LPM in battery / balanced profile
 for lpm in /sys/module/lpm_levels/parameters/
 do
-if [[ -d /sys/module/lpm_levels ]]
+if [[ -d "/sys/module/lpm_levels" ]]
 then
 write "${lpm}sleep_disabled" "N"
+write "/sys/module/lpm_levels/system/pwr/cpu0/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu1/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu2/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu3/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu4/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu5/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu6/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu7/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/pwr-l2-dynret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/perf-l2-dynret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/pwr-l2-ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled" "Y"
 fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING LCD POWER REDUCE..                                                                            "
+kmsg "                                          ENABLING LCD POWER REDUCE...                                                                           "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
@@ -2158,7 +2244,7 @@ kmsg "--------------------------------------------------------------------------
 # Enable Fast Charging Rate
 for ffc in /sys/kernel/fast_charge/
 do
-if [[ -f "/sys/kernel/fast_charge/force_fast_charge" ]]
+if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "${ffc}force_fast_charge" "1"
 fi
@@ -2177,6 +2263,10 @@ killall -9 com.google.android.gsf.persistent
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                     BATTERY PROFILE APPLIED WITH SUCCESS.                                                                       "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
@@ -2222,7 +2312,7 @@ kmsg "--------------------------------------------------------------------------
 # Caf CPU Boost
 for caf in /sys/module/cpu_boost/parameters/
 do
-if [[ -d "/sys/module/cpu_boost/parameters" ]]
+if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "${caf}input_boost_freq" "0:$UINT_MAX 1:$UINT_MAX 2:$UINT_MAX 3:$UINT_MAX 4:$UINT_MAX 5:$UINT_MAX 6:$UINT_MAX 7:$UINT_MAX"
 write "${caf}input_boost_ms" "64"
@@ -2322,7 +2412,7 @@ do
 if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
 then
 write "${gpu}throttling" "0"
-write "${gpu}thermal_pwrlevel" "0"
+write "${gpu}thermal_pwrlevel" "3"
 write "${gpu}devfreq/adrenoboost" "3"
 write "${gpu}force_no_nap" "1"
 write "${gpu}bus_split" "0"
@@ -2392,7 +2482,7 @@ kmsg "--------------------------------------------------------------------------
 # Disable debuggers.
 for bl in /sys/module/bluetooth/parameters/
 do
-if [[ -d /sys/module/bluetooth ]]
+if [[ -e "${bl}disable_ertm" ]]
 then
 write "${bl}disable_ertm" "Y"
 write "${bl}disable_esco" "Y"
@@ -2500,7 +2590,7 @@ for st in /dev/stune
 do
 if [[ -d "/dev/stune" ]]
 then
-write "${st}/background/schedtune.boost" "1"
+write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "40"
@@ -2550,7 +2640,7 @@ kmsg "--------------------------------------------------------------------------
 # Scheduler features.
 for sched in /sys/kernel/debug/
 do
-if [[ -f "/sys/kernel/debug/sched_features" ]]
+if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
@@ -2593,7 +2683,6 @@ write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
 write "${kts}sched_nr_migrate" "8"
 write "${kts}sched_schedstats" "0"
-write "${kts}sched_lib_mask_force" "0"
 write "${kts}printk_devkmsg" "off"
 done
 
@@ -2627,12 +2716,12 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
+kmsg "                                          DISABLING CPUIDLE USE DEEPEST STATE...                                                                  "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
-write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
+write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2687,7 +2776,7 @@ kmsg "--------------------------------------------------------------------------
 # Workqueue disable power_efficient.
 for wqpw in /sys/module/workqueue/parameters/
 do
-if [[ -d "/sys/module/workqueue" ]]
+if [[ -e "${wqpw}power_efficient" ]]
 then 
 write "${wqpw}power_efficient" "N" 
 fi
@@ -2700,13 +2789,13 @@ kmsg "--------------------------------------------------------------------------
 # Fix DT2W
 for dt in /sys/touchpanel/
 do
-if [[ -d "/sys/touchpanel" ]]
+if [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "${dt}double_tap" "1"
 fi
 done
 
-if [[ -f "/proc/tp_gesture" ]]
+if [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
 fi
@@ -2759,12 +2848,31 @@ kmsg "--------------------------------------------------------------------------
 
 # Touch calibration
 panel=$(cat /sys/class/graphics/fb0/modes)
-if [ "${panel:5:1}" == "x" ]
+if [[ "${panel:5:1}" == "x" ]]
 then
 panel=${panel:2:3}
 else
 panel=${panel:2:4}
 fi
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          RENICING SOME PROCESSES...                                                                             "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+### Phone dialer app ###
+renice -1 `pidof com.android.phone`
+
+### System apps ###
+renice -1 `pidof com.android.mms` # Text message app
+renice -1 `pidof com.swype.android.inputmethod` # Keyboard
+renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
+renice -1 `pidof com.android.systemui` # Status bar
+renice -1 `pidof com.android.settings` # Settings menu
+renice -1 `pidof com.android.vending` # Market app
+renice -1 `pidof com.sec.android.app.camera` # Camera app
+renice -1 `pidof android.process.acore`
+renice -1 `pidof kondemand/0`
+renice -1 `pidof ksmartass_up/0`
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                          DISABLING BATTERY SAVER...                                                                             "
@@ -2773,42 +2881,54 @@ kmsg "--------------------------------------------------------------------------
 # Disable battery saver
 for bs in /sys/module/battery_saver/parameters/
 do
-if [[ -d /sys/module/battery_saver ]]
+if [[ -d "/sys/module/battery_saver" ]]
 then
 write "${bs}enabled" "N"
 fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING ARCH POWER                                                                                    "
+kmsg "                                          DISABLING ARCH POWER...                                                                                "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable arch power
+# Disable arch power
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
 then
-write "/sys/kernel/sched/arch_power" "1"
+write "/sys/kernel/sched/arch_power" "0"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING LPM...                                                                                       "
+kmsg "                                          DISABLING LPM SLEEP...                                                                                 "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Disable LPM in gaming profile / performance profile
+# Disable LPM sleep on gaming profile / performance profile
 for lpm in /sys/module/lpm_levels/parameters/
 do
-if [[ -d /sys/module/lpm_levels ]]
+if [[ -d "/sys/module/lpm_levels" ]]
 then
 write "${lpm}sleep_disabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu0/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/pwr/cpu1/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/pwr/cpu2/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/pwr/cpu3/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/cpu4/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/cpu5/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/cpu6/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/cpu7/ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/pwr/pwr-l2-dynret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/perf-l2-dynret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/pwr/pwr-l2-ret/idle_enabled" "N"
+write "/sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled" "N"
 fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING PM2 IDLE SLEEP MODE...                                                                        "
+kmsg "                                          DISABLING PM2 IDLE SLEEP MODE...                                                                        "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
-write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
+write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
 fi
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2847,6 +2967,10 @@ killall -9 com.google.android.gsf.persistent
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg "                                     GAMING PROFILE APPLIED WITH SUCCESS.                                                                       "
 kmsg "------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "                                          END OF EXECUTION: $(date)                                                                              "
+kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
 esac

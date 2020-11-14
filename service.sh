@@ -1,11 +1,11 @@
-#!/system/bin/sh
+	#!/system/bin/sh
 # Written by Draco (tytydraco @github).
-# Modified by pedrozzz (pedroginkgo @telegram).
+# Modified by pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
 # Wait for boot to finish completely
 
 wait_until_login() {
-    # we doesn't have the permission to rw "/sdcard" before the user unlocks the screen
-    while [[ `getprop sys.boot_completed` -ne 1 ]] && [[ ! -d "/sdcard" ]]
+	# we doesn't have the permission to rw "/sdcard" before the user unlocks the screen
+	while [[ `getprop sys.boot_completed` -ne 1 && -d "/sdcard" ]]
 	do
        sleep 2
 	done
