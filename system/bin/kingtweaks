@@ -611,7 +611,7 @@ fi
 done
 
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENDISABLING CPUIDLE USE DEEPEST STATE...                                                                 "
+kmsg "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                 "
 kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
@@ -900,7 +900,7 @@ kmsg "--------------------------------------------------------------------------
 # Caf CPU Boost
 for caf in /sys/module/cpu_boost/parameters/
 do
-if [[ -d "/sys/module/cpu_boo/parametersst" ]]
+if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "${caf}input_boost_freq" "0:$UINT_MAX 1:$UINT_MAX 2:$UINT_MAX 3:$UINT_MAX 4:$UINT_MAX 5:$UINT_MAX 6:$UINT_MAX 7:$UINT_MAX"
 write "${caf}input_boost_ms" "64"
