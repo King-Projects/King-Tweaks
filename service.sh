@@ -1,4 +1,4 @@
-	#!/system/bin/sh
+#!/system/bin/sh
 # Written by Draco (tytydraco @github).
 # Modified by pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
 # Wait for boot to finish completely
@@ -20,7 +20,7 @@ wait_until_login() {
 }
 
 wait_until_login
-sleep 30
+sleep 15
 
 # Setup tweaks
 kingtweaks

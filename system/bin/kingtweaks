@@ -12,6 +12,11 @@ kmsg() {
 	echo -e "[*] $@"
 }
 
+kmsg1() {
+	echo -e "$@" >> $LOG
+	echo -e "$@"
+}
+
 write() {
 	# Bail out if file does not exist
 	[[ ! -f "$1" ]] && return 1
@@ -46,161 +51,36 @@ fi
 # Check for root permissions and bail if not granted
 if [[ "$(id -u)" -ne 0 ]]
 then
-	kmsg "No root permissions. Exiting."
-	exit 1
+kmsg "No root permissions. Exiting."
+exit 1
 fi
+
+# Wait 60s into boot before applying changes
+while [[ `cat /proc/uptime | awk '{print $1}' | awk -F. '{print $1}'` -lt 60 ]]
+do
+	sleep 2
+done
 
 setprop persist.spectrum.kernel "KTS Reborn"
 setprop spectrum.support "1"
 
 boot_run_once=false
-spectrum_mode=$(getprop persist.spectrum.profile)
-[ -z "$spectrum_mode" ] && setprop persist.spectrum.profile "0"
+kts_mode=$(getprop persist.spectrum.profile)
+[ -z "$kts_mode" ] && setprop persist.spectrum.profile "0"
 
 while true
 do
 sleep 3
 if $boot_run_once
 then
-[ "$(getprop persist.spectrum.profile)" == "$spectrum_mode" ] && continue
+[ "$(getprop persist.spectrum.profile)" == "$kts_mode" ] && continue
 else
 boot_run_once=true
 fi
-spectrum_mode=$(getprop persist.spectrum.profile)
+kts_mode=$(getprop persist.spectrum.profile)
 loc=/data/adb/modules
 
-# Detect other conflicting modules.
-if [[ -d $loc/injector ]]
-then
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-    
-elif [[ -d $loc/Pulsar_Engine ]]
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/zeetaatweaks ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/gaming ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/smext ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/fkm_spectrum_injector ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/NetworkTweak ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/MAGNETAR ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/FDE ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/lazy ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[  $(pm list package feravolt) ]] 
-then
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/ktweak ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ $(pm list package ktweak) ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/lspeed ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ $(pm list package lspeed) ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ $(pm list package magnetarapp) ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ $(pm list package lsandroid) ]] 
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/sqinjector ]]    
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/ZeroLAG ]]    
-then 
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/ktks ]]
-then
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/ktksr ]]
-then
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ $(pm list package kitana) ]]
-then
-kmsg "A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-fi
-	
-case "$spectrum_mode" in
-     # Balance Profile
-        "0") {
-        	kmsg ""
-kmsg "---------------------------------------------------------- Info --------------------------------------------------------------------------------------------"
-kmsg "                                            🕛 Date of execution: $(date)                                                                                   "
-kmsg "                                            🔧 Device kernel: `uname -a`                                                                                    "
-kmsg "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
-kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
-kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
-kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.4                                                                                           "
-kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg ""
-
-	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg "                                        ENABLING BALANCE PROFILE...                                                                              "
-	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	
-	# Duration in nanoseconds of one scheduling period
+# Duration in nanoseconds of one scheduling period
 SCHED_PERIOD="$((1 * 1000 * 1000))"
 
 # How many tasks should we have at a maximum in one scheduling period
@@ -208,18 +88,168 @@ SCHED_TASKS="8"
 
 # Maximum unsigned integer size in C
 UINT_MAX="4294967295"
+
+# Variable to battery %
+percentage=$(cat /sys/class/power_supply/battery/capacity)
+
+# Detect other conflicting modules.
+if [[ -d $loc/injector ]]
+then
+kmsg1 "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+    
+elif [[ -d $loc/Pulsar_Engine ]]
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/zeetaatweaks ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/gaming ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/smext ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/fkm_spectrum_injector ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/NetworkTweak ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/MAGNETAR ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/FDE ]] 
+then 
+kmsg1 "A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/lazy ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[  $(pm list package feravolt) ]] 
+then
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/ktweak ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ $(pm list package ktweak) ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/lspeed ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ $(pm list package lspeed) ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ $(pm list package magnetarapp) ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ $(pm list package lsandroid) ]] 
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/sqinjector ]]    
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/ZeroLAG ]]    
+then 
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/ktks ]]
+then
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ -d $loc/ktksr ]]
+then
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+	
+elif [[ $(pm list package kitana) ]]
+then
+kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
+exit 1
+fi
+	
+if [[ "$kts_mode" == "0" ]]
+then
+kts_profile=BALANCE
         	
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+elif [[ "$kts_mode" == "1" ]]
+then
+kts_profile=PERFORMANCE
+        	
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profile=BATTERY
+        	
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profile=GAMING
+fi
+
+case "$kts_profile" in
+     # Balance Profile
+        "BALANCE") {
+        	init=$(date +%s)
+kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
+kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
+kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
+kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
+kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
+kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
+kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
+kmsg1 "                                            👑 KTS Version: 1.8.5                                                                                           "
+kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
+	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+	kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
+	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+	       	
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
         	
 # Enable throttling and perfd
 start thermal-engine
 start perfd
         	
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING I/O SCHEDULER...                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING I/O SCHEDULER...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
@@ -235,9 +265,10 @@ fi
 done 
 write "${queue}add_random" 0
 write "${queue}iostats" 0
+write "${queue}read_ahead_kb" 128
+write "${queue}iosched/low_latency" 1
 write "${queue}nomerges" 1
 write "${queue}rq_affinity" 2
-write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
 done
 
@@ -250,9 +281,9 @@ write "/dev/blkio/background/blkio.weight" "100"
 write "/dev/blkio/background/blkio.leaf_weight" "100"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                         TWEAKING CPU...                                                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                         TWEAKING CPU...                                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
@@ -291,9 +322,9 @@ write "/sys/devices/system/cpu/cpu2/online" "1"
 write "/sys/devices/system/cpu/cpu5/online" "1"
 write "/sys/devices/system/cpu/cpu6/online" "1"
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING GPU...                                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING GPU...                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	
 # GPU Tweaks.
 for gpu in /sys/class/kgsl/kgsl-3d0/
@@ -301,7 +332,7 @@ do
 if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
 then
 write "${gpu}throttling" "1"
-write "${gpu}thermal_pwrlevel" "0"
+write "${gpu}thermal_pwrlevel" "3"
 write "${gpu}devfreq/adrenoboost" "0"
 write "${gpu}force_no_nap" "0"
 write "${gpu}bus_split" "1"
@@ -312,6 +343,7 @@ write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
 write "${gpu}devfreq/polling_interval" "10"
+write "${gpu}idle_timer" "76"
 fi
 done
 
@@ -336,9 +368,9 @@ then
 write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -349,9 +381,9 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING LMK...                                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING LMK...                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Low Memory Killer tweaks.
 for lmk in /sys/module/lowmemorykiller/parameters/
@@ -364,9 +396,9 @@ write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING DEBUGGERS...                                                                                 "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING DEBUGGERS...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable debuggers.
 for bl in /sys/module/bluetooth/parameters/
@@ -475,9 +507,9 @@ do
 lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Schedtune Tweaks
 for st in /dev/stune
@@ -501,9 +533,9 @@ write "${st}/schedtune.prefer_idle" "0"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING FS TWEAKS...                                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING FS TWEAKS...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # FS tweaks.
 for fs in /proc/sys/fs/
@@ -512,12 +544,13 @@ if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
 write "${fs}lease-break-time" "20"
+write "${fs}leases-enable" "1"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING DYNAMIC FSYNC...                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING DYNAMIC FSYNC...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
@@ -527,9 +560,9 @@ chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Scheduler tweaks. 
 for sched in /sys/kernel/debug/
@@ -544,9 +577,9 @@ write "${sched}sched_features" "ARCH_POWER"
 fi
 done
  
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING ONEPLUS CHAIN...                                                                             "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING ONEPLUS CHAIN...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # OP Chain disable.
 for opc in /sys/module/opchain/parameters/
@@ -557,9 +590,9 @@ write "${opc}chain_on" "0"
 fi
 done
  
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING KERNEL SETTINGS...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING KERNEL SETTINGS...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
@@ -569,7 +602,7 @@ write "${kts}perf_cpu_time_max_percent" "5"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "256"
-sysctl -e -w kernel.random.urandom_min_reseed_secs=90
+write "${kts}random/urandom_min_reseed_secs" "90"
 write "${kts}sched_tunable_scaling" "0"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
 write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
@@ -581,14 +614,21 @@ write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
 
+# Use RCU_normal instead of RCU_expedited for improved real-time latency, CPU utilization and energy efficiency.
+if [[ -e "/sys/kernel/rcu_expedited" ]]
+then
+write /sys/kernel/rcu_expedited 0
+write /sys/kernel/rcu_normal 1
+fi
+
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
 write "/sys/power/pm_freeze_timeout" "2500"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING FINGERPRINT BOOST...                                                                          "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING FINGERPRINT BOOST...                                                                          "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable fingerprint boost.
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
@@ -596,9 +636,9 @@ then
 write "/sys/kernel/fp_boost/enabled" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Set min and max clocks.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
@@ -610,18 +650,18 @@ write "${minclk}scaling_max_freq" "20000000"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                 "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING KRAIT VOLTAGE BOOST...                                                                       "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING KRAIT VOLTAGE BOOST...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable krait voltage boost
 if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
@@ -629,9 +669,9 @@ then
 write "/sys/module/acpuclock_krait/parameters/boost" "N"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING VM TWEAKS...                                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING VM TWEAKS...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 sync
 
@@ -641,8 +681,8 @@ do
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "3000"
-write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}dirty_expire_centisecs" "2000"
+write "${vm}dirty_writeback_centisecs" "2000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "10"
 write "${vm}swap_ratio_enable" "1"
@@ -652,9 +692,9 @@ write "${vm}vfs_cache_pressure" "60"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # MSM thermal
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -664,9 +704,9 @@ write /sys/module/msm_thermal/core_control/enabled "1"
 write /sys/module/msm_thermal/parameters/enabled "Y"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING POWER EFFICIENT WORKQUEUE...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING POWER EFFICIENT WORKQUEUE...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable power efficient workqueue.
 for wqpw in /sys/module/workqueue/parameters/
@@ -677,9 +717,9 @@ write "${wqpw}power_efficient" "Y"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          FIXING DOUBLE TAP TO WAKEUP...                                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXING DOUBLE TAP TO WAKEUP...                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Fix DT2W.
 for dt in /sys/touchpanel/
@@ -695,9 +735,9 @@ then
 write "/proc/tp_gesture" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING MSM TOUCH BOOST...                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING MSM TOUCH BOOST...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable touch boost on balance and battery profile.
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
@@ -705,9 +745,9 @@ then
 write "/sys/module/msm_performance/parameters/touchboost" "0"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING INTERNET TWEAKS...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING INTERNET TWEAKS...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Internet Tweaks
 for tcp in /proc/sys/net/ipv4/
@@ -728,18 +768,18 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
-write "${tcp}tcp_congestion_control" "westwood"
+write "${tcp}tcp_congestion_control" "bbr2"
 done
 
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
 for i in $(find /sys/class/net -type l)
 do
-write "$i/tx_queue_len" "256"
+write "$i/tx_queue_len" "128"
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          CALIBRATING TOUCH...                                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          CALIBRATING TOUCH...                                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Touch calibration
 panel=$(cat /sys/class/graphics/fb0/modes)
@@ -750,9 +790,9 @@ else
 panel=${panel:2:4}
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          RENICING SOME PROCESSES...                                                                             "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 ### Phone dialer app ###
 renice -1 `pidof com.android.phone`
@@ -761,7 +801,7 @@ renice -1 `pidof com.android.phone`
 renice -1 `pidof com.android.mms` # Text message app
 renice -1 `pidof com.swype.android.inputmethod` # Keyboard
 renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
-renice -1 `pidof com.android.systemui` # Status bar
+renice -1 `pidof com.android.systemui` # System UI
 renice -1 `pidof com.android.settings` # Settings menu
 renice -1 `pidof com.android.vending` # Market app
 renice -1 `pidof com.sec.android.app.camera` # Camera app
@@ -769,9 +809,9 @@ renice -1 `pidof android.process.acore`
 renice -1 `pidof kondemand/0`
 renice -1 `pidof ksmartass_up/0`
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING BATTERY SAVER...                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING BATTERY SAVER...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable battery saver
 for bs in /sys/module/battery_saver/parameters/
@@ -782,9 +822,9 @@ write "${bs}enabled" "Y"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING LPM SLEEP...                                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING LPM SLEEP...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable LPM sleep in balanced / battery profile
 for lpm in /sys/module/lpm_levels/parameters/
@@ -807,27 +847,36 @@ write "/sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled" "Y"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING PM2 IDLE SLEEP MODE...                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING PM2 IDLE SLEEP MODE...                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
 write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING LCD POWER REDUCE...                                                                          "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING LCD POWER REDUCE...                                                                          "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "0"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING FORCE FAST CHARGING...                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING GENTLE FAIR SLEEPERS...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
+then
+write "/sys/kernel/sched/gentle_fair_sleepers" "1"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING FORCE FAST CHARGING...                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable Fast Charging Rate
 for ffc in /sys/kernel/fast_charge/
@@ -838,64 +887,60 @@ write "${ffc}force_fast_charge" "1"
 fi
 done
   
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          KILLING GMS PROCESSES...                                                                               "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          KILLING GMS PROCESSES...                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# GMS blocker 1.2 by @pedroginkgo
+# GMS blocker 1.2 by pedrozzz
 killall -9 com.google.android.gms
 killall -9 com.google.android.gms.persistent
 killall -9 com.google.process.gapps
 killall -9 com.google.android.gsf
 killall -9 com.google.android.gsf.persistent
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                     BALANCE PROFILE APPLIED WITH SUCCESS.                                                                       "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          END OF EXECUTION: $(date)                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+exit=$(date +%s)
+
+exectime=$((exit - init))
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
     # Performance Profile
-        "1") {
-        	kmsg ""
-kmsg "---------------------------------------------------------- Info --------------------------------------------------------------------------------------------"
-kmsg "                                            🕛 Date of execution: $(date)                                                                                   "
-kmsg "                                            🔧 Device kernel: `uname -a`                                                                                    "
-kmsg "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
-kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
-kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
-kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.4                                                                                           "
-kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg ""
+        "PERFORMANCE") {
+        	init=$(date +%s)
+kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
+kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
+kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
+kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
+kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
+kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
+kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
+kmsg1 "                                            👑 KTS Version: 1.8.5                                                                                           "
+kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
-	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg "                                    ENABLING PERFORMANCE PROFILE...                                                                              "
-	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-       
-        	# Duration in nanoseconds of one scheduling period
-SCHED_PERIOD="$((1 * 1000 * 1000))"
-
-# How many tasks should we have at a maximum in one scheduling period
-SCHED_TASKS="8"
-
-# Maximum unsigned integer size in C
-UINT_MAX="4294967295"
-
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING THERMAL-ENGINE AND ENABLING PERFD...                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+	kmsg1 "                                        ENABLING $kts_profile PROFILE...                                                                         "
+	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+		
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                        DISABLING THERMAL-ENGINE AND ENABLING PERFD...                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable throttling and enable perfd.
 stop thermal-engine
 start perfd
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING CPU INPUT BOOST...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING CPU INPUT BOOST...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Caf CPU Boost
 for caf in /sys/module/cpu_boost/parameters/
@@ -918,9 +963,9 @@ write "${cib}input_boost_freq_lp" "$UINT_MAX"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING I/O SCHEDULER...                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING I/O SCHEDULER...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
@@ -936,9 +981,10 @@ fi
 done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
+write "${queue}read_ahead_kb" 512
+write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 1
 write "${queue}rq_affinity" 2
-write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
 done
 
@@ -951,9 +997,9 @@ write "/dev/blkio/background/blkio.weight" "100"
 write "/dev/blkio/background/blkio.leaf_weight" "100"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                         TWEAKING CPU...                                                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                         TWEAKING CPU...                                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
@@ -990,9 +1036,9 @@ write "/sys/devices/system/cpu/cpu2/online" "1"
 write "/sys/devices/system/cpu/cpu5/online" "1"
 write "/sys/devices/system/cpu/cpu6/online" "1"
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING GPU...                                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING GPU...                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	
 # GPU Tweaks.
 for gpu in /sys/class/kgsl/kgsl-3d0/
@@ -1000,17 +1046,18 @@ do
 if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
 then
 write "${gpu}throttling" "1"
-write "${gpu}thermal_pwrlevel" "1"
+write "${gpu}thermal_pwrlevel" "0"
 write "${gpu}devfreq/adrenoboost" "0"
 write "${gpu}force_no_nap" "0"
 write "${gpu}bus_split" "1"
 write "${gpu}devfreq/min_freq" "100000000"
-write "${gpu}devfreq/max_freq" "950000000"
+write "${gpu}devfreq/max_freq" "$UINT_MAX"
 write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
-write "${gpu}devfreq/polling_interval" "10"
+write "${gpu}devfreq/polling_interval" "16"
+write "${gpu}idle_timer" "60"
 fi
 done
 
@@ -1035,9 +1082,9 @@ then
 write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -1048,9 +1095,9 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "15"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING LMK...                                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING LMK...                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Low Memory Killer Tweaks.
 for lmk in /sys/module/lowmemorykiller/parameters/
@@ -1063,9 +1110,9 @@ write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING DEBUGGERS...                                                                                 "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING DEBUGGERS...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable debuggers.
 for bl in /sys/module/bluetooth/parameters/
@@ -1169,9 +1216,9 @@ do
 lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Schedtune Tweaks
 for st in /dev/stune
@@ -1195,9 +1242,9 @@ write "${st}/schedtune.prefer_idle" "0"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING FS TWEAKS...                                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING FS TWEAKS...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # FS Tweaks.
 for fs in /proc/sys/fs/
@@ -1206,12 +1253,13 @@ if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
 write "${fs}lease-break-time" "20"
+write "${fs}leases-enable" "1"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING DYNAMIC FSYNC...                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING DYNAMIC FSYNC...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
@@ -1221,9 +1269,9 @@ chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Scheduler features.
 for sched in /sys/kernel/debug/
@@ -1237,9 +1285,9 @@ write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
 fi
 done
 	
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING ONEPLUS CHAIN...                                                                             "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING ONEPLUS CHAIN...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # OP Tweaks
 for opc in /sys/module/opchain/parameters/
@@ -1250,9 +1298,9 @@ write "${opc}chain_on" "0"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING KERNEL SETTINGS...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING KERNEL SETTINGS...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
@@ -1261,7 +1309,7 @@ write "${kts}sched_child_runs_first" "1"
 write "${kts}perf_cpu_time_max_percent" "5"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
-write "${kts}random/write_wakeup_threshold" "512"
+write "${kts}random/write_wakeup_threshold" "896"
 sysctl -e -w kernel.random.urandom_min_reseed_secs=90
 write "${kts}sched_tunable_scaling" "0"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
@@ -1274,14 +1322,21 @@ write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
 
+# Use RCU_normal instead of RCU_expedited for improved real-time latency, CPU utilization and energy efficiency.
+if [[ -e "/sys/kernel/rcu_expedited" ]]
+then
+write /sys/kernel/rcu_expedited 0
+write /sys/kernel/rcu_normal 1
+fi
+
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
 write "/sys/power/pm_freeze_timeout" "2500"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING FINGERPRINT BOOST...                                                                          "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING FINGERPRINT BOOST...                                                                          "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable fingerprint boost.
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
@@ -1289,9 +1344,9 @@ then
 write "/sys/kernel/fp_boost/enabled" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Set max clocks in gaming / performance profile.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
@@ -1303,18 +1358,18 @@ write "${minclk}scaling_max_freq" "20000000"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                         DISABLING CPUIDLE USE DEEPEST STATE...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                         DISABLING CPUIDLE USE DEEPEST STATE...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING KRAIT VOLTAGE BOOST...                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING KRAIT VOLTAGE BOOST...                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable krait voltage boost
 if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
@@ -1322,9 +1377,9 @@ then
 write "/sys/module/acpuclock_krait/parameters/boost" "Y"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING VM TWEAKS...                                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING VM TWEAKS...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 sync
 
@@ -1334,10 +1389,10 @@ do
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "15"
-write "${vm}dirty_expire_centisecs" "3000"
-write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}dirty_expire_centisecs" "1000"
+write "${vm}dirty_writeback_centisecs" "550"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "10"
+write "${vm}stat_interval" "30"
 write "${vm}swappiness" "100"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
@@ -1345,9 +1400,9 @@ write "${vm}vfs_cache_pressure" "75"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # MSM thermal
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -1357,9 +1412,9 @@ write /sys/module/msm_thermal/core_control/enabled "0"
 write /sys/module/msm_thermal/parameters/enabled "N"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING POWER EFFICIENT WORKQUEUE...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING POWER EFFICIENT WORKQUEUE...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Workqueue disable power_efficient.
 for wqpw in /sys/module/workqueue/parameters/
@@ -1370,9 +1425,9 @@ write "${wqpw}power_efficient" "N"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          FIXING DOUBLE TAP TO WAKEUP...                                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXING DOUBLE TAP TO WAKEUP...                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Fix DT2W
 for dt in /sys/touchpanel/
@@ -1388,9 +1443,9 @@ then
 write "/proc/tp_gesture" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING MSM TOUCH BOOST...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING MSM TOUCH BOOST...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable touch boost on gaming and performance profile.
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
@@ -1398,9 +1453,9 @@ then
 write "/sys/module/msm_performance/parameters/touchboost" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING INTERNET TWEAKS...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING INTERNET TWEAKS...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Internet Tweaks
 for tcp in /proc/sys/net/ipv4/
@@ -1421,18 +1476,18 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
-write "${tcp}tcp_congestion_control" "westwood"
+write "${tcp}tcp_congestion_control" "bbr2"
 done
 
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
 for i in $(find /sys/class/net -type l)
 do
-write "$i/tx_queue_len" "256"
+write "$i/tx_queue_len" "128"
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          CALIBRATING TOUCH...                                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          CALIBRATING TOUCH...                                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Touch calibration
 panel=$(cat /sys/class/graphics/fb0/modes)
@@ -1443,9 +1498,9 @@ else
 panel=${panel:2:4}
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          RENICING SOME PROCESSES...                                                                             "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 ### Phone dialer app ###
 renice -1 `pidof com.android.phone`
@@ -1454,7 +1509,7 @@ renice -1 `pidof com.android.phone`
 renice -1 `pidof com.android.mms` # Text message app
 renice -1 `pidof com.swype.android.inputmethod` # Keyboard
 renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
-renice -1 `pidof com.android.systemui` # Status bar
+renice -1 `pidof com.android.systemui` # System UI
 renice -1 `pidof com.android.settings` # Settings menu
 renice -1 `pidof com.android.vending` # Market app
 renice -1 `pidof com.sec.android.app.camera` # Camera app
@@ -1462,9 +1517,9 @@ renice -1 `pidof android.process.acore`
 renice -1 `pidof kondemand/0`
 renice -1 `pidof ksmartass_up/0`
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING BATTERY SAVER...                                                                             "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING BATTERY SAVER...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable battery saver
 for bs in /sys/module/battery_saver/parameters/
@@ -1475,19 +1530,19 @@ write "${bs}enabled" "N"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING ARCH POWER...                                                                                "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING ARCH POWER...                                                                                "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable arch power
+# Disable arch power
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
 then
 write "/sys/kernel/sched/arch_power" "0"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING LPM SLEEP...                                                                                 "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING LPM SLEEP...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   
 # Disable LPM in gaming profile / performance profile
 for lpm in /sys/module/lpm_levels/parameters/
@@ -1510,27 +1565,36 @@ write "/sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled" "N"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING PM2 IDLE SLEEP MODE...                                                                       "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING PM2 IDLE SLEEP MODE...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
 write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING LCD POWER REDUCE..                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING LCD POWER REDUCE..                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "0"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING FORCE FAST CHARGING...                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING GENTLE FAIR SLEEPERS...                                                                      "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
+then
+write "/sys/kernel/sched/gentle_fair_sleepers" "0"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING FORCE FAST CHARGING...                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable Fast Charging Rate
 for ffc in /sys/kernel/fast_charge/
@@ -1541,9 +1605,9 @@ write "${ffc}force_fast_charge" "1"
 fi
 done
   
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          KILLING GMS PROCESSES...                                                                               "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          KILLING GMS PROCESSES...                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GMS blocker 1.2 by @pedroginkgo
 killall -9 com.google.android.gms
@@ -1552,56 +1616,49 @@ killall -9 com.google.process.gapps
 killall -9 com.google.android.gsf
 killall -9 com.google.android.gsf.persistent
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                     PERFORMANCE PROFILE APPLIED WITH SUCCESS.                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          END OF EXECUTION: $(date)                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+exit=$(date +%s)
+
+exectime=$((exit - init))
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
     # Battery Profile
-        "2") {
-        	kmsg ""
-kmsg "---------------------------------------------------------- Info --------------------------------------------------------------------------------------------"
-kmsg "                                            🕛 Date of execution: $(date)                                                                                   "
-kmsg "                                            🔧 Device kernel: `uname -a`                                                                                    "
-kmsg "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
-kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
-kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
-kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.4                                                                                           "
-kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg ""
+        "BATTERY") {
+        	init=$(date +%s)
+kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
+kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
+kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
+kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
+kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
+kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
+kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
+kmsg1 "                                            👑 KTS Version: 1.8.5                                                                                           "
+kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
-	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg "                                        ENABLING BATTERY PROFILE...                                                                              "
-	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	
-	# Duration in nanoseconds of one scheduling period
-SCHED_PERIOD="$((1 * 1000 * 1000))"
+	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+	kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
+	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# How many tasks should we have at a maximum in one scheduling period
-SCHED_TASKS="8"
-
-# Maximum unsigned integer size in C
-UINT_MAX="4294967295"
-
-# Variable to battery %
-percentage=$(cat /sys/class/power_supply/battery/capacity)
-
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
     	
 # Enable throttling and perfd.
 start thermal-engine
 start perfd
     
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING I/O SCHEDULER...                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING I/O SCHEDULER...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
@@ -1617,9 +1674,10 @@ fi
 done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
+write "${queue}read_ahead_kb" 128
+write "${queue}iosched/low_latency" 1
 write "${queue}nomerges" 1
 write "${queue}rq_affinity" 2
-write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
 done
 
@@ -1632,9 +1690,9 @@ write "/dev/blkio/background/blkio.weight" "100"
 write "/dev/blkio/background/blkio.leaf_weight" "100"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                         TWEAKING CPU...                                                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                         TWEAKING CPU...                                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
@@ -1682,9 +1740,9 @@ write "/sys/devices/system/cpu/cpu5/online" "1"
 write "/sys/devices/system/cpu/cpu6/online" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING GPU...                                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING GPU...                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	
 # GPU Tweaks
 for gpu in /sys/class/kgsl/kgsl-3d0/
@@ -1702,6 +1760,7 @@ write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
 write "${gpu}devfreq/polling_interval" "26"
+write "${gpu}idle_timer" "36"
 fi
 done
 
@@ -1738,9 +1797,9 @@ write "${gpu}devfreq/max_freq" "745000000"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -1751,9 +1810,9 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "35"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING LMK...                                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING LMK...                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Low Memory Killer tweaks
 for lmk in /sys/module/lowmemorykiller/parameters/
@@ -1766,9 +1825,9 @@ write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING DEBUGGERS...                                                                                 "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING DEBUGGERS...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable debuggers.
 for bl in /sys/module/bluetooth/parameters/
@@ -1872,9 +1931,9 @@ do
 lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Schedtune tweaks
 for st in /dev/stune
@@ -1898,9 +1957,9 @@ write "${st}/schedtune.prefer_idle" "0"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING FS TWEAKS...                                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING FS TWEAKS...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # FS Tweaks.
 for fs in /proc/sys/fs/
@@ -1909,12 +1968,13 @@ if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
 write "${fs}lease-break-time" "20"
+write "${fs}leases-enable" "1"
 fi
 done
     
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING DYNAMIC FSYNC...                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING DYNAMIC FSYNC...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
@@ -1924,9 +1984,9 @@ chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Scheduler features.
 for sched in /sys/kernel/debug/
@@ -1941,9 +2001,9 @@ write "${sched}sched_features" "ARCH_POWER"
 fi
 done
 	
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING ONEPLUS CHAIN...                                                                             "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING ONEPLUS CHAIN...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # OP Tweaks
 for opc in /sys/module/opchain/parameters/
@@ -1954,9 +2014,9 @@ write "${opc}chain_on" "0"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING KERNEL SETTINGS...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING KERNEL SETTINGS...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
@@ -1966,7 +2026,7 @@ write "${kts}perf_cpu_time_max_percent" "5"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "128"
-sysctl -e -w kernel.random.urandom_min_reseed_secs=90
+write "${kts}random/urandom_min_reseed_secs" "90"
 write "${kts}sched_tunable_scaling" "0"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
 write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
@@ -1978,14 +2038,21 @@ write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
 
+# Use RCU_normal instead of RCU_expedited for improved real-time latency, CPU utilization and energy efficiency.
+if [[ -e "/sys/kernel/rcu_expedited" ]]
+then
+write /sys/kernel/rcu_expedited 0
+write /sys/kernel/rcu_normal 1
+fi
+
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
 write "/sys/power/pm_freeze_timeout" "2500"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING FINGERPRINT BOOST...                                                                          "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING FINGERPRINT BOOST...                                                                          "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable fingerprint boost.
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
@@ -1993,9 +2060,9 @@ then
 write "/sys/kernel/fp_boost/enabled" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Set min and max clocks.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
@@ -2011,18 +2078,18 @@ write "${minclk}scaling_max_freq" "1600000"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING KRAIT VOLTAGE BOOST...                                                                       "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING KRAIT VOLTAGE BOOST...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable krait voltage boost
 if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
@@ -2030,9 +2097,9 @@ then
 write "/sys/module/acpuclock_krait/parameters/boost" "N"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING VM TWEAKS...                                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING VM TWEAKS...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 sync
 
@@ -2042,10 +2109,10 @@ do
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "3000"
-write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}dirty_expire_centisecs" "5000"
+write "${vm}dirty_writeback_centisecs" "5000"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "10"
+write "${vm}stat_interval" "30"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
@@ -2053,9 +2120,9 @@ write "${vm}vfs_cache_pressure" "20"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING KSM...                                                                                       "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING KSM...                                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable KSM
 if [[ -e "/sys/kernel/mm/ksm/run" ]] 
@@ -2063,9 +2130,9 @@ then
 write "/sys/kernel/mm/ksm/run" "0"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING UKSM...                                                                                      "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING UKSM...                                                                                      "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable UKSM
 if [[ -e "/sys/kernel/mm/uksm/run" ]] 
@@ -2073,9 +2140,9 @@ then
 write "/sys/kernel/mm/uksm/run" "0"
 fi
 
-kmsg "-  ------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # MSM thermal
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -2085,9 +2152,9 @@ write /sys/module/msm_thermal/core_control/enabled "1"
 write /sys/module/msm_thermal/parameters/enabled "Y"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING POWER EFFICIENT WORKQUEUE...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING POWER EFFICIENT WORKQUEUE...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Workqueue enable power_efficient.
 for wqpw in /sys/module/workqueue/parameters/
@@ -2098,9 +2165,9 @@ write "${wqpw}power_efficient" "Y"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          FIXING DOUBLE TAP TO WAKEUP...                                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXING DOUBLE TAP TO WAKEUP...                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Fix DT2W
 for dt in /sys/touchpanel/
@@ -2116,9 +2183,9 @@ then
 write "/proc/tp_gesture" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING MSM TOUCH BOOST...                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING MSM TOUCH BOOST...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable touch boost on battery and balance profile.
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
@@ -2126,9 +2193,9 @@ then
 write "/sys/module/msm_performance/parameters/touchboost" "0"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING INTERNET TWEAKS...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING INTERNET TWEAKS...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Internet Tweaks
 for tcp in /proc/sys/net/ipv4/
@@ -2149,18 +2216,18 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
-write "${tcp}tcp_congestion_control" "westwood"
+write "${tcp}tcp_congestion_control" "bbr2"
 done
 
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
 for i in $(find /sys/class/net -type l)
 do
-write "$i/tx_queue_len" "256"
+write "$i/tx_queue_len" "128"
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          CALIBRATING TOUCH...                                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                         CALIBRATING TOUCH...                                                                                    "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Touch calibration
 panel=$(cat /sys/class/graphics/fb0/modes)
@@ -2171,9 +2238,9 @@ else
 panel=${panel:2:4}
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          RENICING SOME PROCESSES...                                                                             "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 ### Phone dialer app ###
 renice -1 `pidof com.android.phone`
@@ -2182,7 +2249,7 @@ renice -1 `pidof com.android.phone`
 renice -1 `pidof com.android.mms` # Text message app
 renice -1 `pidof com.swype.android.inputmethod` # Keyboard
 renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
-renice -1 `pidof com.android.systemui` # Status bar
+renice -1 `pidof com.android.systemui` # System UI
 renice -1 `pidof com.android.settings` # Settings menu
 renice -1 `pidof com.android.vending` # Market app
 renice -1 `pidof com.sec.android.app.camera` # Camera app
@@ -2190,9 +2257,9 @@ renice -1 `pidof android.process.acore`
 renice -1 `pidof kondemand/0`
 renice -1 `pidof ksmartass_up/0`
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING BATTERY SAVER...                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING BATTERY SAVER...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable battery saver
 for bs in /sys/module/battery_saver/parameters/
@@ -2203,9 +2270,9 @@ write "${bs}enabled" "Y"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING LPM SLEEP...                                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING LPM SLEEP...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable LPM in battery / balanced profile
 for lpm in /sys/module/lpm_levels/parameters/
@@ -2228,18 +2295,27 @@ write "/sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled" "Y"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING LCD POWER REDUCE...                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING LCD POWER REDUCE...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING FORCE FAST CHARGING...                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING GENTLE FAIR SLEEPERS...                                                                      "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
+then
+write "/sys/kernel/sched/gentle_fair_sleepers" "0"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING FORCE FAST CHARGING...                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable Fast Charging Rate
 for ffc in /sys/kernel/fast_charge/
@@ -2250,9 +2326,9 @@ write "${ffc}force_fast_charge" "1"
 fi
 done
   
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          KILLING GMS PROCESSES...                                                                               "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          KILLING GMS PROCESSES...                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GMS blocker 1.2 by @pedroginkgo
 killall -9 com.google.android.gms
@@ -2261,53 +2337,49 @@ killall -9 com.google.process.gapps
 killall -9 com.google.android.gsf
 killall -9 com.google.android.gsf.persistent
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                     BATTERY PROFILE APPLIED WITH SUCCESS.                                                                       "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          END OF EXECUTION: $(date)                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+exit=$(date +%s)
+
+exectime=$((exit - init))
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
     # Gaming Profile
-        "3") {
-        	kmsg ""
-kmsg "---------------------------------------------------------- Info --------------------------------------------------------------------------------------------"
-kmsg "                                            🕛 Date of execution: $(date)                                                                                   "
-kmsg "                                            🔧 Device kernel: `uname -a`                                                                                    "
-kmsg "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
-kmsg "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
-kmsg "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
-kmsg "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg "                                            👑 KTS Version: 1.8.3                                                                                           "
-kmsg "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg ""
+        "GAMING") {
+        	init=$(date +%s)
+kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
+kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
+kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
+kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
+kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
+kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
+kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
+kmsg1 "                                            👑 KTS Version: 1.8.5                                                                                           "
+kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
-	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg "                                           ENABLING GAMING PROFILE...                                                                            "
-	kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-       
-        	# Duration in nanoseconds of one scheduling period
-SCHED_PERIOD="$((1 * 1000 * 1000))"
-
-# How many tasks should we have at a maximum in one scheduling period
-SCHED_TASKS="8"
-
-# Maximum unsigned integer size in C
-UINT_MAX="4294967295"
-
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING THERMAL-ENGINE AND PERFD...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+	kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
+	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+		
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING THERMAL-ENGINE AND PERFD...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable throttling and perfd.
 stop thermal-engine
 stop perfd
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING CPU INPUT BOOST...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING CPU INPUT BOOST...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Caf CPU Boost
 for caf in /sys/module/cpu_boost/parameters/
@@ -2330,9 +2402,9 @@ write "${cib}input_boost_freq_lp" "$UINT_MAX"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING I/O SCHEDULER...                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING I/O SCHEDULER...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
@@ -2348,9 +2420,10 @@ fi
 done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
+write "${queue}read_ahead_kb" 512
+write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 1
 write "${queue}rq_affinity" 2
-write "${queue}read_ahead_kb" 128
 write "${queue}nr_requests" 64
 done
 
@@ -2363,9 +2436,9 @@ write "/dev/blkio/background/blkio.weight" "100"
 write "/dev/blkio/background/blkio.leaf_weight" "100"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                         TWEAKING CPU...                                                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                         TWEAKING CPU...                                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
@@ -2402,9 +2475,9 @@ write "/sys/devices/system/cpu/cpu2/online" "1"
 write "/sys/devices/system/cpu/cpu5/online" "1"
 write "/sys/devices/system/cpu/cpu6/online" "1"
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING GPU...                                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING GPU...                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	
 # GPU Tweaks.
 for gpu in /sys/class/kgsl/kgsl-3d0/
@@ -2412,7 +2485,7 @@ do
 if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
 then
 write "${gpu}throttling" "0"
-write "${gpu}thermal_pwrlevel" "3"
+write "${gpu}thermal_pwrlevel" "0"
 write "${gpu}devfreq/adrenoboost" "3"
 write "${gpu}force_no_nap" "1"
 write "${gpu}bus_split" "0"
@@ -2423,6 +2496,7 @@ write "${gpu}force_bus_on" "1"
 write "${gpu}force_clk_on" "1"
 write "${gpu}force_rail_on" "1"
 write "${gpu}devfreq/polling_interval" "5"
+write "${gpu}idle_timer" "10000000"
 fi
 done
 
@@ -2447,9 +2521,9 @@ then
 write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -2460,9 +2534,9 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "10"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                             TWEAKING LMK...                                                                                     "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                             TWEAKING LMK...                                                                                     "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Low Memory Killer Tweaks.
 for lmk in /sys/module/lowmemorykiller/parameters/
@@ -2475,9 +2549,9 @@ write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING DEBUGGERS...                                                                                 "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING DEBUGGERS...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable debuggers.
 for bl in /sys/module/bluetooth/parameters/
@@ -2581,9 +2655,9 @@ do
 lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                            APPLYING SCHEDTUNE TWEAKS...                                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                            APPLYING SCHEDTUNE TWEAKS...                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Schedtune Tweaks
 for st in /dev/stune
@@ -2607,9 +2681,9 @@ write "${st}/schedtune.prefer_idle" "0"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                            APPLYING FS TWEAKS...                                                                                "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                            APPLYING FS TWEAKS...                                                                                "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # FS Tweaks.
 for fs in /proc/sys/fs/
@@ -2618,12 +2692,13 @@ if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
 write "${fs}lease-break-time" "20"
+write "${fs}leases-enable" "1"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING DYNAMIC FSYNC...                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING DYNAMIC FSYNC...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable dynamic_fsync.
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
@@ -2633,9 +2708,9 @@ chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Scheduler features.
 for sched in /sys/kernel/debug/
@@ -2649,9 +2724,9 @@ write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
 fi
 done
 	
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING ONEPLUS CHAIN...                                                                             "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING ONEPLUS CHAIN...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # OP Tweaks
 for opc in /sys/module/opchain/parameters/
@@ -2662,9 +2737,9 @@ write "${opc}chain_on" "0"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          TWEAKING KERNEL SETTINGS...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING KERNEL SETTINGS...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
@@ -2673,8 +2748,8 @@ write "${kts}sched_child_runs_first" "1"
 write "${kts}perf_cpu_time_max_percent" "5"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
-write "${kts}random/write_wakeup_threshold" "512"
-sysctl -e -w kernel.random.urandom_min_reseed_secs=90
+write "${kts}random/write_wakeup_threshold" "896"
+write "${kts}random/urandom_min_reseed_secs" "90"
 write "${kts}sched_tunable_scaling" "0"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
 write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
@@ -2686,14 +2761,21 @@ write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
 
+# Use RCU_normal instead of RCU_expedited for improved real-time latency, CPU utilization and energy efficiency.
+if [[ -e "/sys/kernel/rcu_expedited" ]]
+then
+write /sys/kernel/rcu_expedited 0
+write /sys/kernel/rcu_normal 1
+fi
+
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
 write "/sys/power/pm_freeze_timeout" "2500"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING FINGERPRINT BOOST...                                                                          "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING FINGERPRINT BOOST...                                                                          "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable fingerprint boost.
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
@@ -2701,9 +2783,9 @@ then
 write "/sys/kernel/fp_boost/enabled" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Set max clocks in gaming / performance profile.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
@@ -2715,18 +2797,18 @@ write "${minclk}scaling_max_freq" "20000000"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING CPUIDLE USE DEEPEST STATE...                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING CPUIDLE USE DEEPEST STATE...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING KRAIT VOLTAGE BOOST...                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING KRAIT VOLTAGE BOOST...                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable krait voltage boost
 if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
@@ -2734,9 +2816,9 @@ then
 write "/sys/module/acpuclock_krait/parameters/boost" "Y"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING VM TWEAKS...                                                                                  "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING VM TWEAKS...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 sync
 
@@ -2746,10 +2828,10 @@ do
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "10"
-write "${vm}dirty_expire_centisecs" "3000"
-write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}dirty_expire_centisecs" "1000"
+write "${vm}dirty_writeback_centisecs" "550"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "10"
+write "${vm}stat_interval" "60"
 write "${vm}swappiness" "100"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
@@ -2757,9 +2839,9 @@ write "${vm}vfs_cache_pressure" "200"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # MSM thermal
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -2769,9 +2851,9 @@ write /sys/module/msm_thermal/core_control/enabled "0"
 write /sys/module/msm_thermal/parameters/enabled "N"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING POWER EFFICIENT WORKQUEUE...                                                                 "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING POWER EFFICIENT WORKQUEUE...                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Workqueue disable power_efficient.
 for wqpw in /sys/module/workqueue/parameters/
@@ -2782,9 +2864,9 @@ write "${wqpw}power_efficient" "N"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          FIXING DOUBLE TAP TO WAKEUP...                                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXING DOUBLE TAP TO WAKEUP...                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Fix DT2W
 for dt in /sys/touchpanel/
@@ -2800,9 +2882,9 @@ then
 write "/proc/tp_gesture" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          ENABLING MSM TOUCH BOOST...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING MSM TOUCH BOOST...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable touch boost on gaming and performance profile.
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
@@ -2810,9 +2892,9 @@ then
 write "/sys/module/msm_performance/parameters/touchboost" "1"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          APPLYING INTERNET TWEAKS...                                                                            "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING INTERNET TWEAKS...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Internet Tweaks
 for tcp in /proc/sys/net/ipv4/
@@ -2833,18 +2915,18 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
-write "${tcp}tcp_congestion_control" "westwood"
+write "${tcp}tcp_congestion_control" "bbr2"
 done
 
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
 for i in $(find /sys/class/net -type l)
 do
-write "$i/tx_queue_len" "256"
+write "$i/tx_queue_len" "128"
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          CALIBRATING TOUCH...                                                                                   "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          CALIBRATING TOUCH...                                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Touch calibration
 panel=$(cat /sys/class/graphics/fb0/modes)
@@ -2855,9 +2937,9 @@ else
 panel=${panel:2:4}
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          RENICING SOME PROCESSES...                                                                             "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 ### Phone dialer app ###
 renice -1 `pidof com.android.phone`
@@ -2866,7 +2948,7 @@ renice -1 `pidof com.android.phone`
 renice -1 `pidof com.android.mms` # Text message app
 renice -1 `pidof com.swype.android.inputmethod` # Keyboard
 renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
-renice -1 `pidof com.android.systemui` # Status bar
+renice -1 `pidof com.android.systemui` # System UI
 renice -1 `pidof com.android.settings` # Settings menu
 renice -1 `pidof com.android.vending` # Market app
 renice -1 `pidof com.sec.android.app.camera` # Camera app
@@ -2874,9 +2956,9 @@ renice -1 `pidof android.process.acore`
 renice -1 `pidof kondemand/0`
 renice -1 `pidof ksmartass_up/0`
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING BATTERY SAVER...                                                                             "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING BATTERY SAVER...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable battery saver
 for bs in /sys/module/battery_saver/parameters/
@@ -2887,9 +2969,9 @@ write "${bs}enabled" "N"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING ARCH POWER...                                                                                "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING ARCH POWER...                                                                                "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable arch power
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
@@ -2897,9 +2979,9 @@ then
 write "/sys/kernel/sched/arch_power" "0"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING LPM SLEEP...                                                                                 "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING LPM SLEEP...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable LPM sleep on gaming profile / performance profile
 for lpm in /sys/module/lpm_levels/parameters/
@@ -2922,27 +3004,36 @@ write "/sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled" "N"
 fi
 done
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING PM2 IDLE SLEEP MODE...                                                                        "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING PM2 IDLE SLEEP MODE...                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
 write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          DISABLING LCD POWER REDUCE..                                                                           "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING LCD POWER REDUCE...                                                                          "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "0"
 fi
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                         ENABLING FORCE FAST CHARGING...                                                                         "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING GENTLE FAIR SLEEPERS...                                                                      "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
+then
+write "/sys/kernel/sched/gentle_fair_sleepers" "0"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                         ENABLING FORCE FAST CHARGING...                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable Fast Charging Rate
 for ffc in /sys/kernel/fast_charge/
@@ -2953,24 +3044,30 @@ write "${ffc}force_fast_charge" "1"
 fi
 done
   
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          KILLING GMS PROCESSES...                                                                               "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          KILLING GMS PROCESSES...                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# GMS blocker 1.2 by @pedroginkgo
+# GMS blocker 1.2 by pedrozzz
 killall -9 com.google.android.gms
 killall -9 com.google.android.gms.persistent
 killall -9 com.google.process.gapps
 killall -9 com.google.android.gsf
 killall -9 com.google.android.gsf.persistent
 
-kmsg "------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                     GAMING PROFILE APPLIED WITH SUCCESS.                                                                       "
-kmsg "------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                            "
+kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------"
 
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg "                                          END OF EXECUTION: $(date)                                                                              "
-kmsg "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+exit=$(date +%s)
+
+exectime=$((exit - init))
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 vibrate_cmode
 };;
 esac
