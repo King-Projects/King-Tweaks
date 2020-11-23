@@ -17,6 +17,22 @@ kmsg1() {
 	echo -e "$@"
 }
 
+toast() {
+	am start -a android.intent.action.MAIN -e toasttext "Applying $kts_profile profile..." -n bellavita.toast/.MainActivity
+}
+	
+toastpt() {
+	am start -a android.intent.action.MAIN -e toasttext "Aplicando perfil $kts_profilept..." -n bellavita.toast/.MainActivity
+}
+
+toastpt1() {
+	am start -a android.intent.action.MAIN -e toasttext "Perfil $kts_profilept aplicado" -n bellavita.toast/.MainActivity
+}
+
+toast1() {
+	am start -a android.intent.action.MAIN -e toasttext "$kts_profile profile applied" -n bellavita.toast/.MainActivity
+}
+
 write() {
 	# Bail out if file does not exist
 	[[ ! -f "$1" ]] && return 1
@@ -41,43 +57,29 @@ write() {
 	kmsg "$1 $curval -> $2"
 }
 
-vibrate_cmode() {
-if [ -e /sys/class/leds/vibrator/duration ] &&  [ -e /sys/class/leds/vibrator/activate ]
-then
-echo 500 > /sys/class/leds/vibrator/duration && echo 1 > /sys/class/leds/vibrator/activate
-fi
-}
-
 # Check for root permissions and bail if not granted
 if [[ "$(id -u)" -ne 0 ]]
 then
-kmsg "No root permissions. Exiting."
+kmsg1 "[!] No root permissions. Exiting."
 exit 1
 fi
 
-# Wait 60s into boot before applying changes
-while [[ `cat /proc/uptime | awk '{print $1}' | awk -F. '{print $1}'` -lt 60 ]]
-do
-	sleep 2
-done
-
-setprop persist.spectrum.kernel "KTS Reborn"
-setprop spectrum.support "1"
+setprop kingtweaks.support "1"
 
 boot_run_once=false
-kts_mode=$(getprop persist.spectrum.profile)
-[ -z "$kts_mode" ] && setprop persist.spectrum.profile "0"
+kts_mode=$(getprop persist.kingtweaks.mode)
+[ -z "$kts_mode" ] && setprop persist.kingtweaks.mode "3"
 
 while true
 do
 sleep 3
 if $boot_run_once
 then
-[ "$(getprop persist.spectrum.profile)" == "$kts_mode" ] && continue
+[ "$(getprop persist.kingtweaks.mode)" == "$kts_mode" ] && continue
 else
 boot_run_once=true
 fi
-kts_mode=$(getprop persist.spectrum.profile)
+kts_mode=$(getprop persist.kingtweaks.mode)
 loc=/data/adb/modules
 
 # Duration in nanoseconds of one scheduling period
@@ -203,28 +205,98 @@ then
 kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
 exit 1
 fi
-	
-if [[ "$kts_mode" == "0" ]]
+
+if [[ "$kts_mode" == "1" ]]
 then
-kts_profile=BALANCE
-        	
-elif [[ "$kts_mode" == "1" ]]
-then
-kts_profile=PERFORMANCE
+kts_profilept=Automático
         	
 elif [[ "$kts_mode" == "2" ]]
 then
-kts_profile=BATTERY
+kts_profilept=Bateria
         	
 elif [[ "$kts_mode" == "3" ]]
 then
-kts_profile=GAMING
+kts_profilept=Balanceado
+        	
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profilept=Performance
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profilept=Jogando
+fi
+	
+if [[ "$kts_mode" == "1" ]]
+then
+kts_profile=Automatic
+        	
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profile=Battery
+        	
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profile=Balance
+        	
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profile=Performance
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profile=Gaming
 fi
 
 case "$kts_profile" in
+     # Automatic profile (WIP)
+     "Automatic") {
+     	if [[ $(getprop ro.product.locale.language) == "pt" ]]
+     	then
+     	toastpt
+     	
+     	else [[ $(getprop ro.product.locale.language) == "en" ]]
+     	toast
+     	fi
+     	
+     	kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
+kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
+kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
+kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
+kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
+kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
+kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
+kmsg1 "                                            👑 KTS Version: 1.8.6                                                                                           "
+kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          THIS PROFILE IS UNDER DEVELOPMENT (DOING NOTHING), WAIT FOR NEXT UPDATES.                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ $(getprop ro.product.locale.language) == "pt" ]]
+then
+toastpt1
+     	
+else [[ $(getprop ro.product.locale.language) == "en" ]]
+toast1
+fi
+};;
      # Balance Profile
-        "BALANCE") {
-        	init=$(date +%s)
+     "Balance") {
+     	init=$(date +%s)
+     	
+     	if [[ $(getprop ro.product.locale.language) == "pt" ]]
+         then
+         toastpt
+     	
+         else [[ $(getprop ro.product.locale.language) == "en" ]]
+         toast
+         fi
+
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
@@ -232,12 +304,12 @@ kmsg1 "                                            🛠️ SOC: $(getprop ro.boa
 kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.5                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.8.6                                                                                           "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
-	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
-	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	       	
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
@@ -267,7 +339,7 @@ write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 128
 write "${queue}iosched/low_latency" 1
-write "${queue}nomerges" 1
+write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 64
 done
@@ -302,7 +374,6 @@ elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
-write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/boost" "0"
 write "${cpu}interactive/use_migration_notif" "1" 
 write "${cpu}interactive/use_sched_load" "1"
@@ -343,7 +414,7 @@ write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
 write "${gpu}devfreq/polling_interval" "10"
-write "${gpu}idle_timer" "76"
+write "${gpu}idle_timer" "70"
 fi
 done
 
@@ -604,6 +675,7 @@ write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "256"
 write "${kts}random/urandom_min_reseed_secs" "90"
 write "${kts}sched_tunable_scaling" "0"
+write "${kts}sched_rr_timeslice_ms" "100"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
 write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
 write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
@@ -623,7 +695,7 @@ fi
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
-write "/sys/power/pm_freeze_timeout" "2500"
+write "/sys/power/pm_freeze_timeout" "5000"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -647,6 +719,15 @@ if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "20000000"
+fi
+done
+
+for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+if [[ -e "${mnclk}scaling_min_freq" ]]
+then
+write "${mnclk}scaling_min_freq" "300000"
+write "${mnclk}scaling_max_freq" "20000000"
 fi
 done
 
@@ -681,13 +762,20 @@ do
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "2000"
-write "${vm}dirty_writeback_centisecs" "2000"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "10"
+write "${vm}oom_dump_tasks" "0"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
+write "${vm}panic_on_oom" "0"
+write "${vm}dirtytime_expire_seconds" "44000"
+write "${vm}overcommit_memory" "1"
+write "${vm}reap_mem_on_sigkill" "1"
+write "${vm}extfrag_threshold" "750"
+write "${vm}compact_memory" "1"
 write "${vm}vfs_cache_pressure" "60"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
@@ -762,6 +850,7 @@ write "${tcp}tcp_sack" "1"
 write "${tcp}tcp_fack" "1"
 write "${tcp}tcp_fastopen" "3"
 write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_no_metrics_save" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
@@ -774,21 +863,8 @@ done
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
 for i in $(find /sys/class/net -type l)
 do
-write "$i/tx_queue_len" "128"
+write "$i/tx_queue_len" "1024"
 done
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          CALIBRATING TOUCH...                                                                                   "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Touch calibration
-panel=$(cat /sys/class/graphics/fb0/modes)
-if [[ "${panel:5:1}" == "x" ]]
-then
-panel=${panel:2:3}
-else
-panel=${panel:2:4}
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
@@ -909,13 +985,29 @@ exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                  "
+kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-vibrate_cmode
+
+if [[ $(getprop ro.product.locale.language) == "pt" ]]
+then
+toastpt1
+     	
+else [[ $(getprop ro.product.locale.language) == "en" ]]
+toast1
+fi
 };;
     # Performance Profile
-        "PERFORMANCE") {
+        "Performance") {
         	init=$(date +%s)
+        	
+        	if [[ $(getprop ro.product.locale.language) == "pt" ]]
+            then
+            toastpt
+     	
+            else [[ $(getprop ro.product.locale.language) == "en" ]]
+            toast
+            fi
+            
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
@@ -923,12 +1015,12 @@ kmsg1 "                                            🛠️ SOC: $(getprop ro.boa
 kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.5                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.8.6                                                                                           "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
-	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg1 "                                        ENABLING $kts_profile PROFILE...                                                                         "
-	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                        ENABLING $kts_profile PROFILE...                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 		
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                        DISABLING THERMAL-ENGINE AND ENABLING PERFD...                                                           "
@@ -983,7 +1075,7 @@ write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 512
 write "${queue}iosched/low_latency" 0
-write "${queue}nomerges" 1
+write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 64
 done
@@ -1018,10 +1110,11 @@ elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
-write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/boost" "1"
+write "${cpu}interactive/use_migration_notif" "1" 
+write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "1"
-write "${cpu}interactive/boostpulse_duration" "640000"
+write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "5000"
 write "${cpu}interactive/sampling_rate_min" "5000"
@@ -1057,7 +1150,7 @@ write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
 write "${gpu}devfreq/polling_interval" "16"
-write "${gpu}idle_timer" "60"
+write "${gpu}idle_timer" "86"
 fi
 done
 
@@ -1310,8 +1403,9 @@ write "${kts}perf_cpu_time_max_percent" "5"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "896"
-sysctl -e -w kernel.random.urandom_min_reseed_secs=90
+write "${kts}random/urandom_min_reseed_secs" "90"
 write "${kts}sched_tunable_scaling" "0"
+write "${kts}sched_rr_timeslice_ms" "90"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
 write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
 write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
@@ -1358,6 +1452,15 @@ write "${minclk}scaling_max_freq" "20000000"
 fi
 done
 
+for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+if [[ -e "${mnclk}scaling_min_freq" ]]
+then
+write "${mnclk}scaling_min_freq" "20000000"
+write "${mnclk}scaling_max_freq" "20000000"
+fi
+done
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         DISABLING CPUIDLE USE DEEPEST STATE...                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1387,18 +1490,45 @@ sync
 for vm in /proc/sys/vm/
 do
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "10"
-write "${vm}dirty_ratio" "15"
-write "${vm}dirty_expire_centisecs" "1000"
-write "${vm}dirty_writeback_centisecs" "550"
+write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_ratio" "10"
+write "${vm}dirty_expire_centisecs" "550"
+write "${vm}dirty_writeback_centisecs" "1000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "30"
+write "${vm}oom_dump_tasks" "0"
 write "${vm}swappiness" "100"
+write "${vm}panic_on_oom" "0"
+write "${vm}dirtytime_expire_seconds" "44000"
+write "${vm}overcommit_memory" "1"
+write "${vm}reap_mem_on_sigkill" "1"
+write "${vm}extfrag_threshold" "750"
+write "${vm}compact_memory" "1"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}vfs_cache_pressure" "75"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING KSM...                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable KSM
+if [[ -e "/sys/kernel/mm/ksm/run" ]] 
+then
+write "/sys/kernel/mm/ksm/run" "1"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING UKSM...                                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable UKSM
+if [[ -e "/sys/kernel/mm/uksm/run" ]] 
+then
+write "/sys/kernel/mm/uksm/run" "1"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
@@ -1470,6 +1600,7 @@ write "${tcp}tcp_sack" "1"
 write "${tcp}tcp_fack" "1"
 write "${tcp}tcp_fastopen" "3"
 write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_no_metrics_save" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
@@ -1482,21 +1613,8 @@ done
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
 for i in $(find /sys/class/net -type l)
 do
-write "$i/tx_queue_len" "128"
+write "$i/tx_queue_len" "1024"
 done
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          CALIBRATING TOUCH...                                                                                   "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Touch calibration
-panel=$(cat /sys/class/graphics/fb0/modes)
-if [[ "${panel:5:1}" == "x" ]]
-then
-panel=${panel:2:3}
-else
-panel=${panel:2:4}
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
@@ -1627,13 +1745,29 @@ exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                  "
+kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-vibrate_cmode
+
+if [[ $(getprop ro.product.locale.language) == "pt" ]]
+then
+toastpt1
+     	
+else [[ $(getprop ro.product.locale.language) == "en" ]]
+toast1
+fi
 };;
     # Battery Profile
-        "BATTERY") {
+        "Battery") {
         	init=$(date +%s)
+        	
+        	if [[ $(getprop ro.product.locale.language) == "pt" ]]
+     	   then
+     	   toastpt
+     	
+     	   else [[ $(getprop ro.product.locale.language) == "en" ]]
+     	   toast
+     	   fi
+     	   
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
@@ -1641,12 +1775,12 @@ kmsg1 "                                            🛠️ SOC: $(getprop ro.boa
 kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.5                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.8.6                                                                                           "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
-	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
-	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
@@ -1676,7 +1810,7 @@ write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 128
 write "${queue}iosched/low_latency" 1
-write "${queue}nomerges" 1
+write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 64
 done
@@ -1711,13 +1845,12 @@ elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
-write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/boost" "0"
 write "${cpu}interactive/use_migration_notif" "1" 
 write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
-write "${cpu}interactive/fast_ramp_down" "0"
+write "${cpu}interactive/fast_ramp_down" "1"
 write "${cpu}interactive/sampling_rate" "10000"
 write "${cpu}interactive/sampling_rate_min" "10000"
 write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
@@ -2047,7 +2180,7 @@ fi
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
-write "/sys/power/pm_freeze_timeout" "2500"
+write "/sys/power/pm_freeze_timeout" "10000"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2075,6 +2208,19 @@ write "${minclk}scaling_max_freq" "20000000"
 else [[ $percentage -ge "20" && -e "${minclk}scaling_min_freq" ]]
 write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "1600000"
+fi
+done
+
+for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+if [[ $percentage -le "20" && -e "${mnclk}scaling_min_freq" ]]
+then
+write "${mnclk}scaling_min_freq" "300000"
+write "${mnclk}scaling_max_freq" "20000000"
+
+else [[ $percentage -ge "20" && -e "${mnclk}scaling_min_freq" ]]
+write "${mnclk}scaling_min_freq" "300000"
+write "${mnclk}scaling_max_freq" "1600000"
 fi
 done
 
@@ -2113,9 +2259,16 @@ write "${vm}dirty_expire_centisecs" "5000"
 write "${vm}dirty_writeback_centisecs" "5000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "30"
+write "${vm}oom_dump_tasks" "0"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
+write "${vm}panic_on_oom" "0"
+write "${vm}dirtytime_expire_seconds" "44000"
+write "${vm}overcommit_memory" "1"
+write "${vm}reap_mem_on_sigkill" "1"
+write "${vm}extfrag_threshold" "750"
+write "${vm}compact_memory" "1"
 write "${vm}vfs_cache_pressure" "20"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
@@ -2210,6 +2363,7 @@ write "${tcp}tcp_sack" "1"
 write "${tcp}tcp_fack" "1"
 write "${tcp}tcp_fastopen" "3"
 write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_no_metrics_save" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
@@ -2222,21 +2376,8 @@ done
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
 for i in $(find /sys/class/net -type l)
 do
-write "$i/tx_queue_len" "128"
+write "$i/tx_queue_len" "1024"
 done
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                         CALIBRATING TOUCH...                                                                                    "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Touch calibration
-panel=$(cat /sys/class/graphics/fb0/modes)
-if [[ "${panel:5:1}" == "x" ]]
-then
-panel=${panel:2:3}
-else
-panel=${panel:2:4}
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
@@ -2348,13 +2489,29 @@ exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                  "
+kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-vibrate_cmode
+
+if [[ $(getprop ro.product.locale.language) == "pt" ]]
+then
+toastpt1
+     	
+else [[ $(getprop ro.product.locale.language) == "en" ]]
+toast1
+fi
 };;
     # Gaming Profile
-        "GAMING") {
+        "Gaming") {
         	init=$(date +%s)
+        	
+        	if [[ $(getprop ro.product.locale.language) == "pt" ]]
+        	then
+        	toastpt
+     	
+        	else [[ $(getprop ro.product.locale.language) == "en" ]]
+        	toast
+        	fi
+        	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
@@ -2362,12 +2519,12 @@ kmsg1 "                                            🛠️ SOC: $(getprop ro.boa
 kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.5                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.8.6                                                                                           "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
-	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
-	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 		
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLING THERMAL-ENGINE AND PERFD...                                                                  "
@@ -2422,7 +2579,7 @@ write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 512
 write "${queue}iosched/low_latency" 0
-write "${queue}nomerges" 1
+write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 64
 done
@@ -2457,11 +2614,12 @@ elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
-write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/boost" "1"
+write "${cpu}interactive/use_migration_notif" "0"
+write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "1"
-write "${cpu}interactive/boostpulse_duration" "640000"
-write "${cpu}interactive/fast_ramp_down" "1"
+write "${cpu}interactive/fastlane" "1"
+write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "5000"
 write "${cpu}interactive/sampling_rate_min" "5000"
 write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
@@ -2751,6 +2909,7 @@ write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "896"
 write "${kts}random/urandom_min_reseed_secs" "90"
 write "${kts}sched_tunable_scaling" "0"
+write "${kts}sched_rr_timeslice_ms" "90"
 write "${kts}sched_latency_ns" "$SCHED_PERIOD"
 write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
 write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
@@ -2797,8 +2956,17 @@ write "${minclk}scaling_max_freq" "20000000"
 fi
 done
 
+for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+if [[ -e "${mnclk}scaling_min_freq" ]]
+then
+write "${mnclk}scaling_min_freq" "20000000"
+write "${mnclk}scaling_max_freq" "20000000"
+fi
+done
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING CPUIDLE USE DEEPEST STATE...                                                                  "
+kmsg1 "                                          DISABLING CPUIDLE USE DEEPEST STATE...                                                                 "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
@@ -2828,16 +2996,43 @@ do
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "10"
-write "${vm}dirty_expire_centisecs" "1000"
-write "${vm}dirty_writeback_centisecs" "550"
+write "${vm}dirty_expire_centisecs" "550"
+write "${vm}dirty_writeback_centisecs" "1000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
+write "${vm}oom_dump_tasks" "0"
 write "${vm}swappiness" "100"
+write "${vm}panic_on_oom" "0"
+write "${vm}dirtytime_expire_seconds" "44000"
+write "${vm}overcommit_memory" "1"
+write "${vm}reap_mem_on_sigkill" "1"
+write "${vm}extfrag_threshold" "750"
+write "${vm}compact_memory" "1"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}vfs_cache_pressure" "200"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING KSM...                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable KSM
+if [[ -e "/sys/kernel/mm/ksm/run" ]] 
+then
+write "/sys/kernel/mm/ksm/run" "1"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING UKSM...                                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable UKSM
+if [[ -e "/sys/kernel/mm/uksm/run" ]] 
+then
+write "/sys/kernel/mm/uksm/run" "1"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
@@ -2909,6 +3104,7 @@ write "${tcp}tcp_sack" "1"
 write "${tcp}tcp_fack" "1"
 write "${tcp}tcp_fastopen" "3"
 write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_no_metrics_save" "1"
 write "${tcp}tcp_syncookies" "0"
 write "${tcp}tcp_window_scaling" "1"
 write "${tcp}tcp_keepalive_probes" "10"
@@ -2921,21 +3117,8 @@ done
 # Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
 for i in $(find /sys/class/net -type l)
 do
-write "$i/tx_queue_len" "128"
+write "$i/tx_queue_len" "1024"
 done
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          CALIBRATING TOUCH...                                                                                   "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Touch calibration
-panel=$(cat /sys/class/graphics/fb0/modes)
-if [[ "${panel:5:1}" == "x" ]]
-then
-panel=${panel:2:3}
-else
-panel=${panel:2:4}
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
@@ -3005,7 +3188,7 @@ fi
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING PM2 IDLE SLEEP MODE...                                                                        "
+kmsg1 "                                          DISABLING PM2 IDLE SLEEP MODE...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
@@ -3066,9 +3249,16 @@ exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                  "
+kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-vibrate_cmode
+
+if [[ $(getprop ro.product.locale.language) == "pt" ]]
+then
+toastpt1
+     	
+else [[ $(getprop ro.product.locale.language) == "en" ]]
+toast1
+fi
 };;
 esac
 done

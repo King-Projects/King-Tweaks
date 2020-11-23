@@ -1,6 +1,5 @@
 # !/system/bin/sh
-# Written by Draco (tytydraco @ github).
-# Modified by pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
+# By pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
 
 ui_print ""
 ui_print "╭╮╭━╮ ╭━━━━╮ ╭━━━╮"

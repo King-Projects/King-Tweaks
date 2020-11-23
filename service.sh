@@ -1,7 +1,5 @@
 #!/system/bin/sh
-# Written by Draco (tytydraco @github).
-# Modified by pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
-# Wait for boot to finish completely
+# By pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
 
 wait_until_login() {
 	# we doesn't have the permission to rw "/sdcard" before the user unlocks the screen
@@ -20,7 +18,7 @@ wait_until_login() {
 }
 
 wait_until_login
-sleep 15
+sleep 30
 
 # Setup tweaks
 kingtweaks
