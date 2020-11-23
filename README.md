@@ -18,6 +18,8 @@ Thanks to [ROM](https://github.com/xerta555) by his [Cloudflare4Magisk](https://
 
 Thanks to [Zackptg5](https://github.com/Zackptg5) by his [MMT Extended](https://github.com/Zackptg5/MMT-Extended).
 
-Thanks to [eight](https://github.com/iamlazy123) by his [Lazy Tweaks](https://github.com/iamlazy123/lazytweaks).
+Thanks to [Eight](https://github.com/iamlazy123) by his [Lazy Tweaks](https://github.com/iamlazy123/lazytweaks).
 
-And everyone that support King Tweaks project. ❤️
+Thanks to [corruptor64](https://forum.xda-developers.com/member.php?s=1f3e5a492ffebb222d62a936f8b34ce2&u=731319) by his toast app.
+
+And everyone that supports King Tweaks project. ❤️
