@@ -1,23 +1,13 @@
 #!/system/bin/sh
-# By pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
+# Written by tytydraco
+# KTS by pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
 
-wait_until_login() {
-	# we doesn't have the permission to rw "/sdcard" before the user unlocks the screen
-	while [[ `getprop sys.boot_completed` -ne 1 && -d "/sdcard" ]]
-	do
+# Wait for boot to finish completely
+while [[ `getprop sys.boot_completed` -ne 1 ]]
+do
        sleep 2
-	done
+done
 
-    local test_file="/sdcard/.PERMISSION_TEST"
-    touch "$test_file"
-    while [ ! -f "$test_file" ]; do
-        touch "$test_file"
-        sleep 2
-    done
-    rm "$test_file"
-}
-
-wait_until_login
 sleep 30
 
 # Setup tweaks

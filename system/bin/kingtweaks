@@ -17,7 +17,7 @@ kmsg1() {
 	echo -e "$@"
 }
 
-toast() {
+toasten() {
 	am start -a android.intent.action.MAIN -e toasttext "Applying $kts_profile profile..." -n bellavita.toast/.MainActivity
 }
 	
@@ -29,7 +29,15 @@ toastpt1() {
 	am start -a android.intent.action.MAIN -e toasttext "Perfil $kts_profilept aplicado" -n bellavita.toast/.MainActivity
 }
 
-toast1() {
+toastin() {
+	am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil $kts_profilein..." -n bellavita.toast/.MainActivity
+}
+
+toastin1() {
+	am start -a android.intent.action.MAIN -e toasttext "Profil $kts_profilein terpakai" -n bellavita.toast/.MainActivity
+}
+
+toasten1() {
 	am start -a android.intent.action.MAIN -e toasttext "$kts_profile profile applied" -n bellavita.toast/.MainActivity
 }
 
@@ -83,10 +91,22 @@ kts_mode=$(getprop persist.kingtweaks.mode)
 loc=/data/adb/modules
 
 # Duration in nanoseconds of one scheduling period
-SCHED_PERIOD="$((1 * 1000 * 1000))"
+SCHED_PERIOD_LATENCY="$((1 * 1000 * 1000))"
+
+SCHED_PERIOD_BALANCE="$((4 * 1000 * 1000))"
+
+SCHED_PERIOD_BATTERY="$((8 * 1000 * 1000))"
+
+SCHED_PERIOD_THROUGHPUT="$((10 * 1000 * 1000))"
 
 # How many tasks should we have at a maximum in one scheduling period
-SCHED_TASKS="8"
+SCHED_TASKS_LATENCY="10"
+
+SCHED_TASKS_BATTERY="5"
+
+SCHED_TASKS_BALANCE="8"
+
+SCHED_TASKS_THROUGHPUT="6"
 
 # Maximum unsigned integer size in C
 UINT_MAX="4294967295"
@@ -208,6 +228,27 @@ fi
 
 if [[ "$kts_mode" == "1" ]]
 then
+kts_profilein=Otomatis
+
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profilein=Baterai
+
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profilein=Seimbang
+
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profilein=Ekstrim
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profilein=Gaming
+fi
+
+if [[ "$kts_mode" == "1" ]]
+then
 kts_profilept=Automático
         	
 elif [[ "$kts_mode" == "2" ]]
@@ -220,7 +261,7 @@ kts_profilept=Balanceado
         	
 elif [[ "$kts_mode" == "4" ]]
 then
-kts_profilept=Performance
+kts_profilept=Extremo
 
 elif [[ "$kts_mode" == "5" ]]
 then
@@ -241,7 +282,7 @@ kts_profile=Balance
         	
 elif [[ "$kts_mode" == "4" ]]
 then
-kts_profile=Performance
+kts_profile=Extreme
 
 elif [[ "$kts_mode" == "5" ]]
 then
@@ -251,12 +292,24 @@ fi
 case "$kts_profile" in
      # Automatic profile (WIP)
      "Automatic") {
-     	if [[ $(getprop ro.product.locale.language) == "pt" ]]
+     	if [[ $(getprop persist.sys.locale) == "en-US" ]]
+     	then
+     	toasten
+     	
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+     	then
+         toasten
+         
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt
      	
-     	else [[ $(getprop ro.product.locale.language) == "en" ]]
-     	toast
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+     	then
+     	toastin
+     	
+     	else
+     	toasten
      	fi
      	
      	kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
@@ -266,7 +319,7 @@ kmsg1 "                                            🛠️ SOC: $(getprop ro.boa
 kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.6                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.8.7                                                                                           "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -277,26 +330,46 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          THIS PROFILE IS UNDER DEVELOPMENT (DOING NOTHING), WAIT FOR NEXT UPDATES.                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ $(getprop ro.product.locale.language) == "pt" ]]
+if [[ $(getprop persist.sys.locale) == "en-US" ]]
+then
+toast1
+     	
+elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+then
+toast1
+
+elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
 then
 toastpt1
      	
-else [[ $(getprop ro.product.locale.language) == "en" ]]
-toast1
+elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+then
+toastid1
 fi
 };;
      # Balance Profile
      "Balance") {
      	init=$(date +%s)
+     	if [[ $(getprop persist.sys.locale) == "en-US" ]]
+     	then
+     	toasten
      	
-     	if [[ $(getprop ro.product.locale.language) == "pt" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
-         toastpt
+         toasten
+         
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
+     	then
+     	toastpt
      	
-         else [[ $(getprop ro.product.locale.language) == "en" ]]
-         toast
-         fi
-
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+     	then
+     	toastin1
+     	
+     	else
+     	toasten
+     	fi
+     	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
@@ -304,7 +377,7 @@ kmsg1 "                                            🛠️ SOC: $(getprop ro.boa
 kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.6                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.8.7                                                                                           "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -315,8 +388,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
         	
-# Enable throttling and perfd
-start thermal-engine
+# Enable perfd
 start perfd
         	
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -326,15 +398,6 @@ kmsg1 "-------------------------------------------------------------------------
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
-avail_scheds="$(cat "${queue}scheduler")"
-for sched in cfq noop zen anxiety deadline kyber bfq bfq-sq mq-deadline none
-do
-if [[ "$avail_scheds" == *"$sched"* ]]
-then
-write "${queue}scheduler" "$sched"
-break
-fi
-done 
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 128
@@ -364,25 +427,27 @@ avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
 then
 write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
-write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
+write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
+write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}schedutil/iowait_boost_enable" "0"
-write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
+write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}schedutil/hispeed_load" "85"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
+write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}interactive/boost" "0"
+write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/use_migration_notif" "1" 
+write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "10000"
 write "${cpu}interactive/sampling_rate_min" "10000"
-write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
+write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}interactive/go_hispeed_load" "85"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
@@ -675,13 +740,12 @@ write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "256"
 write "${kts}random/urandom_min_reseed_secs" "90"
 write "${kts}sched_tunable_scaling" "0"
-write "${kts}sched_rr_timeslice_ms" "100"
-write "${kts}sched_latency_ns" "$SCHED_PERIOD"
-write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
-write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
+write "${kts}sched_latency_ns" "$SCHED_PERIOD_BALANCE"
+write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_BALANCE / SCHED_TASKS_BALANCE))"
+write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BALANCE / 2))"
 write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
-write "${kts}sched_nr_migrate" "8"
+write "${kts}sched_nr_migrate" "32"
 write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
@@ -766,17 +830,11 @@ write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "10"
-write "${vm}oom_dump_tasks" "0"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
-write "${vm}panic_on_oom" "0"
 write "${vm}dirtytime_expire_seconds" "44000"
-write "${vm}overcommit_memory" "1"
-write "${vm}reap_mem_on_sigkill" "1"
-write "${vm}extfrag_threshold" "750"
-write "${vm}compact_memory" "1"
-write "${vm}vfs_cache_pressure" "60"
+write "${vm}vfs_cache_pressure" "100"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
@@ -858,12 +916,6 @@ write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
-done
-
-# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
-for i in $(find /sys/class/net -type l)
-do
-write "$i/tx_queue_len" "1024"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -988,26 +1040,49 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ $(getprop ro.product.locale.language) == "pt" ]]
+if [[ $(getprop persist.sys.locale) == "en-US" ]]
+then
+toasten1
+     	
+elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+then
+toast1
+
+elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
 then
 toastpt1
      	
-else [[ $(getprop ro.product.locale.language) == "en" ]]
-toast1
+elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+then
+toastin1
+
+else
+toasten1
 fi
 };;
-    # Performance Profile
-        "Performance") {
+    # Extreme Profile
+        "Extreme") {
         	init=$(date +%s)
-        	
-        	if [[ $(getprop ro.product.locale.language) == "pt" ]]
-            then
-            toastpt
+        	if [[ $(getprop persist.sys.locale) == "en-US" ]]
+       	then
+       	toasten
+       	
+       	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+       	then
+           toasten
+           
+       	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
+       	then
+       	toastpt
      	
-            else [[ $(getprop ro.product.locale.language) == "en" ]]
-            toast
-            fi
-            
+       	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+       	then
+       	toastin
+       	
+       	else
+       	toasten
+       	fi
+       	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
@@ -1015,7 +1090,7 @@ kmsg1 "                                            🛠️ SOC: $(getprop ro.boa
 kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.6                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.8.7                                                                                           "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1026,9 +1101,9 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                        DISABLING THERMAL-ENGINE AND ENABLING PERFD...                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Disable throttling and enable perfd.
-stop thermal-engine
+# Enable perfd and disable thermal-engine.
 start perfd
+stop thermal-engine
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKING CPU INPUT BOOST...                                                                            "
@@ -1062,15 +1137,6 @@ kmsg1 "-------------------------------------------------------------------------
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
-avail_scheds="$(cat "${queue}scheduler")"
-for sched in cfq noop zen anxiety deadline kyber bfq bfq-sq mq-deadline none
-do
-if [[ "$avail_scheds" == *"$sched"* ]]
-then
-write "${queue}scheduler" "$sched"
-break
-fi
-done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 512
@@ -1100,25 +1166,27 @@ avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
 then
 write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
-write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "0"
-write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
+write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}schedutil/iowait_boost_enable" "1"
+write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
+write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}interactive/boost" "1"
-write "${cpu}interactive/use_migration_notif" "1" 
+write "${cpu}interactive/timer_slack" "-1"
+write "${cpu}interactive/use_migration_notif" "1"
+write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
-write "${cpu}interactive/boostpulse" "1"
+write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "5000"
-write "${cpu}interactive/sampling_rate_min" "5000"
-write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
+write "${cpu}interactive/sampling_rate" "10000"
+write "${cpu}interactive/sampling_rate_min" "10000"
+write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}interactive/go_hispeed_load" "80"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
@@ -1138,18 +1206,18 @@ for gpu in /sys/class/kgsl/kgsl-3d0/
 do
 if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
 then
-write "${gpu}throttling" "1"
+write "${gpu}throttling" "0"
 write "${gpu}thermal_pwrlevel" "0"
 write "${gpu}devfreq/adrenoboost" "0"
 write "${gpu}force_no_nap" "0"
 write "${gpu}bus_split" "1"
 write "${gpu}devfreq/min_freq" "100000000"
 write "${gpu}devfreq/max_freq" "$UINT_MAX"
-write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
+write "${gpu}default_pwrlevel" "1"
 write "${gpu}force_bus_on" "0"
 write "${gpu}force_clk_on" "0"
 write "${gpu}force_rail_on" "0"
-write "${gpu}devfreq/polling_interval" "16"
+write "${gpu}devfreq/polling_interval" "10"
 write "${gpu}idle_timer" "86"
 fi
 done
@@ -1405,13 +1473,12 @@ write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "896"
 write "${kts}random/urandom_min_reseed_secs" "90"
 write "${kts}sched_tunable_scaling" "0"
-write "${kts}sched_rr_timeslice_ms" "90"
-write "${kts}sched_latency_ns" "$SCHED_PERIOD"
-write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
-write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
+write "${kts}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
+write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
+write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
-write "${kts}sched_nr_migrate" "8"
+write "${kts}sched_nr_migrate" "32"
 write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
@@ -1492,42 +1559,36 @@ do
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "10"
-write "${vm}dirty_expire_centisecs" "550"
-write "${vm}dirty_writeback_centisecs" "1000"
+write "${vm}dirty_expire_centisecs" "200"
+write "${vm}dirty_writeback_centisecs" "500"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "30"
-write "${vm}oom_dump_tasks" "0"
 write "${vm}swappiness" "100"
-write "${vm}panic_on_oom" "0"
 write "${vm}dirtytime_expire_seconds" "44000"
-write "${vm}overcommit_memory" "1"
-write "${vm}reap_mem_on_sigkill" "1"
-write "${vm}extfrag_threshold" "750"
-write "${vm}compact_memory" "1"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
-write "${vm}vfs_cache_pressure" "75"
+write "${vm}vfs_cache_pressure" "100"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING KSM...                                                                                        "
+kmsg1 "                                          DISABLING KSM...                                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable KSM
 if [[ -e "/sys/kernel/mm/ksm/run" ]] 
 then
-write "/sys/kernel/mm/ksm/run" "1"
+write "/sys/kernel/mm/ksm/run" "0"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING UKSM...                                                                                       "
+kmsg1 "                                          DISABLING UKSM...                                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable UKSM
 if [[ -e "/sys/kernel/mm/uksm/run" ]] 
 then
-write "/sys/kernel/mm/uksm/run" "1"
+write "/sys/kernel/mm/uksm/run" "0"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1608,12 +1669,6 @@ write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
-done
-
-# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
-for i in $(find /sys/class/net -type l)
-do
-write "$i/tx_queue_len" "1024"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1748,26 +1803,49 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ $(getprop ro.product.locale.language) == "pt" ]]
+if [[ $(getprop persist.sys.locale) == "en-US" ]]
+then
+toasten1
+     	
+elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+then
+toasten1
+
+elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
 then
 toastpt1
      	
-else [[ $(getprop ro.product.locale.language) == "en" ]]
-toast1
+elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+then
+toastin1
+
+else
+toasten1
 fi
 };;
     # Battery Profile
         "Battery") {
         	init=$(date +%s)
-        	
-        	if [[ $(getprop ro.product.locale.language) == "pt" ]]
+        	if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	   then
-     	   toastpt
+        	toasten
+        	
+        	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+            then
+            toasten
+         
+        	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
+        	then
+        	toastpt
      	
-     	   else [[ $(getprop ro.product.locale.language) == "en" ]]
-     	   toast
-     	   fi
-     	   
+        	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+        	then
+        	toastin
+        	
+        	else
+        	toasten
+        	fi
+        	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
@@ -1775,7 +1853,7 @@ kmsg1 "                                            🛠️ SOC: $(getprop ro.boa
 kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.6                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.8.7                                                                                           "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1786,8 +1864,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
     	
-# Enable throttling and perfd.
-start thermal-engine
+# Enable perfd.
 start perfd
     
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1797,15 +1874,6 @@ kmsg1 "-------------------------------------------------------------------------
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
-avail_scheds="$(cat "${queue}scheduler")"
-for sched in cfq noop zen anxiety deadline kyber bfq bfq-sq mq-deadline none
-do
-if [[ "$avail_scheds" == *"$sched"* ]]
-then
-write "${queue}scheduler" "$sched"
-break
-fi
-done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 128
@@ -1835,25 +1903,27 @@ avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
 then
 write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
-write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
+write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_BATTERY / 1000))"
+write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}schedutil/iowait_boost_enable" "0"
-write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
+write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}schedutil/hispeed_load" "99"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
+write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}interactive/boost" "0"
+write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/use_migration_notif" "1" 
+write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "1"
-write "${cpu}interactive/sampling_rate" "10000"
-write "${cpu}interactive/sampling_rate_min" "10000"
-write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
+write "${cpu}interactive/sampling_rate" "25000"
+write "${cpu}interactive/sampling_rate_min" "25000"
+write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}interactive/go_hispeed_load" "99"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
@@ -2161,9 +2231,9 @@ write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "128"
 write "${kts}random/urandom_min_reseed_secs" "90"
 write "${kts}sched_tunable_scaling" "0"
-write "${kts}sched_latency_ns" "$SCHED_PERIOD"
-write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
-write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
+write "${kts}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
+write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
+write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
 write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
 write "${kts}sched_nr_migrate" "8"
@@ -2258,17 +2328,11 @@ write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "5000"
 write "${vm}dirty_writeback_centisecs" "5000"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "30"
-write "${vm}oom_dump_tasks" "0"
+write "${vm}stat_interval" "10"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
-write "${vm}panic_on_oom" "0"
 write "${vm}dirtytime_expire_seconds" "44000"
-write "${vm}overcommit_memory" "1"
-write "${vm}reap_mem_on_sigkill" "1"
-write "${vm}extfrag_threshold" "750"
-write "${vm}compact_memory" "1"
 write "${vm}vfs_cache_pressure" "20"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
@@ -2371,12 +2435,6 @@ write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
-done
-
-# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
-for i in $(find /sys/class/net -type l)
-do
-write "$i/tx_queue_len" "1024"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2492,34 +2550,57 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ $(getprop ro.product.locale.language) == "pt" ]]
+if [[ $(getprop persist.sys.locale) == "en-US" ]]
+then
+toasten1
+  
+elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+then
+toasten1
+
+elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
 then
 toastpt1
      	
-else [[ $(getprop ro.product.locale.language) == "en" ]]
-toast1
+elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+then
+toastin1
+
+else
+toasten1
 fi
 };;
     # Gaming Profile
         "Gaming") {
         	init=$(date +%s)
-        	
-        	if [[ $(getprop ro.product.locale.language) == "pt" ]]
+        	if [[ $(getprop persist.sys.locale) == "en-US" ]]
+        	then
+        	toasten
+     	
+        	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+            then
+            toasten
+            
+        	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
         	then
         	toastpt
-     	
-        	else [[ $(getprop ro.product.locale.language) == "en" ]]
-        	toast
+        	
+        	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+        	then
+        	toastin
+        	
+        	else
+        	toasten
         	fi
         	
-kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
+        	kmsg "------------------------------------------ Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
 kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
 kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
 kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
 kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.6                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.8.7                                                                                           "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2530,9 +2611,9 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLING THERMAL-ENGINE AND PERFD...                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Disable throttling and perfd.
-stop thermal-engine
+# Disable perfd and thermal-engine.
 stop perfd
+stop thermal-engine
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKING CPU INPUT BOOST...                                                                            "
@@ -2566,15 +2647,6 @@ kmsg1 "-------------------------------------------------------------------------
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
 do
-avail_scheds="$(cat "${queue}scheduler")"
-for sched in cfq noop zen anxiety deadline kyber bfq bfq-sq mq-deadline none
-do
-if [[ "$avail_scheds" == *"$sched"* ]]
-then
-write "${queue}scheduler" "$sched"
-break
-fi
-done
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 512
@@ -2604,25 +2676,27 @@ avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
 then
 write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD / 1000))"
-write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "0"
-write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD / 1000))"
+write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}schedutil/iowait_boost_enable" "1"
+write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD / 1000))"
+write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}interactive/boost" "1"
-write "${cpu}interactive/use_migration_notif" "0"
+write "${cpu}interactive/timer_slack" "-1"
+write "${cpu}interactive/use_migration_notif" "1"
+write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
-write "${cpu}interactive/boostpulse" "1"
+write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "5000"
-write "${cpu}interactive/sampling_rate_min" "5000"
-write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD / 1000))"
+write "${cpu}interactive/sampling_rate" "10000"
+write "${cpu}interactive/sampling_rate_min" "10000"
+write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}interactive/go_hispeed_load" "80"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
@@ -2909,13 +2983,12 @@ write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "896"
 write "${kts}random/urandom_min_reseed_secs" "90"
 write "${kts}sched_tunable_scaling" "0"
-write "${kts}sched_rr_timeslice_ms" "90"
-write "${kts}sched_latency_ns" "$SCHED_PERIOD"
-write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD / SCHED_TASKS))"
-write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD / 2))"
+write "${kts}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
+write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
+write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
-write "${kts}sched_nr_migrate" "8"
+write "${kts}sched_nr_migrate" "32"
 write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
@@ -2996,42 +3069,36 @@ do
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "10"
-write "${vm}dirty_expire_centisecs" "550"
-write "${vm}dirty_writeback_centisecs" "1000"
+write "${vm}dirty_expire_centisecs" "200"
+write "${vm}dirty_writeback_centisecs" "500"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "60"
-write "${vm}oom_dump_tasks" "0"
+write "${vm}stat_interval" "30"
 write "${vm}swappiness" "100"
-write "${vm}panic_on_oom" "0"
 write "${vm}dirtytime_expire_seconds" "44000"
-write "${vm}overcommit_memory" "1"
-write "${vm}reap_mem_on_sigkill" "1"
-write "${vm}extfrag_threshold" "750"
-write "${vm}compact_memory" "1"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
-write "${vm}vfs_cache_pressure" "200"
+write "${vm}vfs_cache_pressure" "100"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING KSM...                                                                                        "
+kmsg1 "                                          DISABLING KSM...                                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable KSM
 if [[ -e "/sys/kernel/mm/ksm/run" ]] 
 then
-write "/sys/kernel/mm/ksm/run" "1"
+write "/sys/kernel/mm/ksm/run" "0"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING UKSM...                                                                                       "
+kmsg1 "                                          DISABLING UKSM...                                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable UKSM
 if [[ -e "/sys/kernel/mm/uksm/run" ]] 
 then
-write "/sys/kernel/mm/uksm/run" "1"
+write "/sys/kernel/mm/uksm/run" "0"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3112,12 +3179,6 @@ write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
-done
-
-# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
-for i in $(find /sys/class/net -type l)
-do
-write "$i/tx_queue_len" "1024"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3252,12 +3313,24 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ $(getprop ro.product.locale.language) == "pt" ]]
+if [[ $(getprop persist.sys.locale) == "en-US" ]]
+then
+toasten1
+     	
+elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+then
+toasten1
+
+elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
 then
 toastpt1
      	
-else [[ $(getprop ro.product.locale.language) == "en" ]]
-toast1
+elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+then
+toastin1
+
+else
+toasten1
 fi
 };;
 esac
