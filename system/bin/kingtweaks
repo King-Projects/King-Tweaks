@@ -1365,7 +1365,7 @@ for st in /dev/stune
 do
 if [[ -d "/dev/stune" ]]
 then
-write "${st}/background/schedtune.boost" "0"
+write "${st}/background/schedtune.boost" "1"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "1"
