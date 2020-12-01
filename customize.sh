@@ -124,12 +124,20 @@ fstrim -v /system
 fstrim -v /data
 fstrim -v /cache
 ui_print ""
+ui_print "[*] Installing King Tweaks and King Toast app..."
+pm install $MODPATH/KingTweaks.apk
+pm install $MODPATH/KingToast.apk
+sleep 1
+ui_print "[*] Done!"
+ui_print ""
 ui_print "[*] Logs are stored in your internal storage/KTS"
 sleep 1
 ui_print ""
 ui_print "[*] You still can access it by writing kingtweaks in a root terminal (not recommended)."
 sleep 1
 ui_print ""
-echo "[*] Now, reboot."
+ui_print "[*] Now, reboot."
 sleep 1
 ui_print ""
+P1="Improving user-experience and performance of $(getprop ro.product.odm.model). Telegram: @kingcreationschannel"
+sed -i "/description=/c description=${P1}" $MODPATH/module.prop;

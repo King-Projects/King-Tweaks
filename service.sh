@@ -8,7 +8,7 @@ do
        sleep 2
 done
 
-sleep 30
+sleep 60
 
 # Setup tweaks
 kingtweaks

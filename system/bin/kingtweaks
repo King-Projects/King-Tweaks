@@ -21,6 +21,10 @@ toasten() {
 	am start -a android.intent.action.MAIN -e toasttext "Applying $kts_profile profile..." -n bellavita.toast/.MainActivity
 }
 	
+toasten1() {
+	am start -a android.intent.action.MAIN -e toasttext "$kts_profile profile applied" -n bellavita.toast/.MainActivity
+}
+
 toastpt() {
 	am start -a android.intent.action.MAIN -e toasttext "Aplicando perfil $kts_profilept..." -n bellavita.toast/.MainActivity
 }
@@ -37,8 +41,20 @@ toastin1() {
 	am start -a android.intent.action.MAIN -e toasttext "Profil $kts_profilein terpakai" -n bellavita.toast/.MainActivity
 }
 
-toasten1() {
-	am start -a android.intent.action.MAIN -e toasttext "$kts_profile profile applied" -n bellavita.toast/.MainActivity
+toasttr() {
+	am start -a android.intent.action.MAIN -e toasttext "$kts_profiletr profili uygulanıyor..." -n bellavita.toast/.MainActivity
+}
+
+toasttr1() {
+	am start -a android.intent.action.MAIN -e toasttext "$kts_profiletr profili uygulandı" -n bellavita.toast/.MainActivity
+}
+
+toastfr() {
+	am start -a android.intent.action.MAIN -e toasttext "Chargement du profil $kts_profilefr..." -n bellavita.toast/.MainActivity
+}
+
+toastfr1() {
+	am start -a android.intent.action.MAIN -e toasttext "Profil $kts_profilefr chargé" -n bellavita.toast/.MainActivity
 }
 
 write() {
@@ -72,11 +88,11 @@ kmsg1 "[!] No root permissions. Exiting."
 exit 1
 fi
 
-setprop kingtweaks.support "1"
+setprop king.tweaks.support "1"
 
 boot_run_once=false
 kts_mode=$(getprop persist.kingtweaks.mode)
-[ -z "$kts_mode" ] && setprop persist.kingtweaks.mode "3"
+[ -z "$kts_mode" ] && setprop persist.kingtweaks.mode "2"
 
 while true
 do
@@ -102,7 +118,7 @@ SCHED_PERIOD_THROUGHPUT="$((10 * 1000 * 1000))"
 # How many tasks should we have at a maximum in one scheduling period
 SCHED_TASKS_LATENCY="10"
 
-SCHED_TASKS_BATTERY="5"
+SCHED_TASKS_BATTERY="4"
 
 SCHED_TASKS_BALANCE="8"
 
@@ -111,7 +127,45 @@ SCHED_TASKS_THROUGHPUT="6"
 # Maximum unsigned integer size in C
 UINT_MAX="4294967295"
 
-# Variable to battery %
+# Variable to get gpu model
+if [[ -e "/sys/kernel/gpu/gpu_model" ]]
+then
+gpu=$(cat /sys/kernel/gpu/gpu_model)
+
+elif [[ -e "/sys/class/kgsl/kgsl-3d0/gpu_model" ]]
+then
+gpu=$(cat /sys/class/kgsl/kgsl-3d0/gpu_model)
+fi
+
+# Variable to selinux state
+if [[ $(cat /sys/fs/selinux/enforce) == "1" ]]
+then
+selinuxstate=enforcing
+
+elif [[ $(cat /sys/fs/selinux/enforce) == "0" ]]
+then
+selinuxstate=permissive
+fi
+
+# Variable to device SDK
+sdk=$(getprop ro.build.version.sdk)
+
+# Variable to device android release version
+arv=$(getprop ro.build.version.release)
+
+# Variable to device model
+dm=$(getprop ro.product.odm.model)
+
+# Variable to device SOC
+soc=$(getprop ro.board.platform) 
+
+# Variable to get magisk version
+magisk=$(magisk -c)
+
+# Variable to total device ram
+totalram=$(free -m | awk '/Mem:/{print $2}')
+
+# Variable to battery actual capacity available.
 percentage=$(cat /sys/class/power_supply/battery/capacity)
 
 # Detect other conflicting modules.
@@ -228,15 +282,15 @@ fi
 
 if [[ "$kts_mode" == "1" ]]
 then
-kts_profilein=Otomatis
+kts_profilein=Latensi
 
 elif [[ "$kts_mode" == "2" ]]
 then
-kts_profilein=Baterai
+kts_profilein=Seimbang
 
 elif [[ "$kts_mode" == "3" ]]
 then
-kts_profilein=Seimbang
+kts_profilein=Baterai
 
 elif [[ "$kts_mode" == "4" ]]
 then
@@ -249,36 +303,36 @@ fi
 
 if [[ "$kts_mode" == "1" ]]
 then
-kts_profilept=Automático
-        	
+kts_profilept=Latência
+
 elif [[ "$kts_mode" == "2" ]]
 then
-kts_profilept=Bateria
+kts_profilept=Balanceado
         	
 elif [[ "$kts_mode" == "3" ]]
 then
-kts_profilept=Balanceado
+kts_profilept=Bateria
         	
 elif [[ "$kts_mode" == "4" ]]
 then
 kts_profilept=Extremo
-
+        	
 elif [[ "$kts_mode" == "5" ]]
 then
 kts_profilept=Jogando
 fi
-	
+	 	
 if [[ "$kts_mode" == "1" ]]
 then
-kts_profile=Automatic
-        	
+kts_profile=Latency
+
 elif [[ "$kts_mode" == "2" ]]
 then
-kts_profile=Battery
+kts_profile=Balanced
         	
 elif [[ "$kts_mode" == "3" ]]
 then
-kts_profile=Balance
+kts_profile=Battery
         	
 elif [[ "$kts_mode" == "4" ]]
 then
@@ -289,66 +343,51 @@ then
 kts_profile=Gaming
 fi
 
-case "$kts_profile" in
-     # Automatic profile (WIP)
-     "Automatic") {
-     	if [[ $(getprop persist.sys.locale) == "en-US" ]]
-     	then
-     	toasten
-     	
-     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
-     	then
-         toasten
-         
-     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
-     	then
-     	toastpt
-     	
-     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
-     	then
-     	toastin
-     	
-     	else
-     	toasten
-     	fi
-     	
-     	kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
-kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
-kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
-kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
-kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
-kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
-kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.7                                                                                           "
-kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          THIS PROFILE IS UNDER DEVELOPMENT (DOING NOTHING), WAIT FOR NEXT UPDATES.                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-if [[ $(getprop persist.sys.locale) == "en-US" ]]
+if [[ "$kts_mode" == "1" ]]
 then
-toast1
-     	
-elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
-then
-toast1
+kts_profiletr=Gecikme
 
-elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
+elif [[ "$kts_mode" == "2" ]]
 then
-toastpt1
-     	
-elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+kts_profiletr=Dengeli
+        	
+elif [[ "$kts_mode" == "3" ]]
 then
-toastid1
+kts_profiletr=Batarya
+        	
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profiletr=Aşırı
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profiletr=Oyun
 fi
-};;
-     # Balance Profile
-     "Balance") {
+
+if [[ "$kts_mode" == "1" ]]
+then
+kts_profilefr=Latence
+
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profilefr=Modéré
+        	
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profilefr=Batterie
+        	
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profilefr=Extrême
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profilefr=Jeu
+fi
+
+case "$kts_profile" in
+# Latency Profile
+     "Latency") {
      	init=$(date +%s)
      	if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
@@ -364,8 +403,20 @@ fi
      	
      	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
-     	toastin1
+     	toastin
      	
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+     	then
+     	toasttr
+     	
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+     	then
+     	toastfr
+
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+     	then
+     	toastfr
+
      	else
      	toasten
      	fi
@@ -373,11 +424,16 @@ fi
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
-kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
-kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
-kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
-kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.7                                                                                           "
+kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
+kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
+kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
+kmsg1 "                                            📱 Device: $dm                                                                                                  "
+kmsg1 "                                            👑 KTS Version: 1.8.8                                                                                           "
+kmsg1 "                                            🔋 Battery: $percentage%                                                                                        "
+kmsg1 "                                            📲 GPU: $gpu                                                                                                    "
+kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
+kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -388,8 +444,680 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
         	
-# Enable perfd
+# Enable perfd and thermal-engine.
 start perfd
+start thermal-engine       	
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING I/O SCHEDULER...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# I/O Scheduler Tweaks.
+for queue in /sys/block/*/queue/
+do
+write "${queue}add_random" 0
+write "${queue}iostats" 0
+write "${queue}read_ahead_kb" 64
+write "${queue}iosched/low_latency" 1
+write "${queue}nomerges" 2
+write "${queue}rq_affinity" 2
+write "${queue}nr_requests" 64
+done
+
+# Reserve 90% IO bandwith for foreground tasks
+if [[ -d "/dev/blkio" ]]
+then
+write "/dev/blkio/blkio.weight" "1000"
+write "/dev/blkio/blkio.leaf_weight" "1000"
+write "/dev/blkio/background/blkio.weight" "100"
+write "/dev/blkio/background/blkio.leaf_weight" "100"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                         TWEAKING CPU...                                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# CPU Tweaks
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+avail_govs=`cat "${cpu}scaling_available_governors"`
+if [[ "$avail_govs" == *"schedutil"* ]]
+then
+write "${cpu}scaling_governor" schedutil
+write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_LATENCY / 1000))"
+write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_LATENCY / 1000))"
+write "${cpu}schedutil/iowait_boost_enable" "1"
+write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_LATENCY / 1000))"
+write "${cpu}schedutil/hispeed_load" "89"
+write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
+elif [[ "$avail_govs" == *"interactive"* ]]
+then
+write "${cpu}scaling_governor" interactive
+write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD_LATENCY / 1000))"
+write "${cpu}interactive/boost" "0"
+write "${cpu}interactive/timer_slack" "-1"
+write "${cpu}interactive/use_migration_notif" "1" 
+write "${cpu}interactive/ignore_hispeed_on_notif" "1"
+write "${cpu}interactive/use_sched_load" "1"
+write "${cpu}interactive/boostpulse" "0"
+write "${cpu}interactive/fastlane" "1"
+write "${cpu}interactive/fast_ramp_down" "0"
+write "${cpu}interactive/sampling_rate" "10000"
+write "${cpu}interactive/sampling_rate_min" "10000"
+write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_BALANCE / 1000))"
+write "${cpu}interactive/go_hispeed_load" "89"
+write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
+fi
+done
+
+write "/sys/devices/system/cpu/cpu1/online" "1"
+write "/sys/devices/system/cpu/cpu2/online" "1"
+write "/sys/devices/system/cpu/cpu5/online" "1"
+write "/sys/devices/system/cpu/cpu6/online" "1"
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING GPU...                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+	
+# GPU Tweaks.
+for gpu in /sys/class/kgsl/kgsl-3d0/
+do
+if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
+then
+write "${gpu}throttling" "1"
+write "${gpu}thermal_pwrlevel" "0"
+write "${gpu}devfreq/adrenoboost" "0"
+write "${gpu}force_no_nap" "0"
+write "${gpu}bus_split" "1"
+write "${gpu}devfreq/min_freq" "100000000"
+write "${gpu}devfreq/max_freq" "$UINT_MAX"
+write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
+write "${gpu}force_bus_on" "0"
+write "${gpu}force_clk_on" "0"
+write "${gpu}force_rail_on" "0"
+write "${gpu}devfreq/polling_interval" "10"
+write "${gpu}idle_timer" "76"
+fi
+done
+
+if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
+then
+write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+fi
+
+# Enable dvfs
+if [[ -e "/proc/mali/dvfs_enable" ]] 
+then
+write "/proc/mali/dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
+then
+write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
+then
+write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable and tweak adreno idler
+if [[ -d "/sys/module/adreno_idler" ]]
+then
+write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "6000"
+write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING DEBUGGERS...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable debuggers.
+for bl in /sys/module/bluetooth/parameters/
+do
+if [[ -e "${bl}disable_ertm" ]]
+then
+write "${bl}disable_ertm" "Y"
+write "${bl}disable_esco" "Y"
+fi
+done
+
+write "/sys/module/earlysuspend/parameters/debug_mask" "0"
+write "/sys/module/alarm/parameters/debug_mask" "0"
+write "/sys/module/alarm_dev/parameters/debug_mask" "0"
+write "/sys/module/binder/parameters/debug_mask" "0"
+write "/sys/devices/system/edac/cpu/log_ce" "0"
+write "/sys/devices/system/edac/cpu/log_ue" "0"
+write "/sys/module/binder/parameters/debug_mask" "0"
+write "/sys/module/debug/parameters/enable_event_log" "0"
+write "/sys/module/dwc3/parameters/ep_addr_rxdbg_mask" "0"
+write "/sys/module/dwc3/parameters/ep_addr_txdbg_mask" "0"
+write "/sys/module/edac_core/parameters/edac_mc_log_ce" "0"
+write "/sys/module/edac_core/parameters/edac_mc_log_ue" "0"
+write "/sys/module/glink/parameters/debug_mask" "0"
+write "/sys/module/hid_apple/parameters/fnmode" "0"
+write "/sys/module/hid_magicmouse/parameters/emulate_3button" "N"
+write "/sys/module/hid_magicmouse/parameters/emulate_scroll_wheel" "N"
+write "/sys/module/ip6_tunnel/parameters/log_ecn_error" "N"
+write "/sys/module/lowmemorykiller/parameters/debug_level" "0"
+write "/sys/module/mdss_fb/parameters/backlight_dimmer" "N"
+write "/sys/module/msm_show_resume_irq/parameters/debug_mask" "0"
+write "/sys/module/msm_smd/parameters/debug_mask" "0"
+write "/sys/module/msm_smem/parameters/debug_mask" "0"
+write "/sys/module/otg_wakelock/parameters/enabled" "N" 
+write "/sys/module/service_locator/parameters/enable" "0"
+write "/sys/module/sit/parameters/log_ecn_error" "N"
+write "/sys/module/smem_log/parameters/log_enable" "0"
+write "/sys/module/smp2p/parameters/debug_mask" "0"
+write "/sys/module/touch_core_base/parameters/debug_mask" "0"
+write "/sys/module/usb_bam/parameters/enable_event_log" "0"
+write "/sys/module/printk/parameters/console_suspend" "Y"
+write "/proc/sys/debug/exception-trace" "0"
+write "/proc/sys/kernel/printk" "0 0 0 0"
+write "/proc/sys/kernel/compat-log" "0"
+
+if [[ -e "/sys/module/mali/parameters/mali_debug_level" ]] 
+then
+write "/sys/module/mali/parameters/mali_debug_level" "0"
+fi
+
+if [[ -e "/sys/module/logger/parameters/log_mode" ]] 
+then
+write "/sys/module/logger/parameters/log_mode" "2"
+fi
+
+if [[ -e "/sys/module/printk/parameters/console_suspend" ]] 
+then
+write "/sys/module/printk/parameters/console_suspend" "Y"
+fi
+
+for i in $(find /sys/ -name debug_mask)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name debug_level)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name edac_mc_log_ce)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name edac_mc_log_ue)
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name enable_event_log) 
+do
+write "$i" "0"
+done
+
+for i in $(find /sys/ -name log_ecn_error)
+do
+write "$i" "N"
+done
+
+for i in $(find /sys/ -name snapshot_crashdumper)
+do
+write "$i" "0"
+done
+
+if [[ -e "/sys/module/ext4/parameters/mballoc_debug" ]] 
+then
+write "/sys/module/ext4/parameters/mballoc_debug" "0"
+fi
+
+# =========
+# FIX DEEPSLEEP
+# =========
+for i in $(ls /sys/class/scsi_disk/)
+do
+lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Schedtune Tweaks
+for st in /dev/stune
+do
+if [[ -d "/dev/stune" ]]
+then
+write "${st}/background/schedtune.boost" "0"
+write "${st}/background/schedtune.prefer_idle" "0"
+
+write "${st}/foreground/schedtune.boost" "1"
+write "${st}/foreground/schedtune.prefer_idle" "1"
+
+write "${st}/rt/schedtune.boost" "0"
+write "${st}/rt/schedtune.prefer_idle" "0"
+
+write "${st}/top-app/schedtune.boost" "1"
+write "${st}/top-app/schedtune.prefer_idle" "1"
+
+write "${st}/schedtune.boost" "0"
+write "${st}/schedtune.prefer_idle" "0"
+fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING FS TWEAKS...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# FS tweaks.
+for fs in /proc/sys/fs/
+do
+if [[ -d "/proc/sys/fs" ]]
+then
+write "${fs}dir-notify-enable" "0"
+write "${fs}lease-break-time" "20"
+write "${fs}leases-enable" "1"
+fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING DYNAMIC FSYNC...                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable dynamic_fsync.
+if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
+then
+chmod 666 /sys/kernel/dyn_fsync/Dyn_fsync_active
+chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
+write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING SCHEDULER TWEAKS...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Scheduler tweaks. 
+for sched in /sys/kernel/debug/
+do
+if [[ -e "/sys/kernel/debug/sched_features" ]]
+then
+write "${sched}sched_features" "NEXT_BUDDY"
+write "${sched}sched_features" "TTWU_QUEUE"
+write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
+fi
+done
+ 
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING ONEPLUS CHAIN...                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# OP Chain disable.
+for opc in /sys/module/opchain/parameters/
+do
+if [[ -d "/sys/module/opchain" ]]
+then
+write "${opc}chain_on" "0"
+fi
+done
+ 
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING KERNEL SETTINGS...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Tweak some kernel settings to improve overall performance.
+for kts in /proc/sys/kernel/
+do
+write "${kts}sched_child_runs_first" "1"
+write "${kts}perf_cpu_time_max_percent" "5"
+write "${kts}sched_autogroup_enabled" "1"
+write "${kts}random/read_wakeup_threshold" "64"
+write "${kts}random/write_wakeup_threshold" "512"
+write "${kts}random/urandom_min_reseed_secs" "90"
+write "${kts}sched_tunable_scaling" "0"
+write "${kts}sched_latency_ns" "$SCHED_PERIOD_LATENCY"
+write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LATENCY))"
+write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_LATENCY / 2))"
+write "${kts}sched_migration_cost_ns" "5000000"
+write "${kts}sched_min_task_util_for_colocation" "0"
+write "${kts}sched_nr_migrate" "32"
+write "${kts}sched_schedstats" "0"
+write "${kts}printk_devkmsg" "off"
+done
+
+# Use RCU_normal instead of RCU_expedited for improved real-time latency, CPU utilization and energy efficiency.
+if [[ -e "/sys/kernel/rcu_expedited" ]]
+then
+write /sys/kernel/rcu_expedited 0
+write /sys/kernel/rcu_normal 1
+fi
+
+if [[ -e "/sys/power/pm_freeze_timeout" ]] 
+then
+write "/sys/power/pm_freeze_timeout" "2000"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING FINGERPRINT BOOST...                                                                          "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable fingerprint boost.
+if [[ -e "/sys/kernel/fp_boost/enabled" ]]
+then
+write "/sys/kernel/fp_boost/enabled" "1"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Set min and max clocks.
+for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+do
+if [[ -e "${minclk}scaling_min_freq" ]]
+then
+write "${minclk}scaling_min_freq" "300000"
+write "${minclk}scaling_max_freq" "20000000"
+fi
+done
+
+for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+if [[ -e "${mnclk}scaling_min_freq" ]]
+then
+write "${mnclk}scaling_min_freq" "300000"
+write "${mnclk}scaling_max_freq" "20000000"
+fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING CPUIDLE USE DEEPEST STATE...                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
+then
+write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING VM TWEAKS...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+sync
+
+# VM settings to improve overall user experience and smoothness.
+for vm in /proc/sys/vm/
+do
+write "${vm}drop_caches" "3"
+write "${vm}dirty_background_ratio" "10"
+write "${vm}dirty_ratio" "30"
+write "${vm}dirty_expire_centisecs" "500"
+write "${vm}dirty_writeback_centisecs" "0"
+write "${vm}page-cluster" "0"
+write "${vm}stat_interval" "30"
+write "${vm}swap_ratio_enable" "1"
+write "${vm}swap_ratio" "100"
+write "${vm}swappiness" "100"
+write "${vm}dirtytime_expire_seconds" "44000"
+write "${vm}vfs_cache_pressure" "100"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# MSM thermal
+if [[ -d "/sys/module/msm_thermal" ]]
+then
+write /sys/module/msm_thermal/vdd_restriction/enabled "0"
+write /sys/module/msm_thermal/core_control/enabled "0"
+write /sys/module/msm_thermal/parameters/enabled "Y"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING POWER EFFICIENT WORKQUEUE...                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable power efficient workqueue.
+for wqpw in /sys/module/workqueue/parameters/
+do
+if [[ -e "${wqpw}power_efficient" ]]
+then 
+write "${wqpw}power_efficient" "N"
+fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXING DOUBLE TAP TO WAKEUP...                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Fix DT2W.
+for dt in /sys/touchpanel/
+do
+if [[ -e "/sys/touchpanel/double_tap" ]]
+then
+write "${dt}double_tap" "1"
+fi
+done
+
+if [[ -e "/proc/tp_gesture" ]]
+then
+write "/proc/tp_gesture" "1"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING INTERNET TWEAKS...                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Internet Tweaks
+for tcp in /proc/sys/net/ipv4/
+do
+write "${tcp}ip_no_pmtu_disc" "0"
+write "${tcp}tcp_ecn" "2"
+write "${tcp}tcp_timestamps" "0"
+write "${tcp}route.flush" "1"
+write "${tcp}tcp_rfc1337" "1"
+write "${tcp}tcp_tw_reuse" "1"
+write "${tcp}tcp_sack" "1"
+write "${tcp}tcp_fack" "1"
+write "${tcp}tcp_fastopen" "3"
+write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_no_metrics_save" "1"
+write "${tcp}tcp_syncookies" "0"
+write "${tcp}tcp_window_scaling" "1"
+write "${tcp}tcp_keepalive_probes" "10"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
+write "${tcp}tcp_congestion_control" "bbr2"
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING LPM SLEEP...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable LPM sleep in balanced / battery profile
+for lpm in /sys/module/lpm_levels/parameters/
+do
+if [[ -d "/sys/module/lpm_levels" ]]
+then
+write "${lpm}sleep_disabled" "N"
+write "/sys/module/lpm_levels/system/pwr/cpu0/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu1/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu2/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/cpu3/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu4/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu5/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu6/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/cpu7/ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/pwr-l2-dynret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/perf-l2-dynret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/pwr/pwr-l2-ret/idle_enabled" "Y"
+write "/sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled" "Y"
+fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DİSABLING PM2 IDLE SLEEP MODE...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
+then
+write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING LCD POWER REDUCE...                                                                          "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
+then
+write "/sys/class/lcd/panel/power_reduce" "0"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DİSABLING GENTLE FAIR SLEEPERS...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
+then
+write "/sys/kernel/sched/gentle_fair_sleepers" "0"
+fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING FORCE FAST CHARGING...                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable Fast Charging Rate
+for ffc in /sys/kernel/fast_charge/
+do
+if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
+then
+write "${ffc}force_fast_charge" "1"
+fi
+done
+  
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          KILLING GMS PROCESSES...                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# GMS blocker 1.2 by pedrozzz
+killall -9 com.google.android.gms
+killall -9 com.google.android.gms.persistent
+killall -9 com.google.process.gapps
+killall -9 com.google.android.gsf
+killall -9 com.google.android.gsf.persistent
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+exit=$(date +%s)
+
+exectime=$((exit - init))
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ $(getprop persist.sys.locale) == "en-US" ]]
+then
+toasten1
+     	
+elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+then
+toasten1
+
+elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
+then
+toastpt1
+     	
+elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+then
+toastin1
+
+elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+then
+toasttr1
+
+elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+then
+toastfr1
+
+elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+then
+toastfr1
+
+else
+toasten1
+fi
+};;
+     # Balanced Profile
+     "Balanced") {
+     	init=$(date +%s)
+     	if [[ $(getprop persist.sys.locale) == "en-US" ]]
+     	then
+     	toasten
+     	
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+         then
+         toasten
+         
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
+     	then
+     	toastpt
+     	
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+     	then
+     	toastin
+     	
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+     	then
+     	toasttr
+     	
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+     	then
+     	toastfr
+
+     	else
+     	toasten
+     	fi
+     	
+kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
+kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
+kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
+kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
+kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
+kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
+kmsg1 "                                            📱 Device: $dm                                                                                                  "
+kmsg1 "                                            👑 KTS Version: 1.8.8                                                                                           "
+kmsg1 "                                            🔋 Battery: $percentage%                                                                                        "
+kmsg1 "                                            📲 GPU: $gpu                                                                                                    "
+kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
+kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
+kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+	       	
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+        	
+# Enable perfd and thermal-engine.
+start perfd
+start thermal-engine
         	
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKING I/O SCHEDULER...                                                                              "
@@ -516,21 +1244,6 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "6000"
 write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
 fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKING LMK...                                                                                        "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Low Memory Killer tweaks.
-for lmk in /sys/module/lowmemorykiller/parameters/
-do
-if [[ -d "/sys/module/lowmemorykiller" ]]
-then
-write "${lmk}enable_lmk" "1"
-write "${lmk}enable_adaptive_lmk" "0"
-write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
-fi
-done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLING DEBUGGERS...                                                                                 "
@@ -707,9 +1420,8 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
-write "${sched}sched_features" "GENTLE_FAIR_SLEEPERS"
+write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "${sched}sched_features" "WAKEUP_PREEMPTION"
-write "${sched}sched_features" "ARCH_POWER"
 fi
 done
  
@@ -759,7 +1471,7 @@ fi
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
-write "/sys/power/pm_freeze_timeout" "5000"
+write "/sys/power/pm_freeze_timeout" "10000"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -827,9 +1539,9 @@ write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "3000"
-write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "10"
+write "${vm}stat_interval" "30"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
@@ -916,38 +1628,6 @@ write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
-done
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-### Phone dialer app ###
-renice -1 `pidof com.android.phone`
-
-### System apps ###
-renice -1 `pidof com.android.mms` # Text message app
-renice -1 `pidof com.swype.android.inputmethod` # Keyboard
-renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
-renice -1 `pidof com.android.systemui` # System UI
-renice -1 `pidof com.android.settings` # Settings menu
-renice -1 `pidof com.android.vending` # Market app
-renice -1 `pidof com.sec.android.app.camera` # Camera app
-renice -1 `pidof android.process.acore`
-renice -1 `pidof kondemand/0`
-renice -1 `pidof ksmartass_up/0`
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING BATTERY SAVER...                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable battery saver
-for bs in /sys/module/battery_saver/parameters/
-do
-if [[ -e "/sys/module/battery_saver/parameters/enabled" ]]
-then
-write "${bs}enabled" "Y"
-fi
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1046,7 +1726,7 @@ toasten1
      	
 elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
 then
-toast1
+toasten1
 
 elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
 then
@@ -1055,6 +1735,18 @@ toastpt1
 elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
 then
 toastin1
+
+elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+then
+toasttr1
+
+elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+then
+toastfr1
+
+elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+then
+toastfr1
 
 else
 toasten1
@@ -1079,23 +1771,36 @@ fi
        	then
        	toastin
        	
+       	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+       	then
+       	toasttr
+       	
+       	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+       	then
+       	toastfr
+
+       	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+       	then
+       	toastfr
+
        	else
        	toasten
        	fi
        	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
-kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
+kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
-kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
-kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
-kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
-kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.7                                                                                           "
+kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
+kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
+kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
+kmsg1 "                                            📱 Device: $dm                                                                                                  "
+kmsg1 "                                            👑 KTS Version: 1.8.8                                                                                           "
+kmsg1 "                                            🔋 Battery: $percentage%                                                                                        "
+kmsg1 "                                            📲 GPU: $gpu                                                                                                    "
+kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
+kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                        ENABLING $kts_profile PROFILE...                                                                         "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 		
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                        DISABLING THERMAL-ENGINE AND ENABLING PERFD...                                                           "
@@ -1255,21 +1960,6 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "5000"
 write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "15"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
 fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKING LMK...                                                                                        "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Low Memory Killer Tweaks.
-for lmk in /sys/module/lowmemorykiller/parameters/
-do
-if [[ -d "/sys/module/lowmemorykiller" ]]
-then
-write "${lmk}enable_lmk" "1"
-write "${lmk}enable_adaptive_lmk" "0"
-write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
-fi
-done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLING DEBUGGERS...                                                                                 "
@@ -1492,7 +2182,7 @@ fi
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
-write "/sys/power/pm_freeze_timeout" "2500"
+write "/sys/power/pm_freeze_timeout" "2000"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1559,10 +2249,10 @@ do
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "10"
-write "${vm}dirty_expire_centisecs" "200"
-write "${vm}dirty_writeback_centisecs" "500"
+write "${vm}dirty_expire_centisecs" "1000"
+write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "30"
+write "${vm}stat_interval" "60"
 write "${vm}swappiness" "100"
 write "${vm}dirtytime_expire_seconds" "44000"
 write "${vm}swap_ratio_enable" "1"
@@ -1575,7 +2265,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLING KSM...                                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable KSM
+# Disable KSM
 if [[ -e "/sys/kernel/mm/ksm/run" ]] 
 then
 write "/sys/kernel/mm/ksm/run" "0"
@@ -1585,7 +2275,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLING UKSM...                                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable UKSM
+# Disable UKSM
 if [[ -e "/sys/kernel/mm/uksm/run" ]] 
 then
 write "/sys/kernel/mm/uksm/run" "0"
@@ -1672,23 +2362,13 @@ write "${tcp}tcp_congestion_control" "bbr2"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
+kmsg1 "                                          CHANGING TASKS CGROUP AND NICE...                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-### Phone dialer app ###
-renice -1 `pidof com.android.phone`
+change_task_cgroup "skynet.cputhrottlingtest" "top-app" "cpuset"
+change_task_cgroup "skynet.cputhrottlingtest" "foreground" "stune"
 
-### System apps ###
-renice -1 `pidof com.android.mms` # Text message app
-renice -1 `pidof com.swype.android.inputmethod` # Keyboard
-renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
-renice -1 `pidof com.android.systemui` # System UI
-renice -1 `pidof com.android.settings` # Settings menu
-renice -1 `pidof com.android.vending` # Market app
-renice -1 `pidof com.sec.android.app.camera` # Camera app
-renice -1 `pidof android.process.acore`
-renice -1 `pidof kondemand/0`
-renice -1 `pidof ksmartass_up/0`
+change_task_nice "skynet.cputhrottlingtest" "-20"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLING BATTERY SAVER...                                                                             "
@@ -1819,6 +2499,18 @@ elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
 then
 toastin1
 
+elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+then
+toasttr1
+
+elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+then
+toastfr1
+
+elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+then
+toastfr1
+
 else
 toasten1
 fi
@@ -1842,18 +2534,35 @@ fi
         	then
         	toastin
         	
+        	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]] 
+        	then
+        	toasttr
+        	
+        	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+        	then
+        	toastfr
+        	
+        	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+        	then
+        	toastfr
+
         	else
         	toasten
         	fi
         	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
-kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
+kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
-kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
-kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
-kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
-kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.7                                                                                           "
+kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
+kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
+kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
+kmsg1 "                                            📱 Device: $dm                                                                                                  "
+kmsg1 "                                            👑 KTS Version: 1.8.8                                                                                           "
+kmsg1 "                                            🔋 Battery: $percentage%                                                                                        "
+kmsg1 "                                            📲 GPU: $gpu                                                                                                    "
+kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
+kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1864,8 +2573,9 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
     	
-# Enable perfd.
+# Enable perfd and thermal-engine.
 start perfd
+start thermal-engine
     
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKING I/O SCHEDULER...                                                                              "
@@ -1921,8 +2631,8 @@ write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "1"
-write "${cpu}interactive/sampling_rate" "25000"
-write "${cpu}interactive/sampling_rate_min" "25000"
+write "${cpu}interactive/sampling_rate" "42000"
+write "${cpu}interactive/sampling_rate_min" "42000"
 write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}interactive/go_hispeed_load" "99"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
@@ -1988,15 +2698,12 @@ then
 write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
-# Set max clock to 600 mhz in battery profile if battery < than 20% and 745 mhz if > 20%.
+# Set max clock to 600 mhz in battery profile if battery < than 20%.
 for gpu in /sys/class/kgsl/kgsl-3d0/
 do
 if [[ $percentage -le "50" && -e "${gpu}devfreq/max_freq" ]]
 then
 write "${gpu}devfreq/max_freq" "600000000"
-
-else [[ $percentage -ge "50" && -e "${gpu}devfreq/max_freq" ]]
-write "${gpu}devfreq/max_freq" "745000000"
 fi
 done
 
@@ -2012,21 +2719,6 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "10000"
 write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "35"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
 fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKING LMK...                                                                                        "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Low Memory Killer tweaks
-for lmk in /sys/module/lowmemorykiller/parameters/
-do
-if [[ -d "/sys/module/lowmemorykiller" ]]
-then
-write "${lmk}enable_lmk" "1"
-write "${lmk}enable_adaptive_lmk" "0"
-write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
-fi
-done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLING DEBUGGERS...                                                                                 "
@@ -2147,13 +2839,13 @@ write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "1"
-write "${st}/foreground/schedtune.prefer_idle" "0"
+write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
 
 write "${st}/top-app/schedtune.boost" "1"
-write "${st}/top-app/schedtune.prefer_idle" "0"
+write "${st}/top-app/schedtune.prefer_idle" "1"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
@@ -2236,7 +2928,7 @@ write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BA
 write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
 write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
-write "${kts}sched_nr_migrate" "8"
+write "${kts}sched_nr_migrate" "32"
 write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
@@ -2250,7 +2942,7 @@ fi
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
-write "/sys/power/pm_freeze_timeout" "10000"
+write "/sys/power/pm_freeze_timeout" "20000"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2277,7 +2969,7 @@ write "${minclk}scaling_max_freq" "20000000"
 
 else [[ $percentage -ge "20" && -e "${minclk}scaling_min_freq" ]]
 write "${minclk}scaling_min_freq" "300000"
-write "${minclk}scaling_max_freq" "1600000"
+write "${minclk}scaling_max_freq" "1300000"
 fi
 done
 
@@ -2290,7 +2982,7 @@ write "${mnclk}scaling_max_freq" "20000000"
 
 else [[ $percentage -ge "20" && -e "${mnclk}scaling_min_freq" ]]
 write "${mnclk}scaling_min_freq" "300000"
-write "${mnclk}scaling_max_freq" "1600000"
+write "${mnclk}scaling_max_freq" "1300000"
 fi
 done
 
@@ -2325,10 +3017,10 @@ do
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "5000"
-write "${vm}dirty_writeback_centisecs" "5000"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "10"
+write "${vm}stat_interval" "30"
 write "${vm}swap_ratio_enable" "1"
 write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
@@ -2436,25 +3128,6 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
 done
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-### Phone dialer app ###
-renice -1 `pidof com.android.phone`
-
-### System apps ###
-renice -1 `pidof com.android.mms` # Text message app
-renice -1 `pidof com.swype.android.inputmethod` # Keyboard
-renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
-renice -1 `pidof com.android.systemui` # System UI
-renice -1 `pidof com.android.settings` # Settings menu
-renice -1 `pidof com.android.vending` # Market app
-renice -1 `pidof com.sec.android.app.camera` # Camera app
-renice -1 `pidof android.process.acore`
-renice -1 `pidof kondemand/0`
-renice -1 `pidof ksmartass_up/0`
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING BATTERY SAVER...                                                                              "
@@ -2566,6 +3239,18 @@ elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
 then
 toastin1
 
+elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+then
+toasttr1
+
+elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+then
+toastfr1
+
+elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+then
+toastfr1
+
 else
 toasten1
 fi
@@ -2589,18 +3274,35 @@ fi
         	then
         	toastin
         	
+        	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+     	   then
+        	toasttr
+
+        	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+        	then
+        	toastfr
+
+        	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+        	then
+        	toastfr
+
         	else
         	toasten
         	fi
         	
-        	kmsg "------------------------------------------ Info -------------------------------------------------------------------------------------------------"
-kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   "
+        	kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
+kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
-kmsg1 "                                            🛠️ SOC: $(getprop ro.board.platform)                                                                            "
-kmsg1 "                                            ⚙️ SDK: $(getprop ro.build.version.sdk)                                                                         "
-kmsg1 "                                            🅰️ndroid Version: $(getprop ro.build.version.release)                                                           "
-kmsg1 "                                            📱 Device: $(getprop ro.product.odm.model)                                                                      "
-kmsg1 "                                            👑 KTS Version: 1.8.7                                                                                           "
+kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
+kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
+kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
+kmsg1 "                                            📱 Device: $dm                                                                                                  "
+kmsg1 "                                            👑 KTS Version: 1.8.8                                                                                           "
+kmsg1 "                                            🔋 Battery: $percentage%                                                                                        "
+kmsg1 "                                            📲 GPU: $gpu                                                                                                    "
+kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
+kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2718,7 +3420,7 @@ if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
 then
 write "${gpu}throttling" "0"
 write "${gpu}thermal_pwrlevel" "0"
-write "${gpu}devfreq/adrenoboost" "3"
+write "${gpu}devfreq/adrenoboost" "2"
 write "${gpu}force_no_nap" "1"
 write "${gpu}bus_split" "0"
 write "${gpu}devfreq/min_freq" "$UINT_MAX"
@@ -2765,21 +3467,6 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "5000"
 write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "10"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
 fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                             TWEAKING LMK...                                                                                     "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Low Memory Killer Tweaks.
-for lmk in /sys/module/lowmemorykiller/parameters/
-do
-if [[ -d "/sys/module/lowmemorykiller" ]]
-then
-write "${lmk}enable_lmk" "1"
-write "${lmk}enable_adaptive_lmk" "0"
-write "${lmk}minfree" "21816,29088,36360,43632,50904,65448"
-fi
-done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLING DEBUGGERS...                                                                                 "
@@ -3002,7 +3689,7 @@ fi
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
-write "/sys/power/pm_freeze_timeout" "2500"
+write "/sys/power/pm_freeze_timeout" "2000"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3070,9 +3757,9 @@ write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "10"
 write "${vm}dirty_expire_centisecs" "200"
-write "${vm}dirty_writeback_centisecs" "500"
+write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "30"
+write "${vm}stat_interval" "60"
 write "${vm}swappiness" "100"
 write "${vm}dirtytime_expire_seconds" "44000"
 write "${vm}swap_ratio_enable" "1"
@@ -3182,23 +3869,46 @@ write "${tcp}tcp_congestion_control" "bbr2"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          RENICING SOME PROCESSES...                                                                             "
+kmsg1 "                                          CHANGING TASKS CGROUP AND NICE...                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-### Phone dialer app ###
-renice -1 `pidof com.android.phone`
+change_task_cgroup "skynet.cputhrottlingtest" "top-app" "cpuset"
+change_task_cgroup "skynet.cputhrottlingtest" "foreground" "stune"
+change_task_cgroup "com.dts.freefireth" "top-app" "cpuset"
+change_task_cgroup "com.dts.freefireth" "foreground" "stune"
+change_task_cgroup "com.garena.game.codm" "top-app" "cpuset"
+change_task_cgroup "com.garena.game.codm" "foreground" "stune"
+change_task_cgroup "com.activision.callofduty.shooter" "top-app" "cpuset"
+change_task_cgroup "com.activision.callofduty.shooter" "foreground" "stune"
+change_task_cgroup "com.riotgames.league.wildrift" "top-app" "cpuset"
+change_task_cgroup "com.riotgames.league.wildrift" "foreground" "stune"
+change_task_cgroup "com.mobile.legends" "top-app" "cpuset"
+change_task_cgroup "com.mobile.legends" "foreground" "stune"
+change_task_cgroup "com.gameloft.android.SAMS.GloftA9SS" "top-app" "cpuset"
+change_task_cgroup "com.gameloft.android.SAMS.GloftA9SS" "foreground" "stune"
+change_task_cgroup "com.tencent.ig" "top-app" "cpuset"
+change_task_cgroup "com.tencent.ig" "foreground" "stune" 
+change_task_cgroup "com.gameloft.android.ANMP.GloftA8HM" "top-app" "cpuset"
+change_task_cgroup "com.gameloft.android.ANMP.GloftA8HM" "foreground" "stune" 
+change_task_cgroup "com.miHoYo.GenshinImpact" "top-app" "cpuset"
+change_task_cgroup "com.miHoYo.GenshinImpact" "foreground" "stune" 
+change_task_cgroup "com.pearlabyss.blackdesertm.gl" "top-app" "cpuset"
+change_task_cgroup "com.pearlabyss.blackdesertm.gl" "foreground" "stune" 
+change_task_cgroup "com.nianticlabs.pokemongo" "top-app" "cpuset"
+change_task_cgroup "com.nianticlabs.pokemongo" "foreground" "stune" 
 
-### System apps ###
-renice -1 `pidof com.android.mms` # Text message app
-renice -1 `pidof com.swype.android.inputmethod` # Keyboard
-renice -1 `pidof com.sec.android.app.controlpanel` # Task manager
-renice -1 `pidof com.android.systemui` # System UI
-renice -1 `pidof com.android.settings` # Settings menu
-renice -1 `pidof com.android.vending` # Market app
-renice -1 `pidof com.sec.android.app.camera` # Camera app
-renice -1 `pidof android.process.acore`
-renice -1 `pidof kondemand/0`
-renice -1 `pidof ksmartass_up/0`
+change_task_nice "skynet.cputhrottlingtest" "-20"
+change_task_nice "com.dts.freefireth" "-20"
+change_task_nice "com.garena.game.codm" "-20"
+change_task_nice "com.riotgames.league.wildrift" "-20"
+change_task_nice "com.mobile.legends" "-20"
+change_task_nice "com.tencent.ig" "-20"
+change_task_nice "com.gameloft.android.SAMS.GloftA9SS" "-20"
+change_task_nice "com.gameloft.android.ANMP.GloftA8HM" "-20"
+change_task_nice "com.activision.callofduty.shooter" "-20"
+change_task_nice "com.miHoYo.GenshinImpact" "-20"
+change_task_nice "com.pearlabyss.blackdesertm.gl" "-20"
+change_task_nice "com.nianticlabs.pokemongo" "-20"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLING BATTERY SAVER...                                                                             "
@@ -3328,6 +4038,18 @@ toastpt1
 elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
 then
 toastin1
+
+elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+then
+toasttr1
+
+elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+then
+toastfr1
+
+elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+then
+toastfr1
 
 else
 toasten1
