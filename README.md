@@ -22,7 +22,7 @@ Thanks to [Eight](https://github.com/iamlazy123) by his [Lazy Tweaks](https://gi
 
 Thanks to [corruptor64](https://forum.xda-developers.com/member.php?s=1f3e5a492ffebb222d62a936f8b34ce2&u=731319) by his toast app.
 
-Thanks to [Dan](https://forum.xda-developers.com/m/paget96.5514152/)
+Thanks to [Dan](https://forum.xda-developers.com/m/paget96.5514152/) by his [LSpeed](https://t.me/paget96_projects_channel) app / module.
 
 And everyone that supports King Tweaks project. ❤️
 
