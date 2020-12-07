@@ -16,7 +16,9 @@ sleep 1
 ui_print "Thanks to Eight (iamlazy123 @ github)"
 ui_print ""
 sleep 1
-ui_print "KTweak by draco (tytydraco @ github)"
+ui_print "KTweak by Draco (tytydraco @ github)"
+ui_print ""
+ui_print "Thanks to Dan (paget96 @ github)"
 ui_print ""
 sleep 1
 
@@ -124,20 +126,19 @@ fstrim -v /system
 fstrim -v /data
 fstrim -v /cache
 ui_print ""
-ui_print "[*] Installing King Tweaks and King Toast app..."
+ui_print "[*] Installing King Tweaks app..."
 pm install $MODPATH/KingTweaks.apk
+sleep 1
+ui_print ""
+ui_print "[*] Installing King Toast app..."
 pm install $MODPATH/KingToast.apk
 sleep 1
-ui_print "[*] Done!"
 ui_print ""
 ui_print "[*] Logs are stored in your internal storage/KTS"
-sleep 1
-ui_print ""
-ui_print "[*] You still can access it by writing kingtweaks in a root terminal (not recommended)."
 sleep 1
 ui_print ""
 ui_print "[*] Now, reboot."
 sleep 1
 ui_print ""
-P1="Improving user-experience and performance of $(getprop ro.product.odm.model). Telegram: @kingcreationschannel"
+P1="Improving user-experience and performance of $(getprop ro.product.model). Telegram: @kingcreationschannel"
 sed -i "/description=/c description=${P1}" $MODPATH/module.prop;

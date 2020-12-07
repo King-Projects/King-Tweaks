@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # Written by Draco (tytydraco @ github).
-# Modified by Pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
+# Modified by Pedrozzz (pedrozzz0 @ github).
 
 mkdir /sdcard/KTS
 LOG=/sdcard/KTS/KTS.log
@@ -59,21 +59,29 @@ toastfr1() {
 
 write() {
 	# Bail out if file does not exist
-	[[ ! -f "$1" ]] && return 1
+	if [[ ! -f "$1" ]]
+	then
+    kmsg "$1 doesn't exist, skipping..."
+    return 1
+    fi
 
 	# Fetch the current key value
 	local curval=`cat "$1" 2> /dev/null`
 	
 	# Bail out if value is already set
-	[[ "$curval" == "$2" ]] && return 1
-	
+	if [[ "$curval" == "$2" ]]
+	then
+	kmsg "$1 is already set to $2, skipping..."
+	return 1
+	fi
+
 	# Make file writable in case it is not already
 	chmod +w "$1" 2> /dev/null
 
 	# Write the new value and bail if there's an error
 	if ! echo "$2" > "$1" 2> /dev/null
 	then
-		kmsg "Failed: $1 -> $2"
+		kmsg1 "[!] Failed: $1 -> $2"
 		return 1
 	fi
 
@@ -92,7 +100,7 @@ setprop king.tweaks.support "1"
 
 boot_run_once=false
 kts_mode=$(getprop persist.kingtweaks.mode)
-[ -z "$kts_mode" ] && setprop persist.kingtweaks.mode "2"
+[ -z "$kts_mode" ] && setprop persist.kingtweaks.mode "3"
 
 while true
 do
@@ -127,24 +135,46 @@ SCHED_TASKS_THROUGHPUT="6"
 # Maximum unsigned integer size in C
 UINT_MAX="4294967295"
 
-# Variable to get gpu model
-if [[ -e "/sys/kernel/gpu/gpu_model" ]]
-then
-gpu=$(cat /sys/kernel/gpu/gpu_model)
-
-elif [[ -e "/sys/class/kgsl/kgsl-3d0/gpu_model" ]]
-then
-gpu=$(cat /sys/class/kgsl/kgsl-3d0/gpu_model)
-fi
+# Variable to GPU directories.
+	if [ -d "/sys/class/kgsl/kgsl-3d0" ]; then
+		gpu="/sys/class/kgsl/kgsl-3d0"
+	elif [ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0" ]; then
+		gpu="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0"
+	elif [ -d "/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0" ]; then
+		gpu="/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0"
+	elif [ -d "/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0" ]; then
+		gpu="/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0"
+	elif [ -d "/sys/devices/platform/*.gpu/devfreq/*.gpu" ]; then
+		gpu="/sys/devices/platform/*.gpu/devfreq/*.gpu"
+	elif [ -d "/sys/devices/platform/gpusysfs" ]; then
+		gpu="/sys/devices/platform/gpusysfs"
+	elif [ -d "/sys/devices/*.mali" ]; then
+		gpu="/sys/devices/*.mali"
+	elif [ -d "/sys/devices/*.gpu" ]; then
+		gpu="/sys/devices/*.gpu"
+	elif [ -d "/sys/devices/platform/mali.0" ]; then
+		gpu="/sys/devices/platform/mali.0"
+	elif [ -d "/sys/devices/platform/mali-*.0" ]; then
+		gpu="/sys/devices/platform/mali-*.0"
+	elif [ -d "/sys/module/mali/parameters" ]; then
+		gpu="/sys/module/mali/parameters"
+	elif [ -d "/sys/class/misc/mali0" ]; then
+		gpu="/sys/class/misc/mali0"
+	elif [ -d "/sys/kernel/gpu" ]; then
+		gpu="/sys/kernel/gpu"
+	fi
 
 # Variable to selinux state
 if [[ $(cat /sys/fs/selinux/enforce) == "1" ]]
 then
-selinuxstate=enforcing
+selinuxstate=Enforcing
 
 elif [[ $(cat /sys/fs/selinux/enforce) == "0" ]]
 then
-selinuxstate=permissive
+selinuxstate=Permissive
+
+else
+selinuxstate=? (Unknown)
 fi
 
 # Variable to device SDK
@@ -154,7 +184,7 @@ sdk=$(getprop ro.build.version.sdk)
 arv=$(getprop ro.build.version.release)
 
 # Variable to device model
-dm=$(getprop ro.product.odm.model)
+dm=$(getprop ro.product.model)
 
 # Variable to device SOC
 soc=$(getprop ro.board.platform) 
@@ -165,8 +195,14 @@ magisk=$(magisk -c)
 # Variable to total device ram
 totalram=$(free -m | awk '/Mem:/{print $2}')
 
-# Variable to battery actual capacity available.
+# Variable to battery actual capacity
 percentage=$(cat /sys/class/power_supply/battery/capacity)
+
+# Variable to min device GPU power level
+mpl=$(cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel)
+
+# Variable to battery design capacity
+bdc=$(cat /sys/class/power_supply/battery/charge_full_design)
 
 # Detect other conflicting modules.
 if [[ -d $loc/injector ]]
@@ -264,16 +300,6 @@ then
 kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
 exit 1
 	
-elif [[ -d $loc/ktks ]]
-then
-kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
-elif [[ -d $loc/ktksr ]]
-then
-kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
-exit 1
-	
 elif [[ $(pm list package kitana) ]]
 then
 kmsg1 "[!] A conflicting module/app is installed, please remove and then reboot to module work properly."
@@ -286,11 +312,11 @@ kts_profilein=Latensi
 
 elif [[ "$kts_mode" == "2" ]]
 then
-kts_profilein=Seimbang
+kts_profilein=Baterai
 
 elif [[ "$kts_mode" == "3" ]]
 then
-kts_profilein=Baterai
+kts_profilein=Seimbang
 
 elif [[ "$kts_mode" == "4" ]]
 then
@@ -307,11 +333,11 @@ kts_profilept=Latência
 
 elif [[ "$kts_mode" == "2" ]]
 then
-kts_profilept=Balanceado
+kts_profilept=Bateria
         	
 elif [[ "$kts_mode" == "3" ]]
 then
-kts_profilept=Bateria
+kts_profilept=Balanceado
         	
 elif [[ "$kts_mode" == "4" ]]
 then
@@ -319,7 +345,7 @@ kts_profilept=Extremo
         	
 elif [[ "$kts_mode" == "5" ]]
 then
-kts_profilept=Jogando
+kts_profilept=Gaming
 fi
 	 	
 if [[ "$kts_mode" == "1" ]]
@@ -328,11 +354,11 @@ kts_profile=Latency
 
 elif [[ "$kts_mode" == "2" ]]
 then
-kts_profile=Balanced
+kts_profile=Battery
         	
 elif [[ "$kts_mode" == "3" ]]
 then
-kts_profile=Battery
+kts_profile=Balanced
         	
 elif [[ "$kts_mode" == "4" ]]
 then
@@ -349,11 +375,11 @@ kts_profiletr=Gecikme
 
 elif [[ "$kts_mode" == "2" ]]
 then
-kts_profiletr=Dengeli
+kts_profiletr=Batarya
         	
 elif [[ "$kts_mode" == "3" ]]
 then
-kts_profiletr=Batarya
+kts_profiletr=Dengeli
         	
 elif [[ "$kts_mode" == "4" ]]
 then
@@ -370,11 +396,11 @@ kts_profilefr=Latence
 
 elif [[ "$kts_mode" == "2" ]]
 then
-kts_profilefr=Modéré
+kts_profilefr=Batterie
         	
 elif [[ "$kts_mode" == "3" ]]
 then
-kts_profilefr=Batterie
+kts_profilefr=Modéré
         	
 elif [[ "$kts_mode" == "4" ]]
 then
@@ -428,9 +454,9 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.8.8                                                                                           "
-kmsg1 "                                            🔋 Battery: $percentage%                                                                                        "
-kmsg1 "                                            📲 GPU: $gpu                                                                                                    "
+kmsg1 "                                            👑 KTS Version: 1.8.9                                                                                           "
+kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
+kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -441,12 +467,30 @@ kmsg1 "                                          ENABLING $kts_profile PROFILE..
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	       	
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
+kmsg1 "                                          ENABLING THERMAL-ENGINE, THERMALD AND PERFD...                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
         	
-# Enable perfd and thermal-engine.
+# Enable perfd, thermald and thermal-engine.
 start perfd
+start thermald
 start thermal-engine       	
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING STATSD AND LOGD...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable logd and statsd to reduce overhead.
+stop logd
+stop statsd
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING CPU_BOOST...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/module/cpu_boost" ]]
+then
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKING I/O SCHEDULER...                                                                              "
@@ -457,11 +501,11 @@ for queue in /sys/block/*/queue/
 do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
-write "${queue}read_ahead_kb" 64
+write "${queue}read_ahead_kb" 32
 write "${queue}iosched/low_latency" 1
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 64
+write "${queue}nr_requests" 32
 done
 
 # Reserve 90% IO bandwith for foreground tasks
@@ -484,16 +528,16 @@ avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
 then
 write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_LATENCY / 1000))"
-write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_LATENCY / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "1"
-write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_LATENCY / 1000))"
+write "${cpu}schedutil/up_rate_limit_us" "0"
+write "${cpu}schedutil/down_rate_limit_us" "0"
+write "${cpu}schedutil/iowait_boost_enable" "0"
+write "${cpu}schedutil/rate_limit_us" "0"
 write "${cpu}schedutil/hispeed_load" "89"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD_LATENCY / 1000))"
+write "${cpu}interactive/timer_rate" "0"
 write "${cpu}interactive/boost" "0"
 write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/use_migration_notif" "1" 
@@ -502,9 +546,9 @@ write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "10000"
-write "${cpu}interactive/sampling_rate_min" "10000"
-write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_BALANCE / 1000))"
+write "${cpu}interactive/sampling_rate" "0"
+write "${cpu}interactive/sampling_rate_min" "0"
+write "${cpu}interactive/min_sample_time" "0"
 write "${cpu}interactive/go_hispeed_load" "89"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
@@ -520,25 +564,19 @@ kmsg1 "                                          TWEAKING GPU...                
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	
 # GPU Tweaks.
-for gpu in /sys/class/kgsl/kgsl-3d0/
-do
-if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
-then
-write "${gpu}throttling" "1"
-write "${gpu}thermal_pwrlevel" "0"
-write "${gpu}devfreq/adrenoboost" "0"
-write "${gpu}force_no_nap" "0"
-write "${gpu}bus_split" "1"
-write "${gpu}devfreq/min_freq" "100000000"
-write "${gpu}devfreq/max_freq" "$UINT_MAX"
-write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
-write "${gpu}force_bus_on" "0"
-write "${gpu}force_clk_on" "0"
-write "${gpu}force_rail_on" "0"
-write "${gpu}devfreq/polling_interval" "10"
-write "${gpu}idle_timer" "76"
-fi
-done
+write "$gpu/throttling" "1"
+write "$gpu/thermal_pwrlevel" "0"
+write "$gpu/devfreq/adrenoboost" "0"
+write "$gpu/force_no_nap" "0"
+write "$gpu/bus_split" "1"
+write "$gpu/devfreq/min_freq" "100000000"
+write "$gpu/devfreq/max_freq" "$UINT_MAX"
+write "$gpu/default_pwrlevel" "$mpl"
+write "$gpu/force_bus_on" "0"
+write "$gpu/force_clk_on" "0"
+write "$gpu/force_rail_on" "0"
+write "$gpu/devfreq/polling_interval" "10"
+write "$gpu/idle_timer" "96"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -569,9 +607,9 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
-write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "6000"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "7500"
 write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
-write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
+write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "30"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -686,6 +724,20 @@ lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING LMK TWEAKS...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# LMK Tweaks.
+for lmk in /sys/module/lowmemorykiller/parameters/
+do
+if [[ -d "/sys/module/lowmemorykiller" ]]
+then
+write "${lmk}enable_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "1"
+fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -748,7 +800,7 @@ do
 if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "${sched}sched_features" "NEXT_BUDDY"
-write "${sched}sched_features" "TTWU_QUEUE"
+write "${sched}sched_features" "NO_TTWU_QUEUE"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
 fi
@@ -775,7 +827,7 @@ kmsg1 "-------------------------------------------------------------------------
 for kts in /proc/sys/kernel/
 do
 write "${kts}sched_child_runs_first" "1"
-write "${kts}perf_cpu_time_max_percent" "5"
+write "${kts}perf_cpu_time_max_percent" "1"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "512"
@@ -786,17 +838,10 @@ write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LA
 write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_LATENCY / 2))"
 write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
-write "${kts}sched_nr_migrate" "32"
+write "${kts}sched_nr_migrate" "4"
 write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
-
-# Use RCU_normal instead of RCU_expedited for improved real-time latency, CPU utilization and energy efficiency.
-if [[ -e "/sys/kernel/rcu_expedited" ]]
-then
-write /sys/kernel/rcu_expedited 0
-write /sys/kernel/rcu_normal 1
-fi
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
@@ -855,22 +900,18 @@ sync
 for vm in /proc/sys/vm/
 do
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "10"
+write "${vm}dirty_background_ratio" "1"
 write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "500"
 write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "30"
-write "${vm}swap_ratio_enable" "1"
-write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
-write "${vm}dirtytime_expire_seconds" "44000"
-write "${vm}vfs_cache_pressure" "100"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+write "${vm}vfs_cache_pressure" "200"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
+kmsg1 "                                          APPLYING MSM_THERMAL SETTINGS...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # MSM thermal
@@ -1015,6 +1056,58 @@ killall -9 com.google.process.gapps
 killall -9 com.google.android.gsf
 killall -9 com.google.android.gsf.persistent
 
+pm disable com.google.android.gms/com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
+pm disable com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver
+pm disable com.google.android.gms/.ads.settings.AdsSettingsActivity
+pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorActivity
+pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorMapActivity
+pm disable com.google.android.gms/com.google.android.location.settings.ActivityRecognitionPermissionActivity
+pm disable com.google.android.gms/com.google.android.location.settings.GoogleLocationSettingsActivity
+pm disable com.google.android.gms/com.google.android.location.settings.LocationHistorySettingsActivity
+pm disable com.google.android.gms/com.google.android.location.settings.LocationSettingsCheckerActivity
+pm disable com.google.android.gms/.usagereporting.settings.UsageReportingActivity
+pm disable com.google.android.gms/.ads.adinfo.AdvertisingInfoContentProvider
+pm disable com.google.android.gms/com.google.android.location.reporting.service.ReportingContentProvider
+pm disable com.google.android.gms/com.google.android.location.internal.LocationContentProvider
+pm disable com.google.android.gms/.common.stats.net.contentprovider.NetworkUsageContentProvider
+pm disable com.google.android.gms/com.google.android.gms.ads.config.GServicesChangedReceiver
+pm disable com.google.android.gms/com.google.android.contextmanager.systemstate.SystemStateReceiver
+pm disable com.google.android.gms/.ads.jams.SystemEventReceiver
+pm disable com.google.android.gms/.ads.config.FlagsReceiver
+pm disable com.google.android.gms/.ads.social.DoritosReceiver
+pm disable com.google.android.gms/.analytics.AnalyticsReceiver
+pm disable com.google.android.gms/.analytics.internal.GServicesChangedReceiver
+pm disable com.google.android.gms/.common.analytics.CoreAnalyticsReceiver
+pm disable com.google.android.gms/.common.stats.GmsCoreStatsServiceLauncher
+pm disable com.google.android.gms/com.google.android.location.internal.AnalyticsSamplerReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ActiveReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ClockworkFallbackReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ImposeReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$SecretCodeReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$TriggerReceiver
+pm disable com.google.android.gms/.checkin.EventLogService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateActivity
+pm disable com.google.android.gsf/.update.SystemUpdatePanoActivity
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$Receiver
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$SecretCodeReceiver
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$TriggerReceiver
+pm disable com.google.android.gsf/.checkin.EventLogService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateService\$SecretCodeReceiver
+pm disable com.google.android.gsf/.checkin.CheckinService
+pm disable com.google.android.gsf/.checkin.EventLogService
+pm disable com.google.android.gsf/.update.SystemUpdateService
+pm disable com.google.android.apps.wellbeing/.powerstate.impl.PowerStateJobService
+pm disable com.google.android.apps.wellbeing/androidx.work.impl.background.systemjob.SystemJobService
+
+# Disable GMS and IMS run in startup and restart it on boot
+cmd appops set com.google.android.gms BOOT_COMPLETED ignore
+cmd appops set com.google.android.ims BOOT_COMPLETED ignore
+
+# Disable GMS and IMS run in startup and restart it on boot (custom permissions for Oxygen OS)
+cmd appops set com.google.android.gms AUTO_START ignore
+cmd appops set com.google.android.ims AUTO_START ignore
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1099,9 +1192,9 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.8.8                                                                                           "
-kmsg1 "                                            🔋 Battery: $percentage%                                                                                        "
-kmsg1 "                                            📲 GPU: $gpu                                                                                                    "
+kmsg1 "                                            👑 KTS Version: 1.8.9                                                                                           "
+kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
+kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -1112,13 +1205,31 @@ kmsg1 "                                          ENABLING $kts_profile PROFILE..
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	       	
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
+kmsg1 "                                          ENABLING THERMAL-ENGINE, THERMALD AND PERFD...                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
         	
-# Enable perfd and thermal-engine.
+# Enable perfd, thermald and thermal-engine.
 start perfd
+start thermald
 start thermal-engine
-        	
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING STATSD AND LOGD...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable logd and statsd to reduce overhead.
+stop logd
+stop statsd
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING CPU_BOOST...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/module/cpu_boost" ]]
+then
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "5"
+fi
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKING I/O SCHEDULER...                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1159,7 +1270,7 @@ write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}schedutil/iowait_boost_enable" "0"
 write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
-write "${cpu}schedutil/hispeed_load" "85"
+write "${cpu}schedutil/hispeed_load" "90"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
@@ -1176,7 +1287,7 @@ write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "10000"
 write "${cpu}interactive/sampling_rate_min" "10000"
 write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_BALANCE / 1000))"
-write "${cpu}interactive/go_hispeed_load" "85"
+write "${cpu}interactive/go_hispeed_load" "90"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
@@ -1191,25 +1302,19 @@ kmsg1 "                                          TWEAKING GPU...                
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	
 # GPU Tweaks.
-for gpu in /sys/class/kgsl/kgsl-3d0/
-do
-if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
-then
-write "${gpu}throttling" "1"
-write "${gpu}thermal_pwrlevel" "3"
-write "${gpu}devfreq/adrenoboost" "0"
-write "${gpu}force_no_nap" "0"
-write "${gpu}bus_split" "1"
-write "${gpu}devfreq/min_freq" "100000000"
-write "${gpu}devfreq/max_freq" "$UINT_MAX"
-write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
-write "${gpu}force_bus_on" "0"
-write "${gpu}force_clk_on" "0"
-write "${gpu}force_rail_on" "0"
-write "${gpu}devfreq/polling_interval" "10"
-write "${gpu}idle_timer" "70"
-fi
-done
+write "$gpu/throttling" "1"
+write "$gpu/thermal_pwrlevel" "3"
+write "$gpu/devfreq/adrenoboost" "0"
+write "$gpu/force_no_nap" "0"
+write "$gpu/bus_split" "1"
+write "$gpu/devfreq/min_freq" "100000000"
+write "$gpu/devfreq/max_freq" "$UINT_MAX"
+write "$gpu/default_pwrlevel" "$mpl"
+write "$gpu/force_bus_on" "0"
+write "$gpu/force_clk_on" "0"
+write "$gpu/force_rail_on" "0"
+write "$gpu/devfreq/polling_interval" "10"
+write "$gpu/idle_timer" "100"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1357,6 +1462,20 @@ lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING LMK TWEAKS...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# LMK Tweaks.
+for lmk in /sys/module/lowmemorykiller/parameters/
+do
+if [[ -d "/sys/module/lowmemorykiller" ]]
+then
+write "${lmk}enable_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "1"
+fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -1365,17 +1484,17 @@ for st in /dev/stune
 do
 if [[ -d "/dev/stune" ]]
 then
-write "${st}/background/schedtune.boost" "1"
+write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "1"
-write "${st}/foreground/schedtune.prefer_idle" "1"
+write "${st}/foreground/schedtune.prefer_idle" "0"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
 
-write "${st}/top-app/schedtune.boost" "5"
-write "${st}/top-app/schedtune.prefer_idle" "1"
+write "${st}/top-app/schedtune.boost" "1"
+write "${st}/top-app/schedtune.prefer_idle" "0"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
@@ -1462,13 +1581,6 @@ write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
 
-# Use RCU_normal instead of RCU_expedited for improved real-time latency, CPU utilization and energy efficiency.
-if [[ -e "/sys/kernel/rcu_expedited" ]]
-then
-write /sys/kernel/rcu_expedited 0
-write /sys/kernel/rcu_normal 1
-fi
-
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
 write "/sys/power/pm_freeze_timeout" "10000"
@@ -1485,7 +1597,7 @@ write "/sys/kernel/fp_boost/enabled" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
+kmsg1 "                                          SETTING MIN AND MAX CPU CLOCKS...                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Set min and max clocks.
@@ -1542,16 +1654,12 @@ write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "30"
-write "${vm}swap_ratio_enable" "1"
-write "${vm}swap_ratio" "100"
 write "${vm}swappiness" "100"
-write "${vm}dirtytime_expire_seconds" "44000"
 write "${vm}vfs_cache_pressure" "100"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
+kmsg1 "                                          APPLYING MSM_THERMAL SETTINGS...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # MSM thermal
@@ -1594,13 +1702,18 @@ write "/proc/tp_gesture" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING MSM TOUCH BOOST...                                                                           "
+kmsg1 "                                          DISABLING TOUCH BOOST...                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable touch boost on balance and battery profile.
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "0"
+fi
+
+if [[ -e /sys/power/pnpmgr/touch_boost ]]
+then
+write "/sys/power/pnpmgr/touch_boost" "0"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1706,6 +1819,58 @@ killall -9 com.google.process.gapps
 killall -9 com.google.android.gsf
 killall -9 com.google.android.gsf.persistent
 
+pm disable com.google.android.gms/com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
+pm disable com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver
+pm disable com.google.android.gms/.ads.settings.AdsSettingsActivity
+pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorActivity
+pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorMapActivity
+pm disable com.google.android.gms/com.google.android.location.settings.ActivityRecognitionPermissionActivity
+pm disable com.google.android.gms/com.google.android.location.settings.GoogleLocationSettingsActivity
+pm disable com.google.android.gms/com.google.android.location.settings.LocationHistorySettingsActivity
+pm disable com.google.android.gms/com.google.android.location.settings.LocationSettingsCheckerActivity
+pm disable com.google.android.gms/.usagereporting.settings.UsageReportingActivity
+pm disable com.google.android.gms/.ads.adinfo.AdvertisingInfoContentProvider
+pm disable com.google.android.gms/com.google.android.location.reporting.service.ReportingContentProvider
+pm disable com.google.android.gms/com.google.android.location.internal.LocationContentProvider
+pm disable com.google.android.gms/.common.stats.net.contentprovider.NetworkUsageContentProvider
+pm disable com.google.android.gms/com.google.android.gms.ads.config.GServicesChangedReceiver
+pm disable com.google.android.gms/com.google.android.contextmanager.systemstate.SystemStateReceiver
+pm disable com.google.android.gms/.ads.jams.SystemEventReceiver
+pm disable com.google.android.gms/.ads.config.FlagsReceiver
+pm disable com.google.android.gms/.ads.social.DoritosReceiver
+pm disable com.google.android.gms/.analytics.AnalyticsReceiver
+pm disable com.google.android.gms/.analytics.internal.GServicesChangedReceiver
+pm disable com.google.android.gms/.common.analytics.CoreAnalyticsReceiver
+pm disable com.google.android.gms/.common.stats.GmsCoreStatsServiceLauncher
+pm disable com.google.android.gms/com.google.android.location.internal.AnalyticsSamplerReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ActiveReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ClockworkFallbackReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ImposeReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$SecretCodeReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$TriggerReceiver
+pm disable com.google.android.gms/.checkin.EventLogService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateActivity
+pm disable com.google.android.gsf/.update.SystemUpdatePanoActivity
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$Receiver
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$SecretCodeReceiver
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$TriggerReceiver
+pm disable com.google.android.gsf/.checkin.EventLogService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateService\$SecretCodeReceiver
+pm disable com.google.android.gsf/.checkin.CheckinService
+pm disable com.google.android.gsf/.checkin.EventLogService
+pm disable com.google.android.gsf/.update.SystemUpdateService
+pm disable com.google.android.apps.wellbeing/.powerstate.impl.PowerStateJobService
+pm disable com.google.android.apps.wellbeing/androidx.work.impl.background.systemjob.SystemJobService
+
+# Disable GMS and IMS run in startup and restart it on boot
+cmd appops set com.google.android.gms BOOT_COMPLETED ignore
+cmd appops set com.google.android.ims BOOT_COMPLETED ignore
+
+# Disable GMS and IMS run in startup and restart it on boot (custom permissions for Oxygen OS)
+cmd appops set com.google.android.gms AUTO_START ignore
+cmd appops set com.google.android.ims AUTO_START ignore
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1794,21 +1959,39 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.8.8                                                                                           "
-kmsg1 "                                            🔋 Battery: $percentage%                                                                                        "
-kmsg1 "                                            📲 GPU: $gpu                                                                                                    "
+kmsg1 "                                            👑 KTS Version: 1.8.9                                                                                           "
+kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
+kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 		
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                        DISABLING THERMAL-ENGINE AND ENABLING PERFD...                                                           "
+kmsg1 "                                          DISABLING THERMAL-ENGINE, THERMALD AND ENABLING PERFD...                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+        	
+# Enable perfd, disable thermald and thermal-engine.
+start perfd
+stop thermald
+stop thermal-engine
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING STATSD AND LOGD...                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd and disable thermal-engine.
-start perfd
-stop thermal-engine
+# Disable logd and statsd to reduce overhead.
+stop logd
+stop statsd
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING CPU_BOOST...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/module/cpu_boost" ]]
+then
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "40"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKING CPU INPUT BOOST...                                                                            "
@@ -1848,7 +2031,7 @@ write "${queue}read_ahead_kb" 512
 write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 64
+write "${queue}nr_requests" 512
 done
 
 # Reserve 90% IO bandwith for foreground tasks
@@ -1873,7 +2056,7 @@ then
 write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_THROUGHPUT / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "1"
+write "${cpu}schedutil/iowait_boost_enable" "0"
 write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
@@ -1907,25 +2090,19 @@ kmsg1 "                                          TWEAKING GPU...                
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	
 # GPU Tweaks.
-for gpu in /sys/class/kgsl/kgsl-3d0/
-do
-if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
-then
-write "${gpu}throttling" "0"
-write "${gpu}thermal_pwrlevel" "0"
-write "${gpu}devfreq/adrenoboost" "0"
-write "${gpu}force_no_nap" "0"
-write "${gpu}bus_split" "1"
-write "${gpu}devfreq/min_freq" "100000000"
-write "${gpu}devfreq/max_freq" "$UINT_MAX"
-write "${gpu}default_pwrlevel" "1"
-write "${gpu}force_bus_on" "0"
-write "${gpu}force_clk_on" "0"
-write "${gpu}force_rail_on" "0"
-write "${gpu}devfreq/polling_interval" "10"
-write "${gpu}idle_timer" "86"
-fi
-done
+write "$gpu/throttling" "0"
+write "$gpu/thermal_pwrlevel" "0"
+write "$gpu/devfreq/adrenoboost" "1"
+write "$gpu/force_no_nap" "0"
+write "$gpu/bus_split" "1"
+write "$gpu/devfreq/min_freq" "100000000"
+write "$gpu/devfreq/max_freq" "$UINT_MAX"
+write "$gpu/default_pwrlevel" "$((mpl / 2))"
+write "$gpu/force_bus_on" "0"
+write "$gpu/force_clk_on" "0"
+write "$gpu/force_rail_on" "0"
+write "$gpu/devfreq/polling_interval" "10"
+write "$gpu/idle_timer" "196"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2068,6 +2245,20 @@ lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING LMK TWEAKS...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# LMK Tweaks.
+for lmk in /sys/module/lowmemorykiller/parameters/
+do
+if [[ -d "/sys/module/lowmemorykiller" ]]
+then
+write "${lmk}enable_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "1"
+fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -2080,13 +2271,13 @@ write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "40"
-write "${st}/foreground/schedtune.prefer_idle" "1"
+write "${st}/foreground/schedtune.prefer_idle" "0"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
 
 write "${st}/top-app/schedtune.boost" "40"
-write "${st}/top-app/schedtune.prefer_idle" "1"
+write "${st}/top-app/schedtune.prefer_idle" "0"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
@@ -2156,9 +2347,9 @@ kmsg1 "-------------------------------------------------------------------------
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
 do
-write "${kts}sched_child_runs_first" "1"
-write "${kts}perf_cpu_time_max_percent" "5"
-write "${kts}sched_autogroup_enabled" "1"
+write "${kts}sched_child_runs_first" "0"
+write "${kts}perf_cpu_time_max_percent" "25"
+write "${kts}sched_autogroup_enabled" "0"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "896"
 write "${kts}random/urandom_min_reseed_secs" "90"
@@ -2168,17 +2359,10 @@ write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS
 write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
-write "${kts}sched_nr_migrate" "32"
+write "${kts}sched_nr_migrate" "128"
 write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
-
-# Use RCU_normal instead of RCU_expedited for improved real-time latency, CPU utilization and energy efficiency.
-if [[ -e "/sys/kernel/rcu_expedited" ]]
-then
-write /sys/kernel/rcu_expedited 0
-write /sys/kernel/rcu_normal 1
-fi
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
@@ -2196,7 +2380,7 @@ write "/sys/kernel/fp_boost/enabled" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
+kmsg1 "                                          SETTING MIN AND MAX CPU CLOCKS...                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Set max clocks in gaming / performance profile.
@@ -2247,42 +2431,18 @@ sync
 for vm in /proc/sys/vm/
 do
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "5"
-write "${vm}dirty_ratio" "10"
-write "${vm}dirty_expire_centisecs" "1000"
+write "${vm}dirty_background_ratio" "15"
+write "${vm}dirty_ratio" "30"
+write "${vm}dirty_expire_centisecs" "750"
 write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}swappiness" "100"
-write "${vm}dirtytime_expire_seconds" "44000"
-write "${vm}swap_ratio_enable" "1"
-write "${vm}swap_ratio" "100"
-write "${vm}vfs_cache_pressure" "100"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+write "${vm}vfs_cache_pressure" "80"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING KSM...                                                                                       "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Disable KSM
-if [[ -e "/sys/kernel/mm/ksm/run" ]] 
-then
-write "/sys/kernel/mm/ksm/run" "0"
-fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING UKSM...                                                                                      "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Disable UKSM
-if [[ -e "/sys/kernel/mm/uksm/run" ]] 
-then
-write "/sys/kernel/mm/uksm/run" "0"
-fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
+kmsg1 "                                          APPLYING MSM_THERMAL SETTINGS...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # MSM thermal
@@ -2325,13 +2485,18 @@ write "/proc/tp_gesture" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING MSM TOUCH BOOST...                                                                            "
+kmsg1 "                                          ENABLING TOUCH BOOST...                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable touch boost on gaming and performance profile.
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "1"
+fi
+
+if [[ -e /sys/power/pnpmgr/touch_boost ]]
+then
+write "/sys/power/pnpmgr/touch_boost" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2365,10 +2530,12 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          CHANGING TASKS CGROUP AND NICE...                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+change_task_cgroup "com.futuremark.dmandroid.application" "top-app" "cpuset"
+change_task_cgroup "com.futuremark.dmandroid.application" "top-app" "stune"
 change_task_cgroup "skynet.cputhrottlingtest" "top-app" "cpuset"
-change_task_cgroup "skynet.cputhrottlingtest" "foreground" "stune"
-
-change_task_nice "skynet.cputhrottlingtest" "-20"
+change_task_cgroup "skynet.cputhrottlingtest" "top-app" "stune"
+change_task_cgroup "com.primatelabs.geekbench5" "top-app" "cpuset"
+change_task_cgroup "com.primatelabs.geekbench5" "top-app" "stune"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLING BATTERY SAVER...                                                                             "
@@ -2462,12 +2629,64 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          KILLING GMS PROCESSES...                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# GMS blocker 1.2 by @pedroginkgo
+# GMS blocker 1.2 by pedrozzz
 killall -9 com.google.android.gms
 killall -9 com.google.android.gms.persistent
 killall -9 com.google.process.gapps
 killall -9 com.google.android.gsf
 killall -9 com.google.android.gsf.persistent
+
+pm disable com.google.android.gms/com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
+pm disable com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver
+pm disable com.google.android.gms/.ads.settings.AdsSettingsActivity
+pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorActivity
+pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorMapActivity
+pm disable com.google.android.gms/com.google.android.location.settings.ActivityRecognitionPermissionActivity
+pm disable com.google.android.gms/com.google.android.location.settings.GoogleLocationSettingsActivity
+pm disable com.google.android.gms/com.google.android.location.settings.LocationHistorySettingsActivity
+pm disable com.google.android.gms/com.google.android.location.settings.LocationSettingsCheckerActivity
+pm disable com.google.android.gms/.usagereporting.settings.UsageReportingActivity
+pm disable com.google.android.gms/.ads.adinfo.AdvertisingInfoContentProvider
+pm disable com.google.android.gms/com.google.android.location.reporting.service.ReportingContentProvider
+pm disable com.google.android.gms/com.google.android.location.internal.LocationContentProvider
+pm disable com.google.android.gms/.common.stats.net.contentprovider.NetworkUsageContentProvider
+pm disable com.google.android.gms/com.google.android.gms.ads.config.GServicesChangedReceiver
+pm disable com.google.android.gms/com.google.android.contextmanager.systemstate.SystemStateReceiver
+pm disable com.google.android.gms/.ads.jams.SystemEventReceiver
+pm disable com.google.android.gms/.ads.config.FlagsReceiver
+pm disable com.google.android.gms/.ads.social.DoritosReceiver
+pm disable com.google.android.gms/.analytics.AnalyticsReceiver
+pm disable com.google.android.gms/.analytics.internal.GServicesChangedReceiver
+pm disable com.google.android.gms/.common.analytics.CoreAnalyticsReceiver
+pm disable com.google.android.gms/.common.stats.GmsCoreStatsServiceLauncher
+pm disable com.google.android.gms/com.google.android.location.internal.AnalyticsSamplerReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ActiveReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ClockworkFallbackReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ImposeReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$SecretCodeReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$TriggerReceiver
+pm disable com.google.android.gms/.checkin.EventLogService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateActivity
+pm disable com.google.android.gsf/.update.SystemUpdatePanoActivity
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$Receiver
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$SecretCodeReceiver
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$TriggerReceiver
+pm disable com.google.android.gsf/.checkin.EventLogService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateService\$SecretCodeReceiver
+pm disable com.google.android.gsf/.checkin.CheckinService
+pm disable com.google.android.gsf/.checkin.EventLogService
+pm disable com.google.android.gsf/.update.SystemUpdateService
+pm disable com.google.android.apps.wellbeing/.powerstate.impl.PowerStateJobService
+pm disable com.google.android.apps.wellbeing/androidx.work.impl.background.systemjob.SystemJobService
+
+# Disable GMS and IMS run in startup and restart it on boot
+cmd appops set com.google.android.gms BOOT_COMPLETED ignore
+cmd appops set com.google.android.ims BOOT_COMPLETED ignore
+
+# Disable GMS and IMS run in startup and restart it on boot (custom permissions for Oxygen OS)
+cmd appops set com.google.android.gms AUTO_START ignore
+cmd appops set com.google.android.ims AUTO_START ignore
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
@@ -2557,9 +2776,9 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.8.8                                                                                           "
-kmsg1 "                                            🔋 Battery: $percentage%                                                                                        "
-kmsg1 "                                            📲 GPU: $gpu                                                                                                    "
+kmsg1 "                                            👑 KTS Version: 1.8.9                                                                                           "
+kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
+kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -2570,13 +2789,31 @@ kmsg1 "                                          ENABLING $kts_profile PROFILE..
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING THERMAL-ENGINE AND PERFD...                                                                   "
+kmsg1 "                                          ENABLING THERMAL-ENGINE, THERMALD AND PERFD...                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-    	
-# Enable perfd and thermal-engine.
+        	
+# Enable perfd, thermald and thermal-engine.
 start perfd
+start thermald
 start thermal-engine
     
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING STATSD AND LOGD...                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable logd and statsd to reduce overhead.
+stop logd
+stop statsd
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING CPU_BOOST...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/module/cpu_boost" ]]
+then
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
+fi
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKING I/O SCHEDULER...                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2646,7 +2883,8 @@ write "/sys/devices/system/cpu/cpu2/online" "0"
 write "/sys/devices/system/cpu/cpu5/online" "0"
 write "/sys/devices/system/cpu/cpu6/online" "0"
 
-else [[ $percentage -ge "20" ]]
+elif [[ $percentage -ge "20" ]]
+then
 write "/sys/devices/system/cpu/cpu1/online" "1"
 write "/sys/devices/system/cpu/cpu2/online" "1"
 write "/sys/devices/system/cpu/cpu5/online" "1"
@@ -2658,24 +2896,18 @@ kmsg1 "                                          TWEAKING GPU...                
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	
 # GPU Tweaks
-for gpu in /sys/class/kgsl/kgsl-3d0/
-do
-if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
-then
-write "${gpu}throttling" "1"
-write "${gpu}thermal_pwrlevel" "3"
-write "${gpu}devfreq/adrenoboost" "0"
-write "${gpu}force_no_nap" "0"
-write "${gpu}bus_split" "1"
-write "${gpu}devfreq/min_freq" "100000000"
-write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel`
-write "${gpu}force_bus_on" "0"
-write "${gpu}force_clk_on" "0"
-write "${gpu}force_rail_on" "0"
-write "${gpu}devfreq/polling_interval" "26"
-write "${gpu}idle_timer" "36"
-fi
-done
+write "$gpu/throttling" "1"
+write "$gpu/thermal_pwrlevel" "3"
+write "$gpu/devfreq/adrenoboost" "0"
+write "$gpu/force_no_nap" "0"
+write "$gpu/bus_split" "1"
+write "$gpu/devfreq/min_freq" "100000000"
+write "$gpu/default_pwrlevel" "$mpl"
+write "$gpu/force_bus_on" "0"
+write "$gpu/force_clk_on" "0"
+write "$gpu/force_rail_on" "0"
+write "$gpu/devfreq/polling_interval" "26"
+write "$gpu/idle_timer" "36"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2699,13 +2931,10 @@ write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
 # Set max clock to 600 mhz in battery profile if battery < than 20%.
-for gpu in /sys/class/kgsl/kgsl-3d0/
-do
-if [[ $percentage -le "50" && -e "${gpu}devfreq/max_freq" ]]
+if [[ $percentage -le "50" ]]
 then
-write "${gpu}devfreq/max_freq" "600000000"
+write "$gpu/devfreq/max_freq" "600000000"
 fi
-done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
@@ -2827,6 +3056,20 @@ lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING LMK TWEAKS...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# LMK Tweaks.
+for lmk in /sys/module/lowmemorykiller/parameters/
+do
+if [[ -d "/sys/module/lowmemorykiller" ]]
+then
+write "${lmk}enable_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "1"
+fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLYING SCHEDTUNE TWEAKS...                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -2839,13 +3082,13 @@ write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "1"
-write "${st}/foreground/schedtune.prefer_idle" "1"
+write "${st}/foreground/schedtune.prefer_idle" "0"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
 
 write "${st}/top-app/schedtune.boost" "1"
-write "${st}/top-app/schedtune.prefer_idle" "1"
+write "${st}/top-app/schedtune.prefer_idle" "0"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
@@ -2917,7 +3160,7 @@ kmsg1 "-------------------------------------------------------------------------
 for kts in /proc/sys/kernel/
 do
 write "${kts}sched_child_runs_first" "1"
-write "${kts}perf_cpu_time_max_percent" "5"
+write "${kts}perf_cpu_time_max_percent" "1"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "128"
@@ -2928,17 +3171,10 @@ write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BA
 write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
 write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
-write "${kts}sched_nr_migrate" "32"
+write "${kts}sched_nr_migrate" "8"
 write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
-
-# Use RCU_normal instead of RCU_expedited for improved real-time latency, CPU utilization and energy efficiency.
-if [[ -e "/sys/kernel/rcu_expedited" ]]
-then
-write /sys/kernel/rcu_expedited 0
-write /sys/kernel/rcu_normal 1
-fi
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
@@ -2956,7 +3192,7 @@ write "/sys/kernel/fp_boost/enabled" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
+kmsg1 "                                          SETTING MIN AND MAX CPU CLOCKS...                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Set min and max clocks.
@@ -2967,7 +3203,8 @@ then
 write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "20000000"
 
-else [[ $percentage -ge "20" && -e "${minclk}scaling_min_freq" ]]
+elif [[ $percentage -ge "20" && -e "${minclk}scaling_min_freq" ]]
+then
 write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "1300000"
 fi
@@ -2980,7 +3217,8 @@ then
 write "${mnclk}scaling_min_freq" "300000"
 write "${mnclk}scaling_max_freq" "20000000"
 
-else [[ $percentage -ge "20" && -e "${mnclk}scaling_min_freq" ]]
+elif [[ $percentage -ge "20" && -e "${mnclk}scaling_min_freq" ]]
+then
 write "${mnclk}scaling_min_freq" "300000"
 write "${mnclk}scaling_max_freq" "1300000"
 fi
@@ -3009,48 +3247,21 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          APPLYING VM TWEAKS...                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-sync
-
 # VM settings to improve overall user experience and performance.
 for vm in /proc/sys/vm/
 do
-write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "10"
-write "${vm}dirty_ratio" "30"
+write "${vm}dirty_background_ratio" "1"
+write "${vm}dirty_ratio" "50"
 write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "30"
-write "${vm}swap_ratio_enable" "1"
-write "${vm}swap_ratio" "100"
+write "${vm}stat_interval" "60"
 write "${vm}swappiness" "100"
-write "${vm}dirtytime_expire_seconds" "44000"
-write "${vm}vfs_cache_pressure" "20"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+write "${vm}vfs_cache_pressure" "100"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING KSM...                                                                                       "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Disable KSM
-if [[ -e "/sys/kernel/mm/ksm/run" ]] 
-then
-write "/sys/kernel/mm/ksm/run" "0"
-fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING UKSM...                                                                                      "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Disable UKSM
-if [[ -e "/sys/kernel/mm/uksm/run" ]] 
-then
-write "/sys/kernel/mm/uksm/run" "0"
-fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
+kmsg1 "                                          APPLYING MSM_THERMAL SETTINGS...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # MSM thermal
@@ -3093,13 +3304,18 @@ write "/proc/tp_gesture" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING MSM TOUCH BOOST...                                                                           "
+kmsg1 "                                          DISABLING TOUCH BOOST...                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable touch boost on battery and balance profile.
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "0"
+fi
+
+if [[ -e /sys/power/pnpmgr/touch_boost ]]
+then
+write "/sys/power/pnpmgr/touch_boost" "0"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3202,12 +3418,64 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          KILLING GMS PROCESSES...                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# GMS blocker 1.2 by @pedroginkgo
+# GMS blocker 1.2 by pedrozzz
 killall -9 com.google.android.gms
 killall -9 com.google.android.gms.persistent
 killall -9 com.google.process.gapps
 killall -9 com.google.android.gsf
 killall -9 com.google.android.gsf.persistent
+
+pm disable com.google.android.gms/com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
+pm disable com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver
+pm disable com.google.android.gms/.ads.settings.AdsSettingsActivity
+pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorActivity
+pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorMapActivity
+pm disable com.google.android.gms/com.google.android.location.settings.ActivityRecognitionPermissionActivity
+pm disable com.google.android.gms/com.google.android.location.settings.GoogleLocationSettingsActivity
+pm disable com.google.android.gms/com.google.android.location.settings.LocationHistorySettingsActivity
+pm disable com.google.android.gms/com.google.android.location.settings.LocationSettingsCheckerActivity
+pm disable com.google.android.gms/.usagereporting.settings.UsageReportingActivity
+pm disable com.google.android.gms/.ads.adinfo.AdvertisingInfoContentProvider
+pm disable com.google.android.gms/com.google.android.location.reporting.service.ReportingContentProvider
+pm disable com.google.android.gms/com.google.android.location.internal.LocationContentProvider
+pm disable com.google.android.gms/.common.stats.net.contentprovider.NetworkUsageContentProvider
+pm disable com.google.android.gms/com.google.android.gms.ads.config.GServicesChangedReceiver
+pm disable com.google.android.gms/com.google.android.contextmanager.systemstate.SystemStateReceiver
+pm disable com.google.android.gms/.ads.jams.SystemEventReceiver
+pm disable com.google.android.gms/.ads.config.FlagsReceiver
+pm disable com.google.android.gms/.ads.social.DoritosReceiver
+pm disable com.google.android.gms/.analytics.AnalyticsReceiver
+pm disable com.google.android.gms/.analytics.internal.GServicesChangedReceiver
+pm disable com.google.android.gms/.common.analytics.CoreAnalyticsReceiver
+pm disable com.google.android.gms/.common.stats.GmsCoreStatsServiceLauncher
+pm disable com.google.android.gms/com.google.android.location.internal.AnalyticsSamplerReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ActiveReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ClockworkFallbackReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ImposeReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$SecretCodeReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$TriggerReceiver
+pm disable com.google.android.gms/.checkin.EventLogService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateActivity
+pm disable com.google.android.gsf/.update.SystemUpdatePanoActivity
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$Receiver
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$SecretCodeReceiver
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$TriggerReceiver
+pm disable com.google.android.gsf/.checkin.EventLogService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateService\$SecretCodeReceiver
+pm disable com.google.android.gsf/.checkin.CheckinService
+pm disable com.google.android.gsf/.checkin.EventLogService
+pm disable com.google.android.gsf/.update.SystemUpdateService
+pm disable com.google.android.apps.wellbeing/.powerstate.impl.PowerStateJobService
+pm disable com.google.android.apps.wellbeing/androidx.work.impl.background.systemjob.SystemJobService
+
+# Disable GMS and IMS run in startup and restart it on boot
+cmd appops set com.google.android.gms BOOT_COMPLETED ignore
+cmd appops set com.google.android.ims BOOT_COMPLETED ignore
+
+# Disable GMS and IMS run in startup and restart it on boot (custom permissions for Oxygen OS)
+cmd appops set com.google.android.gms AUTO_START ignore
+cmd appops set com.google.android.ims AUTO_START ignore
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
@@ -3297,9 +3565,9 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.8.8                                                                                           "
-kmsg1 "                                            🔋 Battery: $percentage%                                                                                        "
-kmsg1 "                                            📲 GPU: $gpu                                                                                                    "
+kmsg1 "                                            👑 KTS Version: 1.8.9                                                                                           "
+kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
+kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -3310,12 +3578,30 @@ kmsg1 "                                          ENABLING $kts_profile PROFILE..
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 		
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING THERMAL-ENGINE AND PERFD...                                                                  "
+kmsg1 "                                          ENABLING THERMAL-ENGINE, THERMALD AND PERFD...                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+        	
+# Disable perfd, thermald and thermal-engine.
+stop perfd
+stop thermald
+stop thermal-engine
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLING STATSD AND LOGD...                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Disable perfd and thermal-engine.
-stop perfd
-stop thermal-engine
+# Disable logd and statsd to reduce overhead.
+stop logd
+stop statsd
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKING CPU_BOOST...                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/module/cpu_boost" ]]
+then
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "40"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKING CPU INPUT BOOST...                                                                            "
@@ -3355,7 +3641,7 @@ write "${queue}read_ahead_kb" 512
 write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 64
+write "${queue}nr_requests" 512
 done
 
 # Reserve 90% IO bandwith for foreground tasks
@@ -3380,7 +3666,7 @@ then
 write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_THROUGHPUT / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "1"
+write "${cpu}schedutil/iowait_boost_enable" "0"
 write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
@@ -3414,25 +3700,19 @@ kmsg1 "                                          TWEAKING GPU...                
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	
 # GPU Tweaks.
-for gpu in /sys/class/kgsl/kgsl-3d0/
-do
-if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]
-then
-write "${gpu}throttling" "0"
-write "${gpu}thermal_pwrlevel" "0"
-write "${gpu}devfreq/adrenoboost" "2"
-write "${gpu}force_no_nap" "1"
-write "${gpu}bus_split" "0"
-write "${gpu}devfreq/min_freq" "$UINT_MAX"
-write "${gpu}devfreq/max_freq" "$UINT_MAX"
-write "${gpu}default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/max_pwrlevel`
-write "${gpu}force_bus_on" "1"
-write "${gpu}force_clk_on" "1"
-write "${gpu}force_rail_on" "1"
-write "${gpu}devfreq/polling_interval" "5"
-write "${gpu}idle_timer" "10000000"
-fi
-done
+write "$gpu/throttling" "0"
+write "$gpu/thermal_pwrlevel" "0"
+write "$gpu/devfreq/adrenoboost" "2"
+write "$gpu/force_no_nap" "1"
+write "$gpu/bus_split" "0"
+write "$gpu/devfreq/min_freq" "100000000"
+write "$gpu/devfreq/max_freq" "$UINT_MAX"
+write "$gpu/default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/max_pwrlevel`
+write "$gpu/force_bus_on" "1"
+write "$gpu/force_clk_on" "1"
+write "$gpu/force_rail_on" "1"
+write "$gpu/devfreq/polling_interval" "5"
+write "$gpu/idle_timer" "1050"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
@@ -3462,10 +3742,7 @@ kmsg1 "-------------------------------------------------------------------------
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
-write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
-write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "5000"
-write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "10"
-write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
+write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3575,6 +3852,20 @@ lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLYING LMK TWEAKS...                                                                                 "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# LMK Tweaks.
+for lmk in /sys/module/lowmemorykiller/parameters/
+do
+if [[ -d "/sys/module/lowmemorykiller" ]]
+then
+write "${lmk}enable_lmk" "1"
+write "${lmk}enable_adaptive_lmk" "1"
+fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                            APPLYING SCHEDTUNE TWEAKS...                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -3587,13 +3878,13 @@ write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "40"
-write "${st}/foreground/schedtune.prefer_idle" "1"
+write "${st}/foreground/schedtune.prefer_idle" "0"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
 
 write "${st}/top-app/schedtune.boost" "40"
-write "${st}/top-app/schedtune.prefer_idle" "1"
+write "${st}/top-app/schedtune.prefer_idle" "0"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
@@ -3663,9 +3954,9 @@ kmsg1 "-------------------------------------------------------------------------
 # Tweak some kernel settings to improve overall performance.
 for kts in /proc/sys/kernel/
 do
-write "${kts}sched_child_runs_first" "1"
-write "${kts}perf_cpu_time_max_percent" "5"
-write "${kts}sched_autogroup_enabled" "1"
+write "${kts}sched_child_runs_first" "0"
+write "${kts}perf_cpu_time_max_percent" "25"
+write "${kts}sched_autogroup_enabled" "0"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "896"
 write "${kts}random/urandom_min_reseed_secs" "90"
@@ -3675,17 +3966,10 @@ write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS
 write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
-write "${kts}sched_nr_migrate" "32"
+write "${kts}sched_nr_migrate" "128"
 write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
-
-# Use RCU_normal instead of RCU_expedited for improved real-time latency, CPU utilization and energy efficiency.
-if [[ -e "/sys/kernel/rcu_expedited" ]]
-then
-write /sys/kernel/rcu_expedited 0
-write /sys/kernel/rcu_normal 1
-fi
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
 then
@@ -3703,7 +3987,7 @@ write "/sys/kernel/fp_boost/enabled" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          SETTING MIN AND MAX CPU FREQUENCY...                                                                   "
+kmsg1 "                                          SETTING MIN AND MAX CPU CLOCKS...                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Set max clocks in gaming / performance profile.
@@ -3754,42 +4038,18 @@ sync
 for vm in /proc/sys/vm/
 do
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "5"
-write "${vm}dirty_ratio" "10"
+write "${vm}dirty_background_ratio" "15"
+write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "200"
 write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}swappiness" "100"
-write "${vm}dirtytime_expire_seconds" "44000"
-write "${vm}swap_ratio_enable" "1"
-write "${vm}swap_ratio" "100"
-write "${vm}vfs_cache_pressure" "100"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+write "${vm}vfs_cache_pressure" "200"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING KSM...                                                                                       "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable KSM
-if [[ -e "/sys/kernel/mm/ksm/run" ]] 
-then
-write "/sys/kernel/mm/ksm/run" "0"
-fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING UKSM...                                                                                      "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable UKSM
-if [[ -e "/sys/kernel/mm/uksm/run" ]] 
-then
-write "/sys/kernel/mm/uksm/run" "0"
-fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLYING MSM THERMAL SETTINGS...                                                                       "
+kmsg1 "                                          APPLYING MSM_THERMAL SETTINGS...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # MSM thermal
@@ -3832,13 +4092,18 @@ write "/proc/tp_gesture" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING MSM TOUCH BOOST...                                                                            "
+kmsg1 "                                          ENABLING TOUCH BOOST...                                                                                "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Enable touch boost on gaming and performance profile.
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "1"
+fi
+
+if [[ -e /sys/power/pnpmgr/touch_boost ]]
+then
+write "/sys/power/pnpmgr/touch_boost" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3873,42 +4138,37 @@ kmsg1 "                                          CHANGING TASKS CGROUP AND NICE.
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 change_task_cgroup "skynet.cputhrottlingtest" "top-app" "cpuset"
-change_task_cgroup "skynet.cputhrottlingtest" "foreground" "stune"
+change_task_cgroup "skynet.cputhrottlingtest" "top-app" "stune"
+change_task_cgroup "com.ea.gp.fifamobile" "top-app" "cpuset"
+change_task_cgroup "com.ea.gp.fifamobile" "top-app" "stune"
+change_task_cgroup "com.ngame.allstar.eu" "top-app" "cpuset"
+change_task_cgroup "com.ngame.allstar.eu" "top-app" "stune"
+change_task_cgroup "com.futuremark.dmandroid.application" "top-app" "cpuset"
+change_task_cgroup "com.futuremark.dmandroid.application" "top-app" "stune"
+change_task_cgroup "com.primatelabs.geekbench5" "top-app" "cpuset"
+change_task_cgroup "com.primatelabs.geekbench5" "top-app" "stune"
 change_task_cgroup "com.dts.freefireth" "top-app" "cpuset"
-change_task_cgroup "com.dts.freefireth" "foreground" "stune"
+change_task_cgroup "com.dts.freefireth" "top-app" "stune"
 change_task_cgroup "com.garena.game.codm" "top-app" "cpuset"
-change_task_cgroup "com.garena.game.codm" "foreground" "stune"
+change_task_cgroup "com.garena.game.codm" "top-app" "stune"
 change_task_cgroup "com.activision.callofduty.shooter" "top-app" "cpuset"
-change_task_cgroup "com.activision.callofduty.shooter" "foreground" "stune"
+change_task_cgroup "com.activision.callofduty.shooter" "top-app" "stune"
 change_task_cgroup "com.riotgames.league.wildrift" "top-app" "cpuset"
-change_task_cgroup "com.riotgames.league.wildrift" "foreground" "stune"
+change_task_cgroup "com.riotgames.league.wildrift" "top-app" "stune"
 change_task_cgroup "com.mobile.legends" "top-app" "cpuset"
-change_task_cgroup "com.mobile.legends" "foreground" "stune"
+change_task_cgroup "com.mobile.legends" "top-app" "stune"
 change_task_cgroup "com.gameloft.android.SAMS.GloftA9SS" "top-app" "cpuset"
-change_task_cgroup "com.gameloft.android.SAMS.GloftA9SS" "foreground" "stune"
+change_task_cgroup "com.gameloft.android.SAMS.GloftA9SS" "top-app" "stune"
 change_task_cgroup "com.tencent.ig" "top-app" "cpuset"
-change_task_cgroup "com.tencent.ig" "foreground" "stune" 
+change_task_cgroup "com.tencent.ig" "top-app" "stune" 
 change_task_cgroup "com.gameloft.android.ANMP.GloftA8HM" "top-app" "cpuset"
-change_task_cgroup "com.gameloft.android.ANMP.GloftA8HM" "foreground" "stune" 
+change_task_cgroup "com.gameloft.android.ANMP.GloftA8HM" "top-app" "stune" 
 change_task_cgroup "com.miHoYo.GenshinImpact" "top-app" "cpuset"
-change_task_cgroup "com.miHoYo.GenshinImpact" "foreground" "stune" 
+change_task_cgroup "com.miHoYo.GenshinImpact" "top-app" "stune" 
 change_task_cgroup "com.pearlabyss.blackdesertm.gl" "top-app" "cpuset"
-change_task_cgroup "com.pearlabyss.blackdesertm.gl" "foreground" "stune" 
+change_task_cgroup "com.pearlabyss.blackdesertm.gl" "top-app" "stune" 
 change_task_cgroup "com.nianticlabs.pokemongo" "top-app" "cpuset"
-change_task_cgroup "com.nianticlabs.pokemongo" "foreground" "stune" 
-
-change_task_nice "skynet.cputhrottlingtest" "-20"
-change_task_nice "com.dts.freefireth" "-20"
-change_task_nice "com.garena.game.codm" "-20"
-change_task_nice "com.riotgames.league.wildrift" "-20"
-change_task_nice "com.mobile.legends" "-20"
-change_task_nice "com.tencent.ig" "-20"
-change_task_nice "com.gameloft.android.SAMS.GloftA9SS" "-20"
-change_task_nice "com.gameloft.android.ANMP.GloftA8HM" "-20"
-change_task_nice "com.activision.callofduty.shooter" "-20"
-change_task_nice "com.miHoYo.GenshinImpact" "-20"
-change_task_nice "com.pearlabyss.blackdesertm.gl" "-20"
-change_task_nice "com.nianticlabs.pokemongo" "-20"
+change_task_cgroup "com.nianticlabs.pokemongo" "top-app" "stune" 
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLING BATTERY SAVER...                                                                             "
@@ -4009,6 +4269,58 @@ killall -9 com.google.process.gapps
 killall -9 com.google.android.gsf
 killall -9 com.google.android.gsf.persistent
 
+pm disable com.google.android.gms/com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
+pm disable com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver
+pm disable com.google.android.gms/.ads.settings.AdsSettingsActivity
+pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorActivity
+pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorMapActivity
+pm disable com.google.android.gms/com.google.android.location.settings.ActivityRecognitionPermissionActivity
+pm disable com.google.android.gms/com.google.android.location.settings.GoogleLocationSettingsActivity
+pm disable com.google.android.gms/com.google.android.location.settings.LocationHistorySettingsActivity
+pm disable com.google.android.gms/com.google.android.location.settings.LocationSettingsCheckerActivity
+pm disable com.google.android.gms/.usagereporting.settings.UsageReportingActivity
+pm disable com.google.android.gms/.ads.adinfo.AdvertisingInfoContentProvider
+pm disable com.google.android.gms/com.google.android.location.reporting.service.ReportingContentProvider
+pm disable com.google.android.gms/com.google.android.location.internal.LocationContentProvider
+pm disable com.google.android.gms/.common.stats.net.contentprovider.NetworkUsageContentProvider
+pm disable com.google.android.gms/com.google.android.gms.ads.config.GServicesChangedReceiver
+pm disable com.google.android.gms/com.google.android.contextmanager.systemstate.SystemStateReceiver
+pm disable com.google.android.gms/.ads.jams.SystemEventReceiver
+pm disable com.google.android.gms/.ads.config.FlagsReceiver
+pm disable com.google.android.gms/.ads.social.DoritosReceiver
+pm disable com.google.android.gms/.analytics.AnalyticsReceiver
+pm disable com.google.android.gms/.analytics.internal.GServicesChangedReceiver
+pm disable com.google.android.gms/.common.analytics.CoreAnalyticsReceiver
+pm disable com.google.android.gms/.common.stats.GmsCoreStatsServiceLauncher
+pm disable com.google.android.gms/com.google.android.location.internal.AnalyticsSamplerReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ActiveReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ClockworkFallbackReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$ImposeReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$SecretCodeReceiver
+pm disable com.google.android.gms/.checkin.CheckinService\$TriggerReceiver
+pm disable com.google.android.gms/.checkin.EventLogService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateActivity
+pm disable com.google.android.gsf/.update.SystemUpdatePanoActivity
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$Receiver
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$SecretCodeReceiver
+pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$TriggerReceiver
+pm disable com.google.android.gsf/.checkin.EventLogService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateService\$Receiver
+pm disable com.google.android.gsf/.update.SystemUpdateService\$SecretCodeReceiver
+pm disable com.google.android.gsf/.checkin.CheckinService
+pm disable com.google.android.gsf/.checkin.EventLogService
+pm disable com.google.android.gsf/.update.SystemUpdateService
+pm disable com.google.android.apps.wellbeing/.powerstate.impl.PowerStateJobService
+pm disable com.google.android.apps.wellbeing/androidx.work.impl.background.systemjob.SystemJobService
+
+# Disable GMS and IMS run in startup and restart it on boot
+cmd appops set com.google.android.gms BOOT_COMPLETED ignore
+cmd appops set com.google.android.ims BOOT_COMPLETED ignore
+
+# Disable GMS and IMS run in startup and restart it on boot (custom permissions for Oxygen OS)
+cmd appops set com.google.android.gms AUTO_START ignore
+cmd appops set com.google.android.ims AUTO_START ignore
+
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                            "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -4057,4 +4369,3 @@ fi
 };;
 esac
 done
-) &
