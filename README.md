@@ -28,8 +28,8 @@ And everyone that supports King Tweaks project. ❤️
 
 # Telegram
 
-**Channel**: @kingcreationschannel [Link](https://t.me/kingcreationschannel)
+**Channel**: [Link](https://t.me/kingcreationschannel) @kingcreationschannel
 
-**Group (EN)**: @kingcreationsen [Link](https://t.me/kingcreationsen)
+**Group (EN)**: [Link](https://t.me/kingcreationsen) @kingcreationsen
 
-**Group / Grupo (PT)**: @kingcreationspt [Link](https://t.me/kingcreationspt)
+**Group / Grupo (PT)**: [Link](https://t.me/kingcreationspt) @kingcreationspt
