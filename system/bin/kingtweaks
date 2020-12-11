@@ -57,6 +57,38 @@ toastfr1() {
 	am start -a android.intent.action.MAIN -e toasttext "Profil $kts_profilefr chargé" -n bellavita.toast/.MainActivity
 }
 
+ctl() {
+	# Bail out if file does not exist
+	if [[ ! -f "$1" ]]
+	then
+    kmsg1 "[!] $1 doesn't exist, skipping..."
+    return 1
+    fi
+
+	# Fetch the current key value
+	local curval=`cat "$1" 2> /dev/null`
+	
+	# Bail out if value is already set
+	if [[ "$curval" == "$2" ]]
+	then
+	kmsg "$1 is already set to $2, skipping..."
+	return 1
+	fi
+
+	# Make file writable in case it is not already
+	chmod +w "$1" 2> /dev/null
+
+	# Write the new value and bail if there's an error
+	if ! echo "$2" > "$1" 2> /dev/null
+	then
+		kmsg1 "[!] Failed: $1 -> $2"
+		return 1
+	fi
+
+	# Log the success
+	kmsg "$1 $curval -> $2"
+}
+
 write() {
 	# Bail out if file does not exist
 	if [[ ! -f "$1" ]]
@@ -87,6 +119,21 @@ write() {
 
 	# Log the success
 	kmsg "$1 $curval -> $2"
+}
+
+change_task_cgroup() {
+# avoid matching grep itself
+# ps -Ao pid,args | grep kswapd
+# 150 [kswapd0]
+# 16490 grep kswapd
+echo $@
+local ps_ret
+ps_ret="$(ps -Ao pid,args)"
+for temp_pid in $(echo "$ps_ret" | grep "$1" | awk '{print $1}'); do
+for temp_tid in $(ls "/proc/$temp_pid/task/"); do
+echo "$temp_tid" > "/dev/$3/$2/tasks"
+done
+done
 }
 
 # Check for root permissions and bail if not granted
@@ -197,9 +244,6 @@ totalram=$(free -m | awk '/Mem:/{print $2}')
 
 # Variable to battery actual capacity
 percentage=$(cat /sys/class/power_supply/battery/capacity)
-
-# Variable to min device GPU power level
-mpl=$(cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel)
 
 # Variable to battery design capacity
 bdc=$(cat /sys/class/power_supply/battery/charge_full_design)
@@ -454,7 +498,7 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.8.9                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.0                                                                                           "
 kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
 kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
@@ -571,7 +615,7 @@ write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/devfreq/max_freq" "$UINT_MAX"
-write "$gpu/default_pwrlevel" "$mpl"
+write "$gpu/default_pwrlevel" "6"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -803,6 +847,7 @@ write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "NO_TTWU_QUEUE"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
+
 fi
 done
  
@@ -905,7 +950,7 @@ write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "500"
 write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "30"
+write "${vm}stat_interval" "60"
 write "${vm}swappiness" "100"
 write "${vm}vfs_cache_pressure" "200"
 done
@@ -979,6 +1024,11 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
 done
+
+# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
+for i in $(find /sys/class/net -type l); do
+write "$i/tx_queue_len" 1000
+done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING LPM SLEEP...                                                                                  "
@@ -1192,7 +1242,7 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.8.9                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.0                                                                                           "
 kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
 kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
@@ -1309,7 +1359,7 @@ write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/devfreq/max_freq" "$UINT_MAX"
-write "$gpu/default_pwrlevel" "$mpl"
+write "$gpu/default_pwrlevel" "6"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -1488,13 +1538,13 @@ write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "1"
-write "${st}/foreground/schedtune.prefer_idle" "0"
+write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
 
 write "${st}/top-app/schedtune.boost" "1"
-write "${st}/top-app/schedtune.prefer_idle" "0"
+write "${st}/top-app/schedtune.prefer_idle" "1"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
@@ -1541,6 +1591,7 @@ write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "${sched}sched_features" "WAKEUP_PREEMPTION"
+
 fi
 done
  
@@ -1653,7 +1704,7 @@ write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
-write "${vm}stat_interval" "30"
+write "${vm}stat_interval" "60"
 write "${vm}swappiness" "100"
 write "${vm}vfs_cache_pressure" "100"
 done
@@ -1742,6 +1793,11 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
 done
+
+# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
+for i in $(find /sys/class/net -type l); do
+write "$i/tx_queue_len" 1000
+done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING LPM SLEEP...                                                                                  "
@@ -1959,7 +2015,7 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.8.9                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.0                                                                                           "
 kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
 kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
@@ -2031,7 +2087,7 @@ write "${queue}read_ahead_kb" 512
 write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 512
+write "${queue}nr_requests" 256
 done
 
 # Reserve 90% IO bandwith for foreground tasks
@@ -2097,7 +2153,7 @@ write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/devfreq/max_freq" "$UINT_MAX"
-write "$gpu/default_pwrlevel" "$((mpl / 2))"
+write "$gpu/default_pwrlevel" "3"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -2270,14 +2326,14 @@ then
 write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
-write "${st}/foreground/schedtune.boost" "40"
-write "${st}/foreground/schedtune.prefer_idle" "0"
+write "${st}/foreground/schedtune.boost" "25"
+write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
 
-write "${st}/top-app/schedtune.boost" "40"
-write "${st}/top-app/schedtune.prefer_idle" "0"
+write "${st}/top-app/schedtune.boost" "50"
+write "${st}/top-app/schedtune.prefer_idle" "1"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
@@ -2324,6 +2380,7 @@ write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
+
 fi
 done
 	
@@ -2431,7 +2488,7 @@ sync
 for vm in /proc/sys/vm/
 do
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "15"
+write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "750"
 write "${vm}dirty_writeback_centisecs" "0"
@@ -2525,6 +2582,11 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
 done
+
+# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
+for i in $(find /sys/class/net -type l); do
+write "$i/tx_queue_len" 1000
+done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          CHANGING TASKS CGROUP AND NICE...                                                                      "
@@ -2776,7 +2838,7 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.8.9                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.0                                                                                           "
 kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
 kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
@@ -2902,7 +2964,7 @@ write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "$mpl"
+write "$gpu/default_pwrlevel" "6"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -3082,13 +3144,13 @@ write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
 write "${st}/foreground/schedtune.boost" "1"
-write "${st}/foreground/schedtune.prefer_idle" "0"
+write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
 
 write "${st}/top-app/schedtune.boost" "1"
-write "${st}/top-app/schedtune.prefer_idle" "0"
+write "${st}/top-app/schedtune.prefer_idle" "1"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
@@ -3136,6 +3198,7 @@ write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "${sched}sched_features" "ARCH_POWER" 
+
 fi
 done
 	
@@ -3182,13 +3245,13 @@ write "/sys/power/pm_freeze_timeout" "20000"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING FINGERPRINT BOOST...                                                                          "
+kmsg1 "                                          DISABLING FINGERPRINT BOOST...                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable fingerprint boost.
+# Disable fingerprint boost.
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
-write "/sys/kernel/fp_boost/enabled" "1"
+write "/sys/kernel/fp_boost/enabled" "0"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3250,7 +3313,7 @@ kmsg1 "-------------------------------------------------------------------------
 # VM settings to improve overall user experience and performance.
 for vm in /proc/sys/vm/
 do
-write "${vm}dirty_background_ratio" "1"
+write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "50"
 write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "0"
@@ -3344,6 +3407,11 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
 done
+
+# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
+for i in $(find /sys/class/net -type l); do
+write "$i/tx_queue_len" 1000
+done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING BATTERY SAVER...                                                                              "
@@ -3565,7 +3633,7 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.8.9                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.0                                                                                           "
 kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
 kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
@@ -3641,7 +3709,7 @@ write "${queue}read_ahead_kb" 512
 write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 512
+write "${queue}nr_requests" 256
 done
 
 # Reserve 90% IO bandwith for foreground tasks
@@ -3707,7 +3775,7 @@ write "$gpu/force_no_nap" "1"
 write "$gpu/bus_split" "0"
 write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/devfreq/max_freq" "$UINT_MAX"
-write "$gpu/default_pwrlevel" `cat /sys/class/kgsl/kgsl-3d0/max_pwrlevel`
+write "$gpu/default_pwrlevel" "0"
 write "$gpu/force_bus_on" "1"
 write "$gpu/force_clk_on" "1"
 write "$gpu/force_rail_on" "1"
@@ -3877,14 +3945,14 @@ then
 write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
-write "${st}/foreground/schedtune.boost" "40"
-write "${st}/foreground/schedtune.prefer_idle" "0"
+write "${st}/foreground/schedtune.boost" "25"
+write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
 
-write "${st}/top-app/schedtune.boost" "40"
-write "${st}/top-app/schedtune.prefer_idle" "0"
+write "${st}/top-app/schedtune.boost" "50"
+write "${st}/top-app/schedtune.prefer_idle" "1"
 
 write "${st}/schedtune.boost" "0"
 write "${st}/schedtune.prefer_idle" "0"
@@ -3931,6 +3999,7 @@ write "${sched}sched_features" "NEXT_BUDDY"
 write "${sched}sched_features" "TTWU_QUEUE"
 write "${sched}sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "${sched}sched_features" "NO_WAKEUP_PREEMPTION"
+
 fi
 done
 	
@@ -4038,7 +4107,7 @@ sync
 for vm in /proc/sys/vm/
 do
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "15"
+write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "200"
 write "${vm}dirty_writeback_centisecs" "0"
@@ -4133,6 +4202,11 @@ write "${tcp}tcp_low_latency" "1"
 write "${tcp}tcp_congestion_control" "bbr2"
 done
 
+# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
+for i in $(find /sys/class/net -type l); do
+write "$i/tx_queue_len" 1000
+done;
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          CHANGING TASKS CGROUP AND NICE...                                                                      "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -4169,6 +4243,10 @@ change_task_cgroup "com.pearlabyss.blackdesertm.gl" "top-app" "cpuset"
 change_task_cgroup "com.pearlabyss.blackdesertm.gl" "top-app" "stune" 
 change_task_cgroup "com.nianticlabs.pokemongo" "top-app" "cpuset"
 change_task_cgroup "com.nianticlabs.pokemongo" "top-app" "stune" 
+change_task_cgroup "com.pubg.krmobile" "top-app" "cpuset"
+change_task_cgroup "com.pubg.krmobile" "top-app" "stune" 
+change_task_cgroup "com.rockstargames.gtasa" "top-app" "cpuset"
+change_task_cgroup "com.rockstargames.gtasa" "top-app" "stune" 
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLING BATTERY SAVER...                                                                             "

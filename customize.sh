@@ -1,5 +1,5 @@
 # !/system/bin/sh
-# By pedrozzz (pedroginkgo @ telegram pedrozzz0 @ github).
+# KTS by pedrozzz (pedrozzz0 @ GitHub)
 
 ui_print ""
 ui_print "╭╮╭━╮ ╭━━━━╮ ╭━━━╮"
@@ -10,15 +10,15 @@ ui_print "┃┃┃╰╮ ╱╱┃┃╱╱ ┃╰━╯┃"
 ui_print "╰╯╰━╯ ╱╱╰╯╱╱ ╰━━━╯"
 ui_print "╱╱╱╱╱ ╱╱╱╱╱╱ ╱╱╱╱╱"
 ui_print "╱╱╱╱╱ ╱╱╱╱╱╱ ╱╱╱╱╱"
-ui_print "by pedrozzz (pedrozzz0 @ github)"
+ui_print "by pedrozzz (pedrozzz0 @ GitHub)"
 ui_print ""
 sleep 1
-ui_print "Thanks to Eight (iamlazy123 @ github)"
+ui_print "Thanks to Eight (iamlazy123 @ GitHub)"
 ui_print ""
 sleep 1
-ui_print "KTweak by Draco (tytydraco @ github)"
+ui_print "KTweak by Draco (tytydraco @ GitHub)"
 ui_print ""
-ui_print "Thanks to Dan (paget96 @ github)"
+ui_print "Thanks to Dan (paget96 @ XDA)"
 ui_print ""
 sleep 1
 
@@ -99,14 +99,6 @@ abort "[!] A conflicting module/app is installed, please remove and then install
 elif [[ -d $loc/ZeroLAG ]]    
 then 
 abort "[!] A conflicting module/app is installed, please remove and then install King Tweaks again."
-	
-elif [[ -d $loc/ktks ]]
-then
-abort "[!] A old version of King Tweaks is installed, please remove and then install King Tweaks again."
-	
-elif [[ -d $loc/ktksr ]]
-then
-abort "[!] A old version of King Tweaks is installed, please remove and then install King Tweaks again."
 	
 elif [[ $(pm list package kitana) ]]
 then
