@@ -18,7 +18,11 @@ ui_print ""
 sleep 1
 ui_print "KTweak by Draco (tytydraco @ GitHub)"
 ui_print ""
+sleep 1
 ui_print "Thanks to Dan (paget96 @ XDA)"
+ui_print ""
+sleep 1
+ui_print "qti-mem-opt by Matt Yang (yc9559 @ GitHub)"
 ui_print ""
 sleep 1
 
@@ -132,5 +136,5 @@ ui_print ""
 ui_print "[*] Now, reboot."
 sleep 1
 ui_print ""
-P1="Improving user-experience and performance of $(getprop ro.product.model). Telegram: @kingcreationschannel"
+P1="Improving user-experience of $(getprop ro.product.model). Telegram: @kingcreationschannel"
 sed -i "/description=/c description=${P1}" $MODPATH/module.prop;

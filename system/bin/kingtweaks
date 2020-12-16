@@ -121,6 +121,8 @@ write() {
 	kmsg "$1 $curval -> $2"
 }
 
+# Cgroup functions
+# $1:task_name $2:cgroup_name $3:"cpuset"/"stune"
 change_task_cgroup() {
 # avoid matching grep itself
 # ps -Ao pid,args | grep kswapd
@@ -244,9 +246,6 @@ totalram=$(free -m | awk '/Mem:/{print $2}')
 
 # Variable to battery actual capacity
 percentage=$(cat /sys/class/power_supply/battery/capacity)
-
-# Variable to battery design capacity
-bdc=$(cat /sys/class/power_supply/battery/charge_full_design)
 
 # Detect other conflicting modules.
 if [[ -d $loc/injector ]]
@@ -498,9 +497,8 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.0                                                                                           "
-kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
-kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
+kmsg1 "                                            👑 KTS Version: 1.9.1                                                                                           "
+kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -551,15 +549,6 @@ write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 32
 done
-
-# Reserve 90% IO bandwith for foreground tasks
-if [[ -d "/dev/blkio" ]]
-then
-write "/dev/blkio/blkio.weight" "1000"
-write "/dev/blkio/blkio.leaf_weight" "1000"
-write "/dev/blkio/background/blkio.weight" "100"
-write "/dev/blkio/background/blkio.leaf_weight" "100"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         TWEAKING CPU...                                                                                         "
@@ -619,7 +608,6 @@ write "$gpu/default_pwrlevel" "6"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
-write "$gpu/devfreq/polling_interval" "10"
 write "$gpu/idle_timer" "96"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
@@ -793,7 +781,7 @@ then
 write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
-write "${st}/foreground/schedtune.boost" "1"
+write "${st}/foreground/schedtune.boost" "0"
 write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
@@ -817,7 +805,7 @@ do
 if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
-write "${fs}lease-break-time" "20"
+write "${fs}lease-break-time" "15"
 write "${fs}leases-enable" "1"
 fi
 done
@@ -883,7 +871,7 @@ write "${kts}sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LA
 write "${kts}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_LATENCY / 2))"
 write "${kts}sched_migration_cost_ns" "5000000"
 write "${kts}sched_min_task_util_for_colocation" "0"
-write "${kts}sched_nr_migrate" "4"
+write "${kts}sched_nr_migrate" "2"
 write "${kts}sched_schedstats" "0"
 write "${kts}printk_devkmsg" "off"
 done
@@ -945,7 +933,7 @@ sync
 for vm in /proc/sys/vm/
 do
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "1"
+write "${vm}dirty_background_ratio" "15"
 write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "500"
 write "${vm}dirty_writeback_centisecs" "0"
@@ -963,12 +951,12 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -d "/sys/module/msm_thermal" ]]
 then
 write /sys/module/msm_thermal/vdd_restriction/enabled "0"
-write /sys/module/msm_thermal/core_control/enabled "0"
+write /sys/module/msm_thermal/core_control/enabled "1"
 write /sys/module/msm_thermal/parameters/enabled "Y"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING POWER EFFICIENT WORKQUEUE...                                                                 "
+kmsg1 "                                          ENABLING POWER EFFICIENT WORKQUEUE...                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable power efficient workqueue.
@@ -976,7 +964,7 @@ for wqpw in /sys/module/workqueue/parameters/
 do
 if [[ -e "${wqpw}power_efficient" ]]
 then 
-write "${wqpw}power_efficient" "N"
+write "${wqpw}power_efficient" "Y"
 fi
 done
 
@@ -1056,21 +1044,12 @@ fi
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DİSABLING PM2 IDLE SLEEP MODE...                                                                       "
+kmsg1 "                                          ENABLING PM2 IDLE SLEEP MODE...                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
-write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
-fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLING LCD POWER REDUCE...                                                                          "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
-then
-write "/sys/class/lcd/panel/power_reduce" "0"
+write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1242,9 +1221,8 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.0                                                                                           "
-kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
-kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
+kmsg1 "                                            👑 KTS Version: 1.9.1                                                                                           "
+kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -1289,21 +1267,12 @@ for queue in /sys/block/*/queue/
 do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
-write "${queue}read_ahead_kb" 128
+write "${queue}read_ahead_kb" 256
 write "${queue}iosched/low_latency" 1
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 64
+write "${queue}nr_requests" 128
 done
-
-# Reserve 90% IO bandwith for foreground tasks
-if [[ -d "/dev/blkio" ]]
-then
-write "/dev/blkio/blkio.weight" "1000"
-write "/dev/blkio/blkio.leaf_weight" "1000"
-write "/dev/blkio/background/blkio.weight" "100"
-write "/dev/blkio/background/blkio.leaf_weight" "100"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         TWEAKING CPU...                                                                                         "
@@ -1353,7 +1322,7 @@ kmsg1 "-------------------------------------------------------------------------
 	
 # GPU Tweaks.
 write "$gpu/throttling" "1"
-write "$gpu/thermal_pwrlevel" "3"
+write "$gpu/thermal_pwrlevel" "0"
 write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
@@ -1363,7 +1332,6 @@ write "$gpu/default_pwrlevel" "6"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
-write "$gpu/devfreq/polling_interval" "10"
 write "$gpu/idle_timer" "100"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
@@ -1537,13 +1505,13 @@ then
 write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
-write "${st}/foreground/schedtune.boost" "1"
+write "${st}/foreground/schedtune.boost" "0"
 write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
 write "${st}/rt/schedtune.prefer_idle" "0"
 
-write "${st}/top-app/schedtune.boost" "1"
+write "${st}/top-app/schedtune.boost" "5"
 write "${st}/top-app/schedtune.prefer_idle" "1"
 
 write "${st}/schedtune.boost" "0"
@@ -1561,7 +1529,7 @@ do
 if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
-write "${fs}lease-break-time" "20"
+write "${fs}lease-break-time" "15"
 write "${fs}leases-enable" "1"
 fi
 done
@@ -1699,8 +1667,8 @@ sync
 for vm in /proc/sys/vm/
 do
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "10"
-write "${vm}dirty_ratio" "30"
+write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_ratio" "20"
 write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
@@ -2015,9 +1983,8 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.0                                                                                           "
-kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
-kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
+kmsg1 "                                            👑 KTS Version: 1.9.1                                                                                           "
+kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -2046,7 +2013,7 @@ kmsg1 "-------------------------------------------------------------------------
 
 if [[ -e "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "40"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2090,15 +2057,6 @@ write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 256
 done
 
-# Reserve 90% IO bandwith for foreground tasks
-if [[ -d "/dev/blkio" ]]
-then
-write "/dev/blkio/blkio.weight" "1000"
-write "/dev/blkio/blkio.leaf_weight" "1000"
-write "/dev/blkio/background/blkio.weight" "100"
-write "/dev/blkio/background/blkio.leaf_weight" "100"
-fi
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         TWEAKING CPU...                                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2112,7 +2070,7 @@ then
 write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_THROUGHPUT / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "0"
+write "${cpu}schedutil/iowait_boost_enable" "1"
 write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
@@ -2150,15 +2108,14 @@ write "$gpu/throttling" "0"
 write "$gpu/thermal_pwrlevel" "0"
 write "$gpu/devfreq/adrenoboost" "1"
 write "$gpu/force_no_nap" "0"
-write "$gpu/bus_split" "1"
+write "$gpu/bus_split" "0"
 write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/devfreq/max_freq" "$UINT_MAX"
 write "$gpu/default_pwrlevel" "3"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
-write "$gpu/devfreq/polling_interval" "10"
-write "$gpu/idle_timer" "196"
+write "$gpu/idle_timer" "146"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2182,16 +2139,13 @@ write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
+kmsg1 "                                          DISABLING ADRENO IDLER...                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable and tweak adreno idler
+# Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
-write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
-write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "5000"
-write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "15"
-write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
+write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2326,7 +2280,7 @@ then
 write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
-write "${st}/foreground/schedtune.boost" "25"
+write "${st}/foreground/schedtune.boost" "20"
 write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
@@ -2350,7 +2304,7 @@ do
 if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
-write "${fs}lease-break-time" "20"
+write "${fs}lease-break-time" "15"
 write "${fs}leases-enable" "1"
 fi
 done
@@ -2488,7 +2442,7 @@ sync
 for vm in /proc/sys/vm/
 do
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "10"
+write "${vm}dirty_background_ratio" "3"
 write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "750"
 write "${vm}dirty_writeback_centisecs" "0"
@@ -2589,7 +2543,7 @@ write "$i/tx_queue_len" 1000
 done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          CHANGING TASKS CGROUP AND NICE...                                                                      "
+kmsg1 "                                          CHANGING TASKS CGROUP...                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 change_task_cgroup "com.futuremark.dmandroid.application" "top-app" "cpuset"
@@ -2838,9 +2792,8 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.0                                                                                           "
-kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
-kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
+kmsg1 "                                            👑 KTS Version: 1.9.1                                                                                           "
+kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -2891,15 +2844,6 @@ write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 64
 done
-
-# Reserve 90% IO bandwith for foreground tasks
-if [[ -d "/dev/blkio" ]]
-then
-write "/dev/blkio/blkio.weight" "1000"
-write "/dev/blkio/blkio.leaf_weight" "1000"
-write "/dev/blkio/background/blkio.weight" "100"
-write "/dev/blkio/background/blkio.leaf_weight" "100"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         TWEAKING CPU...                                                                                         "
@@ -2968,7 +2912,6 @@ write "$gpu/default_pwrlevel" "6"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
-write "$gpu/devfreq/polling_interval" "26"
 write "$gpu/idle_timer" "36"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
@@ -3143,7 +3086,7 @@ then
 write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
-write "${st}/foreground/schedtune.boost" "1"
+write "${st}/foreground/schedtune.boost" "0"
 write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
@@ -3167,7 +3110,7 @@ do
 if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
-write "${fs}lease-break-time" "20"
+write "${fs}lease-break-time" "15"
 write "${fs}leases-enable" "1"
 fi
 done
@@ -3223,7 +3166,7 @@ kmsg1 "-------------------------------------------------------------------------
 for kts in /proc/sys/kernel/
 do
 write "${kts}sched_child_runs_first" "1"
-write "${kts}perf_cpu_time_max_percent" "1"
+write "${kts}perf_cpu_time_max_percent" "5"
 write "${kts}sched_autogroup_enabled" "1"
 write "${kts}random/read_wakeup_threshold" "64"
 write "${kts}random/write_wakeup_threshold" "128"
@@ -3633,9 +3576,8 @@ kmsg1 "                                            🛠️ SOC: $soc            
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.0                                                                                           "
-kmsg1 "                                            🧬 Battery design capacity: $bdc mAh                                                                            "
-kmsg1 "                                            🔋 Battery actual capacity: $(( bdc * percentage/100 )) mAh available ($percentage%)                            "
+kmsg1 "                                            👑 KTS Version: 1.9.1                                                                                           "
+kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -3668,7 +3610,7 @@ kmsg1 "-------------------------------------------------------------------------
 
 if [[ -e "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "40"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3712,15 +3654,6 @@ write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 256
 done
 
-# Reserve 90% IO bandwith for foreground tasks
-if [[ -d "/dev/blkio" ]]
-then
-write "/dev/blkio/blkio.weight" "1000"
-write "/dev/blkio/blkio.leaf_weight" "1000"
-write "/dev/blkio/background/blkio.weight" "100"
-write "/dev/blkio/background/blkio.leaf_weight" "100"
-fi
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         TWEAKING CPU...                                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3734,7 +3667,7 @@ then
 write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_THROUGHPUT / 1000))"
-write "${cpu}schedutil/iowait_boost_enable" "0"
+write "${cpu}schedutil/iowait_boost_enable" "1"
 write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
@@ -3779,7 +3712,6 @@ write "$gpu/default_pwrlevel" "0"
 write "$gpu/force_bus_on" "1"
 write "$gpu/force_clk_on" "1"
 write "$gpu/force_rail_on" "1"
-write "$gpu/devfreq/polling_interval" "5"
 write "$gpu/idle_timer" "1050"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
@@ -3804,10 +3736,10 @@ write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLING AND TWEAKING ADRENO IDLER...                                                                  "
+kmsg1 "                                          DISABLING ADRENO IDLER...                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable and tweak adreno idler
+# Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
@@ -3945,7 +3877,7 @@ then
 write "${st}/background/schedtune.boost" "0"
 write "${st}/background/schedtune.prefer_idle" "0"
 
-write "${st}/foreground/schedtune.boost" "25"
+write "${st}/foreground/schedtune.boost" "20"
 write "${st}/foreground/schedtune.prefer_idle" "1"
 
 write "${st}/rt/schedtune.boost" "0"
@@ -3969,7 +3901,7 @@ do
 if [[ -d "/proc/sys/fs" ]]
 then
 write "${fs}dir-notify-enable" "0"
-write "${fs}lease-break-time" "20"
+write "${fs}lease-break-time" "15"
 write "${fs}leases-enable" "1"
 fi
 done
@@ -4107,8 +4039,8 @@ sync
 for vm in /proc/sys/vm/
 do
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "10"
-write "${vm}dirty_ratio" "30"
+write "${vm}dirty_background_ratio" "1"
+write "${vm}dirty_ratio" "20"
 write "${vm}dirty_expire_centisecs" "200"
 write "${vm}dirty_writeback_centisecs" "0"
 write "${vm}page-cluster" "0"
@@ -4208,7 +4140,7 @@ write "$i/tx_queue_len" 1000
 done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          CHANGING TASKS CGROUP AND NICE...                                                                      "
+kmsg1 "                                          CHANGING TASKS CGROUP...                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 change_task_cgroup "skynet.cputhrottlingtest" "top-app" "cpuset"
