@@ -144,6 +144,7 @@ if $DEBUG; then
   ui_print "- Debug mode"
   ui_print "  Module install log will include debug info"
   ui_print "  Be sure to save it after module install"
+  ui_print ""
   set -x
 fi
 

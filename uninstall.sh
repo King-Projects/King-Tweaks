@@ -1,3 +1,8 @@
+if [[ -e "/sdcard/KTS" ]]
+then 
+rm -rf /sdcard/KTS
+fi
+
 # Don't modify anything after this
 if [ -f $INFO ]; then
   while read LINE; do
@@ -10,4 +15,8 @@ if [ -f $INFO ]; then
       while true; do
         LINE=$(dirname $LINE)
         [ "$(ls -A $LINE 2>/dev/null)" ] && break 1 || rm -rf $LINE
-      dont=a" e       d              lu      
+      done
+    fi
+  done < $INFO
+  rm -f $INFO
+fi
