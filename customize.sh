@@ -12,8 +12,8 @@ ui_print "╱╱╱╱╱ ╱╱╱╱╱╱ ╱╱╱╱╱"
 ui_print "╱╱╱╱╱ ╱╱╱╱╱╱ ╱╱╱╱╱"
 sleep 2
 ui_print "by pedrozzz (pedrozzz0 @ GitHub)"
+ui_print ""
 sleep 3
-clear
 ui_print "Thanks to Eight (iamlazy123 @ GitHub)"
 ui_print ""
 sleep 1
