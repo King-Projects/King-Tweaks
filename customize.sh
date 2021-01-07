@@ -52,9 +52,6 @@ ui_print "[*] Installing King Toast app..."
 pm install $MODPATH/KingToast.apk
 sleep 1
 ui_print ""
-ui_print "[*] Optimizing apps package..."
-cmd package bg-dexopt-job
-ui_print ""
 ui_print "[*] Logs are stored in your internal storage/KTS"
 sleep 1
 ui_print ""

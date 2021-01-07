@@ -2,11 +2,20 @@
 # Written by Draco (tytydraco @ github).
 # Modified by Pedrozzz (pedrozzz0 @ github).
 
-mkdir /sdcard/KTS
 LOG=/sdcard/KTS/KTS.log
 
-if [[ -e $LOG ]]; then
+if [[ -e $LOG ]] 
+then
 rm $LOG
+fi
+
+if [[ -d "/sdcard/KTS" ]] 
+then
+touch KTS.log
+
+else
+mkdir /sdcard/KTS
+touch KTS.log
 fi
 
 # Log in white and continue (unnecessary)
@@ -165,10 +174,51 @@ UINT_MAX="4294967295"
 		gpu="/sys/kernel/gpu"
 	fi
 	
+	if [ -d "/sys/class/kgsl/kgsl-3d0/devfreq" ]; then
+		gpug="/sys/class/kgsl/kgsl-3d0/devfreq"
+	elif [ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/devfreq" ]; then
+		gpug="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/devfreq"
+	elif [ -d "/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq" ]; then
+		gpug="/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq"
+	elif [ -d "/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq" ]; then
+		gpug="/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq"
+	elif [ -d "/sys/devices/platform/*.gpu/devfreq" ]; then
+		gpug="/sys/devices/platform/*.gpu/devfreq"
+	elif [ -d "/sys/devices/platform/gpusysfs" ]; then
+		gpug="/sys/devices/platform/gpusysfs"
+	elif [ -d "/sys/devices/*.mali/devfreq" ]; then
+		gpug="/sys/devices/*.mali/devfreq"
+	elif [ -d "/sys/devices/*.gpu/devfreq" ]; then
+		gpug="/sys/devices/*.gpu/devfreq"
+	elif [ -d "/sys/devices/platform/mali.0" ]; then
+		gpug="/sys/devices/platform/mali.0"
+	elif [ -d "/sys/devices/platform/mali-*.0" ]; then
+		gpug="/sys/devices/platform/mali-*.0"
+	elif [ -d "/sys/module/mali/parameters" ]; then
+		gpug="/sys/module/mali/parameters"
+	elif [ -d "/sys/class/misc/mali0" ]; then
+		gpug="/sys/class/misc/mali0"
+	elif [ -d "/sys/kernel/gpu" ]; then
+		gpug="/sys/kernel/gpu"
+	fi
 	# Variable to GPU model
 	if [[ -e $gpu/gpu_model ]]; then
     GPU_MODEL=$(cat $gpu/gpu_model)
     fi
+    
+    if [[ -e $gpug/gpu_governor ]]; then
+    GPU_GOVERNOR=$(cat $gpug/gpu_governor)
+    
+    elif [[ -e $gpug/governor ]]; then
+    GPU_GOVERNOR=$(cat $gpug/governor)
+    fi
+
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+if [[ -e $cpu/scaling_governor ]]; then
+CPU_GOVERNOR=$(cat $cpu/scaling_governor)
+fi
+done
 
 # Variable to selinux state
 if [[ $(cat /sys/fs/selinux/enforce) == "1" ]]
@@ -350,10 +400,12 @@ kmsg1 "                                            🕛 Date of execution: $(dat
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
 kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
+kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.4                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.5                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
@@ -389,14 +441,17 @@ kmsg1 "                                          TWEAKED CPU_BOOST.             
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-if [[ -e "/sys/devices/system/cpu/cpu0/core_ctl/enable" ]]
+for corectl in /sys/devices/system/cpu/cpu*/core_ctl
+do
+if [[ -d "${corectl}" ]]
 then
-write "/sys/devices/system/cpu/cpu0/core_ctl/enable" "1"
-write "/sys/devices/system/cpu/cpu4/core_ctl/enable" "1"
+write "${corectl}/enable" "1"
+fi
+done
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED CORE CONTROL.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
@@ -603,10 +658,7 @@ fi
 # =========
 # FIX DEEPSLEEP
 # =========
-for i in $(ls /sys/class/scsi_disk/)
-do
-lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
-done
+write "/sys/class/scsi_disk/cache_type" "temporary none"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
@@ -749,7 +801,7 @@ if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]]
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED CPUIDLE USE DEEPEST STATE.                                                                  "
+kmsg1 "                                          ALLOWED CPUIDLE TO USE DEEPEST STATE.                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -765,7 +817,6 @@ write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
 write "/proc/sys/vm/vfs_cache_pressure" "200"
-write "/proc/sys/vm/extfrag_threshold" "750"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -818,7 +869,7 @@ fi
 
 # Internet Tweaks
 write "/proc/sys/net/ipv4/ip_no_pmtu_disc" "0"
-write "/proc/sys/net/ipv4/tcp_ecn" "2"
+write "/proc/sys/net/ipv4/tcp_ecn" "1"
 write "/proc/sys/net/ipv4/tcp_timestamps" "0"
 write "/proc/sys/net/ipv4/route.flush" "1"
 write "/proc/sys/net/ipv4/tcp_rfc1337" "1"
@@ -1029,10 +1080,12 @@ kmsg1 "                                            🕛 Date of execution: $(dat
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
 kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
+kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.4                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.5                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
@@ -1068,14 +1121,17 @@ kmsg1 "                                          TWEAKED CPU_BOOST.             
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-if [[ -e "/sys/devices/system/cpu/cpu0/core_ctl/enable" ]]
+for corectl in /sys/devices/system/cpu/cpu*/core_ctl
+do
+if [[ -d "${corectl}" ]]
 then
-write "/sys/devices/system/cpu/cpu0/core_ctl/enable" "1"
-write "/sys/devices/system/cpu/cpu4/core_ctl/enable" "1"
+write "${corectl}/enable" "1"
+fi
+done
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED CORE CONTROL.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
@@ -1282,10 +1338,7 @@ fi
 # =========
 # FIX DEEPSLEEP
 # =========
-for i in $(ls /sys/class/scsi_disk/)
-do
-lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
-done
+write "/sys/class/scsi_disk/cache_type" "temporary none"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
@@ -1369,6 +1422,7 @@ fi
 
 # Tweak some kernel settings to improve overall performance.
 write "/proc/sys/kernel/sched_child_runs_first" "1"
+write "/proc/sys/kernel/sched_boost" "0"
 write "/proc/sys/kernel/perf_cpu_time_max_percent" "5"
 write "/proc/sys/kernel/sched_autogroup_enabled" "1"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
@@ -1430,7 +1484,7 @@ if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]]
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED CPUIDLE USE DEEPEST STATE.                                                                  "
+kmsg1 "                                          ALLOWED CPUIDLE TO USE DEEPEST STATE.                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -1447,15 +1501,14 @@ sync
 
 # VM settings to improve overall user experience and smoothness.
 write "/proc/sys/vm/drop_caches" "3"
-write "/proc/sys/vm/dirty_background_ratio" "5"
-write "/proc/sys/vm/dirty_ratio" "20"
+write "/proc/sys/vm/dirty_background_ratio" "10"
+write "/proc/sys/vm/dirty_ratio" "30"
 write "/proc/sys/vm/dirty_expire_centisecs" "3000"
 write "/proc/sys/vm/dirty_writeback_centisecs" "0"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
 write "/proc/sys/vm/vfs_cache_pressure" "100"
-write "/proc/sys/vm/extfrag_threshold" "750"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -1524,7 +1577,7 @@ fi
 
 # Internet Tweaks
 write "/proc/sys/net/ipv4/ip_no_pmtu_disc" "0"
-write "/proc/sys/net/ipv4/tcp_ecn" "2"
+write "/proc/sys/net/ipv4/tcp_ecn" "1"
 write "/proc/sys/net/ipv4/tcp_timestamps" "0"
 write "/proc/sys/net/ipv4/route.flush" "1"
 write "/proc/sys/net/ipv4/tcp_rfc1337" "1"
@@ -1748,10 +1801,12 @@ kmsg1 "                                            🕛 Date of execution: $(dat
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
 kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
+kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.4                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.5                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
@@ -1783,14 +1838,17 @@ kmsg1 "                                          TWEAKED CPU BOOST.             
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-if [[ -e "/sys/devices/system/cpu/cpu0/core_ctl/enable" ]]
+for corectl in /sys/devices/system/cpu/cpu*/core_ctl
+do
+if [[ -d "${corectl}" ]]
 then
-write "/sys/devices/system/cpu/cpu0/core_ctl/enable" "0"
-write "/sys/devices/system/cpu/cpu4/core_ctl/enable" "0"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CORE CONTROL.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+write "${corectl}/enable" "0"
 fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
@@ -2009,10 +2067,7 @@ fi
 # =========
 # FIX DEEPSLEEP
 # =========
-for i in $(ls /sys/class/scsi_disk/)
-do
-lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
-done
+write "/sys/class/scsi_disk/cache_type" "temporary none"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
@@ -2034,7 +2089,7 @@ then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
 
-write "/dev/stune/foreground/schedtune.boost" "20"
+write "/dev/stune/foreground/schedtune.boost" "50"
 write "/dev/stune/foreground/schedtune.prefer_idle" "1"
 
 write "/dev/stune/rt/schedtune.boost" "0"
@@ -2095,6 +2150,7 @@ fi
 
 # Tweak some kernel settings to improve overall performance.
 write "/proc/sys/kernel/sched_child_runs_first" "0"
+write "/proc/sys/kernel/sched_boost" "1"
 write "/proc/sys/kernel/perf_cpu_time_max_percent" "25"
 write "/proc/sys/kernel/sched_autogroup_enabled" "0"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
@@ -2156,7 +2212,7 @@ if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]]
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                         DISABLED CPUIDLE USE DEEPEST STATE.                                                                  "
+kmsg1 "                                         NOT ALLOWED CPUIDLE TO USE DEEPEST STATE.                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2173,7 +2229,7 @@ sync
 
 # VM settings to improve overall user experience and performance.
 write "/proc/sys/vm/drop_caches" "3"
-write "/proc/sys/vm/dirty_background_ratio" "3"
+write "/proc/sys/vm/dirty_background_ratio" "5"
 write "/proc/sys/vm/dirty_ratio" "30"
 write "/proc/sys/vm/dirty_expire_centisecs" "750"
 write "/proc/sys/vm/dirty_writeback_centisecs" "0"
@@ -2181,7 +2237,6 @@ write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
 write "/proc/sys/vm/vfs_cache_pressure" "80"
-write "/proc/sys/vm/extfrag_threshold" "750"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -2250,7 +2305,7 @@ fi
 
 # Internet Tweaks
 write "/proc/sys/net/ipv4/ip_no_pmtu_disc" "0"
-write "/proc/sys/net/ipv4/tcp_ecn" "2"
+write "/proc/sys/net/ipv4/tcp_ecn" "1"
 write "/proc/sys/net/ipv4/tcp_timestamps" "0"
 write "/proc/sys/net/ipv4/route.flush" "1"
 write "/proc/sys/net/ipv4/tcp_rfc1337" "1"
@@ -2491,10 +2546,12 @@ kmsg1 "                                            🕛 Date of execution: $(dat
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
 kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
+kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.4                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.5                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
@@ -2530,14 +2587,17 @@ kmsg1 "                                          TWEAKED CPU BOOST.             
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-if [[ -e "/sys/devices/system/cpu/cpu0/core_ctl/enable" ]]
+for corectl in /sys/devices/system/cpu/cpu*/core_ctl
+do
+if [[ -d "${corectl}" ]]
 then
-write "/sys/devices/system/cpu/cpu0/core_ctl/enable" "1"
-write "/sys/devices/system/cpu/cpu4/core_ctl/enable" "1"
+write "${corectl}/enable" "1"
+fi
+done
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED CORE CONTROL.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
@@ -2546,8 +2606,8 @@ write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 128
 write "${queue}iosched/low_latency" 1
-write "${queue}nomerges" 2
-write "${queue}rq_affinity" 2
+write "${queue}nomerges" 1
+write "${queue}rq_affinity" 1
 write "${queue}nr_requests" 64
 done
 
@@ -2750,7 +2810,7 @@ fi
 # =========
 for i in $(ls /sys/class/scsi_disk/)
 do
-lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
+write "/sys/class/scsi_disk/$i/cache_type" "temporary none"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2835,6 +2895,7 @@ fi
 
 # Tweak some kernel settings to improve overall performance.
 write "/proc/sys/kernel/sched_child_runs_first" "1"
+write "/proc/sys/kernel/sched_boost" "0"
 write "/proc/sys/kernel/perf_cpu_time_max_percent" "5"
 write "/proc/sys/kernel/sched_autogroup_enabled" "1"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
@@ -2896,7 +2957,7 @@ if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]]
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED CPUIDLE USE DEEPEST STATE.                                                                  "
+kmsg1 "                                          ALLOWED CPUIDLE TO USE DEEPEST STATE.                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2910,15 +2971,14 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # VM settings to improve overall user experience and performance.
-write "/proc/sys/vm/dirty_background_ratio" "2"
-write "/proc/sys/vm/dirty_ratio" "20"
+write "/proc/sys/vm/dirty_background_ratio" "5"
+write "/proc/sys/vm/dirty_ratio" "50"
 write "/proc/sys/vm/dirty_expire_centisecs" "3000"
 write "/proc/sys/vm/dirty_writeback_centisecs" "0"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
 write "/proc/sys/vm/vfs_cache_pressure" "100"
-write "/proc/sys/vm/extfrag_threshold" "750"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -2987,7 +3047,7 @@ fi
 
 # Internet Tweaks
 write "/proc/sys/net/ipv4/ip_no_pmtu_disc" "0"
-write "/proc/sys/net/ipv4/tcp_ecn" "2"
+write "/proc/sys/net/ipv4/tcp_ecn" "1"
 write "/proc/sys/net/ipv4/tcp_timestamps" "0"
 write "/proc/sys/net/ipv4/route.flush" "1"
 write "/proc/sys/net/ipv4/tcp_rfc1337" "1"
@@ -3034,7 +3094,7 @@ fi
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED LPM SLEEP.                                                                                 "
+kmsg1 "                                          ENABLED LPM SLEEP.                                                                                 "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
@@ -3206,15 +3266,17 @@ fi
         	toasten
         	fi
         	
-        	kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
+kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
 kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
+kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.4                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.5                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
@@ -3246,14 +3308,17 @@ kmsg1 "                                          TWEAKED CPU BOOST.             
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-if [[ -e "/sys/devices/system/cpu/cpu0/core_ctl/enable" ]]
+for corectl in /sys/devices/system/cpu/cpu*/core_ctl
+do
+if [[ -d "${corectl}" ]]
 then
-write "/sys/devices/system/cpu/cpu0/core_ctl/enable" "0"
-write "/sys/devices/system/cpu/cpu4/core_ctl/enable" "0"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CORE CONTROL.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+write "${corectl}/enable" "0"
 fi
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
@@ -3464,7 +3529,7 @@ fi
 # =========
 for i in $(ls /sys/class/scsi_disk/)
 do
-lock_val 'temporary none' '/sys/class/scsi_disk/$i/cache_type'
+write "/sys/class/scsi_disk/$i/cache_type" "temporary none"
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3487,7 +3552,7 @@ then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
 
-write "/dev/stune/foreground/schedtune.boost" "20"
+write "/dev/stune/foreground/schedtune.boost" "50"
 write "/dev/stune/foreground/schedtune.prefer_idle" "1"
 
 write "/dev/stune/rt/schedtune.boost" "0"
@@ -3548,6 +3613,7 @@ fi
 
 # Tweak some kernel settings to improve overall performance.
 write "/proc/sys/kernel/sched_child_runs_first" "0"
+write "/proc/sys/kernel/sched_boost" "1"
 write "/proc/sys/kernel/perf_cpu_time_max_percent" "25"
 write "/proc/sys/kernel/sched_autogroup_enabled" "0"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
@@ -3609,7 +3675,7 @@ if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]]
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CPUIDLE USE DEEPEST STATE.                                                                 "
+kmsg1 "                                         NOT ALLOWED CPUIDLE TO USE DEEPEST STATE.                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -3626,7 +3692,7 @@ sync
 
 # VM settings to improve overall user experience and performance.
 write "/proc/sys/vm/drop_caches" "3"
-write "/proc/sys/vm/dirty_background_ratio" "1"
+write "/proc/sys/vm/dirty_background_ratio" "5"
 write "/proc/sys/vm/dirty_ratio" "20"
 write "/proc/sys/vm/dirty_expire_centisecs" "200"
 write "/proc/sys/vm/dirty_writeback_centisecs" "0"
@@ -3634,7 +3700,6 @@ write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
 write "/proc/sys/vm/vfs_cache_pressure" "200"
-write "/proc/sys/vm/extfrag_threshold" "750"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "

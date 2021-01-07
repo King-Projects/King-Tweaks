@@ -108,6 +108,7 @@ prop_process() {
 # Credits
 ui_print "**************************************"
 ui_print "*   MMT Extended by Zackptg5 @ XDA   *"
+ui_print "*   Modified by pedrozzz0 @ GitHub   *"
 ui_print "**************************************"
 ui_print " "
 
@@ -129,8 +130,8 @@ else
   LIBDIR=/system
 fi
 if ! $BOOTMODE; then
-  ui_print "- Only uninstall is supported in recovery"
-  ui_print "  Uninstalling!"
+  ui_print "[*] Only uninstall is supported in recovery"
+  ui_print "[*] Uninstalling!"
   touch $MODPATH/remove
   [ -s $INFO ] && install_script $MODPATH/uninstall.sh || rm -f $INFO $MODPATH/uninstall.sh
   recovery_cleanup
@@ -141,29 +142,28 @@ fi
 
 # Debug
 if $DEBUG; then
-  ui_print "- Debug mode"
-  ui_print "  Module install log will include debug info"
-  ui_print "  Be sure to save it after module install"
+  ui_print "[*] Debug mode"
+  ui_print "[*] Module install log will include debug info."
   ui_print ""
   set -x
 fi
 
 # Extract files
-ui_print "- Extracting King Tweaks Reborn files..."
+ui_print "[*] Extracting King Tweaks Reborn files..."
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
-  ui_print " "; ui_print "- Running Addons... -"
+  ui_print " "; ui_print "[*] Running Addons..."
   for i in $MODPATH/common/addon/*/install.sh; do
-    ui_print "  Running $(echo $i | sed -r "s|$MODPATH/common/addon/(.*)/install.sh|\1|")..."
+    ui_print "[*] Running $(echo $i | sed -r "s|$MODPATH/common/addon/(.*)/install.sh|\1|")..."
     . $i
   done
 fi
 
 # Remove files outside of module directory
-ui_print "- Removing old files..."
+ui_print "[*] Removing old files..."
 
 if [ -f $INFO ]; then
   while read LINE; do
@@ -183,11 +183,11 @@ if [ -f $INFO ]; then
 fi
 
 ### Install
-ui_print "- Installing King Tweaks Reborn..."
+ui_print "[*] Installing King Tweaks Reborn..."
 
 [ -f "$MODPATH/common/install.sh" ] && . $MODPATH/common/install.sh
 
-ui_print "- Installing for $ARCH SDK $API device..."
+ui_print "[*] Installing for $ARCH SDK $API device..."
 # Remove comments from files and place them, add blank line to end if not already present
 for i in $(find $MODPATH -type f -name "*.sh" -o -name "*.prop" -o -name "*.rule"); do
   [ -f $i ] && { sed -i -e "/^#/d" -e "/^ *$/d" $i; [ "$(tail -1 $i)" ] && echo "" >> $i; } || continue
@@ -221,7 +221,7 @@ fi
 
 # Set permissions
 ui_print " "
-ui_print "- Setting Permissions..."
+ui_print "[*] Setting Permissions..."
 set_perm_recursive $MODPATH 0 0 0755 0644
 if [ -d $MODPATH/system/vendor ]; then
   set_perm_recursive $MODPATH/system/vendor 0 0 0755 0644 u:object_r:vendor_file:s0
