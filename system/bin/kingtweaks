@@ -190,17 +190,18 @@ UINT_MAX="4294967295"
 		gpug="/sys/devices/*.mali/devfreq"
 	elif [ -d "/sys/devices/*.gpu/devfreq" ]; then
 		gpug="/sys/devices/*.gpu/devfreq"
-	elif [ -d "/sys/devices/platform/mali.0" ]; then
-		gpug="/sys/devices/platform/mali.0"
-	elif [ -d "/sys/devices/platform/mali-*.0" ]; then
-		gpug="/sys/devices/platform/mali-*.0"
+	elif [ -d "/sys/devices/platform/mali.0/devfreq" ]; then
+		gpug="/sys/devices/platform/mali.0/devfreq"
+	elif [ -d "/sys/devices/platform/mali-*.0/devfreq" ]; then
+		gpug="/sys/devices/platform/mali-*.0/devfreq"
 	elif [ -d "/sys/module/mali/parameters" ]; then
 		gpug="/sys/module/mali/parameters"
-	elif [ -d "/sys/class/misc/mali0" ]; then
-		gpug="/sys/class/misc/mali0"
+	elif [ -d "/sys/class/misc/mali0/devfreq" ]; then
+		gpug="/sys/class/misc/mali0/devfreq"
 	elif [ -d "/sys/kernel/gpu" ]; then
 		gpug="/sys/kernel/gpu"
 	fi
+	
 	# Variable to GPU model
 	if [[ -e $gpu/gpu_model ]]; then
     GPU_MODEL=$(cat $gpu/gpu_model)
@@ -215,9 +216,7 @@ UINT_MAX="4294967295"
 
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-if [[ -e $cpu/scaling_governor ]]; then
 CPU_GOVERNOR=$(cat $cpu/scaling_governor)
-fi
 done
 
 # Variable to selinux state
@@ -405,7 +404,7 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.5                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.6                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
@@ -435,23 +434,11 @@ kmsg1 "-------------------------------------------------------------------------
 
 if [[ -e "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CPU_BOOST.                                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
-
-for corectl in /sys/devices/system/cpu/cpu*/core_ctl
-do
-if [[ -d "${corectl}" ]]
-then
-write "${corectl}/enable" "1"
-fi
-done
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED CORE CONTROL.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
@@ -462,7 +449,7 @@ write "${queue}read_ahead_kb" 32
 write "${queue}iosched/low_latency" 1
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 32
+write "${queue}nr_requests" 16
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -486,7 +473,7 @@ write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "0"
+write "${cpu}interactive/timer_rate" "10000"
 write "${cpu}interactive/boost" "0"
 write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/use_migration_notif" "1" 
@@ -495,18 +482,18 @@ write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "0"
-write "${cpu}interactive/sampling_rate_min" "0"
-write "${cpu}interactive/min_sample_time" "0"
+write "${cpu}interactive/sampling_rate" "10000"
+write "${cpu}interactive/sampling_rate_min" "10000"
+write "${cpu}interactive/min_sample_time" "10000"
 write "${cpu}interactive/go_hispeed_load" "89"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 
-write "/sys/devices/system/cpu/cpu1/online" "1"
-write "/sys/devices/system/cpu/cpu2/online" "1"
-write "/sys/devices/system/cpu/cpu5/online" "1"
-write "/sys/devices/system/cpu/cpu6/online" "1"
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+write "$cpu/online" "1"
+done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         TWEAKED CPU.                                                                                          "
@@ -520,11 +507,11 @@ write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/devfreq/max_freq" "$UINT_MAX"
-write "$gpu/default_pwrlevel" "6"
+write "$gpu/default_pwrlevel" "5"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
-write "$gpu/idle_timer" "96"
+write "$gpu/idle_timer" "126"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -664,16 +651,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# LMK Tweaks
-if [[ -d "/sys/module/lowmemorykiller" ]]
-then
-write "/sys/module/lowmemorykiller/parameters/enable_lmk" "1"
-write "/sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLIED LMK TWEAKS.                                                                                 "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
 # Schedtune Tweaks
 if [[ -d "/dev/stune" ]]
 then
@@ -686,7 +663,7 @@ write "/dev/stune/foreground/schedtune.prefer_idle" "1"
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
 
-write "/dev/stune/top-app/schedtune.boost" "1"
+write "/dev/stune/top-app/schedtune.boost" "10"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -700,7 +677,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "20"
+write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED FS TWEAKS.                                                                                  "
@@ -710,8 +687,6 @@ fi
 # Enable dynamic_fsync.
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
-chmod 666 /sys/kernel/dyn_fsync/Dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED DYNAMIC FSYNC.                                                                              "
@@ -741,7 +716,7 @@ fi
 
 # Tweak some kernel settings to improve overall performance.
 write "/proc/sys/kernel/sched_child_runs_first" "1"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "1"
+write "/proc/sys/kernel/perf_cpu_time_max_percent" "5"
 write "/proc/sys/kernel/sched_autogroup_enabled" "1"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
 write "/proc/sys/kernel/random/write_wakeup_threshold" "512"
@@ -752,7 +727,7 @@ write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCH
 write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_LATENCY / 2))"
 write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
-write "/proc/sys/kernel/sched_nr_migrate" "2"
+write "/proc/sys/kernel/sched_nr_migrate" "4"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
@@ -833,37 +808,44 @@ kmsg1 "                                          APPLIED THERMAL TWEAKS.        
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Enable power efficient workqueue.
+# Disable power efficient workqueue.
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
-write "/sys/module/workqueue/parameters/power_efficient" "Y"
+write "/sys/module/workqueue/parameters/power_efficient" "N"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED POWER EFFICIENT WORKQUEUE.                                                                  "
+kmsg1 "                                          DISABLED POWER EFFICIENT WORKQUEUE.                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
-chmod 0644 "/sys/devices/system/cpu/sched_mc_power_savings"
-write "/sys/devices/system/cpu/sched_mc_power_savings" "1"
+write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED MULTICORE POWER SAVING.                                                                     "
+kmsg1 "                                          DISABLED MULTICORE POWER SAVING.                                                                     "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
 # Fix DT2W.
-if [[ -e "/sys/touchpanel/double_tap" ]]
+if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
+write "/proc/tp_gesture" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN...                                                                         "
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN...                                                                         "
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e "/sys/touchpanel/double_tap" ]]
+then
+write "/sys/touchpanel/double_tap" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -886,11 +868,6 @@ write "/proc/sys/net/ipv4/tcp_keepalive_intvl" "30"
 write "/proc/sys/net/ipv4/tcp_fin_timeout" "30"
 write "/proc/sys/net/ipv4/tcp_low_latency" "1"
 write "/proc/sys/net/ipv4/tcp_congestion_control" "bbr2"
-
-# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
-for i in $(find /sys/class/net -type l); do
-write "$i/tx_queue_len" 1000
-done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -935,7 +912,7 @@ kmsg1 "                                          ENABLED USB FAST CHARGING.     
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
   
-# GMS blocker 1.2 by pedrozzz
+# GMS ripper 1.0
 killall -9 com.google.android.gms
 killall -9 com.google.android.gms.persistent
 killall -9 com.google.process.gapps
@@ -1085,7 +1062,7 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.5                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.6                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
@@ -1115,7 +1092,7 @@ kmsg1 "-------------------------------------------------------------------------
 
 if [[ -e "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "5"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CPU_BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1166,7 +1143,7 @@ write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD_BALANCE / 1000))"
+write "${cpu}interactive/timer_rate" "50000"
 write "${cpu}interactive/boost" "0"
 write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/use_migration_notif" "1" 
@@ -1175,18 +1152,18 @@ write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "10000"
-write "${cpu}interactive/sampling_rate_min" "10000"
-write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_BALANCE / 1000))"
+write "${cpu}interactive/sampling_rate" "50000"
+write "${cpu}interactive/sampling_rate_min" "75000"
+write "${cpu}interactive/min_sample_time" "75000"
 write "${cpu}interactive/go_hispeed_load" "90"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 
-write "/sys/devices/system/cpu/cpu1/online" "1"
-write "/sys/devices/system/cpu/cpu2/online" "1"
-write "/sys/devices/system/cpu/cpu5/online" "1"
-write "/sys/devices/system/cpu/cpu6/online" "1"
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+write "$cpu/online" "1"
+done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         TWEAKED CPU.                                                                                         "
@@ -1344,16 +1321,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# LMK Tweaks.
-if [[ -d "/sys/module/lowmemorykiller/parameters" ]]
-then
-write "/sys/module/lowmemorykiller/parameters/enable_lmk" "1"
-write "/sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLIED LMK TWEAKS.                                                                                 "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
 # Schedtune Tweaks
 if [[ -d "/dev/stune" ]]
 then
@@ -1366,7 +1333,7 @@ write "/dev/stune/foreground/schedtune.prefer_idle" "1"
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
 
-write "/dev/stune/top-app/schedtune.boost" "5"
+write "/dev/stune/top-app/schedtune.boost" "10"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -1380,7 +1347,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "20"
+write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED FS TWEAKS.                                                                                  "
@@ -1390,8 +1357,6 @@ fi
 # Enable dynamic_fsync.
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
-chmod 666 /sys/kernel/dyn_fsync/Dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED DYNAMIC FSYNC.                                                                              "
@@ -1421,9 +1386,9 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Tweak some kernel settings to improve overall performance.
-write "/proc/sys/kernel/sched_child_runs_first" "1"
+write "/proc/sys/kernel/sched_child_runs_first" "0"
 write "/proc/sys/kernel/sched_boost" "0"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "5"
+write "/proc/sys/kernel/perf_cpu_time_max_percent" "10"
 write "/proc/sys/kernel/sched_autogroup_enabled" "1"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
 write "/proc/sys/kernel/random/write_wakeup_threshold" "256"
@@ -1436,7 +1401,7 @@ write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "32"
 write "/proc/sys/kernel/sched_schedstats" "0"
-write "/proc/sys/kernel/sched_conservative_pl" "1"
+write "/proc/sys/kernel/sched_conservative_pl" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
@@ -1536,7 +1501,6 @@ fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
-chmod 0644 "/sys/devices/system/cpu/sched_mc_power_savings"
 write "/sys/devices/system/cpu/sched_mc_power_savings" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED MULTICORE POWER SAVING.                                                                     "
@@ -1544,9 +1508,10 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Fix DT2W.
-if [[ -e "/sys/touchpanel/double_tap" ]]
+if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
+write "/proc/tp_gesture" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1554,6 +1519,13 @@ kmsg1 "-------------------------------------------------------------------------
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e "/sys/touchpanel/double_tap" ]]
+then
+write "/sys/touchpanel/double_tap" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1594,11 +1566,6 @@ write "/proc/sys/net/ipv4/tcp_keepalive_intvl" "30"
 write "/proc/sys/net/ipv4/tcp_fin_timeout" "30"
 write "/proc/sys/net/ipv4/tcp_low_latency" "1"
 write "/proc/sys/net/ipv4/tcp_congestion_control" "bbr2"
-
-# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
-for i in $(find /sys/class/net -type l); do
-write "$i/tx_queue_len" 1000
-done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -1652,7 +1619,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLED USB FAST CHARGING.                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   
-# GMS blocker 1.2 by pedrozzz
+# GMS ripper 1.0
 killall -9 com.google.android.gms
 killall -9 com.google.android.gms.persistent
 killall -9 com.google.process.gapps
@@ -1806,13 +1773,17 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.5                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.6                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING $kts_profile PROFILE.                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+	  
 # Enable perfd, disable thermald and thermal-engine.
 start perfd
 stop thermald
@@ -1854,7 +1825,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$UINT_MAX 1:$UINT_MAX 2:$UINT_MAX 3:$UINT_MAX 4:$UINT_MAX 5:$UINT_MAX 6:$UINT_MAX 7:$UINT_MAX"
-write "/sys/module/cpu_boost/parameters/input_boost_ms" "100"
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CAF INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1862,7 +1833,7 @@ kmsg1 "-------------------------------------------------------------------------
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "100"
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$UINT_MAX"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$UINT_MAX"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1876,7 +1847,6 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 512
-write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 256
@@ -1886,24 +1856,23 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          TWEAKED I/O SCHEDULER.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
 then
 write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
-write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}schedutil/up_rate_limit_us" "0"
+write "${cpu}schedutil/down_rate_limit_us" "0"
 write "${cpu}schedutil/pl" "1"
 write "${cpu}schedutil/iowait_boost_enable" "1"
-write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}schedutil/rate_limit_us" "0"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}interactive/timer_rate" "10000"
 write "${cpu}interactive/boost" "1"
 write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/use_migration_notif" "1"
@@ -1914,16 +1883,16 @@ write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "10000"
 write "${cpu}interactive/sampling_rate_min" "10000"
-write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}interactive/min_sample_time" "10000"
 write "${cpu}interactive/go_hispeed_load" "80"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 	
-write "/sys/devices/system/cpu/cpu1/online" "1"
-write "/sys/devices/system/cpu/cpu2/online" "1"
-write "/sys/devices/system/cpu/cpu5/online" "1"
-write "/sys/devices/system/cpu/cpu6/online" "1"
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+write "$cpu/online" "1"
+done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         TWEAKED CPU.                                                                                         "
@@ -1937,7 +1906,7 @@ write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "0"
 write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/devfreq/max_freq" "$UINT_MAX"
-write "$gpu/default_pwrlevel" "3"
+write "$gpu/default_pwrlevel" "1"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -2073,16 +2042,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# LMK Tweaks.
-if [[ -d "/sys/module/lowmemorykiller" ]]
-then
-write "/sys/module/lowmemorykiller/parameters/enable_lmk" "1"
-write "/sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLIED LMK TWEAKS.                                                                                 "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
 # Schedtune Tweaks
 if [[ -d "/dev/stune" ]]
 then
@@ -2090,13 +2049,13 @@ write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "50"
-write "/dev/stune/foreground/schedtune.prefer_idle" "1"
+write "/dev/stune/foreground/schedtune.prefer_idle" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "50"
-write "/dev/stune/top-app/schedtune.prefer_idle" "1"
+write "/dev/stune/top-app/schedtune.prefer_idle" "0"
 
 write "/dev/stune/schedtune.boost" "0"
 write "/dev/stune/schedtune.prefer_idle" "0"
@@ -2109,7 +2068,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "20"
+write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED FS TWEAKS.                                                                                  "
@@ -2119,8 +2078,6 @@ fi
 # Enable dynamic_fsync.
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
-chmod 666 /sys/kernel/dyn_fsync/Dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED DYNAMIC FSYNC.                                                                              "
@@ -2253,7 +2210,7 @@ kmsg1 "                                          APPLIED THERMAL TWEAKS.        
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Workqueue disable power_efficient.
+# Disable power efficient workqueue.
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "N" 
@@ -2264,17 +2221,17 @@ fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
-chmod 0644 "/sys/devices/system/cpu/sched_mc_power_savings"
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED MULTICORE POWER SAVING.                                                                    "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Fix DT2W
-if [[ -e "/sys/touchpanel/double_tap" ]]
+# Fix DT2W.
+if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
+write "/proc/tp_gesture" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2282,6 +2239,13 @@ kmsg1 "-------------------------------------------------------------------------
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e "/sys/touchpanel/double_tap" ]]
+then
+write "/sys/touchpanel/double_tap" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2322,11 +2286,6 @@ write "/proc/sys/net/ipv4/tcp_keepalive_intvl" "30"
 write "/proc/sys/net/ipv4/tcp_fin_timeout" "30"
 write "/proc/sys/net/ipv4/tcp_low_latency" "1"
 write "/proc/sys/net/ipv4/tcp_congestion_control" "bbr2"
-
-# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
-for i in $(find /sys/class/net -type l); do
-write "$i/tx_queue_len" 1000
-done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -2397,7 +2356,7 @@ kmsg1 "                                          ENABLED USB FAST CHARGING.     
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
   
-# GMS blocker 1.2
+# GMS ripper 1.0
 killall -9 com.google.android.gms
 killall -9 com.google.android.gms.persistent
 killall -9 com.google.process.gapps
@@ -2551,7 +2510,7 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.5                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.6                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
@@ -2595,6 +2554,24 @@ write "${corectl}/enable" "1"
 fi
 done
 
+# Caf CPU Boost
+if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
+then
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CAF INPUT BOOST.                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# CPU input boost
+if [[ -e "/sys/module/cpu_input_boost/parameters/input_boost_duration" ]]
+then
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CPU INPUT BOOST.                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED CORE CONTROL.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2605,9 +2582,8 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 128
-write "${queue}iosched/low_latency" 1
-write "${queue}nomerges" 1
-write "${queue}rq_affinity" 1
+write "${queue}nomerges" 0
+write "${queue}rq_affinity" 0
 write "${queue}nr_requests" 64
 done
 
@@ -2649,6 +2625,8 @@ write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
 if [[ $percentage -le "20" ]]
 then
 write "/sys/devices/system/cpu/cpu1/online" "0"
@@ -2658,11 +2636,9 @@ write "/sys/devices/system/cpu/cpu6/online" "0"
 
 elif [[ $percentage -ge "20" ]]
 then
-write "/sys/devices/system/cpu/cpu1/online" "1"
-write "/sys/devices/system/cpu/cpu2/online" "1"
-write "/sys/devices/system/cpu/cpu5/online" "1"
-write "/sys/devices/system/cpu/cpu6/online" "1"
+write "$cpu/online" "1"
 fi
+done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         TWEAKED CPU.                                                                                         "
@@ -2808,24 +2784,11 @@ fi
 # =========
 # FIX DEEPSLEEP
 # =========
-for i in $(ls /sys/class/scsi_disk/)
-do
-write "/sys/class/scsi_disk/$i/cache_type" "temporary none"
-done
+write "/sys/class/scsi_disk/cache_type" "temporary none"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# LMK Tweaks.
-if [[ -d "/sys/module/lowmemorykiller" ]]
-then
-write "/sys/module/lowmemorykiller/parameters/enable_lmk" "1"
-write "/sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLIED LMK TWEAKS.                                                                                 "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 # Schedtune tweaks
 if [[ -d "/dev/stune" ]]
@@ -2853,7 +2816,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "20"
+write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED FS TWEAKS.                                                                                  "
@@ -2863,8 +2826,6 @@ fi
 # Enable dynamic_fsync.
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
-chmod 666 /sys/kernel/dyn_fsync/Dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED DYNAMIC FSYNC.                                                                              "
@@ -2995,7 +2956,7 @@ kmsg1 "                                          APPLIED THERMAL TWEAKS.        
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Workqueue enable power_efficient.
+# Enable power efficient workqueue.
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "Y"
@@ -3006,17 +2967,17 @@ fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
-chmod 0644 "/sys/devices/system/cpu/sched_mc_power_savings"
 write "/sys/devices/system/cpu/sched_mc_power_savings" "2"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED AGGRESSIVE MULTICORE POWER SAVING.                                                          "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Fix DT2W
-if [[ -e "/sys/touchpanel/double_tap" ]]
+# Fix DT2W.
+if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
+write "/proc/tp_gesture" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3024,6 +2985,13 @@ kmsg1 "-------------------------------------------------------------------------
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e "/sys/touchpanel/double_tap" ]]
+then
+write "/sys/touchpanel/double_tap" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3064,11 +3032,6 @@ write "/proc/sys/net/ipv4/tcp_keepalive_intvl" "30"
 write "/proc/sys/net/ipv4/tcp_fin_timeout" "30"
 write "/proc/sys/net/ipv4/tcp_low_latency" "1"
 write "/proc/sys/net/ipv4/tcp_congestion_control" "bbr2"
-
-# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
-for i in $(find /sys/class/net -type l); do
-write "$i/tx_queue_len" 1000
-done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -3122,7 +3085,7 @@ kmsg1 "                                          ENABLED USB FAST CHARGING.     
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
   
-# GMS blocker 1.2 by pedrozzz
+# GMS ripper 1.0
 killall -9 com.google.android.gms
 killall -9 com.google.android.gms.persistent
 killall -9 com.google.process.gapps
@@ -3276,7 +3239,7 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.5                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.6                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
@@ -3324,14 +3287,20 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$UINT_MAX 1:$UINT_MAX 2:$UINT_MAX 3:$UINT_MAX 4:$UINT_MAX 5:$UINT_MAX 6:$UINT_MAX 7:$UINT_MAX"
-write "/sys/module/cpu_boost/parameters/input_boost_ms" "100"
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKED CAF INPUT BOOST.                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# CPU Boost
+# CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "100"
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$UINT_MAX"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$UINT_MAX"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKED CPU INPUT BOOST.                                                                            "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
 # I/O Scheduler Tweaks.
@@ -3340,7 +3309,6 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 512
-write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 256
@@ -3357,17 +3325,17 @@ avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
 then
 write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
-write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}schedutil/up_rate_limit_us" "0"
+write "${cpu}schedutil/down_rate_limit_us" "0"
 write "${cpu}schedutil/pl" "1"
 write "${cpu}schedutil/iowait_boost_enable" "1"
-write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}schedutil/rate_limit_us" "0"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}interactive/timer_rate" "10000"
 write "${cpu}interactive/boost" "1"
 write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/use_migration_notif" "1"
@@ -3378,16 +3346,16 @@ write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "10000"
 write "${cpu}interactive/sampling_rate_min" "10000"
-write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_THROUGHPUT / 1000))"
+write "${cpu}interactive/min_sample_time" "10000"
 write "${cpu}interactive/go_hispeed_load" "80"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 
-write "/sys/devices/system/cpu/cpu1/online" "1"
-write "/sys/devices/system/cpu/cpu2/online" "1"
-write "/sys/devices/system/cpu/cpu5/online" "1"
-write "/sys/devices/system/cpu/cpu6/online" "1"
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+write "$cpu/online" "1"
+done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         TWEAKED CPU.                                                                                         "
@@ -3427,6 +3395,10 @@ if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
 write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKED GPU.                                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -3527,24 +3499,11 @@ fi
 # =========
 # FIX DEEPSLEEP
 # =========
-for i in $(ls /sys/class/scsi_disk/)
-do
-write "/sys/class/scsi_disk/$i/cache_type" "temporary none"
-done
+write "/sys/class/scsi_disk/cache_type" "temporary none"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# LMK Tweaks.
-if [[ -d "/sys/module/lowmemorykiller" ]]
-then
-write "/sys/module/lowmemorykiller/parameters/enable_lmk" "1"
-write "/sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLIED LMK TWEAKS.                                                                                 "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 # Schedtune Tweaks
 if [[ -d "/dev/stune" ]]
@@ -3553,13 +3512,13 @@ write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "50"
-write "/dev/stune/foreground/schedtune.prefer_idle" "1"
+write "/dev/stune/foreground/schedtune.prefer_idle" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "50"
-write "/dev/stune/top-app/schedtune.prefer_idle" "1"
+write "/dev/stune/top-app/schedtune.prefer_idle" "0"
 
 write "/dev/stune/schedtune.boost" "0"
 write "/dev/stune/schedtune.prefer_idle" "0"
@@ -3572,7 +3531,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "20"
+write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                            APPLIED FS TWEAKS.                                                                                "
@@ -3582,8 +3541,6 @@ fi
 # Enable dynamic_fsync.
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
-chmod 666 /sys/kernel/dyn_fsync/Dyn_fsync_active
-chown root /sys/kernel/dyn_fsync/Dyn_fsync_active
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED DYNAMIC FSYNC.                                                                              "
@@ -3716,7 +3673,7 @@ kmsg1 "                                          APPLIED THERMAL TWEAKS.        
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Workqueue disable power_efficient.
+# Disable power efficient workqueue.
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "N" 
@@ -3727,17 +3684,17 @@ fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
-chmod 0644 "/sys/devices/system/cpu/sched_mc_power_savings"
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED MULTICORE POWER SAVING.                                                                    "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Fix DT2W
-if [[ -e "/sys/touchpanel/double_tap" ]]
+# Fix DT2W.
+if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
+write "/proc/tp_gesture" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3745,6 +3702,13 @@ kmsg1 "-------------------------------------------------------------------------
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e "/sys/touchpanel/double_tap" ]]
+then
+write "/sys/touchpanel/double_tap" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3785,11 +3749,6 @@ write "/proc/sys/net/ipv4/tcp_keepalive_intvl" "30"
 write "/proc/sys/net/ipv4/tcp_fin_timeout" "30"
 write "/proc/sys/net/ipv4/tcp_low_latency" "1"
 write "/proc/sys/net/ipv4/tcp_congestion_control" "bbr2"
-
-# Tweak and decrease tx_queue_len default stock value(s) for less amount of generated bufferbloat and for gaining slightly faster network speed and performance;
-for i in $(find /sys/class/net -type l); do
-write "$i/tx_queue_len" 1000
-done;
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -3860,7 +3819,7 @@ kmsg1 "                                         ENABLED USB FAST CHARGING.      
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
   
-# GMS blocker 1.2 by pedrozzz
+# GMS ripper 1.0
 killall -9 com.google.android.gms
 killall -9 com.google.android.gms.persistent
 killall -9 com.google.process.gapps

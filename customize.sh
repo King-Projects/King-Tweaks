@@ -23,12 +23,14 @@ sleep 1
 ui_print "Thanks to Dan (paget96 @ XDA)"
 ui_print ""
 sleep 1
-ui_print "qti-mem-opt by Matt Yang (yc9559 @ GitHub)"
-ui_print ""
-sleep 1
 ui_print "Universal GMS Doze by Gilang Iskandar (gloeyisk @ GitHub)"
 ui_print ""
 sleep 1
+ui_print "A special thanks to everyone that supports King Tweaks since it's born and all the other projects also."
+sleep 5
+ui_print "With love, Pedrozzz. ♡"
+sleep 2
+ui_print ""
 
 set_permissions() {
   set_perm_recursive $MODPATH/system/bin root root 0777 0755
@@ -37,6 +39,10 @@ set_permissions() {
 SKIPUNZIP=0
 unzip -qjo "$ZIPFILE" 'common/functions.sh' -d $TMPDIR >&2
 . $TMPDIR/functions.sh
+
+if [[ -d "/data/adb/modules/KTKSR" ]]; then
+rm -rf /data/adb/modules/KTKSR
+fi
 
 ui_print ""
 ui_print "[*] Fstrim partitions..."
