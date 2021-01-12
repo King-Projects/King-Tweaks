@@ -490,7 +490,7 @@ write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
 write "$cpu/online" "1"
 done
@@ -1160,7 +1160,7 @@ write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
 write "$cpu/online" "1"
 done
@@ -1889,7 +1889,7 @@ write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 	
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
 write "$cpu/online" "1"
 done
@@ -2625,7 +2625,7 @@ write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
 if [[ $percentage -le "20" ]]
 then
@@ -3352,7 +3352,7 @@ write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
 
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
 write "$cpu/online" "1"
 done
