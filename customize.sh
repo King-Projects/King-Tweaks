@@ -56,6 +56,7 @@ sleep 1
 ui_print ""
 ui_print "[*] Installing King Toast app..."
 pm install $MODPATH/KingToast.apk
+rm -rf $MODPATH/*.apk
 sleep 1
 ui_print ""
 ui_print "[*] Logs are stored in your internal storage/KTS"

@@ -145,7 +145,7 @@ SCHED_TASKS_THROUGHPUT="6"
 # Maximum unsigned integer size in C
 UINT_MAX="4294967295"
 
-# Variable to GPU directories
+    # Variable to GPU directories
 	if [ -d "/sys/class/kgsl/kgsl-3d0" ]; then
 		gpu="/sys/class/kgsl/kgsl-3d0"
 	elif [ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0" ]; then
@@ -154,8 +154,8 @@ UINT_MAX="4294967295"
 		gpu="/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0"
 	elif [ -d "/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0" ]; then
 		gpu="/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0"
-	elif [ -d "/sys/devices/platform/*.gpu/devfreq/*.gpu" ]; then
-		gpu="/sys/devices/platform/*.gpu/devfreq/*.gpu"
+		elif [ -d "/sys/devices/platform/*.gpu" ]; then
+		gpu="/sys/devices/platform/*.gpu"
 	elif [ -d "/sys/devices/platform/gpusysfs" ]; then
 		gpu="/sys/devices/platform/gpusysfs"
 	elif [ -d "/sys/devices/*.mali" ]; then
@@ -170,9 +170,7 @@ UINT_MAX="4294967295"
 		gpu="/sys/module/mali/parameters"
 	elif [ -d "/sys/class/misc/mali0" ]; then
 		gpu="/sys/class/misc/mali0"
-	elif [ -d "/sys/kernel/gpu" ]; then
-		gpu="/sys/kernel/gpu"
-	fi
+		fi
 	
 	if [ -d "/sys/class/kgsl/kgsl-3d0/devfreq" ]; then
 		gpug="/sys/class/kgsl/kgsl-3d0/devfreq"
@@ -200,11 +198,26 @@ UINT_MAX="4294967295"
 		gpug="/sys/class/misc/mali0/devfreq"
 	elif [ -d "/sys/kernel/gpu" ]; then
 		gpug="/sys/kernel/gpu"
-	fi
+		fi
 	
+	if [ -d "/sys/class/kgsl/kgsl-3d0" ]; then
+		gpum="/sys/class/kgsl/kgsl-3d0"
+	elif [ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0" ]; then
+		gpum="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0"
+	elif [ -d "/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0" ]; then
+		gpum="/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0"
+	elif [ -d "/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0" ]; then
+		gpum="/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0"
+	elif [ -d "/sys/kernel/gpu" ]; then
+		gpum="/sys/kernel/gpu"
+		fi
+
 	# Variable to GPU model
-	if [[ -e $gpu/gpu_model ]]; then
-    GPU_MODEL=$(cat $gpu/gpu_model)
+	if [[ -e $gpum/gpu_model ]]; then
+    GPU_MODEL=$(cat $gpum/gpu_model | awk '{print $1}')
+    
+    else
+    GPU_MODEL=? (Unknown)
     fi
     
     if [[ -e $gpug/gpu_governor ]]; then
@@ -212,8 +225,16 @@ UINT_MAX="4294967295"
     
     elif [[ -e $gpug/governor ]]; then
     GPU_GOVERNOR=$(cat $gpug/governor)
-    fi
 
+    else 
+    GPU_GOVERNOR=? (Unknown)
+    fi
+    
+    if [[ -e $gpu/min_pwrlevel ]]; then
+    gpump=$(cat $gpu/min_pwrlevel)
+    gpumc=$(($gpump + 1))
+    fi
+    
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 CPU_GOVERNOR=$(cat $cpu/scaling_governor)
@@ -404,10 +425,10 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.6                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
-kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -506,12 +527,12 @@ write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/devfreq/max_freq" "$UINT_MAX"
+write "$gpu/devfreq/max_freq" "2000000000"
 write "$gpu/default_pwrlevel" "5"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
-write "$gpu/idle_timer" "126"
+write "$gpu/idle_timer" "85"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -727,8 +748,10 @@ write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCH
 write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_LATENCY / 2))"
 write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
-write "/proc/sys/kernel/sched_nr_migrate" "4"
+write "/proc/sys/kernel/sched_nr_migrate" "2"
 write "/proc/sys/kernel/sched_schedstats" "0"
+write "/proc/sys/kernel/sched_sync_hint_enable" "0"
+write "/proc/sys/kernel/sched_walt_rotate_big_tasks" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
 if [[ -e "/sys/power/pm_freeze_timeout" ]] 
@@ -786,8 +809,8 @@ sync
 write "/proc/sys/vm/drop_caches" "3"
 write "/proc/sys/vm/dirty_background_ratio" "15"
 write "/proc/sys/vm/dirty_ratio" "30"
-write "/proc/sys/vm/dirty_expire_centisecs" "500"
-write "/proc/sys/vm/dirty_writeback_centisecs" "0"
+write "/proc/sys/vm/dirty_expire_centisecs" "250"
+write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
@@ -1062,10 +1085,10 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.6                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
-kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -1176,7 +1199,7 @@ write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/devfreq/max_freq" "$UINT_MAX"
+write "$gpu/devfreq/max_freq" "2000000000"
 write "$gpu/default_pwrlevel" "6"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
@@ -1401,6 +1424,8 @@ write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "32"
 write "/proc/sys/kernel/sched_schedstats" "0"
+write "/proc/sys/kernel/sched_sync_hint_enable" "0"
+write "/proc/sys/kernel/sched_walt_rotate_big_tasks" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
@@ -1468,12 +1493,12 @@ sync
 write "/proc/sys/vm/drop_caches" "3"
 write "/proc/sys/vm/dirty_background_ratio" "10"
 write "/proc/sys/vm/dirty_ratio" "30"
-write "/proc/sys/vm/dirty_expire_centisecs" "3000"
-write "/proc/sys/vm/dirty_writeback_centisecs" "0"
+write "/proc/sys/vm/dirty_expire_centisecs" "1000"
+write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
-write "/proc/sys/vm/vfs_cache_pressure" "100"
+write "/proc/sys/vm/vfs_cache_pressure" "60"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -1773,10 +1798,10 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.6                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
-kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -1824,7 +1849,7 @@ kmsg1 "-------------------------------------------------------------------------
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$UINT_MAX 1:$UINT_MAX 2:$UINT_MAX 3:$UINT_MAX 4:$UINT_MAX 5:$UINT_MAX 6:$UINT_MAX 7:$UINT_MAX"
+write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:20000000 1:20000000 2:20000000 3:20000000 4:20000000 5:20000000 6:20000000 7:20000000"
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CAF INPUT BOOST.                                                                            "
@@ -1834,8 +1859,8 @@ kmsg1 "-------------------------------------------------------------------------
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$UINT_MAX"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$UINT_MAX"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "20000000"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "20000000"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CPU INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1905,7 +1930,7 @@ write "$gpu/devfreq/adrenoboost" "1"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "0"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/devfreq/max_freq" "$UINT_MAX"
+write "$gpu/devfreq/max_freq" "2000000000"
 write "$gpu/default_pwrlevel" "1"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
@@ -2111,7 +2136,7 @@ write "/proc/sys/kernel/sched_boost" "1"
 write "/proc/sys/kernel/perf_cpu_time_max_percent" "25"
 write "/proc/sys/kernel/sched_autogroup_enabled" "0"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
-write "/proc/sys/kernel/random/write_wakeup_threshold" "896"
+write "/proc/sys/kernel/random/write_wakeup_threshold" "1024"
 write "/proc/sys/kernel/random/urandom_min_reseed_secs" "90"
 write "/proc/sys/kernel/sched_tunable_scaling" "0"
 write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
@@ -2121,6 +2146,8 @@ write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 write "/proc/sys/kernel/ched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "128"
 write "/proc/sys/kernel/sched_schedstats" "0"
+write "/proc/sys/kernel/sched_sync_hint_enable" "0"
+write "/proc/sys/kernel/sched_walt_rotate_big_tasks" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
@@ -2188,8 +2215,8 @@ sync
 write "/proc/sys/vm/drop_caches" "3"
 write "/proc/sys/vm/dirty_background_ratio" "5"
 write "/proc/sys/vm/dirty_ratio" "30"
-write "/proc/sys/vm/dirty_expire_centisecs" "750"
-write "/proc/sys/vm/dirty_writeback_centisecs" "0"
+write "/proc/sys/vm/dirty_expire_centisecs" "500"
+write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
@@ -2510,10 +2537,10 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.6                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
-kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -2870,6 +2897,8 @@ write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "8"
 write "/proc/sys/kernel/sched_schedstats" "0"
+write "/proc/sys/kernel/sched_sync_hint_enable" "0"
+write "/proc/sys/kernel/sched_walt_rotate_big_tasks" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "1"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
@@ -2935,11 +2964,11 @@ fi
 write "/proc/sys/vm/dirty_background_ratio" "5"
 write "/proc/sys/vm/dirty_ratio" "50"
 write "/proc/sys/vm/dirty_expire_centisecs" "3000"
-write "/proc/sys/vm/dirty_writeback_centisecs" "0"
+write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
-write "/proc/sys/vm/vfs_cache_pressure" "100"
+write "/proc/sys/vm/vfs_cache_pressure" "50"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -3239,10 +3268,10 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.6                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
-kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
    	
@@ -3286,7 +3315,7 @@ kmsg1 "-------------------------------------------------------------------------
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$UINT_MAX 1:$UINT_MAX 2:$UINT_MAX 3:$UINT_MAX 4:$UINT_MAX 5:$UINT_MAX 6:$UINT_MAX 7:$UINT_MAX"
+write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:20000000 1:20000000 2:20000000 3:20000000 4:20000000 5:20000000 6:20000000 7:20000000"
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CAF INPUT BOOST.                                                                            "
@@ -3296,8 +3325,8 @@ kmsg1 "-------------------------------------------------------------------------
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$UINT_MAX"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$UINT_MAX"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "20000000"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "20000000"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CPU INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3364,11 +3393,11 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks.
 write "$gpu/throttling" "0"
 write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "3"
+write "$gpu/devfreq/adrenoboost" "2"
 write "$gpu/force_no_nap" "1"
 write "$gpu/bus_split" "0"
-write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/devfreq/max_freq" "$UINT_MAX"
+write "$gpu/devfreq/min_freq" "$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpumc" '{print $var}')"
+write "$gpu/devfreq/max_freq" "2000000000"
 write "$gpu/default_pwrlevel" "0"
 write "$gpu/force_bus_on" "1"
 write "$gpu/force_clk_on" "1"
@@ -3574,7 +3603,7 @@ write "/proc/sys/kernel/sched_boost" "1"
 write "/proc/sys/kernel/perf_cpu_time_max_percent" "25"
 write "/proc/sys/kernel/sched_autogroup_enabled" "0"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
-write "/proc/sys/kernel/random/write_wakeup_threshold" "896"
+write "/proc/sys/kernel/random/write_wakeup_threshold" "1024"
 write "/proc/sys/kernel/random/urandom_min_reseed_secs" "90"
 write "/proc/sys/kernel/sched_tunable_scaling" "0"
 write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
@@ -3584,6 +3613,8 @@ write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "128"
 write "/proc/sys/kernel/sched_schedstats" "0"
+write "/proc/sys/kernel/sched_sync_hint_enable" "0"
+write "/proc/sys/kernel/sched_walt_rotate_big_tasks" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
@@ -3651,8 +3682,8 @@ sync
 write "/proc/sys/vm/drop_caches" "3"
 write "/proc/sys/vm/dirty_background_ratio" "5"
 write "/proc/sys/vm/dirty_ratio" "20"
-write "/proc/sys/vm/dirty_expire_centisecs" "200"
-write "/proc/sys/vm/dirty_writeback_centisecs" "0"
+write "/proc/sys/vm/dirty_expire_centisecs" "500"
+write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
