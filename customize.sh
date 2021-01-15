@@ -40,10 +40,6 @@ SKIPUNZIP=0
 unzip -qjo "$ZIPFILE" 'common/functions.sh' -d $TMPDIR >&2
 . $TMPDIR/functions.sh
 
-if [[ -d "/data/adb/modules/KTKSR" ]]; then
-rm -rf /data/adb/modules/KTKSR
-fi
-
 ui_print ""
 ui_print "[*] Fstrim partitions..."
 fstrim -v /system
@@ -56,6 +52,11 @@ sleep 1
 ui_print ""
 ui_print "[*] Installing King Toast app..."
 pm install $MODPATH/KingToast.apk
+ui_print ""
+ui_print "[*] Cleaning stuff..."
+if [[ -d "/data/adb/modules/KTKSR" ]]; then
+rm -rf /data/adb/modules/KTKSR
+fi
 rm -rf $MODPATH/*.apk
 sleep 1
 ui_print ""

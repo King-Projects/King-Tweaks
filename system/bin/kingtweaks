@@ -234,23 +234,26 @@ UINT_MAX="4294967295"
     gpump=$(cat $gpu/min_pwrlevel)
     gpumc=$(($gpump + 1))
     fi
+       
+    gpumx=$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpumc" '{print $var}')
     
+    if [[ "$gpumx" != "$(cat $gpu/devfreq/max_freq)" ]]; then
+    gpumx=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
+    fi
+
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 CPU_GOVERNOR=$(cat $cpu/scaling_governor)
 done
 
-# Variable to selinux state
-if [[ $(cat /sys/fs/selinux/enforce) == "1" ]]
-then
-selinuxstate=Enforcing
+# Variable to SOC manufacturer
+mf=$(getprop ro.boot.hardware)
 
-elif [[ $(cat /sys/fs/selinux/enforce) == "0" ]]
-then
-selinuxstate=Permissive
+# Variable to device SOC
+soc=$(getprop ro.board.platform)
 
-else
-selinuxstate=? (Unknown)
+if [[ ! $soc == " " ]]; then
+soc=$(getprop ro.product.board)
 fi
 
 # Variable to device SDK
@@ -261,9 +264,6 @@ arv=$(getprop ro.build.version.release)
 
 # Variable to device model
 dm=$(getprop ro.product.model)
-
-# Variable to device SOC
-soc=$(getprop ro.board.platform) 
 
 # Variable to get magisk version
 magisk=$(magisk -c)
@@ -418,7 +418,7 @@ case "$kts_profile" in
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
-kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
+kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
@@ -427,7 +427,6 @@ kmsg1 "                                            📲 GPU Model: $GPU_MODEL   
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
-kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -453,11 +452,11 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED STATSD AND LOGD.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ -e "/sys/module/cpu_boost" ]]
+if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CPU_BOOST.                                                                                   "
+kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -500,7 +499,6 @@ write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/use_migration_notif" "1" 
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
-write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "10000"
@@ -527,12 +525,11 @@ write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/devfreq/max_freq" "2000000000"
-write "$gpu/default_pwrlevel" "5"
+write "$gpu/default_pwrlevel" "$(($gpump - 1))"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
-write "$gpu/idle_timer" "85"
+write "$gpu/idle_timer" "96"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -559,15 +556,12 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          TWEAKED GPU.                                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable and tweak adreno idler
+# Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
-write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
-write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "7500"
-write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
-write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "30"
+write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED AND TWEAKED ADRENO IDLER.                                                                  "
+kmsg1 "                                          DISABLED ADRENO IDLER.                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -698,7 +692,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "15"
+write "/proc/sys/fs/lease-break-time" "20"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED FS TWEAKS.                                                                                  "
@@ -809,7 +803,7 @@ sync
 write "/proc/sys/vm/drop_caches" "3"
 write "/proc/sys/vm/dirty_background_ratio" "15"
 write "/proc/sys/vm/dirty_ratio" "30"
-write "/proc/sys/vm/dirty_expire_centisecs" "250"
+write "/proc/sys/vm/dirty_expire_centisecs" "200"
 write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
@@ -820,7 +814,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# MSM thermal
+# MSM thermal tweaks
 if [[ -e "/sys/module/msm_thermal" ]]
 then
 write /sys/module/msm_thermal/vdd_restriction/enabled "0"
@@ -1078,7 +1072,7 @@ fi
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
-kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
+kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
@@ -1087,7 +1081,6 @@ kmsg1 "                                            📲 GPU Model: $GPU_MODEL   
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
-kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1113,11 +1106,11 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED STATSD AND LOGD.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ -e "/sys/module/cpu_boost" ]]
+if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CPU_BOOST.                                                                                  "
+kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -1138,11 +1131,10 @@ for queue in /sys/block/*/queue/
 do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
-write "${queue}read_ahead_kb" 256
-write "${queue}iosched/low_latency" 1
-write "${queue}nomerges" 2
-write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 128
+write "${queue}read_ahead_kb" 128
+write "${queue}nomerges" 1
+write "${queue}rq_affinity" 1
+write "${queue}nr_requests" 64
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1160,25 +1152,25 @@ write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}schedutil/pl" "1"
 write "${cpu}schedutil/iowait_boost_enable" "0"
-write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
-write "${cpu}schedutil/hispeed_load" "90"
+write "${cpu}schedutil/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
+write "${cpu}schedutil/hispeed_load" "89"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "50000"
+write "${cpu}interactive/timer_rate" "40000"
 write "${cpu}interactive/boost" "0"
-write "${cpu}interactive/timer_slack" "-1"
+write "${cpu}interactive/timer_slack" "40000"
 write "${cpu}interactive/use_migration_notif" "1" 
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "50000"
-write "${cpu}interactive/sampling_rate_min" "75000"
-write "${cpu}interactive/min_sample_time" "75000"
-write "${cpu}interactive/go_hispeed_load" "90"
+write "${cpu}interactive/sampling_rate" "40000"
+write "${cpu}interactive/sampling_rate_min" "50000"
+write "${cpu}interactive/min_sample_time" "50000"
+write "${cpu}interactive/go_hispeed_load" "89"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
 done
@@ -1199,8 +1191,7 @@ write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/devfreq/max_freq" "2000000000"
-write "$gpu/default_pwrlevel" "6"
+write "$gpu/default_pwrlevel" "$gpump"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -1370,7 +1361,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "15"
+write "/proc/sys/fs/lease-break-time" "20"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED FS TWEAKS.                                                                                  "
@@ -1411,7 +1402,7 @@ fi
 # Tweak some kernel settings to improve overall performance.
 write "/proc/sys/kernel/sched_child_runs_first" "0"
 write "/proc/sys/kernel/sched_boost" "0"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "10"
+write "/proc/sys/kernel/perf_cpu_time_max_percent" "15"
 write "/proc/sys/kernel/sched_autogroup_enabled" "1"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
 write "/proc/sys/kernel/random/write_wakeup_threshold" "256"
@@ -1498,7 +1489,7 @@ write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
-write "/proc/sys/vm/vfs_cache_pressure" "60"
+write "/proc/sys/vm/vfs_cache_pressure" "50"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -1791,7 +1782,7 @@ fi
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
-kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
+kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
@@ -1800,7 +1791,6 @@ kmsg1 "                                            📲 GPU Model: $GPU_MODEL   
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
-kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1826,11 +1816,11 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED STATSD AND LOGD.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ -e "/sys/module/cpu_boost" ]]
+if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CPU BOOST.                                                                                  "
+kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -1903,7 +1893,6 @@ write "${cpu}interactive/timer_slack" "-1"
 write "${cpu}interactive/use_migration_notif" "1"
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
-write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "10000"
@@ -1930,7 +1919,6 @@ write "$gpu/devfreq/adrenoboost" "1"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "0"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/devfreq/max_freq" "2000000000"
 write "$gpu/default_pwrlevel" "1"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
@@ -2093,7 +2081,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "15"
+write "/proc/sys/fs/lease-break-time" "20"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED FS TWEAKS.                                                                                  "
@@ -2530,7 +2518,7 @@ fi
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
-kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
+kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
@@ -2539,7 +2527,6 @@ kmsg1 "                                            📲 GPU Model: $GPU_MODEL   
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
-kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2565,11 +2552,11 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED STATSD AND LOGD.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ -e "/sys/module/cpu_boost" ]]
+if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "5"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CPU BOOST.                                                                                  "
+kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2629,24 +2616,24 @@ write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}schedutil/pl" "1"
 write "${cpu}schedutil/iowait_boost_enable" "0"
-write "${cpu}schedutil/rate_limit_us" "$((SCHED_PERIOD_BATTERY / 1000))"
+write "${cpu}schedutil/rate_limit_us" "$((4 * SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}schedutil/hispeed_load" "99"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "$((SCHED_PERIOD_BATTERY / 1000))"
+write "${cpu}interactive/timer_rate" "50000"
 write "${cpu}interactive/boost" "0"
-write "${cpu}interactive/timer_slack" "-1"
+write "${cpu}interactive/timer_slack" "50000"
 write "${cpu}interactive/use_migration_notif" "1" 
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "1"
-write "${cpu}interactive/sampling_rate" "42000"
-write "${cpu}interactive/sampling_rate_min" "42000"
-write "${cpu}interactive/min_sample_time" "$((SCHED_PERIOD_BATTERY / 1000))"
+write "${cpu}interactive/sampling_rate" "50000"
+write "${cpu}interactive/sampling_rate_min" "75000"
+write "${cpu}interactive/min_sample_time" "75000"
 write "${cpu}interactive/go_hispeed_load" "99"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
@@ -2678,11 +2665,11 @@ write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "6"
+write "$gpu/default_pwrlevel" "$gpump"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
-write "$gpu/idle_timer" "26"
+write "$gpu/idle_timer" "36"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2829,7 +2816,7 @@ write "/dev/stune/foreground/schedtune.prefer_idle" "1"
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
 
-write "/dev/stune/top-app/schedtune.boost" "1"
+write "/dev/stune/top-app/schedtune.boost" "5"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -2843,7 +2830,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "15"
+write "/proc/sys/fs/lease-break-time" "20"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED FS TWEAKS.                                                                                  "
@@ -2884,7 +2871,7 @@ fi
 # Tweak some kernel settings to improve overall performance.
 write "/proc/sys/kernel/sched_child_runs_first" "1"
 write "/proc/sys/kernel/sched_boost" "0"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "5"
+write "/proc/sys/kernel/perf_cpu_time_max_percent" "10"
 write "/proc/sys/kernel/sched_autogroup_enabled" "1"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
 write "/proc/sys/kernel/random/write_wakeup_threshold" "128"
@@ -3261,7 +3248,7 @@ fi
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: `uname -a`                                                                                           "
-kmsg1 "                                            🛠️ SOC: $soc                                                                                                    "
+kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
@@ -3270,7 +3257,6 @@ kmsg1 "                                            📲 GPU Model: $GPU_MODEL   
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
-kmsg1 "                                            🔐 SELinux: $selinuxstate                                                                                       "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3292,11 +3278,11 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED STATSD AND LOGD.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ -e "/sys/module/cpu_boost" ]]
+if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CPU BOOST.                                                                                  "
+kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -3393,12 +3379,11 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks.
 write "$gpu/throttling" "0"
 write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "2"
+write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "1"
 write "$gpu/bus_split" "0"
-write "$gpu/devfreq/min_freq" "$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpumc" '{print $var}')"
-write "$gpu/devfreq/max_freq" "2000000000"
-write "$gpu/default_pwrlevel" "0"
+write "$gpu/devfreq/min_freq" $gpumx
+write "$gpu/default_pwrlevel" "$(cat $gpu/max_pwrlevel)"
 write "$gpu/force_bus_on" "1"
 write "$gpu/force_clk_on" "1"
 write "$gpu/force_rail_on" "1"
@@ -3560,7 +3545,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "15"
+write "/proc/sys/fs/lease-break-time" "20"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                            APPLIED FS TWEAKS.                                                                                "
