@@ -42,6 +42,9 @@ case $KL in
 2 ) FCTEXTAD1="Don't enable King Xvision KCAL preset";;
 esac
 
+ui_print ""
+ui_print "[*] Selected: $FCTEXTAD1 "
+
 if [[ "$FCTEXTAD1" == "Don't enable King Xvision KCAL preset" ]]
 then
 rm $MODPATH/post-fs-data.sh

@@ -28,7 +28,7 @@ ui_print ""
 sleep 1
 ui_print "A special thanks to everyone that supports King Tweaks since it's born and all the other projects also."
 sleep 5
-ui_print "With love, Pedrozzz. ♡"
+ui_print "With love, Pedrozzz, #KeepTheKing. ♡"
 sleep 2
 ui_print ""
 

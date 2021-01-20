@@ -94,7 +94,7 @@ write() {
 	if ! echo "$2" > "$1" 2> /dev/null
 	then
 		kmsg1 "[!] Failed: $1 -> $2"
-		return 1
+		return 0
 	fi
 
 	# Log the success
@@ -107,22 +107,6 @@ then
 kmsg1 "[!] No root permissions. Exiting."
 exit 1
 fi
-
-boot_run_once=false
-kts_mode=$(getprop persist.kingtweaks.mode)
-[ -z "$kts_mode" ] && setprop persist.kingtweaks.mode "3"
-
-while true
-do
-sleep 3
-if $boot_run_once
-then
-[ "$(getprop persist.kingtweaks.mode)" == "$kts_mode" ] && continue
-else
-boot_run_once=true
-fi
-kts_mode=$(getprop persist.kingtweaks.mode)
-loc=/data/adb/modules
 
 # Duration in nanoseconds of one scheduling period
 SCHED_PERIOD_LATENCY="$((1 * 1000 * 1000))"
@@ -166,10 +150,6 @@ UINT_MAX="4294967295"
 		gpu="/sys/devices/platform/mali.0"
 	elif [ -d "/sys/devices/platform/mali-*.0" ]; then
 		gpu="/sys/devices/platform/mali-*.0"
-	elif [ -d "/sys/module/mali/parameters" ]; then
-		gpu="/sys/module/mali/parameters"
-	elif [ -d "/sys/class/misc/mali0" ]; then
-		gpu="/sys/class/misc/mali0"
 		fi
 	
 	if [ -d "/sys/class/kgsl/kgsl-3d0/devfreq" ]; then
@@ -195,7 +175,7 @@ UINT_MAX="4294967295"
 	elif [ -d "/sys/module/mali/parameters" ]; then
 		gpug="/sys/module/mali/parameters"
 	elif [ -d "/sys/class/misc/mali0/devfreq" ]; then
-		gpug="/sys/class/misc/mali0/devfreq"
+		gpug="/sys/class/misc/mali0/devfreq"		
 	elif [ -d "/sys/kernel/gpu" ]; then
 		gpug="/sys/kernel/gpu"
 		fi
@@ -214,200 +194,113 @@ UINT_MAX="4294967295"
 
 	# Variable to GPU model
 	if [[ -e $gpum/gpu_model ]]; then
-    GPU_MODEL=$(cat $gpum/gpu_model | awk '{print $1}')
+    GPU_MODEL=`cat $gpum/gpu_model | awk '{print $1}'`
     
     else
     GPU_MODEL=? (Unknown)
     fi
     
     if [[ -e $gpug/gpu_governor ]]; then
-    GPU_GOVERNOR=$(cat $gpug/gpu_governor)
+    GPU_GOVERNOR=`cat $gpug/gpu_governor`
     
     elif [[ -e $gpug/governor ]]; then
-    GPU_GOVERNOR=$(cat $gpug/governor)
+    GPU_GOVERNOR=`cat $gpug/governor`
 
     else 
     GPU_GOVERNOR=? (Unknown)
     fi
     
     if [[ -e $gpu/min_pwrlevel ]]; then
-    gpump=$(cat $gpu/min_pwrlevel)
-    gpumc=$(($gpump + 1))
+    gpumpl=`cat $gpu/min_pwrlevel`
+    gpumxfreq=$(($gpumpl + 1))
     fi
        
-    gpumx=$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpumc" '{print $var}')
+    gpumx=`cat $gpu/devfreq/available_frequencies | awk -v var="$gpumxfreq" '{print $var}'`
     
-    if [[ "$gpumx" != "$(cat $gpu/devfreq/max_freq)" ]]; then
-    gpumx=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
+    if [[ $gpumx != `cat $gpu/max_gpuclk` ]]; then
+    gpumx=`cat $gpu/devfreq/available_frequencies | awk '{print $1}'`
     fi
 
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-CPU_GOVERNOR=$(cat $cpu/scaling_governor)
+CPU_GOVERNOR=`cat $cpu/scaling_governor`
 done
 
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
+do
+cpumxfreq=`cat $cpu/scaling_max_freq`
+cpumxfreq2=`cat $cpu/cpuinfo_max_freq`
+
+if [[ $cpumxfreq < $cpumxfreq2 ]]; then
+cpumxfreq=`cat $cpu/cpuinfo_max_freq`
+fi
+done
+
+cpumfreq=$((cpumxfreq / 2))
+
+gpufreq=`cat $gpu/devfreq/max_freq`
+
+gpumfreq=$((gpufreq / 2))
+
 # Variable to SOC manufacturer
-mf=$(getprop ro.boot.hardware)
+mf=`getprop ro.boot.hardware`
 
 # Variable to device SOC
-soc=$(getprop ro.board.platform)
+soc=`getprop ro.board.platform`
 
-if [[ ! $soc == " " ]]; then
-soc=$(getprop ro.product.board)
+if [[ $soc == " " ]]; then
+soc=`getprop ro.product.board`
 fi
 
 # Variable to device SDK
-sdk=$(getprop ro.build.version.sdk)
+sdk=`getprop ro.build.version.sdk`
+
+# Variable to device architeture
+aarch=`getprop ro.product.cpu.abi | awk -F- '{print $1}'`
 
 # Variable to device android release version
-arv=$(getprop ro.build.version.release)
+arv=`getprop ro.build.version.release`
 
 # Variable to device model
-dm=$(getprop ro.product.model)
+dm=`getprop ro.product.model`
 
 # Variable to get magisk version
-magisk=$(magisk -c)
+magisk=`magisk -c`
 
 # Variable to total device ram
-totalram=$(free -m | awk '/Mem:/{print $2}')
+totalram=`free -m | awk '/Mem:/{print $2}'`
 
 # Variable to battery actual capacity
-percentage=$(cat /sys/class/power_supply/battery/capacity)
+percentage=`cat /sys/class/power_supply/battery/capacity`
 
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profilein=Latensi
-
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profilein=Baterai
-
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profilein=Seimbang
-
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profilein=Ekstrim
-
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profilein=Gaming
-fi
-
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profilept=Latência
-
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profilept=Bateria
-        	
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profilept=Balanceado
-        	
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profilept=Extremo
-        	
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profilept=Gaming
-fi
-	 	
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profile=Latency
-
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profile=Battery
-        	
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profile=Balanced
-        	
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profile=Extreme
-
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profile=Gaming
-fi
-
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profiletr=Gecikme
-
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profiletr=Batarya
-        	
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profiletr=Dengeli
-        	
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profiletr=Aşırı
-
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profiletr=Oyun
-fi
-
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profilefr=Latence
-
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profilefr=Modéré
-        	
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profilefr=Batterie
-        	
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profilefr=Extrême
-
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profilefr=Jeu
-fi
-
-case "$kts_profile" in
 # Latency Profile
-     "Latency") {
-     	init=$(date +%s)
-     	if [[ $(getprop persist.sys.locale) == "en-US" ]]
+latency() {
+     	init=`date +%s`
+     	if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
      	toasten
      	
-     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
          then
          toasten
          
-     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
      	then
      	toastpt
      	
-     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
      	then
      	toastin
      	
-     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
      	then
      	toasttr
      	
-     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
      	toastfr
 
-     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
      	then
      	toastfr
 
@@ -421,11 +314,12 @@ kmsg1 "                                            🔧 Kernel: `uname -a`      
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.8                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -439,9 +333,10 @@ kmsg1 "-------------------------------------------------------------------------
 start perfd
 start thermald
 start thermal-engine       	
+start mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD AND PERFD.                                                         "
+kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, MPDECISION AND PERFD.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
    
 # Disable logd and statsd to reduce overhead.
@@ -525,7 +420,7 @@ write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "$(($gpump - 1))"
+write "$gpu/default_pwrlevel" "$(($gpumpl - 1))"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -617,37 +512,37 @@ then
 write "/sys/module/printk/parameters/console_suspend" "Y"
 fi
 
-for i in $(find /sys/ -name debug_mask)
+for i in `find /sys/ -name debug_mask`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name debug_level)
+for i in `find /sys/ -name debug_level`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name edac_mc_log_ce)
+for i in `find /sys/ -name edac_mc_log_ce`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name edac_mc_log_ue)
+for i in `find /sys/ -name edac_mc_log_ue`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name enable_event_log) 
+for i in `find /sys/ -name enable_event_log`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name log_ecn_error)
+for i in `find /sys/ -name log_ecn_error`
 do
 write "$i" "N"
 done
 
-for i in $(find /sys/ -name snapshot_crashdumper)
+for i in `find /sys/ -name snapshot_crashdumper`
 do
 write "$i" "0"
 done
@@ -745,13 +640,7 @@ write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "2"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
-write "/proc/sys/kernel/sched_walt_rotate_big_tasks" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
-
-if [[ -e "/sys/power/pm_freeze_timeout" ]] 
-then
-write "/sys/power/pm_freeze_timeout" "2000"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -808,6 +697,8 @@ write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
+write "/proc/sys/vm/laptop_mode" "0"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "200"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -897,6 +788,7 @@ if [[ -d "/sys/module/lpm_levels" ]]
 then
 write "/sys/module/lpm_levels/parameters/sleep_disabled" "N"
 write "${lpm}idle_enabled" "Y"
+write "${lpm}suspend_enabled" "Y"
 fi
 done
 
@@ -999,69 +891,73 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-exit=$(date +%s)
+exit=`date +%s`
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ $(getprop persist.sys.locale) == "en-US" ]]
-then
-toasten1
+     	if [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toasten1
      	
-elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
-then
-toasten1
-
-elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
-then
-toastpt1
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toasten1
+         
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt1
      	
-elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
-then
-toastin1
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin1
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr1
 
-elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
-then
-toasttr1
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr1
 
-elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
-then
-toastfr1
-
-elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
-then
-toastfr1
-
-else
-toasten1
-fi
-};;
-     # Balanced Profile
-     "Balanced") {
-     	init=$(date +%s)
-     	if [[ $(getprop persist.sys.locale) == "en-US" ]]
+     	else
+     	toasten1
+     	fi
+}
+# Balanced Profile
+balanced() {
+         init=`date +%s`
+     	if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
      	toasten
      	
-     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
          then
          toasten
          
-     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
      	then
      	toastpt
      	
-     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
      	then
      	toastin
      	
-     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
      	then
      	toasttr
      	
-     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr
+
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
      	then
      	toastfr
 
@@ -1075,11 +971,12 @@ kmsg1 "                                            🔧 Kernel: `uname -a`      
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.8                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -1093,9 +990,10 @@ kmsg1 "-------------------------------------------------------------------------
 start perfd
 start thermald
 start thermal-engine
+start mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD AND PERFD.                                                         "
+kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, MPDECISION AND PERFD.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable logd and statsd to reduce overhead.
@@ -1116,15 +1014,21 @@ fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
-if [[ -d "${corectl}" ]]
+if [[ -e "${corectl}/enable" ]]
 then
-write "${corectl}/enable" "1"
-fi
-done
-
+write "${corectl}/enable" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED CORE CONTROL.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e "${corectl}/disable" ]]
+then
+write "${corectl}/disable" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED CORE CONTROL.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+done
 
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
@@ -1132,7 +1036,7 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 128
-write "${queue}nomerges" 1
+write "${queue}nomerges" 2
 write "${queue}rq_affinity" 1
 write "${queue}nr_requests" 64
 done
@@ -1150,7 +1054,7 @@ then
 write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
-write "${cpu}schedutil/pl" "1"
+write "${cpu}schedutil/pl" "0"
 write "${cpu}schedutil/iowait_boost_enable" "0"
 write "${cpu}schedutil/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}schedutil/hispeed_load" "89"
@@ -1191,7 +1095,7 @@ write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "$gpump"
+write "$gpu/default_pwrlevel" "$gpumpl"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -1286,37 +1190,37 @@ then
 write "/sys/module/printk/parameters/console_suspend" "Y"
 fi
 
-for i in $(find /sys/ -name debug_mask)
+for i in `find /sys/ -name debug_mask`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name debug_level)
+for i in `find /sys/ -name debug_level`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name edac_mc_log_ce)
+for i in `find /sys/ -name edac_mc_log_ce`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name edac_mc_log_ue)
+for i in `find /sys/ -name edac_mc_log_ue`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name enable_event_log) 
+for i in `find /sys/ -name enable_event_log`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name log_ecn_error)
+for i in `find /sys/ -name log_ecn_error`
 do
 write "$i" "N"
 done
 
-for i in $(find /sys/ -name snapshot_crashdumper)
+for i in `find /sys/ -name snapshot_crashdumper`
 do
 write "$i" "0"
 done
@@ -1416,14 +1320,7 @@ write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "32"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
-write "/proc/sys/kernel/sched_walt_rotate_big_tasks" "0"
-write "/proc/sys/kernel/sched_conservative_pl" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
-
-if [[ -e "/sys/power/pm_freeze_timeout" ]] 
-then
-write "/sys/power/pm_freeze_timeout" "10000"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -1489,13 +1386,15 @@ write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
+write "/proc/sys/vm/laptop_mode" "0"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "50"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# MSM thermal
+# MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
 then
 write /sys/module/msm_thermal/vdd_restriction/enabled "0"
@@ -1594,6 +1493,7 @@ if [[ -d "/sys/module/lpm_levels" ]]
 then
 write "/sys/module/lpm_levels/parameters/sleep_disabled" "N"
 write "${lpm}idle_enabled" "Y"
+write "${lpm}suspend_enabled" "Y"
 fi
 done
 
@@ -1705,79 +1605,79 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-exit=$(date +%s)
+exit=`date +%s`
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ $(getprop persist.sys.locale) == "en-US" ]]
-then
-toasten1
+         if [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toasten1
      	
-elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
-then
-toasten1
-
-elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
-then
-toastpt1
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toasten1
+         
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt1
      	
-elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
-then
-toastin1
-
-elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
-then
-toasttr1
-
-elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
-then
-toastfr1
-
-elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
-then
-toastfr1
-
-else
-toasten1
-fi
-};;
-    # Extreme Profile
-        "Extreme") {
-        	init=$(date +%s)
-        	if [[ $(getprop persist.sys.locale) == "en-US" ]]
-       	then
-       	toasten
-       	
-       	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
-       	then
-           toasten
-           
-       	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
-       	then
-       	toastpt
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin1
      	
-       	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
-       	then
-       	toastin
-       	
-       	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
-       	then
-       	toasttr
-       	
-       	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
-       	then
-       	toastfr
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr1
 
-       	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
-       	then
-       	toastfr
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr1
 
-       	else
-       	toasten
-       	fi
+     	else
+     	toasten1
+     	fi
+}
+# Extreme Profile
+extreme() {
+        	init=`date +%s`
+     	if [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toasten
+     	
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toasten
+         
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt
+     	
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr
+
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr
+
+     	else
+     	toasten
+     	fi
        	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
@@ -1785,11 +1685,12 @@ kmsg1 "                                            🔧 Kernel: `uname -a`      
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.8                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -1803,9 +1704,10 @@ kmsg1 "-------------------------------------------------------------------------
 start perfd
 stop thermald
 stop thermal-engine
+stop mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD AND ENABLED PERFD.                                               "
+kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD, MPDECISION AND ENABLED PERFD.                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable logd and statsd to reduce overhead.
@@ -1826,15 +1728,21 @@ fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
-if [[ -d "${corectl}" ]]
+if [[ -e "${corectl}/enable" ]]
 then
 write "${corectl}/enable" "0"
-fi
-done
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e "${corectl}/disable" ]]
+then
+write "${corectl}/disable" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+done
 
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
@@ -1915,7 +1823,7 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks.
 write "$gpu/throttling" "0"
 write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "1"
+write "$gpu/devfreq/adrenoboost" "2"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "0"
 write "$gpu/devfreq/min_freq" "100000000"
@@ -2006,37 +1914,37 @@ then
 write "/sys/module/printk/parameters/console_suspend" "Y"
 fi
 
-for i in $(find /sys/ -name debug_mask)
+for i in `find /sys/ -name debug_mask`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name debug_level)
+for i in `find /sys/ -name debug_level`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name edac_mc_log_ce)
+for i in `find /sys/ -name edac_mc_log_ce`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name edac_mc_log_ue)
+for i in `find /sys/ -name edac_mc_log_ue`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name enable_event_log) 
+for i in `find /sys/ -name enable_event_log`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name log_ecn_error)
+for i in `find /sys/ -name log_ecn_error`
 do
 write "$i" "N"
 done
 
-for i in $(find /sys/ -name snapshot_crashdumper)
+for i in `find /sys/ -name snapshot_crashdumper`
 do
 write "$i" "0"
 done
@@ -2122,8 +2030,8 @@ fi
 write "/proc/sys/kernel/sched_child_runs_first" "0"
 write "/proc/sys/kernel/sched_boost" "1"
 write "/proc/sys/kernel/perf_cpu_time_max_percent" "25"
-write "/proc/sys/kernel/sched_autogroup_enabled" "0"
-write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
+write "/proc/sys/kernel/sched_autogroup_enabled" "1"
+write "/proc/sys/kernel/random/read_wakeup_threshold" "128"
 write "/proc/sys/kernel/random/write_wakeup_threshold" "1024"
 write "/proc/sys/kernel/random/urandom_min_reseed_secs" "90"
 write "/proc/sys/kernel/sched_tunable_scaling" "0"
@@ -2135,14 +2043,8 @@ write "/proc/sys/kernel/ched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "128"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
-write "/proc/sys/kernel/sched_walt_rotate_big_tasks" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
-
-if [[ -e "/sys/power/pm_freeze_timeout" ]] 
-then
-write "/sys/power/pm_freeze_timeout" "2000"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -2208,13 +2110,15 @@ write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
+write "/proc/sys/vm/laptop_mode" "0"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "80"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# MSM thermal
+# MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
 then
 write /sys/module/msm_thermal/vdd_restriction/enabled "0"
@@ -2331,6 +2235,7 @@ if [[ -d "/sys/module/lpm_levels" ]]
 then
 write "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
 write "${lpm}idle_enabled" "N"
+write "${lpm}suspend_enabled" "N"
 fi
 done
 
@@ -2441,79 +2346,79 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-exit=$(date +%s)
+exit=`date +%s`
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ $(getprop persist.sys.locale) == "en-US" ]]
-then
-toasten1
+         if [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toasten1
      	
-elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
-then
-toasten1
-
-elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
-then
-toastpt1
-     	
-elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
-then
-toastin1
-
-elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
-then
-toasttr1
-
-elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
-then
-toastfr1
-
-elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
-then
-toastfr1
-
-else
-toasten1
-fi
-};;
-    # Battery Profile
-        "Battery") {
-        	init=$(date +%s)
-        	if [[ $(getprop persist.sys.locale) == "en-US" ]]
-     	   then
-        	toasten
-        	
-        	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
-            then
-            toasten
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toasten1
          
-        	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
-        	then
-        	toastpt
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt1
      	
-        	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
-        	then
-        	toastin
-        	
-        	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]] 
-        	then
-        	toasttr
-        	
-        	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
-        	then
-        	toastfr
-        	
-        	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
-        	then
-        	toastfr
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin1
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr1
 
-        	else
-        	toasten
-        	fi
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr1
+
+     	else
+     	toasten1
+     	fi
+}
+# Battery Profile
+battery() {
+        	init=`date +%s`
+     	if [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toasten
+     	
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toasten
+         
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt
+     	
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr
+
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr
+
+     	else
+     	toasten
+     	fi
         	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
@@ -2521,11 +2426,12 @@ kmsg1 "                                            🔧 Kernel: `uname -a`      
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.8                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -2539,9 +2445,10 @@ kmsg1 "-------------------------------------------------------------------------
 start perfd
 start thermald
 start thermal-engine
-    
+start mpdecision
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD AND PERFD.                                                         "
+kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, MPDECISION AND PERFD.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable logd and statsd to reduce overhead.
@@ -2562,9 +2469,19 @@ fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
-if [[ -d "${corectl}" ]]
+if [[ -e "${corectl}/enable" ]]
 then
 write "${corectl}/enable" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED CORE CONTROL.                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e "${corectl}/disable" ]]
+then
+write "${corectl}/disable" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED CORE CONTROL.                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 done
 
@@ -2614,7 +2531,7 @@ then
 write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_BATTERY / 1000))"
-write "${cpu}schedutil/pl" "1"
+write "${cpu}schedutil/pl" "0"
 write "${cpu}schedutil/iowait_boost_enable" "0"
 write "${cpu}schedutil/rate_limit_us" "$((4 * SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}schedutil/hispeed_load" "99"
@@ -2665,7 +2582,8 @@ write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "$gpump"
+write "$gpu/devfreq/max_freq" "$gpumfreq"
+write "$gpu/default_pwrlevel" "$gpumpl"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -2755,37 +2673,37 @@ then
 write "/sys/module/printk/parameters/console_suspend" "Y"
 fi
 
-for i in $(find /sys/ -name debug_mask)
+for i in `find /sys/ -name debug_mask`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name debug_level)
+for i in `find /sys/ -name debug_level`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name edac_mc_log_ce)
+for i in `find /sys/ -name edac_mc_log_ce`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name edac_mc_log_ue)
+for i in `find /sys/ -name edac_mc_log_ue`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name enable_event_log) 
+for i in `find /sys/ -name enable_event_log`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name log_ecn_error)
+for i in `find /sys/ -name log_ecn_error`
 do
 write "$i" "N"
 done
 
-for i in $(find /sys/ -name snapshot_crashdumper)
+for i in `find /sys/ -name snapshot_crashdumper`
 do
 write "$i" "0"
 done
@@ -2885,14 +2803,7 @@ write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "8"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
-write "/proc/sys/kernel/sched_walt_rotate_big_tasks" "0"
-write "/proc/sys/kernel/sched_conservative_pl" "1"
 write "/proc/sys/kernel/printk_devkmsg" "off"
-
-if [[ -e "/sys/power/pm_freeze_timeout" ]] 
-then
-write "/sys/power/pm_freeze_timeout" "20000"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -2913,7 +2824,7 @@ do
 if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "100000"
-write "${minclk}scaling_max_freq" "20000000"
+write "${minclk}scaling_max_freq" "$cpumfreq"
 fi
 done
 
@@ -2922,7 +2833,7 @@ do
 if [[ -e "${mnclk}scaling_min_freq" ]]
 then
 write "${mnclk}scaling_min_freq" "100000"
-write "${mnclk}scaling_max_freq" "20000000"
+write "${mnclk}scaling_max_freq" "$cpumfreq"
 fi
 done
 
@@ -2955,13 +2866,15 @@ write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
+write "/proc/sys/vm/laptop_mode" "0"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "50"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# MSM thermal
+# MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
 then
 write /sys/module/msm_thermal/vdd_restriction/enabled "1"
@@ -3069,6 +2982,7 @@ if [[ -d "/sys/module/lpm_levels" ]]
 then
 write "/sys/module/lpm_levels/parameters/sleep_disabled" "N"
 write "${lpm}idle_enabled" "Y"
+write "${lpm}suspend_enabled" "Y"
 fi
 done
 
@@ -3171,79 +3085,79 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-exit=$(date +%s)
+exit=`date +%s`
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ $(getprop persist.sys.locale) == "en-US" ]]
-then
-toasten1
-  
-elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
-then
-toasten1
-
-elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
-then
-toastpt1
+         if [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toasten1
      	
-elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
-then
-toastin1
-
-elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
-then
-toasttr1
-
-elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
-then
-toastfr1
-
-elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
-then
-toastfr1
-
-else
-toasten1
-fi
-};;
-    # Gaming Profile
-        "Gaming") {
-        	init=$(date +%s)
-        	if [[ $(getprop persist.sys.locale) == "en-US" ]]
-        	then
-        	toasten
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toasten1
+         
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt1
      	
-        	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
-            then
-            toasten
-            
-        	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
-        	then
-        	toastpt
-        	
-        	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
-        	then
-        	toastin
-        	
-        	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
-     	   then
-        	toasttr
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin1
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr1
 
-        	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
-        	then
-        	toastfr
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr1
 
-        	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
-        	then
-        	toastfr
+     	else
+     	toasten1
+     	fi
+}
+# Gaming Profile
+gaming() {
+        	init=`date +%s`
+     	if [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toasten
+     	
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toasten
+         
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt
+     	
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr
 
-        	else
-        	toasten
-        	fi
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr
+
+     	else
+     	toasten
+     	fi
         	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
@@ -3251,23 +3165,29 @@ kmsg1 "                                            🔧 Kernel: `uname -a`      
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.7                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.8                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
    	
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Disable perfd, thermald and thermal-engine.
 stop perfd
 stop thermald
 stop thermal-engine
+stop mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD AND PERFD.                                                         "
+kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD, MPDECISION AND PERFD.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable logd and statsd to reduce overhead.
@@ -3288,15 +3208,21 @@ fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
-if [[ -d "${corectl}" ]]
+if [[ -e "${corectl}/enable" ]]
 then
 write "${corectl}/enable" "0"
-fi
-done
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e "${corectl}/disable" ]]
+then
+write "${corectl}/disable" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+done
 
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
@@ -3379,7 +3305,7 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks.
 write "$gpu/throttling" "0"
 write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "0"
+write "$gpu/devfreq/adrenoboost" "1"
 write "$gpu/force_no_nap" "1"
 write "$gpu/bus_split" "0"
 write "$gpu/devfreq/min_freq" $gpumx
@@ -3470,37 +3396,37 @@ then
 write "/sys/module/printk/parameters/console_suspend" "Y"
 fi
 
-for i in $(find /sys/ -name debug_mask)
+for i in `find /sys/ -name debug_mask`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name debug_level)
+for i in `find /sys/ -name debug_level`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name edac_mc_log_ce)
+for i in `find /sys/ -name edac_mc_log_ce`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name edac_mc_log_ue)
+for i in `find /sys/ -name edac_mc_log_ue`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name enable_event_log) 
+for i in `find /sys/ -name enable_event_log`
 do
 write "$i" "0"
 done
 
-for i in $(find /sys/ -name log_ecn_error)
+for i in `find /sys/ -name log_ecn_error`
 do
 write "$i" "N"
 done
 
-for i in $(find /sys/ -name snapshot_crashdumper)
+for i in `find /sys/ -name snapshot_crashdumper`
 do
 write "$i" "0"
 done
@@ -3586,8 +3512,8 @@ fi
 write "/proc/sys/kernel/sched_child_runs_first" "0"
 write "/proc/sys/kernel/sched_boost" "1"
 write "/proc/sys/kernel/perf_cpu_time_max_percent" "25"
-write "/proc/sys/kernel/sched_autogroup_enabled" "0"
-write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
+write "/proc/sys/kernel/sched_autogroup_enabled" "1"
+write "/proc/sys/kernel/random/read_wakeup_threshold" "128"
 write "/proc/sys/kernel/random/write_wakeup_threshold" "1024"
 write "/proc/sys/kernel/random/urandom_min_reseed_secs" "90"
 write "/proc/sys/kernel/sched_tunable_scaling" "0"
@@ -3599,14 +3525,8 @@ write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "128"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
-write "/proc/sys/kernel/sched_walt_rotate_big_tasks" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
-
-if [[ -e "/sys/power/pm_freeze_timeout" ]] 
-then
-write "/sys/power/pm_freeze_timeout" "2000"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -3626,8 +3546,8 @@ for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "20000000"
-write "${minclk}scaling_max_freq" "20000000"
+write "${minclk}scaling_min_freq" "$cpumxfreq"
+write "${minclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -3635,8 +3555,8 @@ for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ -e "${mnclk}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "20000000"
-write "${mnclk}scaling_max_freq" "20000000"
+write "${mnclk}scaling_min_freq" "$cpumxfreq"
+write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -3672,13 +3592,15 @@ write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
+write "/proc/sys/vm/laptop_mode" "0"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "200"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# MSM thermal
+# MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
 then
 write /sys/module/msm_thermal/vdd_restriction/enabled "0"
@@ -3795,6 +3717,7 @@ if [[ -d "/sys/module/lpm_levels" ]]
 then
 write "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
 write "${lpm}idle_enabled" "N"
+write "${lpm}suspend_enabled" "N"
 fi
 done
 
@@ -3905,44 +3828,185 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-exit=$(date +%s)
+exit=`date +%s`
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ $(getprop persist.sys.locale) == "en-US" ]]
-then
-toasten1
+         if [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toasten1
      	
-elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
-then
-toasten1
-
-elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
-then
-toastpt1
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toasten1
+         
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt1
      	
-elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
-then
-toastin1
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin1
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr1
 
-elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
-then
-toasttr1
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr1
 
-elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
-then
-toastfr1
+     	else
+     	toasten1
+     	fi
+}
+boot_run_once=false
+kts_mode=$(getprop persist.kingtweaks.mode)
+[ -z "$kts_mode" ] && setprop persist.kingtweaks.mode "3"
 
-elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+while true
+do
+sleep 3
+if $boot_run_once
 then
-toastfr1
-
+[ "$(getprop persist.kingtweaks.mode)" == "$kts_mode" ] && continue
 else
-toasten1
+boot_run_once=true
 fi
-};;
+kts_mode=$(getprop persist.kingtweaks.mode)
+loc=/data/adb/modules
+
+if [[ "$kts_mode" == "1" ]]
+then
+kts_profilein=Latensi
+
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profilein=Baterai
+
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profilein=Seimbang
+
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profilein=Ekstrim
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profilein=Gaming
+fi
+
+if [[ "$kts_mode" == "1" ]]
+then
+kts_profilept=Latência
+
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profilept=Bateria
+        	
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profilept=Balanceado
+        	
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profilept=Extremo
+        	
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profilept=Gaming
+fi
+	 	
+if [[ "$kts_mode" == "1" ]]
+then
+kts_profile=Latency
+
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profile=Battery
+        	
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profile=Balanced
+        	
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profile=Extreme
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profile=Gaming
+fi
+
+if [[ "$kts_mode" == "1" ]]
+then
+kts_profiletr=Gecikme
+
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profiletr=Batarya
+        	
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profiletr=Dengeli
+        	
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profiletr=Aşırı
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profiletr=Oyun
+fi
+
+if [[ "$kts_mode" == "1" ]]
+then
+kts_profilefr=Latence
+
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profilefr=Modéré
+        	
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profilefr=Batterie
+        	
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profilefr=Extrême
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profilefr=Jeu
+fi
+
+case "$kts_profile" in
+ "Latency") {
+     latency
+	 };;
+	 
+	 "Balanced") {
+	 	balanced
+	 	};;
+	
+	 	"Battery") {
+	 		battery
+	 		};;
+	 		
+	 		"Extreme") {
+	 			extreme
+	 			};;
+
+	 			"Gaming") {
+	 				gaming
+	 				};;
 esac
 done
