@@ -211,11 +211,11 @@ UINT_MAX="4294967295"
     fi
     
     if [[ -e $gpu/min_pwrlevel ]]; then
-    gpumpl=`cat $gpu/min_pwrlevel`
-    gpumxfreq=$(($gpumpl + 1))
+    gpuminpl=`cat $gpu/min_pwrlevel`
+    gpupl=$((gpuminpl + 1))
     fi
-       
-    gpumx=`cat $gpu/devfreq/available_frequencies | awk -v var="$gpumxfreq" '{print $var}'`
+    
+    gpumx=`cat $gpu/devfreq/available_frequencies | awk -v var="$gpupl" '{print $var}'`
     
     if [[ $gpumx != `cat $gpu/max_gpuclk` ]]; then
     gpumx=`cat $gpu/devfreq/available_frequencies | awk '{print $1}'`
@@ -238,7 +238,7 @@ done
 
 cpumfreq=$((cpumxfreq / 2))
 
-gpufreq=`cat $gpu/devfreq/max_freq`
+gpufreq=`cat $gpu/max_gpuclk`
 
 gpumfreq=$((gpufreq / 2))
 
@@ -419,8 +419,9 @@ write "$gpu/thermal_pwrlevel" "0"
 write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
+write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "$(($gpumpl - 1))"
+write "$gpu/default_pwrlevel" "$(($gpuminpl - 1))"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -1016,19 +1017,17 @@ for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
 if [[ -e "${corectl}/enable" ]]
 then
-write "${corectl}/enable" "0"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED CORE CONTROL.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+write "${corectl}/enable" "1"
 
 elif [[ -e "${corectl}/disable" ]]
 then
-write "${corectl}/disable" "1"
+write "${corectl}/disable" "0"
+fi
+done
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED CORE CONTROL.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-done
 
 # I/O Scheduler Tweaks.
 for queue in /sys/block/*/queue/
@@ -1094,8 +1093,9 @@ write "$gpu/thermal_pwrlevel" "0"
 write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
+write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
 write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "$gpumpl"
+write "$gpu/default_pwrlevel" "$gpuminpl"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -1731,18 +1731,16 @@ do
 if [[ -e "${corectl}/enable" ]]
 then
 write "${corectl}/enable" "0"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 elif [[ -e "${corectl}/disable" ]]
 then
 write "${corectl}/disable" "1"
+fi
+done
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-done
 
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
@@ -1785,27 +1783,27 @@ avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
 then
 write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "0"
-write "${cpu}schedutil/down_rate_limit_us" "0"
+write "${cpu}schedutil/up_rate_limit_us" "500"
+write "${cpu}schedutil/down_rate_limit_us" "20000"
 write "${cpu}schedutil/pl" "1"
 write "${cpu}schedutil/iowait_boost_enable" "1"
-write "${cpu}schedutil/rate_limit_us" "0"
+write "${cpu}schedutil/rate_limit_us" "20000"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "10000"
+write "${cpu}interactive/timer_rate" "20000"
 write "${cpu}interactive/boost" "1"
-write "${cpu}interactive/timer_slack" "-1"
+write "${cpu}interactive/timer_slack" "20000"
 write "${cpu}interactive/use_migration_notif" "1"
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "10000"
-write "${cpu}interactive/sampling_rate_min" "10000"
-write "${cpu}interactive/min_sample_time" "10000"
+write "${cpu}interactive/sampling_rate" "20000"
+write "${cpu}interactive/sampling_rate_min" "24000"
+write "${cpu}interactive/min_sample_time" "24000"
 write "${cpu}interactive/go_hispeed_load" "80"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
@@ -1826,6 +1824,7 @@ write "$gpu/thermal_pwrlevel" "0"
 write "$gpu/devfreq/adrenoboost" "2"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "0"
+write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
 write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/default_pwrlevel" "1"
 write "$gpu/force_bus_on" "0"
@@ -2472,18 +2471,16 @@ do
 if [[ -e "${corectl}/enable" ]]
 then
 write "${corectl}/enable" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED CORE CONTROL.                                                                                  "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 elif [[ -e "${corectl}/disable" ]]
 then
 write "${corectl}/disable" "0"
+fi
+done
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED CORE CONTROL.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-done
 
 # Caf CPU Boost
 if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
@@ -2583,7 +2580,7 @@ write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
 write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/devfreq/max_freq" "$gpumfreq"
-write "$gpu/default_pwrlevel" "$gpumpl"
+write "$gpu/default_pwrlevel" "$gpuminpl"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
 write "$gpu/force_rail_on" "0"
@@ -3211,18 +3208,16 @@ do
 if [[ -e "${corectl}/enable" ]]
 then
 write "${corectl}/enable" "0"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 elif [[ -e "${corectl}/disable" ]]
 then
 write "${corectl}/disable" "1"
+fi
+done
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-done
 
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
@@ -3266,28 +3261,28 @@ avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
 then
 write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "0"
-write "${cpu}schedutil/down_rate_limit_us" "0"
+write "${cpu}schedutil/up_rate_limit_us" "500"
+write "${cpu}schedutil/down_rate_limit_us" "20000"
 write "${cpu}schedutil/pl" "1"
 write "${cpu}schedutil/iowait_boost_enable" "1"
-write "${cpu}schedutil/rate_limit_us" "0"
+write "${cpu}schedutil/rate_limit_us" "20000"
 write "${cpu}schedutil/hispeed_load" "80"
 write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "10000"
+write "${cpu}interactive/timer_rate" "20000"
 write "${cpu}interactive/boost" "1"
-write "${cpu}interactive/timer_slack" "-1"
+write "${cpu}interactive/timer_slack" "20000"
 write "${cpu}interactive/use_migration_notif" "1"
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "10000"
-write "${cpu}interactive/sampling_rate_min" "10000"
-write "${cpu}interactive/min_sample_time" "10000"
+write "${cpu}interactive/sampling_rate" "20000"
+write "${cpu}interactive/sampling_rate_min" "24000"
+write "${cpu}interactive/min_sample_time" "24000"
 write "${cpu}interactive/go_hispeed_load" "80"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
@@ -3308,8 +3303,9 @@ write "$gpu/thermal_pwrlevel" "0"
 write "$gpu/devfreq/adrenoboost" "1"
 write "$gpu/force_no_nap" "1"
 write "$gpu/bus_split" "0"
+write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
 write "$gpu/devfreq/min_freq" $gpumx
-write "$gpu/default_pwrlevel" "$(cat $gpu/max_pwrlevel)"
+write "$gpu/default_pwrlevel" `cat $gpu/max_pwrlevel`
 write "$gpu/force_bus_on" "1"
 write "$gpu/force_clk_on" "1"
 write "$gpu/force_rail_on" "1"
