@@ -102,7 +102,7 @@ write() {
 }
 
 # Check for root permissions and bail if not granted
-if [[ "$(id -u)" -ne 0 ]]
+if [[ "`id -u`" -ne 0 ]]
 then
 kmsg1 "[!] No root permissions. Exiting."
 exit 1
@@ -130,64 +130,100 @@ SCHED_TASKS_THROUGHPUT="6"
 UINT_MAX="4294967295"
 
     # Variable to GPU directories
+    for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
+    do
+    if [ -d "$gpul" ]; then
+        gpu=$gpul
+        fi
+        done
+        
+    for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
+    do
+    if [ -d "$gpul1" ]; then
+        gpu=$gpul1
+        fi
+        done
+        
+    for gpul2 in /sys/devices/*.mali
+    do
+    if [ -d "$gpul2" ]; then
+        gpu=$gpul2
+        fi
+        done
+        
+    for gpul3 in /sys/devices/platform/*.gpu
+    do
+    if [ -d "$gpul3" ]; then
+        gpu=$gpul3
+        fi
+        done
+        
+    for gpul4 in /sys/devices/platform/mali-*.0
+    do
+    if [ -d "$gpul4" ]; then
+        gpu=$gpul4
+        fi
+        done
+        
 	if [ -d "/sys/class/kgsl/kgsl-3d0" ]; then
 		gpu="/sys/class/kgsl/kgsl-3d0"
 	elif [ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0" ]; then
 		gpu="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0"
-	elif [ -d "/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0" ]; then
-		gpu="/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0"
-	elif [ -d "/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0" ]; then
-		gpu="/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0"
-		elif [ -d "/sys/devices/platform/*.gpu" ]; then
-		gpu="/sys/devices/platform/*.gpu"
 	elif [ -d "/sys/devices/platform/gpusysfs" ]; then
 		gpu="/sys/devices/platform/gpusysfs"
-	elif [ -d "/sys/devices/*.mali" ]; then
-		gpu="/sys/devices/*.mali"
-	elif [ -d "/sys/devices/*.gpu" ]; then
-		gpu="/sys/devices/*.gpu"
 	elif [ -d "/sys/devices/platform/mali.0" ]; then
 		gpu="/sys/devices/platform/mali.0"
-	elif [ -d "/sys/devices/platform/mali-*.0" ]; then
-		gpu="/sys/devices/platform/mali-*.0"
 		fi
-	
+		
+		for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq
+        do
+        if [ -d "$gpul" ]; then
+         gpug=$gpul
+         fi
+         done  
+         
+       for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq
+       do
+       if [ -d "$gpul1" ]; then
+        gpug=$gpul1
+        fi
+        done
+        
+      for gpul2 in /sys/devices/platform/*.gpu
+      do
+      if [ -d "$gpul2" ]; then
+        gpug=$gpul2
+        fi
+        done
+        
 	if [ -d "/sys/class/kgsl/kgsl-3d0/devfreq" ]; then
 		gpug="/sys/class/kgsl/kgsl-3d0/devfreq"
 	elif [ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/devfreq" ]; then
 		gpug="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/devfreq"
-	elif [ -d "/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq" ]; then
-		gpug="/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq"
-	elif [ -d "/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq" ]; then
-		gpug="/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq"
-	elif [ -d "/sys/devices/platform/*.gpu/devfreq" ]; then
-		gpug="/sys/devices/platform/*.gpu/devfreq"
 	elif [ -d "/sys/devices/platform/gpusysfs" ]; then
 		gpug="/sys/devices/platform/gpusysfs"
-	elif [ -d "/sys/devices/*.mali/devfreq" ]; then
-		gpug="/sys/devices/*.mali/devfreq"
-	elif [ -d "/sys/devices/*.gpu/devfreq" ]; then
-		gpug="/sys/devices/*.gpu/devfreq"
-	elif [ -d "/sys/devices/platform/mali.0/devfreq" ]; then
-		gpug="/sys/devices/platform/mali.0/devfreq"
-	elif [ -d "/sys/devices/platform/mali-*.0/devfreq" ]; then
-		gpug="/sys/devices/platform/mali-*.0/devfreq"
 	elif [ -d "/sys/module/mali/parameters" ]; then
-		gpug="/sys/module/mali/parameters"
-	elif [ -d "/sys/class/misc/mali0/devfreq" ]; then
-		gpug="/sys/class/misc/mali0/devfreq"		
+		gpug="/sys/module/mali/parameters"		
 	elif [ -d "/sys/kernel/gpu" ]; then
 		gpug="/sys/kernel/gpu"
 		fi
 	
+		for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
+        do
+        if [ -d "$gpul" ]; then
+         gpum=$gpul
+         fi
+         done
+         
+		for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
+        do
+        if [ -d "$gpul1" ]; then
+        gpum=$gpul1
+        fi
+        done
+        
 	if [ -d "/sys/class/kgsl/kgsl-3d0" ]; then
 		gpum="/sys/class/kgsl/kgsl-3d0"
-	elif [ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0" ]; then
-		gpum="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0"
-	elif [ -d "/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0" ]; then
-		gpum="/sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0"
-	elif [ -d "/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0" ]; then
-		gpum="/sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0"
 	elif [ -d "/sys/kernel/gpu" ]; then
 		gpum="/sys/kernel/gpu"
 		fi
@@ -195,21 +231,15 @@ UINT_MAX="4294967295"
 	# Variable to GPU model
 	if [[ -e $gpum/gpu_model ]]; then
     GPU_MODEL=`cat $gpum/gpu_model | awk '{print $1}'`
-    
-    else
-    GPU_MODEL=? (Unknown)
     fi
-    
+
     if [[ -e $gpug/gpu_governor ]]; then
     GPU_GOVERNOR=`cat $gpug/gpu_governor`
     
     elif [[ -e $gpug/governor ]]; then
     GPU_GOVERNOR=`cat $gpug/governor`
-
-    else 
-    GPU_GOVERNOR=? (Unknown)
     fi
-    
+
     if [[ -e $gpu/min_pwrlevel ]]; then
     gpuminpl=`cat $gpu/min_pwrlevel`
     gpupl=$((gpuminpl + 1))
@@ -231,8 +261,8 @@ do
 cpumxfreq=`cat $cpu/scaling_max_freq`
 cpumxfreq2=`cat $cpu/cpuinfo_max_freq`
 
-if [[ $cpumxfreq < $cpumxfreq2 ]]; then
-cpumxfreq=`cat $cpu/cpuinfo_max_freq`
+if [[ $cpumxfreq2 > $cpumxfreq ]]; then
+cpumxfreq=$cpumxfreq2
 fi
 done
 
@@ -319,7 +349,7 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.8                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.9                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -361,7 +391,6 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}read_ahead_kb" 32
-write "${queue}iosched/low_latency" 1
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 16
@@ -381,26 +410,26 @@ write "${cpu}scaling_governor" schedutil
 write "${cpu}schedutil/up_rate_limit_us" "0"
 write "${cpu}schedutil/down_rate_limit_us" "0"
 write "${cpu}schedutil/pl" "1"
-write "${cpu}schedutil/iowait_boost_enable" "0"
+write "${cpu}schedutil/iowait_boost_enable" "1"
 write "${cpu}schedutil/rate_limit_us" "0"
 write "${cpu}schedutil/hispeed_load" "89"
-write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
+write "${cpu}schedutil/hispeed_freq" "$cpumxfreq"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "10000"
+write "${cpu}interactive/timer_rate" "0"
 write "${cpu}interactive/boost" "0"
-write "${cpu}interactive/timer_slack" "-1"
+write "${cpu}interactive/timer_slack" "0"
 write "${cpu}interactive/use_migration_notif" "1" 
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "10000"
-write "${cpu}interactive/sampling_rate_min" "10000"
-write "${cpu}interactive/min_sample_time" "10000"
+write "${cpu}interactive/sampling_rate" "0"
+write "${cpu}interactive/sampling_rate_min" "0"
+write "${cpu}interactive/min_sample_time" "0"
 write "${cpu}interactive/go_hispeed_load" "89"
-write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
+write "${cpu}interactive/hispeed_freq" "$cpumxfreq"
 fi
 done
 
@@ -413,157 +442,8 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                         TWEAKED CPU.                                                                                          "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# GPU Tweaks.
-write "$gpu/throttling" "1"
-write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "0"
-write "$gpu/force_no_nap" "0"
-write "$gpu/bus_split" "1"
-write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
-write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "$(($gpuminpl - 1))"
-write "$gpu/force_bus_on" "0"
-write "$gpu/force_clk_on" "0"
-write "$gpu/force_rail_on" "0"
-write "$gpu/idle_timer" "96"
-
-if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
-then
-write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
-fi
-
-# Enable dvfs
-if [[ -e "/proc/mali/dvfs_enable" ]] 
-then
-write "/proc/mali/dvfs_enable" "1"
-fi
-
-if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
-then
-write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
-fi
-
-if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
-then
-write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
-fi
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED GPU.                                                                                        "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Disable adreno idler
-if [[ -d "/sys/module/adreno_idler" ]]
-then
-write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED ADRENO IDLER.                                                                  "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
-# Disable debuggers.
-write "/sys/module/bluetooth/parameters/disable_ertm" "Y"
-write "/sys/module/bluetooth/parameters/disable_esco" "Y"
-write "/sys/module/earlysuspend/parameters/debug_mask" "0"
-write "/sys/module/alarm/parameters/debug_mask" "0"
-write "/sys/module/alarm_dev/parameters/debug_mask" "0"
-write "/sys/module/binder/parameters/debug_mask" "0"
-write "/sys/devices/system/edac/cpu/log_ce" "0"
-write "/sys/devices/system/edac/cpu/log_ue" "0"
-write "/sys/module/binder/parameters/debug_mask" "0"
-write "/sys/module/debug/parameters/enable_event_log" "0"
-write "/sys/module/dwc3/parameters/ep_addr_rxdbg_mask" "0"
-write "/sys/module/dwc3/parameters/ep_addr_txdbg_mask" "0"
-write "/sys/module/edac_core/parameters/edac_mc_log_ce" "0"
-write "/sys/module/edac_core/parameters/edac_mc_log_ue" "0"
-write "/sys/module/glink/parameters/debug_mask" "0"
-write "/sys/module/hid_apple/parameters/fnmode" "0"
-write "/sys/module/hid_magicmouse/parameters/emulate_3button" "N"
-write "/sys/module/hid_magicmouse/parameters/emulate_scroll_wheel" "N"
-write "/sys/module/ip6_tunnel/parameters/log_ecn_error" "N"
-write "/sys/module/lowmemorykiller/parameters/debug_level" "0"
-write "/sys/module/mdss_fb/parameters/backlight_dimmer" "N"
-write "/sys/module/msm_show_resume_irq/parameters/debug_mask" "0"
-write "/sys/module/msm_smd/parameters/debug_mask" "0"
-write "/sys/module/msm_smem/parameters/debug_mask" "0"
-write "/sys/module/otg_wakelock/parameters/enabled" "N" 
-write "/sys/module/service_locator/parameters/enable" "0"
-write "/sys/module/sit/parameters/log_ecn_error" "N"
-write "/sys/module/smem_log/parameters/log_enable" "0"
-write "/sys/module/smp2p/parameters/debug_mask" "0"
-write "/sys/module/touch_core_base/parameters/debug_mask" "0"
-write "/sys/module/usb_bam/parameters/enable_event_log" "0"
-write "/sys/module/printk/parameters/console_suspend" "Y"
-write "/proc/sys/debug/exception-trace" "0"
-write "/proc/sys/kernel/printk" "0 0 0 0"
-write "/proc/sys/kernel/compat-log" "0"
-
-if [[ -e "/sys/module/mali/parameters/mali_debug_level" ]] 
-then
-write "/sys/module/mali/parameters/mali_debug_level" "0"
-fi
-
-if [[ -e "/sys/module/logger/parameters/log_mode" ]] 
-then
-write "/sys/module/logger/parameters/log_mode" "2"
-fi
-
-if [[ -e "/sys/module/printk/parameters/console_suspend" ]] 
-then
-write "/sys/module/printk/parameters/console_suspend" "Y"
-fi
-
-for i in `find /sys/ -name debug_mask`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name debug_level`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name edac_mc_log_ce`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name edac_mc_log_ue`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name enable_event_log`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name log_ecn_error`
-do
-write "$i" "N"
-done
-
-for i in `find /sys/ -name snapshot_crashdumper`
-do
-write "$i" "0"
-done
-
-if [[ -e "/sys/module/ext4/parameters/mballoc_debug" ]] 
-then
-write "/sys/module/ext4/parameters/mballoc_debug" "0"
-fi
-
-# =========
-# FIX DEEPSLEEP
-# =========
-write "/sys/class/scsi_disk/cache_type" "temporary none"
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 # Schedtune Tweaks
-if [[ -d "/dev/stune" ]]
+if [[ -d "/dev/stune/" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
@@ -641,20 +521,13 @@ write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "2"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
+write "/proc/sys/kernel/sched_user_hint" "0"
+write "/proc/sys/kernel/sched_conservative_pl" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable fingerprint boost.
-if [[ -e "/sys/kernel/fp_boost/enabled" ]]
-then
-write "/sys/kernel/fp_boost/enabled" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED FINGERPRINT BOOST.                                                                          "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 # Set min and max clocks.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
@@ -662,7 +535,7 @@ do
 if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "100000"
-write "${minclk}scaling_max_freq" "20000000"
+write "${minclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -671,7 +544,7 @@ do
 if [[ -e "${mnclk}scaling_min_freq" ]]
 then
 write "${mnclk}scaling_min_freq" "100000"
-write "${mnclk}scaling_max_freq" "20000000"
+write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -699,23 +572,11 @@ write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
 write "/proc/sys/vm/laptop_mode" "0"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "200"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# MSM thermal tweaks
-if [[ -e "/sys/module/msm_thermal" ]]
-then
-write /sys/module/msm_thermal/vdd_restriction/enabled "0"
-write /sys/module/msm_thermal/core_control/enabled "1"
-write /sys/module/msm_thermal/parameters/enabled "Y"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          APPLIED THERMAL TWEAKS.                                                                             "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 # Disable power efficient workqueue.
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
@@ -730,31 +591,7 @@ if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED MULTICORE POWER SAVING.                                                                     "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
-# Fix DT2W.
-if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
-then
-write "/sys/touchpanel/double_tap" "1"
-write "/proc/tp_gesture" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-elif [[ -e "/proc/tp_gesture" ]]
-then
-write "/proc/tp_gesture" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-elif [[ -e "/sys/touchpanel/double_tap" ]]
-then
-write "/sys/touchpanel/double_tap" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
+kmsg1 "                                          DISABLED MULTICORE POWER SAVINGS.                                                                     "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -782,26 +619,20 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable LPM sleep in latency / balanced / battery profile
-for lpm in /sys/module/lpm_levels/system/*/*/*/
-do
-if [[ -d "/sys/module/lpm_levels" ]]
+# Enable KSM
+if [[ -e "/sys/kernel/mm/ksm/run" ]] 
 then
-write "/sys/module/lpm_levels/parameters/sleep_disabled" "N"
-write "${lpm}idle_enabled" "Y"
-write "${lpm}suspend_enabled" "Y"
-fi
-done
-
+write "/sys/kernel/mm/ksm/run" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED LPM SLEEP.                                                                                 "
+kmsg1 "                                          ENABLED KSM.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
+# Enable UKSM
+elif [[ -e "/sys/kernel/mm/uksm/run" ]] 
 then
-write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
+write "/sys/kernel/mm/uksm/run" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED PM2 IDLE SLEEP MODE.                                                                        "
+kmsg1 "                                          ENABLED UKSM.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -822,69 +653,6 @@ kmsg1 "                                          ENABLED USB FAST CHARGING.     
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
   
-# GMS ripper 1.0
-killall -9 com.google.android.gms
-killall -9 com.google.android.gms.persistent
-killall -9 com.google.process.gapps
-killall -9 com.google.android.gsf
-killall -9 com.google.android.gsf.persistent
-
-pm disable com.google.android.gms/com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
-pm disable com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver
-pm disable com.google.android.gms/.ads.settings.AdsSettingsActivity
-pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorActivity
-pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorMapActivity
-pm disable com.google.android.gms/com.google.android.location.settings.ActivityRecognitionPermissionActivity
-pm disable com.google.android.gms/com.google.android.location.settings.GoogleLocationSettingsActivity
-pm disable com.google.android.gms/com.google.android.location.settings.LocationHistorySettingsActivity
-pm disable com.google.android.gms/com.google.android.location.settings.LocationSettingsCheckerActivity
-pm disable com.google.android.gms/.usagereporting.settings.UsageReportingActivity
-pm disable com.google.android.gms/.ads.adinfo.AdvertisingInfoContentProvider
-pm disable com.google.android.gms/com.google.android.location.reporting.service.ReportingContentProvider
-pm disable com.google.android.gms/com.google.android.location.internal.LocationContentProvider
-pm disable com.google.android.gms/.common.stats.net.contentprovider.NetworkUsageContentProvider
-pm disable com.google.android.gms/com.google.android.gms.ads.config.GServicesChangedReceiver
-pm disable com.google.android.gms/com.google.android.contextmanager.systemstate.SystemStateReceiver
-pm disable com.google.android.gms/.ads.jams.SystemEventReceiver
-pm disable com.google.android.gms/.ads.config.FlagsReceiver
-pm disable com.google.android.gms/.ads.social.DoritosReceiver
-pm disable com.google.android.gms/.analytics.AnalyticsReceiver
-pm disable com.google.android.gms/.analytics.internal.GServicesChangedReceiver
-pm disable com.google.android.gms/.common.analytics.CoreAnalyticsReceiver
-pm disable com.google.android.gms/.common.stats.GmsCoreStatsServiceLauncher
-pm disable com.google.android.gms/com.google.android.location.internal.AnalyticsSamplerReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ActiveReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ClockworkFallbackReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ImposeReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$SecretCodeReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$TriggerReceiver
-pm disable com.google.android.gms/.checkin.EventLogService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateActivity
-pm disable com.google.android.gsf/.update.SystemUpdatePanoActivity
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$Receiver
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$SecretCodeReceiver
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$TriggerReceiver
-pm disable com.google.android.gsf/.checkin.EventLogService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateService\$SecretCodeReceiver
-pm disable com.google.android.gsf/.checkin.CheckinService
-pm disable com.google.android.gsf/.checkin.EventLogService
-pm disable com.google.android.gsf/.update.SystemUpdateService
-pm disable com.google.android.apps.wellbeing/.powerstate.impl.PowerStateJobService
-pm disable com.google.android.apps.wellbeing/androidx.work.impl.background.systemjob.SystemJobService
-
-# Disable GMS and IMS run in startup and restart it on boot
-cmd appops set com.google.android.gms BOOT_COMPLETED ignore
-cmd appops set com.google.android.ims BOOT_COMPLETED ignore
-
-# Disable GMS and IMS run in startup and restart it on boot (custom permissions for Oxygen OS)
-cmd appops set com.google.android.gms AUTO_START ignore
-cmd appops set com.google.android.ims AUTO_START ignore
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          KILLED SOME GMS PROCESSES.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -977,7 +745,7 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.8                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.9                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -1057,7 +825,7 @@ write "${cpu}schedutil/pl" "0"
 write "${cpu}schedutil/iowait_boost_enable" "0"
 write "${cpu}schedutil/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
 write "${cpu}schedutil/hispeed_load" "89"
-write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
+write "${cpu}schedutil/hispeed_freq" "$cpumxfreq"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
@@ -1074,7 +842,7 @@ write "${cpu}interactive/sampling_rate" "40000"
 write "${cpu}interactive/sampling_rate_min" "50000"
 write "${cpu}interactive/min_sample_time" "50000"
 write "${cpu}interactive/go_hispeed_load" "89"
-write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
+write "${cpu}interactive/hispeed_freq" "$cpumxfreq"
 fi
 done
 
@@ -1138,109 +906,8 @@ kmsg1 "                                          ENABLED AND TWEAKED ADRENO IDLE
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Disable debuggers.
-write "/sys/module/bluetooth/parameters/disable_ertm" "Y"
-write "/sys/module/bluetooth/parameters/disable_esco" "Y"
-write "/sys/module/earlysuspend/parameters/debug_mask" "0"
-write "/sys/module/alarm/parameters/debug_mask" "0"
-write "/sys/module/alarm_dev/parameters/debug_mask" "0"
-write "/sys/module/binder/parameters/debug_mask" "0"
-write "/sys/devices/system/edac/cpu/log_ce" "0"
-write "/sys/devices/system/edac/cpu/log_ue" "0"
-write "/sys/module/binder/parameters/debug_mask" "0"
-write "/sys/module/debug/parameters/enable_event_log" "0"
-write "/sys/module/dwc3/parameters/ep_addr_rxdbg_mask" "0"
-write "/sys/module/dwc3/parameters/ep_addr_txdbg_mask" "0"
-write "/sys/module/edac_core/parameters/edac_mc_log_ce" "0"
-write "/sys/module/edac_core/parameters/edac_mc_log_ue" "0"
-write "/sys/module/glink/parameters/debug_mask" "0"
-write "/sys/module/hid_apple/parameters/fnmode" "0"
-write "/sys/module/hid_magicmouse/parameters/emulate_3button" "N"
-write "/sys/module/hid_magicmouse/parameters/emulate_scroll_wheel" "N"
-write "/sys/module/ip6_tunnel/parameters/log_ecn_error" "N"
-write "/sys/module/lowmemorykiller/parameters/debug_level" "0"
-write "/sys/module/mdss_fb/parameters/backlight_dimmer" "N"
-write "/sys/module/msm_show_resume_irq/parameters/debug_mask" "0"
-write "/sys/module/msm_smd/parameters/debug_mask" "0"
-write "/sys/module/msm_smem/parameters/debug_mask" "0"
-write "/sys/module/otg_wakelock/parameters/enabled" "N" 
-write "/sys/module/service_locator/parameters/enable" "0"
-write "/sys/module/sit/parameters/log_ecn_error" "N"
-write "/sys/module/smem_log/parameters/log_enable" "0"
-write "/sys/module/smp2p/parameters/debug_mask" "0"
-write "/sys/module/touch_core_base/parameters/debug_mask" "0"
-write "/sys/module/usb_bam/parameters/enable_event_log" "0"
-write "/sys/module/printk/parameters/console_suspend" "Y"
-write "/proc/sys/debug/exception-trace" "0"
-write "/proc/sys/kernel/printk" "0 0 0 0"
-write "/proc/sys/kernel/compat-log" "0"
-
-if [[ -e "/sys/module/mali/parameters/mali_debug_level" ]] 
-then
-write "/sys/module/mali/parameters/mali_debug_level" "0"
-fi
-
-if [[ -e "/sys/module/logger/parameters/log_mode" ]] 
-then
-write "/sys/module/logger/parameters/log_mode" "2"
-fi
-
-if [[ -e "/sys/module/printk/parameters/console_suspend" ]] 
-then
-write "/sys/module/printk/parameters/console_suspend" "Y"
-fi
-
-for i in `find /sys/ -name debug_mask`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name debug_level`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name edac_mc_log_ce`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name edac_mc_log_ue`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name enable_event_log`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name log_ecn_error`
-do
-write "$i" "N"
-done
-
-for i in `find /sys/ -name snapshot_crashdumper`
-do
-write "$i" "0"
-done
-
-if [[ -e "/sys/module/ext4/parameters/mballoc_debug" ]] 
-then
-write "/sys/module/ext4/parameters/mballoc_debug" "0"
-fi
-
-# =========
-# FIX DEEPSLEEP
-# =========
-write "/sys/class/scsi_disk/cache_type" "temporary none"
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 # Schedtune Tweaks
-if [[ -d "/dev/stune" ]]
+if [[ -d "/dev/stune/" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
@@ -1320,6 +987,7 @@ write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "32"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
+write "/proc/sys/kernel/sched_user_hint" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1341,7 +1009,7 @@ do
 if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "100000"
-write "${minclk}scaling_max_freq" "20000000"
+write "${minclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -1350,7 +1018,7 @@ do
 if [[ -e "${mnclk}scaling_min_freq" ]]
 then
 write "${mnclk}scaling_min_freq" "100000"
-write "${mnclk}scaling_max_freq" "20000000"
+write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -1387,7 +1055,6 @@ write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
 write "/proc/sys/vm/laptop_mode" "0"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "50"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1418,7 +1085,7 @@ if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED MULTICORE POWER SAVING.                                                                     "
+kmsg1 "                                          ENABLED MULTICORE POWER SAVINGS.                                                                     "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -1486,6 +1153,23 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+# Enable KSM
+if [[ -e "/sys/kernel/mm/ksm/run" ]] 
+then
+write "/sys/kernel/mm/ksm/run" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED KSM.                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable UKSM
+elif [[ -e "/sys/kernel/mm/uksm/run" ]] 
+then
+write "/sys/kernel/mm/uksm/run" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED UKSM.                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
 # Enable LPM sleep in latency / balanced / battery profile
 for lpm in /sys/module/lpm_levels/system/*/*/*/
 do
@@ -1533,69 +1217,6 @@ fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED USB FAST CHARGING.                                                                        "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  
-# GMS ripper 1.0
-killall -9 com.google.android.gms
-killall -9 com.google.android.gms.persistent
-killall -9 com.google.process.gapps
-killall -9 com.google.android.gsf
-killall -9 com.google.android.gsf.persistent
-
-pm disable com.google.android.gms/com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
-pm disable com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver
-pm disable com.google.android.gms/.ads.settings.AdsSettingsActivity
-pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorActivity
-pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorMapActivity
-pm disable com.google.android.gms/com.google.android.location.settings.ActivityRecognitionPermissionActivity
-pm disable com.google.android.gms/com.google.android.location.settings.GoogleLocationSettingsActivity
-pm disable com.google.android.gms/com.google.android.location.settings.LocationHistorySettingsActivity
-pm disable com.google.android.gms/com.google.android.location.settings.LocationSettingsCheckerActivity
-pm disable com.google.android.gms/.usagereporting.settings.UsageReportingActivity
-pm disable com.google.android.gms/.ads.adinfo.AdvertisingInfoContentProvider
-pm disable com.google.android.gms/com.google.android.location.reporting.service.ReportingContentProvider
-pm disable com.google.android.gms/com.google.android.location.internal.LocationContentProvider
-pm disable com.google.android.gms/.common.stats.net.contentprovider.NetworkUsageContentProvider
-pm disable com.google.android.gms/com.google.android.gms.ads.config.GServicesChangedReceiver
-pm disable com.google.android.gms/com.google.android.contextmanager.systemstate.SystemStateReceiver
-pm disable com.google.android.gms/.ads.jams.SystemEventReceiver
-pm disable com.google.android.gms/.ads.config.FlagsReceiver
-pm disable com.google.android.gms/.ads.social.DoritosReceiver
-pm disable com.google.android.gms/.analytics.AnalyticsReceiver
-pm disable com.google.android.gms/.analytics.internal.GServicesChangedReceiver
-pm disable com.google.android.gms/.common.analytics.CoreAnalyticsReceiver
-pm disable com.google.android.gms/.common.stats.GmsCoreStatsServiceLauncher
-pm disable com.google.android.gms/com.google.android.location.internal.AnalyticsSamplerReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ActiveReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ClockworkFallbackReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ImposeReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$SecretCodeReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$TriggerReceiver
-pm disable com.google.android.gms/.checkin.EventLogService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateActivity
-pm disable com.google.android.gsf/.update.SystemUpdatePanoActivity
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$Receiver
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$SecretCodeReceiver
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$TriggerReceiver
-pm disable com.google.android.gsf/.checkin.EventLogService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateService\$SecretCodeReceiver
-pm disable com.google.android.gsf/.checkin.CheckinService
-pm disable com.google.android.gsf/.checkin.EventLogService
-pm disable com.google.android.gsf/.update.SystemUpdateService
-pm disable com.google.android.apps.wellbeing/.powerstate.impl.PowerStateJobService
-pm disable com.google.android.apps.wellbeing/androidx.work.impl.background.systemjob.SystemJobService
-
-# Disable GMS and IMS run in startup and restart it on boot
-cmd appops set com.google.android.gms BOOT_COMPLETED ignore
-cmd appops set com.google.android.ims BOOT_COMPLETED ignore
-
-# Disable GMS and IMS run in startup and restart it on boot (custom permissions for Oxygen OS)
-cmd appops set com.google.android.gms AUTO_START ignore
-cmd appops set com.google.android.ims AUTO_START ignore
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          KILLED SOME GMS PROCESSES.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1690,7 +1311,7 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.8                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.9                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -1745,7 +1366,7 @@ kmsg1 "-------------------------------------------------------------------------
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:20000000 1:20000000 2:20000000 3:20000000 4:20000000 5:20000000 6:20000000 7:20000000"
+write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CAF INPUT BOOST.                                                                            "
@@ -1755,8 +1376,8 @@ kmsg1 "-------------------------------------------------------------------------
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "20000000"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "20000000"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CPU INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1802,8 +1423,8 @@ write "${cpu}interactive/use_sched_load" "1"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "20000"
-write "${cpu}interactive/sampling_rate_min" "24000"
-write "${cpu}interactive/min_sample_time" "24000"
+write "${cpu}interactive/sampling_rate_min" "20000"
+write "${cpu}interactive/min_sample_time" "20000"
 write "${cpu}interactive/go_hispeed_load" "80"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
@@ -1821,7 +1442,7 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks.
 write "$gpu/throttling" "0"
 write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "2"
+write "$gpu/devfreq/adrenoboost" "1"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "0"
 write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
@@ -1866,104 +1487,8 @@ kmsg1 "                                          DISABLED ADRENO IDLER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Disable debuggers.
-write "/sys/module/bluetooth/parameters/disable_ertm" "Y"
-write "/sys/module/bluetooth/parameters/disable_esco" "Y"
-write "/sys/module/earlysuspend/parameters/debug_mask" "0"
-write "/sys/module/alarm/parameters/debug_mask" "0"
-write "/sys/module/alarm_dev/parameters/debug_mask" "0"
-write "/sys/module/binder/parameters/debug_mask" "0"
-write "/sys/devices/system/edac/cpu/log_ce" "0"
-write "/sys/devices/system/edac/cpu/log_ue" "0"
-write "/sys/module/binder/parameters/debug_mask" "0"
-write "/sys/module/debug/parameters/enable_event_log" "0"
-write "/sys/module/dwc3/parameters/ep_addr_rxdbg_mask" "0"
-write "/sys/module/dwc3/parameters/ep_addr_txdbg_mask" "0"
-write "/sys/module/edac_core/parameters/edac_mc_log_ce" "0"
-write "/sys/module/edac_core/parameters/edac_mc_log_ue" "0"
-write "/sys/module/glink/parameters/debug_mask" "0"
-write "/sys/module/hid_apple/parameters/fnmode" "0"
-write "/sys/module/hid_magicmouse/parameters/emulate_3button" "N"
-write "/sys/module/hid_magicmouse/parameters/emulate_scroll_wheel" "N"
-write "/sys/module/ip6_tunnel/parameters/log_ecn_error" "N"
-write "/sys/module/lowmemorykiller/parameters/debug_level" "0"
-write "/sys/module/mdss_fb/parameters/backlight_dimmer" "N"
-write "/sys/module/msm_show_resume_irq/parameters/debug_mask" "0"
-write "/sys/module/msm_smd/parameters/debug_mask" "0"
-write "/sys/module/msm_smem/parameters/debug_mask" "0"
-write "/sys/module/otg_wakelock/parameters/enabled" "N" 
-write "/sys/module/service_locator/parameters/enable" "0"
-write "/sys/module/sit/parameters/log_ecn_error" "N"
-write "/sys/module/smem_log/parameters/log_enable" "0"
-write "/sys/module/smp2p/parameters/debug_mask" "0"
-write "/sys/module/touch_core_base/parameters/debug_mask" "0"
-write "/sys/module/usb_bam/parameters/enable_event_log" "0"
-write "/sys/module/printk/parameters/console_suspend" "Y"
-write "/proc/sys/debug/exception-trace" "0"
-write "/proc/sys/kernel/printk" "0 0 0 0"
-write "/proc/sys/kernel/compat-log" "0"
-
-if [ -e /sys/module/logger/parameters/log_mode ]
-then
-write "/sys/module/logger/parameters/log_mode" "2"
-fi
-
-if [ -e /sys/module/printk/parameters/console_suspend ] 
-then
-write "/sys/module/printk/parameters/console_suspend" "Y"
-fi
-
-for i in `find /sys/ -name debug_mask`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name debug_level`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name edac_mc_log_ce`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name edac_mc_log_ue`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name enable_event_log`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name log_ecn_error`
-do
-write "$i" "N"
-done
-
-for i in `find /sys/ -name snapshot_crashdumper`
-do
-write "$i" "0"
-done
-
-if [[ -e "/sys/module/ext4/parameters/mballoc_debug" ]] 
-then
-write "/sys/module/ext4/parameters/mballoc_debug" "0"
-fi
-
-# =========
-# FIX DEEPSLEEP
-# =========
-write "/sys/class/scsi_disk/cache_type" "temporary none"
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 # Schedtune Tweaks
-if [[ -d "/dev/stune" ]]
+if [[ -d "/dev/stune/" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
@@ -2038,10 +1563,11 @@ write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
 write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
 write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
-write "/proc/sys/kernel/ched_min_task_util_for_colocation" "0"
+write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "128"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
+write "/proc/sys/kernel/sched_user_hint" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
@@ -2063,8 +1589,8 @@ for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "20000000"
-write "${minclk}scaling_max_freq" "20000000"
+write "${minclk}scaling_min_freq" "$cpumxfreq"
+write "${minclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2072,8 +1598,8 @@ for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ -e "${mnclk}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "20000000"
-write "${mnclk}scaling_max_freq" "20000000"
+write "${mnclk}scaling_min_freq" "$cpumxfreq"
+write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2110,7 +1636,6 @@ write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
 write "/proc/sys/vm/laptop_mode" "0"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "80"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2141,7 +1666,7 @@ if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED MULTICORE POWER SAVING.                                                                    "
+kmsg1 "                                          DISABLED MULTICORE POWER SAVINGS.                                                                    "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2218,6 +1743,23 @@ kmsg1 "                                          DISABLED BATTERY SAVER.        
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
+# Enable KSM
+if [[ -e "/sys/kernel/mm/ksm/run" ]] 
+then
+write "/sys/kernel/mm/ksm/run" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED KSM.                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable UKSM
+elif [[ -e "/sys/kernel/mm/uksm/run" ]] 
+then
+write "/sys/kernel/mm/uksm/run" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED UKSM.                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
 # Disable arch power
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
 then
@@ -2275,69 +1817,6 @@ kmsg1 "                                          ENABLED USB FAST CHARGING.     
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
   
-# GMS ripper 1.0
-killall -9 com.google.android.gms
-killall -9 com.google.android.gms.persistent
-killall -9 com.google.process.gapps
-killall -9 com.google.android.gsf
-killall -9 com.google.android.gsf.persistent
-
-pm disable com.google.android.gms/com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
-pm disable com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver
-pm disable com.google.android.gms/.ads.settings.AdsSettingsActivity
-pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorActivity
-pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorMapActivity
-pm disable com.google.android.gms/com.google.android.location.settings.ActivityRecognitionPermissionActivity
-pm disable com.google.android.gms/com.google.android.location.settings.GoogleLocationSettingsActivity
-pm disable com.google.android.gms/com.google.android.location.settings.LocationHistorySettingsActivity
-pm disable com.google.android.gms/com.google.android.location.settings.LocationSettingsCheckerActivity
-pm disable com.google.android.gms/.usagereporting.settings.UsageReportingActivity
-pm disable com.google.android.gms/.ads.adinfo.AdvertisingInfoContentProvider
-pm disable com.google.android.gms/com.google.android.location.reporting.service.ReportingContentProvider
-pm disable com.google.android.gms/com.google.android.location.internal.LocationContentProvider
-pm disable com.google.android.gms/.common.stats.net.contentprovider.NetworkUsageContentProvider
-pm disable com.google.android.gms/com.google.android.gms.ads.config.GServicesChangedReceiver
-pm disable com.google.android.gms/com.google.android.contextmanager.systemstate.SystemStateReceiver
-pm disable com.google.android.gms/.ads.jams.SystemEventReceiver
-pm disable com.google.android.gms/.ads.config.FlagsReceiver
-pm disable com.google.android.gms/.ads.social.DoritosReceiver
-pm disable com.google.android.gms/.analytics.AnalyticsReceiver
-pm disable com.google.android.gms/.analytics.internal.GServicesChangedReceiver
-pm disable com.google.android.gms/.common.analytics.CoreAnalyticsReceiver
-pm disable com.google.android.gms/.common.stats.GmsCoreStatsServiceLauncher
-pm disable com.google.android.gms/com.google.android.location.internal.AnalyticsSamplerReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ActiveReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ClockworkFallbackReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ImposeReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$SecretCodeReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$TriggerReceiver
-pm disable com.google.android.gms/.checkin.EventLogService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateActivity
-pm disable com.google.android.gsf/.update.SystemUpdatePanoActivity
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$Receiver
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$SecretCodeReceiver
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$TriggerReceiver
-pm disable com.google.android.gsf/.checkin.EventLogService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateService\$SecretCodeReceiver
-pm disable com.google.android.gsf/.checkin.CheckinService
-pm disable com.google.android.gsf/.checkin.EventLogService
-pm disable com.google.android.gsf/.update.SystemUpdateService
-pm disable com.google.android.apps.wellbeing/.powerstate.impl.PowerStateJobService
-pm disable com.google.android.apps.wellbeing/androidx.work.impl.background.systemjob.SystemJobService
-
-# Disable GMS and IMS run in startup and restart it on boot
-cmd appops set com.google.android.gms BOOT_COMPLETED ignore
-cmd appops set com.google.android.ims BOOT_COMPLETED ignore
-
-# Disable GMS and IMS run in startup and restart it on boot (custom permissions for Oxygen OS)
-cmd appops set com.google.android.gms AUTO_START ignore
-cmd appops set com.google.android.ims AUTO_START ignore
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          KILLED SOME GMS PROCESSES.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2430,7 +1909,7 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.8                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.9                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -2532,7 +2011,7 @@ write "${cpu}schedutil/pl" "0"
 write "${cpu}schedutil/iowait_boost_enable" "0"
 write "${cpu}schedutil/rate_limit_us" "$((4 * SCHED_PERIOD_BATTERY / 1000))"
 write "${cpu}schedutil/hispeed_load" "99"
-write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
+write "${cpu}schedutil/hispeed_freq" "$cpumfreq"
 elif [[ "$avail_govs" == *"interactive"* ]]
 then
 write "${cpu}scaling_governor" interactive
@@ -2549,7 +2028,7 @@ write "${cpu}interactive/sampling_rate" "50000"
 write "${cpu}interactive/sampling_rate_min" "75000"
 write "${cpu}interactive/min_sample_time" "75000"
 write "${cpu}interactive/go_hispeed_load" "99"
-write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
+write "${cpu}interactive/hispeed_freq" "$cpumfreq"
 fi
 done
 
@@ -2578,8 +2057,8 @@ write "$gpu/thermal_pwrlevel" "0"
 write "$gpu/devfreq/adrenoboost" "0"
 write "$gpu/force_no_nap" "0"
 write "$gpu/bus_split" "1"
-write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/devfreq/max_freq" "$gpumfreq"
+write "$gpu/devfreq/min_freq" "100000000"
 write "$gpu/default_pwrlevel" "$gpuminpl"
 write "$gpu/force_bus_on" "0"
 write "$gpu/force_clk_on" "0"
@@ -2623,104 +2102,8 @@ kmsg1 "                                         ENABLED AND TWEAKED ADRENO IDLER
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Disable debuggers.
-write "/sys/module/bluetooth/parameters/disable_ertm" "Y"
-write "/sys/module/bluetooth/parameters/disable_esco" "Y"
-write "/sys/module/earlysuspend/parameters/debug_mask" "0"
-write "/sys/module/alarm/parameters/debug_mask" "0"
-write "/sys/module/alarm_dev/parameters/debug_mask" "0"
-write "/sys/module/binder/parameters/debug_mask" "0"
-write "/sys/devices/system/edac/cpu/log_ce" "0"
-write "/sys/devices/system/edac/cpu/log_ue" "0"
-write "/sys/module/binder/parameters/debug_mask" "0"
-write "/sys/module/debug/parameters/enable_event_log" "0"
-write "/sys/module/dwc3/parameters/ep_addr_rxdbg_mask" "0"
-write "/sys/module/dwc3/parameters/ep_addr_txdbg_mask" "0"
-write "/sys/module/edac_core/parameters/edac_mc_log_ce" "0"
-write "/sys/module/edac_core/parameters/edac_mc_log_ue" "0"
-write "/sys/module/glink/parameters/debug_mask" "0"
-write "/sys/module/hid_apple/parameters/fnmode" "0"
-write "/sys/module/hid_magicmouse/parameters/emulate_3button" "N"
-write "/sys/module/hid_magicmouse/parameters/emulate_scroll_wheel" "N"
-write "/sys/module/ip6_tunnel/parameters/log_ecn_error" "N"
-write "/sys/module/lowmemorykiller/parameters/debug_level" "0"
-write "/sys/module/mdss_fb/parameters/backlight_dimmer" "N"
-write "/sys/module/msm_show_resume_irq/parameters/debug_mask" "0"
-write "/sys/module/msm_smd/parameters/debug_mask" "0"
-write "/sys/module/msm_smem/parameters/debug_mask" "0"
-write "/sys/module/otg_wakelock/parameters/enabled" "N" 
-write "/sys/module/service_locator/parameters/enable" "0"
-write "/sys/module/sit/parameters/log_ecn_error" "N"
-write "/sys/module/smem_log/parameters/log_enable" "0"
-write "/sys/module/smp2p/parameters/debug_mask" "0"
-write "/sys/module/touch_core_base/parameters/debug_mask" "0"
-write "/sys/module/usb_bam/parameters/enable_event_log" "0"
-write "/sys/module/printk/parameters/console_suspend" "Y"
-write "/proc/sys/debug/exception-trace" "0"
-write "/proc/sys/kernel/printk" "0 0 0 0"
-write "/proc/sys/kernel/compat-log" "0"
-
-if [ -e /sys/module/logger/parameters/log_mode ]
-then
-write "/sys/module/logger/parameters/log_mode" "2"
-fi
-
-if [ -e /sys/module/printk/parameters/console_suspend ] 
-then
-write "/sys/module/printk/parameters/console_suspend" "Y"
-fi
-
-for i in `find /sys/ -name debug_mask`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name debug_level`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name edac_mc_log_ce`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name edac_mc_log_ue`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name enable_event_log`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name log_ecn_error`
-do
-write "$i" "N"
-done
-
-for i in `find /sys/ -name snapshot_crashdumper`
-do
-write "$i" "0"
-done
-
-if [[ -e "/sys/module/ext4/parameters/mballoc_debug" ]] 
-then
-write "/sys/module/ext4/parameters/mballoc_debug" "0"
-fi
-
-# =========
-# FIX DEEPSLEEP
-# =========
-write "/sys/class/scsi_disk/cache_type" "temporary none"
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 # Schedtune tweaks
-if [[ -d "/dev/stune" ]]
+if [[ -d "/dev/stune/" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
@@ -2800,6 +2183,7 @@ write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "8"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
+write "/proc/sys/kernel/sched_user_hint" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2864,7 +2248,6 @@ write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
 write "/proc/sys/vm/laptop_mode" "0"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "50"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2895,7 +2278,7 @@ if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "2"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED AGGRESSIVE MULTICORE POWER SAVING.                                                          "
+kmsg1 "                                          ENABLED AGGRESSIVE MULTICORE POWER SAVINGS.                                                          "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2972,6 +2355,23 @@ kmsg1 "                                          ENABLED BATTERY SAVER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
+# Disable KSM
+if [[ -e "/sys/kernel/mm/ksm/run" ]] 
+then
+write "/sys/kernel/mm/ksm/run" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED KSM.                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Disable UKSM
+elif [[ -e "/sys/kernel/mm/uksm/run" ]] 
+then
+write "/sys/kernel/mm/uksm/run" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED UKSM.                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
 # Enable LPM sleep in latency / balanced / battery profile
 for lpm in /sys/module/lpm_levels/system/*/*/*/
 do
@@ -3012,69 +2412,6 @@ kmsg1 "                                          ENABLED USB FAST CHARGING.     
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
   
-# GMS ripper 1.0
-killall -9 com.google.android.gms
-killall -9 com.google.android.gms.persistent
-killall -9 com.google.process.gapps
-killall -9 com.google.android.gsf
-killall -9 com.google.android.gsf.persistent
-
-pm disable com.google.android.gms/com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
-pm disable com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver
-pm disable com.google.android.gms/.ads.settings.AdsSettingsActivity
-pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorActivity
-pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorMapActivity
-pm disable com.google.android.gms/com.google.android.location.settings.ActivityRecognitionPermissionActivity
-pm disable com.google.android.gms/com.google.android.location.settings.GoogleLocationSettingsActivity
-pm disable com.google.android.gms/com.google.android.location.settings.LocationHistorySettingsActivity
-pm disable com.google.android.gms/com.google.android.location.settings.LocationSettingsCheckerActivity
-pm disable com.google.android.gms/.usagereporting.settings.UsageReportingActivity
-pm disable com.google.android.gms/.ads.adinfo.AdvertisingInfoContentProvider
-pm disable com.google.android.gms/com.google.android.location.reporting.service.ReportingContentProvider
-pm disable com.google.android.gms/com.google.android.location.internal.LocationContentProvider
-pm disable com.google.android.gms/.common.stats.net.contentprovider.NetworkUsageContentProvider
-pm disable com.google.android.gms/com.google.android.gms.ads.config.GServicesChangedReceiver
-pm disable com.google.android.gms/com.google.android.contextmanager.systemstate.SystemStateReceiver
-pm disable com.google.android.gms/.ads.jams.SystemEventReceiver
-pm disable com.google.android.gms/.ads.config.FlagsReceiver
-pm disable com.google.android.gms/.ads.social.DoritosReceiver
-pm disable com.google.android.gms/.analytics.AnalyticsReceiver
-pm disable com.google.android.gms/.analytics.internal.GServicesChangedReceiver
-pm disable com.google.android.gms/.common.analytics.CoreAnalyticsReceiver
-pm disable com.google.android.gms/.common.stats.GmsCoreStatsServiceLauncher
-pm disable com.google.android.gms/com.google.android.location.internal.AnalyticsSamplerReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ActiveReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ClockworkFallbackReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ImposeReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$SecretCodeReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$TriggerReceiver
-pm disable com.google.android.gms/.checkin.EventLogService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateActivity
-pm disable com.google.android.gsf/.update.SystemUpdatePanoActivity
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$Receiver
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$SecretCodeReceiver
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$TriggerReceiver
-pm disable com.google.android.gsf/.checkin.EventLogService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateService\$SecretCodeReceiver
-pm disable com.google.android.gsf/.checkin.CheckinService
-pm disable com.google.android.gsf/.checkin.EventLogService
-pm disable com.google.android.gsf/.update.SystemUpdateService
-pm disable com.google.android.apps.wellbeing/.powerstate.impl.PowerStateJobService
-pm disable com.google.android.apps.wellbeing/androidx.work.impl.background.systemjob.SystemJobService
-
-# Disable GMS and IMS run in startup and restart it on boot
-cmd appops set com.google.android.gms BOOT_COMPLETED ignore
-cmd appops set com.google.android.ims BOOT_COMPLETED ignore
-
-# Disable GMS and IMS run in startup and restart it on boot (custom permissions for Oxygen OS)
-cmd appops set com.google.android.gms AUTO_START ignore
-cmd appops set com.google.android.ims AUTO_START ignore
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          KILLED SOME GMS PROCESSES.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3167,7 +2504,7 @@ kmsg1 "                                            🖼️ GPU Governor: $GPU_GO
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📲 GPU Model: $GPU_MODEL                                                                                        "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: 1.9.8                                                                                           "
+kmsg1 "                                            👑 KTS Version: 1.9.9                                                                                           "
 kmsg1 "                                            🔋 Battery charge level: $percentage%                                                                           "
 kmsg1 "                                            💾 Device total RAM: $totalram MB                                                                               "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
@@ -3222,7 +2559,7 @@ kmsg1 "-------------------------------------------------------------------------
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:20000000 1:20000000 2:20000000 3:20000000 4:20000000 5:20000000 6:20000000 7:20000000"
+write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CAF INPUT BOOST.                                                                            "
@@ -3232,8 +2569,8 @@ kmsg1 "-------------------------------------------------------------------------
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "20000000"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "20000000"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CPU INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3281,8 +2618,8 @@ write "${cpu}interactive/boostpulse" "0"
 write "${cpu}interactive/fastlane" "1"
 write "${cpu}interactive/fast_ramp_down" "0"
 write "${cpu}interactive/sampling_rate" "20000"
-write "${cpu}interactive/sampling_rate_min" "24000"
-write "${cpu}interactive/min_sample_time" "24000"
+write "${cpu}interactive/sampling_rate_min" "20000"
+write "${cpu}interactive/min_sample_time" "20000"
 write "${cpu}interactive/go_hispeed_load" "80"
 write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
 fi
@@ -3300,7 +2637,7 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks.
 write "$gpu/throttling" "0"
 write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "1"
+write "$gpu/devfreq/adrenoboost" "2"
 write "$gpu/force_no_nap" "1"
 write "$gpu/bus_split" "0"
 write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
@@ -3345,104 +2682,8 @@ kmsg1 "                                          DISABLED ADRENO IDLER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Disable debuggers.
-write "/sys/module/bluetooth/parameters/disable_ertm" "Y"
-write "/sys/module/bluetooth/parameters/disable_esco" "Y"
-write "/sys/module/earlysuspend/parameters/debug_mask" "0"
-write "/sys/module/alarm/parameters/debug_mask" "0"
-write "/sys/module/alarm_dev/parameters/debug_mask" "0"
-write "/sys/module/binder/parameters/debug_mask" "0"
-write "/sys/devices/system/edac/cpu/log_ce" "0"
-write "/sys/devices/system/edac/cpu/log_ue" "0"
-write "/sys/module/binder/parameters/debug_mask" "0"
-write "/sys/module/debug/parameters/enable_event_log" "0"
-write "/sys/module/dwc3/parameters/ep_addr_rxdbg_mask" "0"
-write "/sys/module/dwc3/parameters/ep_addr_txdbg_mask" "0"
-write "/sys/module/edac_core/parameters/edac_mc_log_ce" "0"
-write "/sys/module/edac_core/parameters/edac_mc_log_ue" "0"
-write "/sys/module/glink/parameters/debug_mask" "0"
-write "/sys/module/hid_apple/parameters/fnmode" "0"
-write "/sys/module/hid_magicmouse/parameters/emulate_3button" "N"
-write "/sys/module/hid_magicmouse/parameters/emulate_scroll_wheel" "N"
-write "/sys/module/ip6_tunnel/parameters/log_ecn_error" "N"
-write "/sys/module/lowmemorykiller/parameters/debug_level" "0"
-write "/sys/module/mdss_fb/parameters/backlight_dimmer" "N"
-write "/sys/module/msm_show_resume_irq/parameters/debug_mask" "0"
-write "/sys/module/msm_smd/parameters/debug_mask" "0"
-write "/sys/module/msm_smem/parameters/debug_mask" "0"
-write "/sys/module/otg_wakelock/parameters/enabled" "N" 
-write "/sys/module/service_locator/parameters/enable" "0"
-write "/sys/module/sit/parameters/log_ecn_error" "N"
-write "/sys/module/smem_log/parameters/log_enable" "0"
-write "/sys/module/smp2p/parameters/debug_mask" "0"
-write "/sys/module/touch_core_base/parameters/debug_mask" "0"
-write "/sys/module/usb_bam/parameters/enable_event_log" "0"
-write "/sys/module/printk/parameters/console_suspend" "Y"
-write "/proc/sys/debug/exception-trace" "0"
-write "/proc/sys/kernel/printk" "0 0 0 0"
-write "/proc/sys/kernel/compat-log" "0"
-
-if [ -e /sys/module/logger/parameters/log_mode ]
-then
-write "/sys/module/logger/parameters/log_mode" "2"
-fi
-
-if [ -e /sys/module/printk/parameters/console_suspend ] 
-then
-write "/sys/module/printk/parameters/console_suspend" "Y"
-fi
-
-for i in `find /sys/ -name debug_mask`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name debug_level`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name edac_mc_log_ce`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name edac_mc_log_ue`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name enable_event_log`
-do
-write "$i" "0"
-done
-
-for i in `find /sys/ -name log_ecn_error`
-do
-write "$i" "N"
-done
-
-for i in `find /sys/ -name snapshot_crashdumper`
-do
-write "$i" "0"
-done
-
-if [[ -e "/sys/module/ext4/parameters/mballoc_debug" ]] 
-then
-write "/sys/module/ext4/parameters/mballoc_debug" "0"
-fi
-
-# =========
-# FIX DEEPSLEEP
-# =========
-write "/sys/class/scsi_disk/cache_type" "temporary none"
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED DEBUGGERS.                                                                                 "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 # Schedtune Tweaks
-if [[ -d "/dev/stune" ]]
+if [[ -d "/dev/stune/" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
@@ -3521,6 +2762,7 @@ write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "128"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
+write "/proc/sys/kernel/sched_user_hint" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
 
@@ -3589,7 +2831,6 @@ write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 write "/proc/sys/vm/swappiness" "100"
 write "/proc/sys/vm/laptop_mode" "0"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "200"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3620,7 +2861,7 @@ if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED MULTICORE POWER SAVING.                                                                    "
+kmsg1 "                                          DISABLED MULTICORE POWER SAVINGS.                                                                    "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -3697,6 +2938,23 @@ kmsg1 "                                          DISABLED BATTERY SAVER.        
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
+# Enable KSM
+if [[ -e "/sys/kernel/mm/ksm/run" ]] 
+then
+write "/sys/kernel/mm/ksm/run" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED KSM.                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Enable UKSM
+elif [[ -e "/sys/kernel/mm/uksm/run" ]] 
+then
+write "/sys/kernel/mm/uksm/run" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED UKSM.                                                                              "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
 # Disable arch power
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
 then
@@ -3754,69 +3012,6 @@ kmsg1 "                                         ENABLED USB FAST CHARGING.      
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
   
-# GMS ripper 1.0
-killall -9 com.google.android.gms
-killall -9 com.google.android.gms.persistent
-killall -9 com.google.process.gapps
-killall -9 com.google.android.gsf
-killall -9 com.google.android.gsf.persistent
-
-pm disable com.google.android.gms/com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
-pm disable com.google.android.gms/com.google.android.gms.mdm.receivers.MdmDeviceAdminReceiver
-pm disable com.google.android.gms/.ads.settings.AdsSettingsActivity
-pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorActivity
-pm disable com.google.android.gms/com.google.android.location.places.ui.aliaseditor.AliasEditorMapActivity
-pm disable com.google.android.gms/com.google.android.location.settings.ActivityRecognitionPermissionActivity
-pm disable com.google.android.gms/com.google.android.location.settings.GoogleLocationSettingsActivity
-pm disable com.google.android.gms/com.google.android.location.settings.LocationHistorySettingsActivity
-pm disable com.google.android.gms/com.google.android.location.settings.LocationSettingsCheckerActivity
-pm disable com.google.android.gms/.usagereporting.settings.UsageReportingActivity
-pm disable com.google.android.gms/.ads.adinfo.AdvertisingInfoContentProvider
-pm disable com.google.android.gms/com.google.android.location.reporting.service.ReportingContentProvider
-pm disable com.google.android.gms/com.google.android.location.internal.LocationContentProvider
-pm disable com.google.android.gms/.common.stats.net.contentprovider.NetworkUsageContentProvider
-pm disable com.google.android.gms/com.google.android.gms.ads.config.GServicesChangedReceiver
-pm disable com.google.android.gms/com.google.android.contextmanager.systemstate.SystemStateReceiver
-pm disable com.google.android.gms/.ads.jams.SystemEventReceiver
-pm disable com.google.android.gms/.ads.config.FlagsReceiver
-pm disable com.google.android.gms/.ads.social.DoritosReceiver
-pm disable com.google.android.gms/.analytics.AnalyticsReceiver
-pm disable com.google.android.gms/.analytics.internal.GServicesChangedReceiver
-pm disable com.google.android.gms/.common.analytics.CoreAnalyticsReceiver
-pm disable com.google.android.gms/.common.stats.GmsCoreStatsServiceLauncher
-pm disable com.google.android.gms/com.google.android.location.internal.AnalyticsSamplerReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ActiveReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ClockworkFallbackReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$ImposeReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$SecretCodeReceiver
-pm disable com.google.android.gms/.checkin.CheckinService\$TriggerReceiver
-pm disable com.google.android.gms/.checkin.EventLogService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateActivity
-pm disable com.google.android.gsf/.update.SystemUpdatePanoActivity
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$Receiver
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$SecretCodeReceiver
-pm disable com.google.android.gsf/com.google.android.gsf.checkin.CheckinService\$TriggerReceiver
-pm disable com.google.android.gsf/.checkin.EventLogService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateService\$Receiver
-pm disable com.google.android.gsf/.update.SystemUpdateService\$SecretCodeReceiver
-pm disable com.google.android.gsf/.checkin.CheckinService
-pm disable com.google.android.gsf/.checkin.EventLogService
-pm disable com.google.android.gsf/.update.SystemUpdateService
-pm disable com.google.android.apps.wellbeing/.powerstate.impl.PowerStateJobService
-pm disable com.google.android.apps.wellbeing/androidx.work.impl.background.systemjob.SystemJobService
-
-# Disable GMS and IMS run in startup and restart it on boot
-cmd appops set com.google.android.gms BOOT_COMPLETED ignore
-cmd appops set com.google.android.ims BOOT_COMPLETED ignore
-
-# Disable GMS and IMS run in startup and restart it on boot (custom permissions for Oxygen OS)
-cmd appops set com.google.android.gms AUTO_START ignore
-cmd appops set com.google.android.ims AUTO_START ignore
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          KILLED SOME GMS PROCESSES.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          $kts_profile PROFILE APPLIED WITH SUCCESS.                                                            "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3969,11 +3164,11 @@ kts_profilefr=Latence
 
 elif [[ "$kts_mode" == "2" ]]
 then
-kts_profilefr=Modéré
+kts_profilefr=Batterie
         	
 elif [[ "$kts_mode" == "3" ]]
 then
-kts_profilefr=Batterie
+kts_profilefr=Modéré
         	
 elif [[ "$kts_mode" == "4" ]]
 then
@@ -3986,22 +3181,27 @@ fi
 
 case "$kts_profile" in
  "Latency") {
+ 	sleep 5
      latency
 	 };;
 	 
 	 "Balanced") {
+	 	sleep 5
 	 	balanced
 	 	};;
 	
 	 	"Battery") {
+	 		sleep 5
 	 		battery
 	 		};;
 	 		
 	 		"Extreme") {
+	 			sleep 5
 	 			extreme
 	 			};;
 
 	 			"Gaming") {
+	 				sleep 5
 	 				gaming
 	 				};;
 esac

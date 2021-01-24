@@ -1,5 +1,4 @@
 #!/system/bin/sh
-# Thanks to Eight (iamlazy123 @ GitHub)
 
 # Enable sRGB
 echo '1' > /sys/module/mdss_fb/parameters/srgb_enabled

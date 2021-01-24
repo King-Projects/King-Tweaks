@@ -16,6 +16,6 @@ wait_until_login() {
     rm "$test_file"
 }
 wait_until_login
-sleep 60
+sleep 55
 # Setup tweaks
 kingtweaks

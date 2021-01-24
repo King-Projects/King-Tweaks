@@ -14,16 +14,10 @@ sleep 2
 ui_print "by pedrozzz (pedrozzz0 @ GitHub)"
 ui_print ""
 sleep 3
-ui_print "Thanks to Eight (iamlazy123 @ GitHub)"
-ui_print ""
-sleep 1
 ui_print "KTweak by Draco (tytydraco @ GitHub)"
 ui_print ""
 sleep 1
 ui_print "Thanks to Dan (paget96 @ XDA)"
-ui_print ""
-sleep 1
-ui_print "Universal GMS Doze by Gilang Iskandar (gloeyisk @ GitHub)"
 ui_print ""
 sleep 1
 ui_print "A special thanks to everyone that supports King Tweaks since it's born and all the other projects also."
