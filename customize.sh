@@ -20,10 +20,14 @@ sleep 1
 ui_print "Thanks to Dan (paget96 @ XDA)"
 ui_print ""
 sleep 1
-ui_print "A special thanks to everyone that supports King Tweaks since it's born and all the other projects also."
-sleep 5
-ui_print "With love, Pedrozzz, #KeepTheKing. ♡"
+ui_print "Thanks to bdashore3 @ GitHub"
+ui_print ""
+ui_print "Thanks to Eight (iamlazy123 @ GitHub)"
+ui_print ""
+sleep 1
+ui_print "And a special thanks to everyone that supports King Tweaks since it's born and all the other projects also."
 sleep 2
+ui_print "With love, Pedrozzz, #KeepTheKing. ♡"
 ui_print ""
 
 set_permissions() {
@@ -42,7 +46,6 @@ fstrim -v /cache
 ui_print ""
 ui_print "[*] Installing King Tweaks app..."
 pm install $MODPATH/KingTweaks.apk
-sleep 1
 ui_print ""
 ui_print "[*] Installing King Toast app..."
 pm install $MODPATH/KingToast.apk
@@ -52,7 +55,6 @@ if [[ -d "/data/adb/modules/KTKSR" ]]; then
 rm -rf /data/adb/modules/KTKSR
 fi
 rm -rf $MODPATH/*.apk
-sleep 1
 ui_print ""
 ui_print "[*] Logs are stored in your internal storage/KTS"
 sleep 1
