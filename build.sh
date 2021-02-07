@@ -3,16 +3,17 @@
 # Thanks to Draco (tytydraco @ GitHub)
 
 date=`date`
-type=beta
 hash=`git rev-parse --short HEAD`
 version=`cat module.prop | grep version= | sed "s/version=//"`
 
+read -p 'Build type: ' build_type
+
 echo "builddate=$date
-buildtype=$type" > $(pwd)/info.prop
+buildtype=$build_type" > $(pwd)/info.prop
  
 echo "Zipping KTSR-$version-$hash..."
 
-zip -r "KTSR-$version-$hash.zip" . -x *.git* -x "*.zip" -x build.sh
+zip -r "KTSR-$version-$hash.zip" . -x *.git* -x *.zip -x *.bak -x build.sh
 
 mv "KTSR-$version-$hash.zip" ../out
 
