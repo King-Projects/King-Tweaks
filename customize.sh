@@ -25,6 +25,9 @@ ui_print ""
 ui_print "Thanks to Eight (iamlazy123 @ GitHub)"
 ui_print ""
 sleep 1
+ui_print "Thanks to WeAreRavenS @ Telegram"
+ui_print ""
+sleep 1
 ui_print "And a special thanks to everyone that supports King Tweaks since it's born and all the other projects also."
 sleep 2
 ui_print "With love, Pedrozzz, #KeepTheKing. ♡"

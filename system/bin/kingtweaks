@@ -47,6 +47,14 @@ toastpt1() {
 	am start -a android.intent.action.MAIN -e toasttext "Perfil $kts_profilept aplicado" -n bellavita.toast/.MainActivity
 }
 
+toasttr() {
+	am start -a android.intent.action.MAIN -e toasttext "$kts_profiletr profili uygulanıyor..." -n bellavita.toast/.MainActivity
+}
+
+toasttr1() {
+	am start -a android.intent.action.MAIN -e toasttext "$kts_profiletr profili uygulandı" -n bellavita.toast/.MainActivity
+}
+
 toastin() {
 	am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil $kts_profilein..." -n bellavita.toast/.MainActivity
 }
@@ -101,6 +109,9 @@ then
 kmsg1 "[!] No root permissions. Exiting."
 exit 1
 fi
+
+# Detect if we are running on Android
+grep -q android /proc/cmdline && ANDROID=true
 
 # Duration in nanoseconds of one scheduling period
 SCHED_PERIOD_LATENCY="$((1 * 1000 * 1000))"
@@ -273,7 +284,7 @@ magisk=`magisk -c`
 totalram=`free -m | awk '/Mem:/{print $2}'`
 
 # Variable to battery actual capacity
-percentage=`cat /sys/class/power_supply/battery/capacity`
+bpercentage=`cat /sys/class/power_supply/battery/capacity`
 
 # Variable to KTS version
 bversion=`cat $MODPATH/module.prop | grep version= | sed "s/version=//"`
@@ -306,6 +317,10 @@ automatic() {
      	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
      	then
      	toastin
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr
      	
      	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
@@ -346,6 +361,10 @@ kmsg1 "-------------------------------------------------------------------------
      	then
      	toastin1
      	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
      	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
      	toastfr1
@@ -379,6 +398,10 @@ balanced() {
      	then
      	toastin
      	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr
+     	
      	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
      	toastfr
@@ -404,8 +427,8 @@ kmsg1 "                                            📱 Device: $dm             
 kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
 kmsg1 "                                            📀 Build Type: $btype                                                                                           "
 kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
-kmsg1 "                                            🔋 Battery Charge Level: $percentage%                                                                           "
-kmsg1 "                                            🌡️ Battery Temperature: $btemp °C                                                                               "
+kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                           "
+kmsg1 "                                            🌡️ Battery Temperature: $btemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -435,7 +458,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_ms" "128"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_ms" "64"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -568,7 +591,7 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune Tweaks
-if [[ -d "/dev/stune/" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune/" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
@@ -593,7 +616,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "20"
+write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED FS TWEAKS.                                                                                  "
@@ -643,7 +666,7 @@ write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_BALANCE"
 write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_BALANCE / SCHED_TASKS_BALANCE))"
 write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BALANCE / 2))"
 write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
-write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
+[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "32"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
@@ -922,6 +945,10 @@ kmsg1 "-------------------------------------------------------------------------
      	then
      	toastin1
      	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
      	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
      	toastfr1
@@ -955,6 +982,10 @@ extreme() {
      	then
      	toastin
      	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr
+     	
      	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
      	toastfr
@@ -980,8 +1011,8 @@ kmsg1 "                                            📱 Device: $dm             
 kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
 kmsg1 "                                            📀 Build Type: $btype                                                                                           "
 kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
-kmsg1 "                                            🔋 Battery Charge Level: $percentage%                                                                           "
-kmsg1 "                                            🌡️ Battery Temperature: $btemp °C                                                                               "
+kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                           "
+kmsg1 "                                            🌡️ Battery Temperature: $btemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1038,6 +1069,7 @@ if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
+write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CAF INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1159,7 +1191,7 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune Tweaks
-if [[ -d "/dev/stune/" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune/" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
@@ -1184,7 +1216,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "20"
+write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED FS TWEAKS.                                                                                  "
@@ -1233,7 +1265,7 @@ write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
 write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
 write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
-write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
+[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "128"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
@@ -1531,6 +1563,10 @@ kmsg1 "-------------------------------------------------------------------------
      	then
      	toastin1
      	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
      	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
      	toastfr1
@@ -1545,8 +1581,8 @@ kmsg1 "-------------------------------------------------------------------------
 }
 # Battery Profile
 battery() {
-	killall kingauto
-        	init=`date +%s`
+	init=`date +%s`
+         killall kingauto
         	
         	if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
@@ -1563,6 +1599,10 @@ battery() {
      	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
      	then
      	toastin
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr
      	
      	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
@@ -1589,8 +1629,8 @@ kmsg1 "                                            📱 Device: $dm             
 kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
 kmsg1 "                                            📀 Build Type: $btype                                                                                           "
 kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
-kmsg1 "                                            🔋 Battery Charge Level: $percentage%                                                                           "
-kmsg1 "                                            🌡️ Battery Temperature: $btemp °C                                                                               "
+kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                           "
+kmsg1 "                                            🌡️ Battery Temperature: $btemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1620,7 +1660,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "5"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_ms" "128"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_ms" "64"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1646,6 +1686,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
+write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED CAF INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1712,14 +1753,14 @@ done
 
 for cpu in /sys/devices/system/cpu/cpu*
 do
-if [[ $percentage -le "20" ]]
+if [[ $bpercentage < "20" ]]
 then
 write "/sys/devices/system/cpu/cpu1/online" "0"
 write "/sys/devices/system/cpu/cpu2/online" "0"
 write "/sys/devices/system/cpu/cpu5/online" "0"
 write "/sys/devices/system/cpu/cpu6/online" "0"
 
-elif [[ $percentage -ge "20" ]]
+elif [[ $bpercentage > "20" ]]
 then
 write "$cpu/online" "1"
 fi
@@ -1781,7 +1822,7 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune tweaks
-if [[ -d "/dev/stune/" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune/" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
@@ -1856,7 +1897,7 @@ write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_BATTERY"
 write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
 write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
 write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
-write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
+[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "8"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
@@ -1879,7 +1920,7 @@ fi
 # Set min and max clocks.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
-if [[ -e "${minclk}scaling_min_freq" ]]
+if [[ -e "${minclk}scaling_min_freq" && $bpercentage > "20" ]]
 then
 write "${minclk}scaling_min_freq" "100000"
 write "${minclk}scaling_max_freq" "$cpumfreq"
@@ -1888,10 +1929,29 @@ done
 
 for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-if [[ -e "${mnclk}scaling_min_freq" ]]
+if [[ -e "${mnclk}scaling_min_freq" && $bpercentage > "20" ]]
 then
 write "${mnclk}scaling_min_freq" "100000"
 write "${mnclk}scaling_max_freq" "$cpumfreq"
+fi
+done
+
+# Set min and max clocks.
+for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+do
+if [[ -e "${minclk}scaling_min_freq" && $bpercentage < "20" ]]
+then
+write "${minclk}scaling_min_freq" "100000"
+write "${minclk}scaling_max_freq" "$cpumxfreq"
+fi
+done
+
+for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+if [[ -e "${mnclk}scaling_min_freq" && $bpercentage < "20" ]]
+then
+write "${mnclk}scaling_min_freq" "100000"
+write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2133,6 +2193,10 @@ kmsg1 "-------------------------------------------------------------------------
      	then
      	toastin1
      	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
      	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
      	toastfr1
@@ -2147,8 +2211,8 @@ kmsg1 "-------------------------------------------------------------------------
 }
 # Gaming Profile
 gaming() {
-	killall kingauto
-        	init=`date +%s`    
+	init=`date +%s`
+         killall kingauto   
         	
         	if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
@@ -2165,6 +2229,10 @@ gaming() {
      	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
      	then
      	toastin
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr
      	
      	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
@@ -2191,8 +2259,8 @@ kmsg1 "                                            📱 Device: $dm             
 kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
 kmsg1 "                                            📀 Build Type: $btype                                                                                           "
 kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
-kmsg1 "                                            🔋 Battery Charge Level: $percentage%                                                                           "
-kmsg1 "                                            🌡️ Battery Temperature: $btemp °C                                                                               "
+kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                           "
+kmsg1 "                                            🌡️ Battery Temperature: $btemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2249,6 +2317,7 @@ if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
+write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED CAF INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2372,7 +2441,7 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune Tweaks
-if [[ -d "/dev/stune/" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune/" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
@@ -2397,7 +2466,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "20"
+write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                            APPLIED FS TWEAKS.                                                                                "
@@ -2446,7 +2515,7 @@ write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
 write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
 write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
-write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
+[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "128"
 write "/proc/sys/kernel/sched_schedstats" "0"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
@@ -2744,6 +2813,10 @@ kmsg1 "-------------------------------------------------------------------------
      	then
      	toastin1
      	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
      	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
      	then
      	toastfr1
@@ -2832,6 +2905,27 @@ kts_profile=Extreme
 elif [[ "$kts_mode" == "5" ]]
 then
 kts_profile=Gaming
+fi
+
+if [[ "$kts_mode" == "1" ]]
+then
+kts_profiletr=Gecikme
+
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profiletr=Batarya
+        	
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profiletr=Dengeli
+        	
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profiletr=Aşırı
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profiletr=Oyun
 fi
 
 if [[ "$kts_mode" == "1" ]]
