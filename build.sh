@@ -17,4 +17,6 @@ zip -r "KTSR-$version-$hash.zip" . -x *.git* -x *.zip -x *.bak -x build.sh
 
 mv "KTSR-$version-$hash.zip" ../out
 
+rm $(pwd)/info.prop
+
 echo "Done, check the folder to the finished build."
