@@ -233,6 +233,27 @@ dm=`getprop ro.product.model`
 # Variable to get magisk version
 magisk=`magisk -c`
 
+# Detect if we're running in a exynos device
+if [[ `getprop ro.boot.hardware | grep 'samsungexynos'` ]]; then
+exynos=true
+else
+exynos=false
+fi
+
+# Detect CPU scheduling type
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+if [[ `cat $cpu/scaling_available_governors | grep 'util'` ]]; then
+cpusched=EAS
+
+elif [[ `cat $cpu/scaling_available_governors | grep 'interactive'` ]]; then
+cpusched=HMP
+
+else
+cpusched=Unknown
+fi
+done
+
 # Variable to total device ram
 totalram=`free -m | awk '/Mem:/{print $2}'`
 
@@ -249,7 +270,14 @@ btype=`cat $MODPATH/info.prop | grep buildtype= | sed "s/buildtype=//"`
 bdate=`cat $MODPATH/info.prop | grep builddate= | sed "s/builddate=//"`
 
 # Variable to battery temperature
+if [[ -e /sys/class/power_supply/battery/temp ]]
+then
 btemp=`cat /sys/class/power_supply/battery/temp`
+
+elif [[ -e /sys/class/power_supply/battery/batt_temp ]]
+then 
+btemp=`cat /sys/class/power_supply/battery/batt_temp`
+fi
 
 btemp=$((btemp / 10))
 
@@ -263,8 +291,8 @@ kmsg1 "                                            🔧 Kernel: `uname -a`      
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
-kmsg1 "                                            ⛏️ GPU Load: $gpuload%                                                                                           "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
@@ -280,7 +308,31 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING LATENCY PROFILE.                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	       	     	
+	
+renice -n -5 $(pgrep system_server)
+renice -n -5 $(pgrep com.miui.home)
+renice -n -5 $(pgrep launcher)
+renice -n -5 $(pgrep lawnchair)
+renice -n -5 $(pgrep home)
+renice -n -5 $(pgrep watchapp)
+renice -n -5 $(pgrep trebuchet)
+renice -n -1 $(pgrep dialer)
+renice -n -1 $(pgrep keyboard)
+renice -n -1 $(pgrep inputmethod)
+renice -n -9 $(pgrep fluid)
+renice -n -10 $(pgrep composer)
+renice -n -1 $(pgrep com.android.phone)
+renice -n -10 $(pgrep surfaceflinger)
+renice -n 1 $(pgrep kswapd0)
+renice -n 1 $(pgrep ksmd)
+renice -n -6 $(pgrep msm_irqbalance)
+renice -n -9 $(pgrep kgsl_worker)
+renice -n 6 $(pgrep android.gms)
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICED PROCESSES.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Enable perfd, thermald and thermal-engine.
 start perfd
 start thermald
@@ -302,13 +354,13 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_ms" "64"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "150"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# I/O Scheduler Tweaks.
+# I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
 write "${queue}add_random" 0
@@ -344,6 +396,7 @@ write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "0"
 write "${cpu}interactive/boost" "0"
 write "${cpu}interactive/timer_slack" "0"
+write "${cpu}interactive/input_boost" "0"
 write "${cpu}interactive/use_migration_notif" "1" 
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
@@ -388,7 +441,7 @@ kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.      
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# FS tweaks.
+# FS Tweaks
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
@@ -399,7 +452,7 @@ kmsg1 "                                          APPLIED FS TWEAKS.             
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Enable dynamic_fsync.
+# Enable dynamic_fsync
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
@@ -420,12 +473,20 @@ kmsg1 "                                          APPLIED SCHEDULER FEATURES.    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
  
-# OP Chain disable.
+# OP Chain disable
 if [[ -d "/sys/module/opchain" ]]
 then
 write "/sys/module/opchain/parameters/chain_on" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED ONEPLUS CHAIN.                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+if [[ -d "/sys/module/mmc_core" ]];
+then
+write "/sys/module/mmc_core/parameters/crc" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CRC.                                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -493,7 +554,12 @@ write "/proc/sys/vm/dirty_expire_centisecs" "200"
 write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
+# Follow SSWAP on exynos SOC's
+if [[ $exynos == "true" ]]; then
+write "/proc/sys/vm/swappiness" "150"
+else
 write "/proc/sys/vm/swappiness" "100"
+fi
 write "/proc/sys/vm/laptop_mode" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "200"
 
@@ -575,10 +641,14 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLED USB FAST CHARGING.                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
-  
+
+if [[ -e "/sys/class/sec/switch/afc_disable" ]];
+then
+write "/sys/class/sec/switch/afc_disable" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          LATENCY PROFILE APPLIED WITH SUCCESS.                                                             "
+kmsg1 "                                          ENABLED FAST CHARGING ON SAMSUNG DEVICES.                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
@@ -600,8 +670,8 @@ kmsg1 "                                            🔧 Kernel: `uname -a`      
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
-kmsg1 "                                            ⛏️ GPU Load: $gpuload%                                                                                           "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
@@ -618,6 +688,30 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLING BALANCED PROFILE...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"       	
  	
+renice -n -5 $(pgrep system_server)
+renice -n -5 $(pgrep com.miui.home)
+renice -n -5 $(pgrep launcher)
+renice -n -5 $(pgrep lawnchair)
+renice -n -5 $(pgrep home)
+renice -n -5 $(pgrep watchapp)
+renice -n -5 $(pgrep trebuchet)
+renice -n -1 $(pgrep dialer)
+renice -n -1 $(pgrep keyboard)
+renice -n -1 $(pgrep inputmethod)
+renice -n -9 $(pgrep fluid)
+renice -n -10 $(pgrep composer)
+renice -n -1 $(pgrep com.android.phone)
+renice -n -10 $(pgrep surfaceflinger)
+renice -n 1 $(pgrep kswapd0)
+renice -n 1 $(pgrep ksmd)
+renice -n -6 $(pgrep msm_irqbalance)
+renice -n -9 $(pgrep kgsl_worker)
+renice -n 6 $(pgrep android.gms)
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICED PROCESSES.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Enable perfd, thermald and thermal-engine.
 start perfd
 start thermald
@@ -639,7 +733,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_ms" "64"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "150"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -657,11 +751,20 @@ write "${corectl}/disable" "0"
 fi
 done
 
+if [[ -e "/sys/power/cpuhotplug/enable" ]]
+then
+write "/sys/power/cpuhotplug/enable" "1"
+
+elif [[ -e "/sys/power/cpuhotplug/enabled" ]]
+then
+write "/sys/power/cpuhotplug/enabled" "1"
+fi
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED CORE CONTROL.                                                                               "
+kmsg1 "                                          ENABLED CORE CONTROL & CPU HOTPLUG.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# I/O Scheduler Tweaks.
+# I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
 write "${queue}add_random" 0
@@ -697,6 +800,7 @@ write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "40000"
 write "${cpu}interactive/boost" "0"
 write "${cpu}interactive/timer_slack" "40000"
+write "${cpu}interactive/input_boost" "0"
 write "${cpu}interactive/use_migration_notif" "1" 
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
@@ -721,18 +825,20 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks.
-write "$gpu/throttling" "1"
-write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "0"
-write "$gpu/force_no_nap" "0"
-write "$gpu/bus_split" "1"
-write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
-write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "$gpuminpl"
-write "$gpu/force_bus_on" "0"
-write "$gpu/force_clk_on" "0"
-write "$gpu/force_rail_on" "0"
-write "$gpu/idle_timer" "66"
+# GPU Tweaks.
+[[ $exynos == "false" ]] && write "$gpu/throttling" "1"
+[[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
+[[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
+[[ $exynos == "false" ]] && write "$gpu/bus_split" "1"
+[[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
+[[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
+[[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
+[[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
+[[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
+[[ $exynos == "false" ]] && write "$gpu/idle_timer" "66"
+
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -772,19 +878,23 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune Tweaks
-[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune/" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
+write "/dev/stune/background/schedtune.prefer_perf" "1"
 
 write "/dev/stune/foreground/schedtune.boost" "0"
 write "/dev/stune/foreground/schedtune.prefer_idle" "1"
+write "/dev/stune/foreground/schedtune.prefer_perf" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
+write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "10"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
+write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
 write "/dev/stune/schedtune.prefer_idle" "0"
@@ -793,7 +903,7 @@ kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.      
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# FS tweaks.
+# FS Tweaks
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
@@ -804,7 +914,7 @@ kmsg1 "                                          APPLIED FS TWEAKS.             
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Enable dynamic_fsync.
+# Enable dynamic_fsync
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
@@ -826,12 +936,20 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          APPLIED SCHEDULER FEATURES.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# OP Chain disable.
+# OP Chain disable
 if [[ -d "/sys/module/opchain" ]]
 then
 write "/sys/module/opchain/parameters/chain_on" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED ONEPLUS CHAIN.                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+if [[ -d "/sys/module/mmc_core" ]];
+then
+write "/sys/module/mmc_core/parameters/crc" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CRC.                                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -917,7 +1035,12 @@ write "/proc/sys/vm/dirty_expire_centisecs" "1000"
 write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
+# Follow SSWAP on exynos SOC's
+if [[ $exynos == "true" ]]; then
+write "/proc/sys/vm/swappiness" "150"
+else
 write "/proc/sys/vm/swappiness" "100"
+fi
 write "/proc/sys/vm/laptop_mode" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "50"
 
@@ -958,6 +1081,13 @@ if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
+then
+write "/sys/class/sec/tsp/dt2w_enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1090,11 +1220,18 @@ fi
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
-fi
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED USB FAST CHARGING.                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+if [[ -e "/sys/class/sec/switch/afc_disable" ]];
+then
+write "/sys/class/sec/switch/afc_disable" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED FAST CHARGING ON SAMSUNG DEVICES.                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          BALANCED PROFILE APPLIED WITH SUCCESS.                                                             "
@@ -1120,8 +1257,8 @@ kmsg1 "                                            🔧 Kernel: `uname -a`      
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
-kmsg1 "                                            ⛏️ GPU Load: $gpuload%                                                                                           "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
@@ -1138,6 +1275,30 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLING EXTREME PROFILE.                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 	  
+renice -n -5 $(pgrep system_server)
+renice -n -5 $(pgrep com.miui.home)
+renice -n -5 $(pgrep launcher)
+renice -n -5 $(pgrep lawnchair)
+renice -n -5 $(pgrep home)
+renice -n -5 $(pgrep watchapp)
+renice -n -5 $(pgrep trebuchet)
+renice -n -1 $(pgrep dialer)
+renice -n -1 $(pgrep keyboard)
+renice -n -1 $(pgrep inputmethod)
+renice -n -9 $(pgrep fluid)
+renice -n -10 $(pgrep composer)
+renice -n -1 $(pgrep com.android.phone)
+renice -n -10 $(pgrep surfaceflinger)
+renice -n 1 $(pgrep kswapd0)
+renice -n 1 $(pgrep ksmd)
+renice -n -6 $(pgrep msm_irqbalance)
+renice -n -9 $(pgrep kgsl_worker)
+renice -n 6 $(pgrep android.gms)
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICED PROCESSES.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Enable perfd, disable thermald and thermal-engine.
 start perfd
 stop thermald
@@ -1159,7 +1320,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_ms" "128"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1177,8 +1338,17 @@ write "${corectl}/disable" "1"
 fi
 done
 
+if [[ -e "/sys/power/cpuhotplug/enable" ]]
+then
+write "/sys/power/cpuhotplug/enable" "0"
+
+elif [[ -e "/sys/power/cpuhotplug/enabled" ]]
+then
+write "/sys/power/cpuhotplug/enabled" "0"
+fi
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
+kmsg1 "                                          DISABLED CORE CONTROL & CPU HOTPLUG.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Caf CPU Boost
@@ -1201,7 +1371,7 @@ kmsg1 "                                          TWEAKED CPU INPUT BOOST.       
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# I/O Scheduler Tweaks.
+# I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
 write "${queue}add_random" 0
@@ -1236,6 +1406,7 @@ write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "0"
 write "${cpu}interactive/boost" "1"
 write "${cpu}interactive/timer_slack" "0"
+write "${cpu}interactive/input_boost" "1"
 write "${cpu}interactive/use_migration_notif" "1"
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
@@ -1259,18 +1430,18 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks.
-write "$gpu/throttling" "0"
-write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "1"
-write "$gpu/force_no_nap" "0"
-write "$gpu/bus_split" "0"
-write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
-write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "1"
-write "$gpu/force_bus_on" "0"
-write "$gpu/force_clk_on" "0"
-write "$gpu/force_rail_on" "0"
-write "$gpu/idle_timer" "156"
+[[ $exynos == "false" ]] && write "$gpu/throttling" "0"
+[[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "1"
+[[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
+[[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
+[[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
+[[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "1"
+[[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
+[[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
+[[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
+[[ $exynos == "false" ]] && write "$gpu/idle_timer" "156"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1307,19 +1478,23 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune Tweaks
-[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune/" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
+write "/dev/stune/background/schedtune.prefer_perf" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "50"
 write "/dev/stune/foreground/schedtune.prefer_idle" "0"
+write "/dev/stune/foreground/schedtune.prefer_perf" "1"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
+write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "50"
 write "/dev/stune/top-app/schedtune.prefer_idle" "0"
+write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
 write "/dev/stune/schedtune.prefer_idle" "0"
@@ -1328,7 +1503,7 @@ kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.      
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# FS Tweaks.
+# FS Tweaks
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
@@ -1339,7 +1514,7 @@ kmsg1 "                                          APPLIED FS TWEAKS.             
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Enable dynamic_fsync.
+# Enable dynamic_fsync
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
@@ -1348,7 +1523,7 @@ kmsg1 "                                          ENABLED DYNAMIC FSYNC.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Scheduler features.
+# Scheduler features
 if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
@@ -1360,12 +1535,20 @@ kmsg1 "                                          APPLIED SCHEDULER FEATURES.    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# OP Tweaks
+# OP Chain disable
 if [[ -d "/sys/module/opchain" ]]
 then
 write "/sys/module/opchain/parameters/chain_on" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED ONEPLUS CHAIN.                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+if [[ -d "/sys/module/mmc_core" ]];
+then
+write "/sys/module/mmc_core/parameters/crc" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CRC.                                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -1452,7 +1635,12 @@ write "/proc/sys/vm/dirty_expire_centisecs" "500"
 write "/proc/sys/vm/dirty_writeback_centisecs" "200"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
+# Follow SSWAP on exynos SOC's
+if [[ $exynos == "true" ]]; then
+write "/proc/sys/vm/swappiness" "150"
+else
 write "/proc/sys/vm/swappiness" "100"
+fi
 write "/proc/sys/vm/laptop_mode" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "80"
 
@@ -1493,6 +1681,13 @@ if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
+then
+write "/sys/class/sec/tsp/dt2w_enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1648,10 +1843,14 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLED USB FAST CHARGING.                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
-  
+
+if [[ -e "/sys/class/sec/switch/afc_disable" ]];
+then
+write "/sys/class/sec/switch/afc_disable" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          EXTREME PROFILE APPLIED WITH SUCCESS.                                                             "
+kmsg1 "                                          ENABLED FAST CHARGING ON SAMSUNG DEVICES.                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
@@ -1673,8 +1872,8 @@ kmsg1 "                                            🔧 Kernel: `uname -a`      
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
-kmsg1 "                                            ⛏️ GPU Load: $gpuload%                                                                                           "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
@@ -1691,6 +1890,30 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLING BATTERY PROFILE...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
      	
+renice -n -5 $(pgrep system_server)
+renice -n -5 $(pgrep com.miui.home)
+renice -n -5 $(pgrep launcher)
+renice -n -5 $(pgrep lawnchair)
+renice -n -5 $(pgrep home)
+renice -n -5 $(pgrep watchapp)
+renice -n -5 $(pgrep trebuchet)
+renice -n -1 $(pgrep dialer)
+renice -n -1 $(pgrep keyboard)
+renice -n -1 $(pgrep inputmethod)
+renice -n -9 $(pgrep fluid)
+renice -n -10 $(pgrep composer)
+renice -n -1 $(pgrep com.android.phone)
+renice -n -10 $(pgrep surfaceflinger)
+renice -n 1 $(pgrep kswapd0)
+renice -n 1 $(pgrep ksmd)
+renice -n -6 $(pgrep msm_irqbalance)
+renice -n -9 $(pgrep kgsl_worker)
+renice -n 6 $(pgrep android.gms)
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICED PROCESSES.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Enable perfd, thermald and thermal-engine.
 start perfd
 start thermald
@@ -1712,7 +1935,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "5"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_ms" "64"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "500"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1730,8 +1953,17 @@ write "${corectl}/disable" "0"
 fi
 done
 
+if [[ -e "/sys/power/cpuhotplug/enable" ]]
+then
+write "/sys/power/cpuhotplug/enable" "1"
+
+elif [[ -e "/sys/power/cpuhotplug/enabled" ]]
+then
+write "/sys/power/cpuhotplug/enabled" "1"
+fi
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED CORE CONTROL.                                                                                  "
+kmsg1 "                                          ENABLED CORE CONTROL & CPU HOTPLUG.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Caf CPU Boost
@@ -1752,7 +1984,7 @@ kmsg1 "                                          DISABLED CPU INPUT BOOST.      
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# I/O Scheduler Tweaks.
+# I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
 write "${queue}add_random" 0
@@ -1788,6 +2020,7 @@ write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "50000"
 write "${cpu}interactive/boost" "0"
 write "${cpu}interactive/timer_slack" "50000"
+write "${cpu}interactive/input_boost" "0"
 write "${cpu}interactive/use_migration_notif" "1" 
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
@@ -1822,18 +2055,19 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks
-write "$gpu/throttling" "1"
-write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "0"
-write "$gpu/force_no_nap" "0"
-write "$gpu/bus_split" "1"
-write "$gpu/devfreq/max_freq" "$gpumfreq"
-write "$gpu/devfreq/min_freq" "100000000"
-write "$gpu/default_pwrlevel" "$gpuminpl"
-write "$gpu/force_bus_on" "0"
-write "$gpu/force_clk_on" "0"
-write "$gpu/force_rail_on" "0"
-write "$gpu/idle_timer" "36"
+[[ $exynos == "false" ]] && write "$gpu/throttling" "1"
+[[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
+[[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
+[[ $exynos == "false" ]] && write "$gpu/bus_split" "1"
+[[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" "$gpumfreq"
+[[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
+[[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
+[[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
+[[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
+[[ $exynos == "false" ]] && write "$gpu/idle_timer" "36"
+
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1873,19 +2107,23 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune tweaks
-[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune/" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
+write "/dev/stune/background/schedtune.prefer_perf" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "1"
 write "/dev/stune/foreground/schedtune.prefer_idle" "1"
+write "/dev/stune/foreground/schedtune.prefer_perf" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
+write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "5"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
+write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
 write "/dev/stune/schedtune.prefer_idle" "0"
@@ -1894,7 +2132,7 @@ kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.      
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# FS Tweaks.
+# FS Tweaks
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
@@ -1905,7 +2143,7 @@ kmsg1 "                                          APPLIED FS TWEAKS.             
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
     
-# Enable dynamic_fsync.
+# Enable dynamic_fsync
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
@@ -1914,7 +2152,7 @@ kmsg1 "                                          ENABLED DYNAMIC FSYNC.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Scheduler features.
+# Scheduler features
 if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
@@ -1933,6 +2171,14 @@ then
 write "/sys/module/opchain/parameters/chain_on" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED ONEPLUS CHAIN.                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+if [[ -d "/sys/module/mmc_core" ]];
+then
+write "/sys/module/mmc_core/parameters/crc" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CRC.                                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2034,7 +2280,12 @@ write "/proc/sys/vm/dirty_expire_centisecs" "3000"
 write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
+# Follow SSWAP on exynos SOC's
+if [[ $exynos == "true" ]]; then
+write "/proc/sys/vm/swappiness" "150"
+else
 write "/proc/sys/vm/swappiness" "100"
+fi
 write "/proc/sys/vm/laptop_mode" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "50"
 
@@ -2075,6 +2326,13 @@ if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
+then
+write "/sys/class/sec/tsp/dt2w_enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2213,10 +2471,14 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLED USB FAST CHARGING.                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
-  
+
+if [[ -e "/sys/class/sec/switch/afc_disable" ]];
+then
+write "/sys/class/sec/switch/afc_disable" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          BATTERY PROFILE APPLIED WITH SUCCESS.                                                             "
+kmsg1 "                                          ENABLED FAST CHARGING ON SAMSUNG DEVICES.                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
@@ -2238,8 +2500,8 @@ kmsg1 "                                            🔧 Kernel: `uname -a`      
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
+kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
-kmsg1 "                                            ⛏️ GPU Load: $gpuload%                                                                                           "
 kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
@@ -2255,6 +2517,30 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING $kts_profile PROFILE...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"       	
+
+renice -n -5 $(pgrep system_server)
+renice -n -5 $(pgrep com.miui.home)
+renice -n -5 $(pgrep launcher)
+renice -n -5 $(pgrep lawnchair)
+renice -n -5 $(pgrep home)
+renice -n -5 $(pgrep watchapp)
+renice -n -5 $(pgrep trebuchet)
+renice -n -1 $(pgrep dialer)
+renice -n -1 $(pgrep keyboard)
+renice -n -1 $(pgrep inputmethod)
+renice -n -9 $(pgrep fluid)
+renice -n -10 $(pgrep composer)
+renice -n -1 $(pgrep com.android.phone)
+renice -n -10 $(pgrep surfaceflinger)
+renice -n 1 $(pgrep kswapd0)
+renice -n 1 $(pgrep ksmd)
+renice -n -6 $(pgrep msm_irqbalance)
+renice -n -9 $(pgrep kgsl_worker)
+renice -n 6 $(pgrep android.gms)
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICED PROCESSES.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable perfd, thermald and thermal-engine.
 stop perfd
@@ -2277,7 +2563,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_ms" "128"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2295,8 +2581,17 @@ write "${corectl}/disable" "1"
 fi
 done
 
+if [[ -e "/sys/power/cpuhotplug/enable" ]]
+then
+write "/sys/power/cpuhotplug/enable" "0"
+
+elif [[ -e "/sys/power/cpuhotplug/enabled" ]]
+then
+write "/sys/power/cpuhotplug/enabled" "0"
+fi
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CORE CONTROL.                                                                               "
+kmsg1 "                                          DISABLED CORE CONTROL & CPU HOTPLUG.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Caf CPU Boost
@@ -2319,7 +2614,7 @@ kmsg1 "                                          TWEAKED CPU INPUT BOOST.       
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# I/O Scheduler Tweaks.
+# I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
 write "${queue}add_random" 0
@@ -2355,6 +2650,7 @@ write "${cpu}scaling_governor" interactive
 write "${cpu}interactive/timer_rate" "0"
 write "${cpu}interactive/boost" "1"
 write "${cpu}interactive/timer_slack" "0"
+write "${cpu}interactive/input_boost" "1"
 write "${cpu}interactive/use_migration_notif" "1"
 write "${cpu}interactive/ignore_hispeed_on_notif" "1"
 write "${cpu}interactive/use_sched_load" "1"
@@ -2379,18 +2675,19 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks.
-write "$gpu/throttling" "0"
-write "$gpu/thermal_pwrlevel" "0"
-write "$gpu/devfreq/adrenoboost" "2"
-write "$gpu/force_no_nap" "1"
-write "$gpu/bus_split" "0"
-write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
-write "$gpu/devfreq/min_freq" $gpumx
-write "$gpu/default_pwrlevel" `cat $gpu/max_pwrlevel`
-write "$gpu/force_bus_on" "1"
-write "$gpu/force_clk_on" "1"
-write "$gpu/force_rail_on" "1"
-write "$gpu/idle_timer" "1006"
+[[ $exynos == "false" ]] && write "$gpu/throttling" "0"
+[[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "2"
+[[ $exynos == "false" ]] && write "$gpu/force_no_nap" "1"
+[[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
+[[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
+[[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" $gpumx
+[[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" `cat $gpu/max_pwrlevel`
+[[ $exynos == "false" ]] && write "$gpu/force_bus_on" "1"
+[[ $exynos == "false" ]] && write "$gpu/force_clk_on" "1"
+[[ $exynos == "false" ]] && write "$gpu/force_rail_on" "1"
+[[ $exynos == "false" ]] && write "$gpu/idle_timer" "1006"
+
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
@@ -2427,19 +2724,23 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune Tweaks
-[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune/" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
+write "/dev/stune/background/schedtune.prefer_perf" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "50"
 write "/dev/stune/foreground/schedtune.prefer_idle" "0"
+write "/dev/stune/foreground/schedtune.prefer_perf" "1"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
+write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "50"
 write "/dev/stune/top-app/schedtune.prefer_idle" "0"
+write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
 write "/dev/stune/schedtune.prefer_idle" "0"
@@ -2448,7 +2749,7 @@ kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.      
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# FS Tweaks.
+# FS Tweaks
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
@@ -2459,7 +2760,7 @@ kmsg1 "                                            APPLIED FS TWEAKS.           
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Enable dynamic_fsync.
+# Enable dynamic_fsync
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
@@ -2468,7 +2769,7 @@ kmsg1 "                                          ENABLED DYNAMIC FSYNC.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Scheduler features.
+# Scheduler features
 if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
@@ -2480,12 +2781,20 @@ kmsg1 "                                          APPLIED SCHEDULER FEATURES.    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# OP Tweaks
+# OP Chain disable
 if [[ -d "/sys/module/opchain" ]]
 then
 write "/sys/module/opchain/parameters/chain_on" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED ONEPLUS CHAIN.                                                                             "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+if [[ -d "/sys/module/mmc_core" ]];
+then
+write "/sys/module/mmc_core/parameters/crc" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED CRC.                                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2572,7 +2881,12 @@ write "/proc/sys/vm/dirty_expire_centisecs" "500"
 write "/proc/sys/vm/dirty_writeback_centisecs" "200"
 write "/proc/sys/vm/page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
+# Follow SSWAP on exynos SOC's
+if [[ $exynos == "true" ]]; then
+write "/proc/sys/vm/swappiness" "150"
+else
 write "/proc/sys/vm/swappiness" "100"
+fi
 write "/proc/sys/vm/laptop_mode" "0"
 write "/proc/sys/vm/vfs_cache_pressure" "200"
 
@@ -2613,6 +2927,13 @@ if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
+then
+write "/sys/class/sec/tsp/dt2w_enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2765,13 +3086,17 @@ if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                         ENABLED USB FAST CHARGING.                                                                         "
+kmsg1 "                                          ENABLED USB FAST CHARGING.                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
-  
-kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          GAMING PROFILE APPLIED WITH SUCCESS.                                                            "
-kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/class/sec/switch/afc_disable" ]];
+then
+write "/sys/class/sec/switch/afc_disable" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          ENABLED FAST CHARGING ON SAMSUNG DEVICES.                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
@@ -2789,6 +3114,7 @@ while true; do
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   User is playing. Applied gaming profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+  settings delete global device_idle_constants
   settings put global low_power "0"
   cmd netpolicy set restrict-background "false"
   # Let's put this as non-sense (not tested).
@@ -2813,6 +3139,7 @@ while true; do
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   User is running benchmark / heavy apps. Applied extreme profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+  settings delete global device_idle_constants
   settings put global low_power "0"
   cmd netpolicy set restrict-background "false"
   # Let's put this as non-sense (not tested).
@@ -2825,8 +3152,6 @@ while true; do
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device screen is turned off. Applied battery profile and extended check time."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  dumpsys deviceidle enable light
-  dumpsys deviceidle enable deep
   settings put global low_power "1"
   cmd netpolicy set restrict-background "true"
   # Let's put this as non-sense (not tested).
@@ -2834,20 +3159,22 @@ while true; do
   settings put system high_touch_sensitivity_enable "0"
   settings put global default_restrict_background_data "1"
   battery
+  dumpsys deviceidle enable light
+  dumpsys deviceidle enable deep
   sleep 300
   elif [ $(cat /sys/class/leds/lcd-backlight/brightness) == "0" ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device screen is turned off. Applied battery profile, extended check time."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  dumpsys deviceidle enable light
-  dumpsys deviceidle enable deep
   settings put global low_power "1"
   cmd netpolicy set restrict-background "true"
   # Let's put this as non-sense (not tested).
   settings put system display_low_power "1"
   settings put system high_touch_sensitivity_enable "0"
   settings put global default_restrict_background_data "1"
-  battery 
+  battery
+  dumpsys deviceidle enable light
+  dumpsys deviceidle enable deep
   sleep 300
   elif [ $(cat /sys/class/power_supply/battery/status) == "Charging" ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2873,6 +3200,7 @@ while true; do
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device battery is lower than 20%, applied battery profile and extended check time to reduce battery comsumption."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+  settings put global device_idle_constants inactive_to=60000,sensing_to=0,locating_to=0,location_accuracy=2000,motion_inactive_to=0,idle_after_inactive_to=0,idle_pending_to=60000,max_idle_pending_to=120000,idle_pending_factor=2.0,idle_to=900000,max_idle_to=21600000,idle_factor=2.0,max_temp_app_whitelist_duration=60000,mms_temp_app_whitelist_duration=30000,sms_temp_app_whitelist_duration=20000,light_after_inactive_to=10000,light_pre_idle_to=60000,light_idle_to=180000,light_idle_factor=2.0,light_max_idle_to=900000,light_idle_maintenance_min_budget=30000,light_idle_maintenance_max_budget=60000
   # Let's put this as non-sense (not tested).
   settings put system display_low_power "1"
   settings put system high_touch_sensitivity_enable "0"
@@ -2883,6 +3211,7 @@ while true; do
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   No considerable usage found. Applied latency profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+  settings delete global device_idle_constants
   settings put global low_power "0"
   cmd netpolicy set restrict-background "false"
   # Let's put this as non-sense (not tested).
