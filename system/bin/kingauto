@@ -1,6 +1,7 @@
 #!/system/bin/sh
-# Written by Draco (tytydraco @ GitHub).
-# Modified by Pedrozzz (pedrozzz0 @ GitHub).
+# Written by Draco (tytydraco @ GitHub)
+# Modified by Pedrozzz (pedrozzz0 @ GitHub)
+# If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 MODPATH=/data/adb/modules/KTSR
 
@@ -240,6 +241,13 @@ else
 exynos=false
 fi
 
+# Detect if we're running on a mediatek device
+if [[ `$soc | grep 'mt'` ]]; then
+mtk=true
+else
+mtk=false
+fi
+
 # Detect CPU scheduling type
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
@@ -333,6 +341,15 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          RENICED PROCESSES.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+for panic in /proc/sys/*/panic*
+do
+write "$panic" "0"
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Enable perfd, thermald and thermal-engine.
 start perfd
 start thermald
@@ -420,7 +437,7 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Schedtune Tweaks
-[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune/" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune" ]]
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
@@ -712,6 +729,15 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          RENICED PROCESSES.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+for panic in /proc/sys/*/panic*
+do
+write "$panic" "0"
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Enable perfd, thermald and thermal-engine.
 start perfd
 start thermald
@@ -825,20 +851,18 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks.
-# GPU Tweaks.
-[[ $exynos == "false" ]] && write "$gpu/throttling" "1"
-[[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
-[[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
-[[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
-[[ $exynos == "false" ]] && write "$gpu/bus_split" "1"
-[[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
-[[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
-[[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
-[[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
-[[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
-[[ $exynos == "false" ]] && write "$gpu/idle_timer" "66"
-
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "66"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1042,7 +1066,7 @@ else
 write "/proc/sys/vm/swappiness" "100"
 fi
 write "/proc/sys/vm/laptop_mode" "0"
-write "/proc/sys/vm/vfs_cache_pressure" "50"
+write "/proc/sys/vm/vfs_cache_pressure" "100"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -1299,6 +1323,15 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          RENICED PROCESSES.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+for panic in /proc/sys/*/panic*
+do
+write "$panic" "0"
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Enable perfd, disable thermald and thermal-engine.
 start perfd
 stop thermald
@@ -1430,18 +1463,18 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks.
-[[ $exynos == "false" ]] && write "$gpu/throttling" "0"
-[[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
-[[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "1"
-[[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
-[[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
-[[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
-[[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "1"
-[[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
-[[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
-[[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
-[[ $exynos == "false" ]] && write "$gpu/idle_timer" "156"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "156"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1914,6 +1947,15 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          RENICED PROCESSES.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+for panic in /proc/sys/*/panic*
+do
+write "$panic" "0"
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Enable perfd, thermald and thermal-engine.
 start perfd
 start thermald
@@ -2055,19 +2097,18 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks
-[[ $exynos == "false" ]] && write "$gpu/throttling" "1"
-[[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
-[[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
-[[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
-[[ $exynos == "false" ]] && write "$gpu/bus_split" "1"
-[[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" "$gpumfreq"
-[[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
-[[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
-[[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
-[[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
-[[ $exynos == "false" ]] && write "$gpu/idle_timer" "36"
-
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" "$gpumfreq"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "36"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2287,7 +2328,7 @@ else
 write "/proc/sys/vm/swappiness" "100"
 fi
 write "/proc/sys/vm/laptop_mode" "0"
-write "/proc/sys/vm/vfs_cache_pressure" "50"
+write "/proc/sys/vm/vfs_cache_pressure" "60"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -2542,6 +2583,15 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          RENICED PROCESSES.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
+for panic in /proc/sys/*/panic*
+do
+write "$panic" "0"
+done
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Disable perfd, thermald and thermal-engine.
 stop perfd
 stop thermald
@@ -2675,18 +2725,18 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks.
-[[ $exynos == "false" ]] && write "$gpu/throttling" "0"
-[[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
-[[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "2"
-[[ $exynos == "false" ]] && write "$gpu/force_no_nap" "1"
-[[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
-[[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
-[[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" $gpumx
-[[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" `cat $gpu/max_pwrlevel`
-[[ $exynos == "false" ]] && write "$gpu/force_bus_on" "1"
-[[ $exynos == "false" ]] && write "$gpu/force_clk_on" "1"
-[[ $exynos == "false" ]] && write "$gpu/force_rail_on" "1"
-[[ $exynos == "false" ]] && write "$gpu/idle_timer" "1006"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "2"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" $gpumx
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" `cat $gpu/max_pwrlevel`
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "1006"
 
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]

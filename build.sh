@@ -11,11 +11,11 @@ read -p 'Build type: ' build_type
 echo "builddate=$date
 buildtype=$build_type" > $(pwd)/info.prop
  
-echo "Zipping KTSR-$version-$hash..."
+echo "Zipping KTSR-$version-$build_type-$hash..."
 
-zip -r "KTSR-$version-$hash.zip" . -x *.git* -x *.zip -x *.bak -x build.sh
+zip -r "KTSR-$version-$build_type-$hash.zip" . -x *.git* -x *.zip -x *.bak -x build.sh
 
-mv "KTSR-$version-$hash.zip" ../out
+mv "KTSR-$version-$build_type-$hash.zip" ../out
 
 rm $(pwd)/info.prop
 
