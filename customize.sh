@@ -43,10 +43,12 @@ ui_print "With love, Pedrozzz, #KeepTheKing. ♡"
 ui_print ""
 sleep 2
 
-ui_print "[*] Fetching the latest script(s) from GitHub..."
+ui_print "[*] Fetching the latest script(s) and app(s) from GitHub..."
 ui_print ""
-curl -Lso "$MODPATH/system/bin/kingtweaks" "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/system/bin/kingtweaks"
-curl -Lso "$MODPATH/system/bin/kingauto" "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/system/bin/kingauto"
+wget -O "$MODPATH/system/bin/kingtweaks" "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/system/bin/kingtweaks"
+wget -O "$MODPATH/system/bin/kingauto" "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/system/bin/kingauto"
+wget -O "$MODPATH/KingTweaks.apk" "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/KingTweaks.apk"
+wget -O "$MODPATH/KingToast.apk" "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/KingToast.apk"
 
 set_permissions() {
   set_perm_recursive $MODPATH/system/bin root root 0777 0755
