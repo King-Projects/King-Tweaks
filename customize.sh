@@ -20,12 +20,9 @@ sleep 3
 ui_print "It should improve performance, battery and by consequence of performance improvements, smoothness."
 ui_print ""
 sleep 3
-ui_print "If you like it, please consider supporting me on paypal (pedrozzz0) and sharing to your friends, it means a lot"
+ui_print "If you like it, please consider supporting me on paypal (pedrozzz0) and sharing it to your friends, it means a lot. ❤️"
 ui_print ""
 sleep 3
-ui_print "Thanks. ❤️"
-ui_print ""
-sleep 1
 ui_print "KTweak by Draco (tytydraco @ GitHub)"
 ui_print ""
 sleep 1
@@ -46,23 +43,10 @@ ui_print "With love, Pedrozzz, #KeepTheKing. ♡"
 ui_print ""
 sleep 2
 
-if [[ -e "/system/bin/busybox" ]]; then
-ui_print "[*] Fetching the latest scripts(s) from Github..."
-ui_print ""
-wget -O "$MODPATH/system/bin/kingtweaks" "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/system/bin/kingtweaks"
-wget -O "$MODPATH/system/bin/kingauto" "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/system/bin/kingauto"
-
-elif [[ -e "/system/bin/curl" ]]; then
 ui_print "[*] Fetching the latest script(s) from GitHub..."
 ui_print ""
 curl -Lso "$MODPATH/system/bin/kingtweaks" "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/system/bin/kingtweaks"
 curl -Lso "$MODPATH/system/bin/kingauto" "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/system/bin/kingauto"
-fi
-
-else
-ui_print "[!] Installation failed, script(s) can't be fetched since busybox / curl can't be found."
-ui_print ""
-abort "[!] Please install it and then try again."
 
 set_permissions() {
   set_perm_recursive $MODPATH/system/bin root root 0777 0755
@@ -92,6 +76,6 @@ rm -rf $MODPATH/*.apk
 ui_print ""
 ui_print "[*] Logs are stored in your internal storage/KTS"
 ui_print ""
-sleep 1
+sleep 3
 ui_print "[*] Please reboot to the changes be applied."
 ui_print ""
