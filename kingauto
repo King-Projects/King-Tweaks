@@ -863,6 +863,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "66"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1475,6 +1476,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "156"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2109,6 +2111,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "36"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2737,7 +2740,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "1006"
-
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
@@ -3160,7 +3163,7 @@ kmsg1 "-------------------------------------------------------------------------
 }
 (
 while true; do
- if [ $(top -n 1 -d 1 | head -n 12 | grep -o -e 'netease' -e 'ubisoft' -e 'tencent' -e 'ppsspp' -e 'feralinteractive' -e 'riotgames' -e 'joymax' -e 'deadeffect' -e 'wolvesinteractive' -e 'miniclip' -e 'playgendary' -e 'mojang' -e 'miHoYo' -e 'nekki' -e 'gamedevltd' -e 'netmarble' -e 'eyougame' -e 'yoozoogames' -e 'gameloft' -e 'garena' -e 'moontoon' -e 'legends' -e 'wildrift' -e 'activision' -e 'freefireth' -e 'genshin' -e 'hokai' -e 'dragon' -e 'konami' -e 'namco' -e 'gamevil' -e 'battle' -e 'impact' -e 'dle' -e 'race' -e 'gameloft' -e 'ppsspp' -e 'madfingergames' -e 'supercell' -e 'asphalt' -e 'ngame' -e 'fifamobile' -e 'blackdesertm' -e 'rockstargames' -e 'sky' -e 'dhlove' -e 'criticalops' -e 'standoff2' -e 'dls' | head -n 1) ]; then
+ if [ $(top -n 1 -d 1 | head -n 12 | grep -o -e 'netease' -e 'bandainamco' -e 'androbench2' -e 'ubisoft' -e 'tencent' -e 'ppsspp' -e 'feralinteractive' -e 'riotgames' -e 'joymax' -e 'deadeffect' -e 'wolvesinteractive' -e 'miniclip' -e 'playgendary' -e 'mojang' -e 'miHoYo' -e 'nekki' -e 'gamedevltd' -e 'netmarble' -e 'eyougame' -e 'yoozoogames' -e 'gameloft' -e 'garena' -e 'moontoon' -e 'legends' -e 'wildrift' -e 'activision' -e 'freefireth' -e 'genshin' -e 'hokai' -e 'dragon' -e 'konami' -e 'namco' -e 'gamevil' -e 'battle' -e 'impact' -e 'dle' -e 'race' -e 'gameloft' -e 'ppsspp' -e 'madfingergames' -e 'supercell' -e 'asphalt' -e 'ngame' -e 'fifamobile' -e 'blackdesertm' -e 'rockstargames' -e 'sky' -e 'dhlove' -e 'criticalops' -e 'standoff2' -e 'dls' | head -n 1) ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   User is playing. Applied gaming profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
