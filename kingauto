@@ -188,7 +188,7 @@ UINT_MAX="4294967295"
     gpuload=`cat $gpu/utilization`
     fi
     
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpufreq/*/
 do
 CPU_GOVERNOR=`cat $cpu/scaling_governor` 
 done
@@ -249,7 +249,7 @@ mtk=false
 fi
 
 # Detect CPU scheduling type
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpufreq/*/
 do
 if [[ `cat $cpu/scaling_available_governors | grep 'util'` ]]; then
 cpusched=EAS
@@ -401,7 +401,7 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpufreq/*/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
@@ -821,7 +821,7 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpufreq/*/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
@@ -1442,7 +1442,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          TWEAKED I/O SCHEDULER.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpufreq/*/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
@@ -2073,7 +2073,7 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpufreq/*/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
@@ -2719,7 +2719,7 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpufreq/*/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
