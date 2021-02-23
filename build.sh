@@ -13,7 +13,7 @@ buildtype=$build_type" > $(pwd)/info.prop
  
 echo "Zipping KTSR-$version-$build_type-$hash..."
 
-zip -r "KTSR-$version-$build_type-$hash.zip" . -x *.git* -x *.zip -x kingauto -x kingtweaks -x *.apk -x *.bak -x build.sh
+zip -r "KTSR-$version-$build_type-$hash.zip" . -x *.git* -x *.zip -x kingauto -x kingtweaks -x C2.sh -x *.apk -x *.bak -x build.sh
 
 mv "KTSR-$version-$build_type-$hash.zip" ../out
 
