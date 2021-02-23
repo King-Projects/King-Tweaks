@@ -188,12 +188,14 @@ UINT_MAX="4294967295"
     gpuload=`cat $gpu/utilization`
     fi
     
-for cpu in /sys/devices/system/cpu/cpufreq/*/
+# Get running CPU governor    
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 CPU_GOVERNOR=`cat $cpu/scaling_governor` 
 done
 
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq
+# Get max CPU frequency
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 cpumxfreq=`cat $cpu/scaling_max_freq`
 cpumxfreq2=`cat $cpu/cpuinfo_max_freq`
@@ -203,10 +205,13 @@ cpumxfreq=$cpumxfreq2
 fi
 done
 
+# Max CPU frequency ÷ 2 
 cpumfreq=$((cpumxfreq / 2))
 
+# Get max GPU frequency
 gpufreq=`cat $gpu/max_gpuclk`
 
+# Max GPU frequency ÷ 2
 gpumfreq=$((gpufreq / 2))
 
 # Variable to SOC manufacturer
@@ -234,8 +239,8 @@ dm=`getprop ro.product.model`
 # Variable to get magisk version
 magisk=`magisk -c`
 
-# Detect if we're running in a exynos device
-if [[ `getprop ro.boot.hardware | grep 'samsungexynos'` ]]; then
+# Detect if we're running on a exynos device
+if [[ `$mf | grep 'samsungexynos'` ]]; then
 exynos=true
 else
 exynos=false
@@ -249,7 +254,7 @@ mtk=false
 fi
 
 # Detect CPU scheduling type
-for cpu in /sys/devices/system/cpu/cpufreq/*/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ `cat $cpu/scaling_available_governors | grep 'util'` ]]; then
 cpusched=EAS
@@ -289,6 +294,37 @@ fi
 
 btemp=$((btemp / 10))
 
+renice -n -6 $(pgrep system_server)
+renice -n -6 $(pgrep com.miui.home)
+renice -n -6 $(pgrep launcher)
+renice -n -6 $(pgrep lawnchair)
+renice -n -6 $(pgrep home)
+renice -n -6 $(pgrep watchapp)
+renice -n -6 $(pgrep trebuchet)
+renice -n -6 $(pgrep deletescape)
+renice -n -1 $(pgrep dialer)
+renice -n -1 $(pgrep keyboard)
+renice -n -1 $(pgrep inputmethod)
+renice -n -9 $(pgrep fluid)
+renice -n -10 $(pgrep composer)
+renice -n -1 $(pgrep com.android.phone)
+renice -n -10 $(pgrep surfaceflinger)
+renice -n 1 $(pgrep kswapd0)
+renice -n -2 $(pgrep ksmd)
+renice -n -2 $(pgrep uksmd)
+renice -n -5 $(pgrep msm_irqbalance)
+renice -n -6 $(pgrep servicemanager)
+renice -n -9 $(pgrep kgsl_worker)
+renice -n -9 $(pgrep audioserver)
+renice -n 1 $(pgrep thermal-engine)
+renice -n 1 $(pgrep crtc_commit)
+renice -n 1 $(pgrep crtc_event)
+renice -n 6 $(pgrep android.gms)
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICED PROCESSES.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 # Latency Profile
 latency() {
      	init=`date +%s`
@@ -315,37 +351,6 @@ kmsg1 "-------------------------------------------------------------------------
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING LATENCY PROFILE.                                                                       "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	
-renice -n -6 $(pgrep system_server)
-renice -n -6 $(pgrep com.miui.home)
-renice -n -6 $(pgrep launcher)
-renice -n -6 $(pgrep lawnchair)
-renice -n -6 $(pgrep home)
-renice -n -6 $(pgrep watchapp)
-renice -n -6 $(pgrep trebuchet)
-renice -n -6 $(pgrep deletescape)
-renice -n -1 $(pgrep dialer)
-renice -n -1 $(pgrep keyboard)
-renice -n -1 $(pgrep inputmethod)
-renice -n -9 $(pgrep fluid)
-renice -n -10 $(pgrep composer)
-renice -n -1 $(pgrep com.android.phone)
-renice -n -10 $(pgrep surfaceflinger)
-renice -n 1 $(pgrep kswapd0)
-renice -n -2 $(pgrep ksmd)
-renice -n -2 $(pgrep uksmd)
-renice -n -6 $(pgrep msm_irqbalance)
-renice -n -7 $(pgrep servicemanager)
-renice -n -9 $(pgrep kgsl_worker)
-renice -n -8 $(pgrep audioserver)
-renice -n 1 $(pgrep thermal-engine)
-renice -n 1 $(pgrep crtc_commit)
-renice -n 1 $(pgrep crtc_event)
-renice -n 6 $(pgrep android.gms)
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          RENICED PROCESSES.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 for panic in /proc/sys/*/*panic*
@@ -401,7 +406,7 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpufreq/*/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
@@ -528,6 +533,7 @@ write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 [[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "2"
 write "/proc/sys/kernel/sched_schedstats" "0"
+write "/proc/sys/kernel/sched_rr_timeslice_ms" "1"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
 write "/proc/sys/kernel/sched_user_hint" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "0"
@@ -571,7 +577,6 @@ fi
 sync
 
 # VM settings to improve overall user experience and smoothness.
-write "/proc/sys/vm/drop_caches" "3"
 write "/proc/sys/vm/dirty_background_ratio" "15"
 write "/proc/sys/vm/dirty_ratio" "30"
 write "/proc/sys/vm/dirty_expire_centisecs" "200"
@@ -712,37 +717,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLING BALANCED PROFILE...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"       	
  	
-renice -n -6 $(pgrep system_server)
-renice -n -6 $(pgrep com.miui.home)
-renice -n -6 $(pgrep launcher)
-renice -n -6 $(pgrep lawnchair)
-renice -n -6 $(pgrep home)
-renice -n -6 $(pgrep watchapp)
-renice -n -6 $(pgrep trebuchet)
-renice -n -6 $(pgrep deletescape)
-renice -n -1 $(pgrep dialer)
-renice -n -1 $(pgrep keyboard)
-renice -n -1 $(pgrep inputmethod)
-renice -n -9 $(pgrep fluid)
-renice -n -10 $(pgrep composer)
-renice -n -1 $(pgrep com.android.phone)
-renice -n -10 $(pgrep surfaceflinger)
-renice -n 1 $(pgrep kswapd0)
-renice -n -2 $(pgrep ksmd)
-renice -n -2 $(pgrep uksmd)
-renice -n -6 $(pgrep msm_irqbalance)
-renice -n -7 $(pgrep servicemanager)
-renice -n -9 $(pgrep kgsl_worker)
-renice -n -8 $(pgrep audioserver)
-renice -n 1 $(pgrep thermal-engine)
-renice -n 1 $(pgrep crtc_commit)
-renice -n 1 $(pgrep crtc_event)
-renice -n 6 $(pgrep android.gms)
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          RENICED PROCESSES.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 for panic in /proc/sys/*/*panic*
 do
 write "$panic" "0"
@@ -821,7 +795,7 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpufreq/*/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
@@ -993,9 +967,9 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Tweak some kernel settings to improve overall performance.
-write "/proc/sys/kernel/sched_child_runs_first" "0"
+write "/proc/sys/kernel/sched_child_runs_first" "1"
 write "/proc/sys/kernel/sched_boost" "0"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "15"
+write "/proc/sys/kernel/perf_cpu_time_max_percent" "10"
 write "/proc/sys/kernel/sched_autogroup_enabled" "1"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
 write "/proc/sys/kernel/random/write_wakeup_threshold" "256"
@@ -1007,6 +981,7 @@ write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 [[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "32"
 write "/proc/sys/kernel/sched_schedstats" "0"
+write "/proc/sys/kernel/sched_rr_timeslice_ms" "1"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
 write "/proc/sys/kernel/sched_user_hint" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
@@ -1067,7 +1042,6 @@ fi
 sync
 
 # VM settings to improve overall user experience and smoothness.
-write "/proc/sys/vm/drop_caches" "3"
 write "/proc/sys/vm/dirty_background_ratio" "10"
 write "/proc/sys/vm/dirty_ratio" "30"
 write "/proc/sys/vm/dirty_expire_centisecs" "1000"
@@ -1313,37 +1287,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING EXTREME PROFILE.                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-	  
-renice -n -6 $(pgrep system_server)
-renice -n -6 $(pgrep com.miui.home)
-renice -n -6 $(pgrep launcher)
-renice -n -6 $(pgrep lawnchair)
-renice -n -6 $(pgrep home)
-renice -n -6 $(pgrep watchapp)
-renice -n -6 $(pgrep trebuchet)
-renice -n -6 $(pgrep deletescape)
-renice -n -1 $(pgrep dialer)
-renice -n -1 $(pgrep keyboard)
-renice -n -1 $(pgrep inputmethod)
-renice -n -9 $(pgrep fluid)
-renice -n -10 $(pgrep composer)
-renice -n -1 $(pgrep com.android.phone)
-renice -n -10 $(pgrep surfaceflinger)
-renice -n 1 $(pgrep kswapd0)
-renice -n -2 $(pgrep ksmd)
-renice -n -2 $(pgrep uksmd)
-renice -n -6 $(pgrep msm_irqbalance)
-renice -n -7 $(pgrep servicemanager)
-renice -n -9 $(pgrep kgsl_worker)
-renice -n -8 $(pgrep audioserver)
-renice -n 1 $(pgrep thermal-engine)
-renice -n 1 $(pgrep crtc_commit)
-renice -n 1 $(pgrep crtc_event)
-renice -n 6 $(pgrep android.gms)
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          RENICED PROCESSES.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 for panic in /proc/sys/*/*panic*
 do
@@ -1442,7 +1385,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          TWEAKED I/O SCHEDULER.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-for cpu in /sys/devices/system/cpu/cpufreq/*/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
@@ -1612,7 +1555,7 @@ fi
 write "/proc/sys/kernel/sched_child_runs_first" "0"
 write "/proc/sys/kernel/sched_boost" "1"
 write "/proc/sys/kernel/perf_cpu_time_max_percent" "25"
-write "/proc/sys/kernel/sched_autogroup_enabled" "1"
+write "/proc/sys/kernel/sched_autogroup_enabled" "0"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "128"
 write "/proc/sys/kernel/random/write_wakeup_threshold" "1024"
 write "/proc/sys/kernel/sched_tunable_scaling" "0"
@@ -1623,6 +1566,7 @@ write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 [[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "128"
 write "/proc/sys/kernel/sched_schedstats" "0"
+write "/proc/sys/kernel/sched_rr_timeslice_ms" "1"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
 write "/proc/sys/kernel/sched_user_hint" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "0"
@@ -1684,7 +1628,6 @@ fi
 sync
 
 # VM settings to improve overall user experience and performance.
-write "/proc/sys/vm/drop_caches" "3"
 write "/proc/sys/vm/dirty_background_ratio" "5"
 write "/proc/sys/vm/dirty_ratio" "30"
 write "/proc/sys/vm/dirty_expire_centisecs" "500"
@@ -1698,7 +1641,7 @@ else
 write "/proc/sys/vm/swappiness" "100"
 fi
 write "/proc/sys/vm/laptop_mode" "0"
-write "/proc/sys/vm/vfs_cache_pressure" "80"
+write "/proc/sys/vm/vfs_cache_pressure" "200"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -1946,37 +1889,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLING BATTERY PROFILE...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
      	
-renice -n -6 $(pgrep system_server)
-renice -n -6 $(pgrep com.miui.home)
-renice -n -6 $(pgrep launcher)
-renice -n -6 $(pgrep lawnchair)
-renice -n -6 $(pgrep home)
-renice -n -6 $(pgrep watchapp)
-renice -n -6 $(pgrep trebuchet)
-renice -n -6 $(pgrep deletescape)
-renice -n -1 $(pgrep dialer)
-renice -n -1 $(pgrep keyboard)
-renice -n -1 $(pgrep inputmethod)
-renice -n -9 $(pgrep fluid)
-renice -n -10 $(pgrep composer)
-renice -n -1 $(pgrep com.android.phone)
-renice -n -10 $(pgrep surfaceflinger)
-renice -n 1 $(pgrep kswapd0)
-renice -n -2 $(pgrep ksmd)
-renice -n -2 $(pgrep uksmd)
-renice -n -6 $(pgrep msm_irqbalance)
-renice -n -7 $(pgrep servicemanager)
-renice -n -9 $(pgrep kgsl_worker)
-renice -n -8 $(pgrep audioserver)
-renice -n 1 $(pgrep thermal-engine)
-renice -n 1 $(pgrep crtc_commit)
-renice -n 1 $(pgrep crtc_event)
-renice -n 6 $(pgrep android.gms)
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          RENICED PROCESSES.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 for panic in /proc/sys/*/*panic*
 do
 write "$panic" "0"
@@ -2073,7 +1985,7 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpufreq/*/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
@@ -2257,7 +2169,7 @@ fi
 # Tweak some kernel settings to improve overall performance.
 write "/proc/sys/kernel/sched_child_runs_first" "1"
 write "/proc/sys/kernel/sched_boost" "0"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "10"
+write "/proc/sys/kernel/perf_cpu_time_max_percent" "5"
 write "/proc/sys/kernel/sched_autogroup_enabled" "1"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
 write "/proc/sys/kernel/random/write_wakeup_threshold" "128"
@@ -2269,6 +2181,7 @@ write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 [[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "8"
 write "/proc/sys/kernel/sched_schedstats" "0"
+write "/proc/sys/kernel/sched_rr_timeslice_ms" "1"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
 write "/proc/sys/kernel/sched_user_hint" "0"
 write "/proc/sys/kernel/printk_devkmsg" "off"
@@ -2590,37 +2503,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLING GAMING PROFILE...                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"       	
 
-renice -n -6 $(pgrep system_server)
-renice -n -6 $(pgrep com.miui.home)
-renice -n -6 $(pgrep launcher)
-renice -n -6 $(pgrep lawnchair)
-renice -n -6 $(pgrep home)
-renice -n -6 $(pgrep watchapp)
-renice -n -6 $(pgrep trebuchet)
-renice -n -6 $(pgrep deletescape)
-renice -n -1 $(pgrep dialer)
-renice -n -1 $(pgrep keyboard)
-renice -n -1 $(pgrep inputmethod)
-renice -n -9 $(pgrep fluid)
-renice -n -10 $(pgrep composer)
-renice -n -1 $(pgrep com.android.phone)
-renice -n -10 $(pgrep surfaceflinger)
-renice -n 1 $(pgrep kswapd0)
-renice -n -2 $(pgrep ksmd)
-renice -n -2 $(pgrep uksmd)
-renice -n -6 $(pgrep msm_irqbalance)
-renice -n -7 $(pgrep servicemanager)
-renice -n -9 $(pgrep kgsl_worker)
-renice -n -8 $(pgrep audioserver)
-renice -n 1 $(pgrep thermal-engine)
-renice -n 1 $(pgrep crtc_commit)
-renice -n 1 $(pgrep crtc_event)
-renice -n 6 $(pgrep android.gms)
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          RENICED PROCESSES.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 for panic in /proc/sys/*/*panic*
 do
 write "$panic" "0"
@@ -2719,7 +2601,7 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpufreq/*/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 avail_govs=`cat "${cpu}scaling_available_governors"`
 if [[ "$avail_govs" == *"schedutil"* ]]
@@ -2890,7 +2772,7 @@ fi
 write "/proc/sys/kernel/sched_child_runs_first" "0"
 write "/proc/sys/kernel/sched_boost" "1"
 write "/proc/sys/kernel/perf_cpu_time_max_percent" "25"
-write "/proc/sys/kernel/sched_autogroup_enabled" "1"
+write "/proc/sys/kernel/sched_autogroup_enabled" "0"
 write "/proc/sys/kernel/random/read_wakeup_threshold" "128"
 write "/proc/sys/kernel/random/write_wakeup_threshold" "1024"
 write "/proc/sys/kernel/sched_tunable_scaling" "0"
@@ -2901,6 +2783,7 @@ write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
 [[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
 write "/proc/sys/kernel/sched_nr_migrate" "128"
 write "/proc/sys/kernel/sched_schedstats" "0"
+write "/proc/sys/kernel/sched_rr_timeslice_ms" "1"
 write "/proc/sys/kernel/sched_sync_hint_enable" "0"
 write "/proc/sys/kernel/sched_user_hint" "0"
 write "/proc/sys/kernel/sched_conservative_pl" "0"
@@ -2962,7 +2845,6 @@ fi
 sync
 
 # VM settings to improve overall user experience and performance.
-write "/proc/sys/vm/drop_caches" "3"
 write "/proc/sys/vm/dirty_background_ratio" "5"
 write "/proc/sys/vm/dirty_ratio" "20"
 write "/proc/sys/vm/dirty_expire_centisecs" "500"
@@ -2976,7 +2858,7 @@ else
 write "/proc/sys/vm/swappiness" "100"
 fi
 write "/proc/sys/vm/laptop_mode" "0"
-write "/proc/sys/vm/vfs_cache_pressure" "200"
+write "/proc/sys/vm/vfs_cache_pressure" "500"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
