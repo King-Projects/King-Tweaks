@@ -406,37 +406,52 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
-avail_govs=`cat "${cpu}scaling_available_governors"`
-if [[ "$avail_govs" == *"schedutil"* ]]
-then
-write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "0"
-write "${cpu}schedutil/down_rate_limit_us" "0"
-write "${cpu}schedutil/pl" "1"
-write "${cpu}schedutil/iowait_boost_enable" "1"
-write "${cpu}schedutil/rate_limit_us" "0"
-write "${cpu}schedutil/hispeed_load" "89"
-write "${cpu}schedutil/hispeed_freq" "$cpumxfreq"
-elif [[ "$avail_govs" == *"interactive"* ]]
-then
-write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "0"
-write "${cpu}interactive/boost" "0"
-write "${cpu}interactive/timer_slack" "0"
-write "${cpu}interactive/input_boost" "0"
-write "${cpu}interactive/use_migration_notif" "1" 
-write "${cpu}interactive/ignore_hispeed_on_notif" "1"
-write "${cpu}interactive/use_sched_load" "1"
-write "${cpu}interactive/fastlane" "1"
-write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "0"
-write "${cpu}interactive/sampling_rate_min" "0"
-write "${cpu}interactive/min_sample_time" "0"
-write "${cpu}interactive/go_hispeed_load" "89"
-write "${cpu}interactive/hispeed_freq" "$cpumxfreq"
-fi
+	# Fetch the available governors from the CPU
+	avail_govs="$(cat "$cpu/scaling_available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in *schedutil* *interactive*
+	do
+		# Once a matching governor is found, set it and break for this CPU
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$cpu/scaling_governor" "$governor"
+			break
+		fi
+	done
+done
+
+# Apply governor specific tunables for schedutil
+find /sys/devices/system/cpu/ -name *schedutil* -type d | while IFS= read -r governor
+do
+write "$governor/up_rate_limit_us" "0"
+write "$governor/down_rate_limit_us" "0"
+write "$governor/pl" "1"
+write "$governor/iowait_boost_enable" "1"
+write "$governor/rate_limit_us" "0"
+write "$governor/hispeed_load" "89"
+write "$governor/hispeed_freq" "$cpumxfreq"
+done
+
+# Apply governor specific tunables for interactive
+find /sys/devices/system/cpu/ -name *interactive* -type d | while IFS= read -r governor
+do
+write "$governor/timer_rate" "0"
+write "$governor/boost" "0"
+write "$governor/timer_slack" "0"
+write "$governor/input_boost" "0"
+write "$governor/use_migration_notif" "1" 
+write "$governor/ignore_hispeed_on_notif" "1"
+write "$governor/use_sched_load" "1"
+write "$governor/fastlane" "1"
+write "$governor/fast_ramp_down" "0"
+write "$governor/sampling_rate" "0"
+write "$governor/sampling_rate_min" "0"
+write "$governor/min_sample_time" "0"
+write "$governor/go_hispeed_load" "89"
+write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
@@ -797,38 +812,53 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
-avail_govs=`cat "${cpu}scaling_available_governors"`
-if [[ "$avail_govs" == *"schedutil"* ]]
-then
-write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
-write "${cpu}schedutil/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
-write "${cpu}schedutil/pl" "0"
-write "${cpu}schedutil/iowait_boost_enable" "0"
-write "${cpu}schedutil/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
-write "${cpu}schedutil/hispeed_load" "89"
-write "${cpu}schedutil/hispeed_freq" "$cpumxfreq"
-elif [[ "$avail_govs" == *"interactive"* ]]
-then
-write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "40000"
-write "${cpu}interactive/boost" "0"
-write "${cpu}interactive/timer_slack" "40000"
-write "${cpu}interactive/input_boost" "0"
-write "${cpu}interactive/use_migration_notif" "1" 
-write "${cpu}interactive/ignore_hispeed_on_notif" "1"
-write "${cpu}interactive/use_sched_load" "1"
-write "${cpu}interactive/boostpulse" "0"
-write "${cpu}interactive/fastlane" "1"
-write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "40000"
-write "${cpu}interactive/sampling_rate_min" "50000"
-write "${cpu}interactive/min_sample_time" "50000"
-write "${cpu}interactive/go_hispeed_load" "89"
-write "${cpu}interactive/hispeed_freq" "$cpumxfreq"
-fi
+	# Fetch the available governors from the CPU
+	avail_govs="$(cat "$cpu/scaling_available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in *schedutil* *interactive*
+	do
+		# Once a matching governor is found, set it and break for this CPU
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$cpu/scaling_governor" "$governor"
+			break
+		fi
+	done
+done
+
+# Apply governor specific tunables for schedutil
+find /sys/devices/system/cpu/ -name *schedutil* -type d | while IFS= read -r governor
+do
+write "$governor/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
+write "$governor/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
+write "$governor/pl" "0"
+write "$governor/iowait_boost_enable" "0"
+write "$governor/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
+write "$governor/hispeed_load" "89"
+write "$governor/hispeed_freq" "$cpumxfreq"
+done
+
+# Apply governor specific tunables for interactive
+find /sys/devices/system/cpu/ -name *interactive* -type d | while IFS= read -r governor
+do
+write "$governor/timer_rate" "40000"
+write "$governor/boost" "0"
+write "$governor/timer_slack" "40000"
+write "$governor/input_boost" "0"
+write "$governor/use_migration_notif" "1" 
+write "$governor/ignore_hispeed_on_notif" "1"
+write "$governor/use_sched_load" "1"
+write "$governor/boostpulse" "0"
+write "$governor/fastlane" "1"
+write "$governor/fast_ramp_down" "0"
+write "$governor/sampling_rate" "40000"
+write "$governor/sampling_rate_min" "50000"
+write "$governor/min_sample_time" "50000"
+write "$governor/go_hispeed_load" "89"
+write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
@@ -1389,37 +1419,53 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          TWEAKED I/O SCHEDULER.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+# CPU Tweaks
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
-avail_govs=`cat "${cpu}scaling_available_governors"`
-if [[ "$avail_govs" == *"schedutil"* ]]
-then
-write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "0"
-write "${cpu}schedutil/down_rate_limit_us" "0"
-write "${cpu}schedutil/pl" "1"
-write "${cpu}schedutil/iowait_boost_enable" "1"
-write "${cpu}schedutil/rate_limit_us" "0"
-write "${cpu}schedutil/hispeed_load" "80"
-write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
-elif [[ "$avail_govs" == *"interactive"* ]]
-then
-write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "0"
-write "${cpu}interactive/boost" "1"
-write "${cpu}interactive/timer_slack" "0"
-write "${cpu}interactive/input_boost" "1"
-write "${cpu}interactive/use_migration_notif" "1"
-write "${cpu}interactive/ignore_hispeed_on_notif" "1"
-write "${cpu}interactive/use_sched_load" "1"
-write "${cpu}interactive/fastlane" "1"
-write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "0"
-write "${cpu}interactive/sampling_rate_min" "0"
-write "${cpu}interactive/min_sample_time" "0"
-write "${cpu}interactive/go_hispeed_load" "80"
-write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
-fi
+	# Fetch the available governors from the CPU
+	avail_govs="$(cat "$cpu/scaling_available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in *schedutil* *interactive*
+	do
+		# Once a matching governor is found, set it and break for this CPU
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$cpu/scaling_governor" "$governor"
+			break
+		fi
+	done
+done
+
+# Apply governor specific tunables for schedutil
+find /sys/devices/system/cpu/ -name *schedutil* -type d | while IFS= read -r governor
+do
+write "$governor/up_rate_limit_us" "0"
+write "$governor/down_rate_limit_us" "0"
+write "$governor/pl" "1"
+write "$governor/iowait_boost_enable" "1"
+write "$governor/rate_limit_us" "0"
+write "$governor/hispeed_load" "80"
+write "$governor/hispeed_freq" "$UINT_MAX"
+done
+
+# Apply governor specific tunables for interactive
+find /sys/devices/system/cpu/ -name *interactive* -type d | while IFS= read -r governor
+do
+write "$governor/timer_rate" "0"
+write "$governor/boost" "1"
+write "$governor/timer_slack" "0"
+write "$governor/input_boost" "1"
+write "$governor/use_migration_notif" "1"
+write "$governor/ignore_hispeed_on_notif" "1"
+write "$governor/use_sched_load" "1"
+write "$governor/fastlane" "1"
+write "$governor/fast_ramp_down" "0"
+write "$governor/sampling_rate" "0"
+write "$governor/sampling_rate_min" "0"
+write "$governor/min_sample_time" "0"
+write "$governor/go_hispeed_load" "80"
+write "$governor/hispeed_freq" "$UINT_MAX"
 done
 	
 for cpu in /sys/devices/system/cpu/cpu*
@@ -1991,38 +2037,70 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
-avail_govs=`cat "${cpu}scaling_available_governors"`
-if [[ "$avail_govs" == *"schedutil"* ]]
-then
-write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "46000"
-write "${cpu}schedutil/down_rate_limit_us" "24000"
-write "${cpu}schedutil/pl" "0"
-write "${cpu}schedutil/iowait_boost_enable" "0"
-write "${cpu}schedutil/rate_limit_us" "46000"
-write "${cpu}schedutil/hispeed_load" "99"
-write "${cpu}schedutil/hispeed_freq" "$cpumfreq"
-elif [[ "$avail_govs" == *"interactive"* ]]
-then
-write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "50000"
-write "${cpu}interactive/boost" "0"
-write "${cpu}interactive/timer_slack" "50000"
-write "${cpu}interactive/input_boost" "0"
-write "${cpu}interactive/use_migration_notif" "1" 
-write "${cpu}interactive/ignore_hispeed_on_notif" "1"
-write "${cpu}interactive/use_sched_load" "1"
-write "${cpu}interactive/boostpulse" "0"
-write "${cpu}interactive/fastlane" "1"
-write "${cpu}interactive/fast_ramp_down" "1"
-write "${cpu}interactive/sampling_rate" "50000"
-write "${cpu}interactive/sampling_rate_min" "75000"
-write "${cpu}interactive/min_sample_time" "75000"
-write "${cpu}interactive/go_hispeed_load" "99"
-write "${cpu}interactive/hispeed_freq" "$cpumfreq"
-fi
+	# Fetch the available governors from the CPU
+	avail_govs="$(cat "$cpu/scaling_available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in *schedutil* *interactive*
+	do
+		# Once a matching governor is found, set it and break for this CPU
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$cpu/scaling_governor" "$governor"
+			break
+		fi
+	done
+done
+
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
+do
+	# Fetch the available governors from the CPU
+	avail_govs="$(cat "$cpu/scaling_available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in *schedutil* *interactive*
+	do
+		# Once a matching governor is found, set it and break for this CPU
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$cpu/scaling_governor" "$governor"
+			break
+		fi
+	done
+done
+
+# Apply governor specific tunables for schedutil
+find /sys/devices/system/cpu/ -name *schedutil* -type d | while IFS= read -r governor
+do
+write "$governor/up_rate_limit_us" "46000"
+write "$governor/down_rate_limit_us" "24000"
+write "$governor/pl" "0"
+write "$governor/iowait_boost_enable" "0"
+write "$governor/rate_limit_us" "46000"
+write "$governor/hispeed_load" "99"
+write "$governor/hispeed_freq" "$cpumfreq"
+done
+
+# Apply governor specific tunables for interactive
+find /sys/devices/system/cpu/ -name *interactive* -type d | while IFS= read -r governor
+do
+write "$governor/timer_rate" "50000"
+write "$governor/boost" "0"
+write "$governor/timer_slack" "50000"
+write "$governor/input_boost" "0"
+write "$governor/use_migration_notif" "1" 
+write "$governor/ignore_hispeed_on_notif" "1"
+write "$governor/use_sched_load" "1"
+write "$governor/boostpulse" "0"
+write "$governor/fastlane" "1"
+write "$governor/fast_ramp_down" "1"
+write "$governor/sampling_rate" "50000"
+write "$governor/sampling_rate_min" "75000"
+write "$governor/min_sample_time" "75000"
+write "$governor/go_hispeed_load" "99"
+write "$governor/hispeed_freq" "$cpumfreq"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
@@ -2609,38 +2687,53 @@ kmsg1 "                                          TWEAKED I/O SCHEDULER.         
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU Tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
-avail_govs=`cat "${cpu}scaling_available_governors"`
-if [[ "$avail_govs" == *"schedutil"* ]]
-then
-write "${cpu}scaling_governor" schedutil
-write "${cpu}schedutil/up_rate_limit_us" "0"
-write "${cpu}schedutil/down_rate_limit_us" "0"
-write "${cpu}schedutil/pl" "1"
-write "${cpu}schedutil/iowait_boost_enable" "1"
-write "${cpu}schedutil/rate_limit_us" "0"
-write "${cpu}schedutil/hispeed_load" "80"
-write "${cpu}schedutil/hispeed_freq" "$UINT_MAX"
-elif [[ "$avail_govs" == *"interactive"* ]]
-then
-write "${cpu}scaling_governor" interactive
-write "${cpu}interactive/timer_rate" "0"
-write "${cpu}interactive/boost" "1"
-write "${cpu}interactive/timer_slack" "0"
-write "${cpu}interactive/input_boost" "1"
-write "${cpu}interactive/use_migration_notif" "1"
-write "${cpu}interactive/ignore_hispeed_on_notif" "1"
-write "${cpu}interactive/use_sched_load" "1"
-write "${cpu}interactive/boostpulse" "0"
-write "${cpu}interactive/fastlane" "1"
-write "${cpu}interactive/fast_ramp_down" "0"
-write "${cpu}interactive/sampling_rate" "0"
-write "${cpu}interactive/sampling_rate_min" "0"
-write "${cpu}interactive/min_sample_time" "0"
-write "${cpu}interactive/go_hispeed_load" "80"
-write "${cpu}interactive/hispeed_freq" "$UINT_MAX"
-fi
+	# Fetch the available governors from the CPU
+	avail_govs="$(cat "$cpu/scaling_available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in *schedutil* *interactive*
+	do
+		# Once a matching governor is found, set it and break for this CPU
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$cpu/scaling_governor" "$governor"
+			break
+		fi
+	done
+done
+
+# Apply governor specific tunables for schedutil
+find /sys/devices/system/cpu/ -name *schedutil* -type d | while IFS= read -r governor
+do
+write "$governor/up_rate_limit_us" "0"
+write "$governor/down_rate_limit_us" "0"
+write "$governor/pl" "1"
+write "$governor/iowait_boost_enable" "1"
+write "$governor/rate_limit_us" "0"
+write "$governor/hispeed_load" "80"
+write "$governor/hispeed_freq" "$UINT_MAX"
+done
+
+# Apply governor specific tunables for interactive
+find /sys/devices/system/cpu/ -name *interactive* -type d | while IFS= read -r governor
+do
+write "$governor/timer_rate" "0"
+write "$governor/boost" "1"
+write "$governor/timer_slack" "0"
+write "$governor/input_boost" "1"
+write "$governor/use_migration_notif" "1"
+write "$governor/ignore_hispeed_on_notif" "1"
+write "$governor/use_sched_load" "1"
+write "$governor/boostpulse" "0"
+write "$governor/fastlane" "1"
+write "$governor/fast_ramp_down" "0"
+write "$governor/sampling_rate" "0"
+write "$governor/sampling_rate_min" "0"
+write "$governor/min_sample_time" "0"
+write "$governor/go_hispeed_load" "80"
+write "$governor/hispeed_freq" "$UINT_MAX"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
@@ -3094,50 +3187,24 @@ while true; do
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   User is playing. Applied gaming profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  settings delete global device_idle_constants
-  settings put global low_power "0"
-  cmd netpolicy set restrict-background "false"
-  # Let's put this as non-sense (not tested).
-  settings put system display_low_power "0"
-  settings put system high_touch_sensitivity_enable "1"
-  settings put global default_restrict_background_data "1"
   gaming
   sleep 30
   elif [ $(top -n 1 -d 1 | head -n 12 | grep -o -e 'whatsapp' -e 'telegram' -e 'facebook' -e 'chrome' -e 'instagram' -e 'docs' | head -n 1) ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   User is using social media, and etc apps. Applied balanced profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  settings put global low_power "0"
-  cmd netpolicy set restrict-background "false"
-  # Let's put this as non-sense (not tested).
-  settings put system display_low_power "0"
-  settings put system high_touch_sensitivity_enable "0"
-  settings put global default_restrict_background_data "0"
   balanced
   sleep 30
   elif [ $(top -n 1 -d 1 | head -n 12 | grep -o -e 'geekbench' -e 'futuremark' -e 'cputhrottlingtest' -e 'camera' -e 'cam' | head -n 1) ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   User is running benchmark / heavy apps. Applied extreme profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  settings delete global device_idle_constants
-  settings put global low_power "0"
-  cmd netpolicy set restrict-background "false"
-  # Let's put this as non-sense (not tested).
-  settings put system display_low_power "0"
-  settings put system high_touch_sensitivity_enable "1"
-  settings put global default_restrict_background_data "1"
   extreme
   sleep 30
   elif [ $(cat /sys/class/backlight/panel*-backlight/brightness) == "0" ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device screen is turned off. Applied battery profile and extended check time."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  settings put global low_power "1"
-  cmd netpolicy set restrict-background "true"
-  # Let's put this as non-sense (not tested).
-  settings put system display_low_power "1"
-  settings put system high_touch_sensitivity_enable "0"
-  settings put global default_restrict_background_data "1"
   battery
   dumpsys deviceidle enable light
   dumpsys deviceidle enable deep
@@ -3146,12 +3213,6 @@ while true; do
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device screen is turned off. Applied battery profile, extended check time."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  settings put global low_power "1"
-  cmd netpolicy set restrict-background "true"
-  # Let's put this as non-sense (not tested).
-  settings put system display_low_power "1"
-  settings put system high_touch_sensitivity_enable "0"
-  settings put global default_restrict_background_data "1"
   battery
   dumpsys deviceidle enable light
   dumpsys deviceidle enable deep
@@ -3160,44 +3221,24 @@ while true; do
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device is charging. Applied battery profile and extended check time to avoid overheat."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  # Let's put this as non-sense (not tested).
-  settings put system display_low_power "1"
-  settings put system high_touch_sensitivity_enable "0"
-  settings put global default_restrict_background_data "1"
   battery
   sleep 300
   elif [ $btemp >= "46" ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device is hot, trying to cooldown by applying battery profile and extending check time..."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  # Let's put this as non-sense (not tested).
-  settings put system display_low_power "1"
-  settings put system high_touch_sensitivity_enable "0"
-  settings put global default_restrict_background_data "1"
   battery
   sleep 150
   elif [ $bpercentage < "20" ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device battery is lower than 20%, applied battery profile and extended check time to reduce battery comsumption."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  settings put global device_idle_constants inactive_to=60000,sensing_to=0,locating_to=0,location_accuracy=2000,motion_inactive_to=0,idle_after_inactive_to=0,idle_pending_to=60000,max_idle_pending_to=120000,idle_pending_factor=2.0,idle_to=900000,max_idle_to=21600000,idle_factor=2.0,max_temp_app_whitelist_duration=60000,mms_temp_app_whitelist_duration=30000,sms_temp_app_whitelist_duration=20000,light_after_inactive_to=10000,light_pre_idle_to=60000,light_idle_to=180000,light_idle_factor=2.0,light_max_idle_to=900000,light_idle_maintenance_min_budget=30000,light_idle_maintenance_max_budget=60000
-  # Let's put this as non-sense (not tested).
-  settings put system display_low_power "1"
-  settings put system high_touch_sensitivity_enable "0"
-  settings put global default_restrict_background_data "1"
   battery
   sleep 300
   else
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   No considerable usage found. Applied latency profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-  settings delete global device_idle_constants
-  settings put global low_power "0"
-  cmd netpolicy set restrict-background "false"
-  # Let's put this as non-sense (not tested).
-  settings put system display_low_power "0"
-  settings put system high_touch_sensitivity_enable "0"
-  settings put global default_restrict_background_data "0"
   latency
   sleep 30
  fi
