@@ -424,7 +424,7 @@ do
 done
 
 # Apply governor specific tunables for schedutil
-find /sys/devices/system/cpu/ -name *schedutil* -type d | while IFS= read -r governor
+find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
 write "$governor/up_rate_limit_us" "0"
 write "$governor/down_rate_limit_us" "0"
@@ -436,7 +436,7 @@ write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
 # Apply governor specific tunables for interactive
-find /sys/devices/system/cpu/ -name *interactive* -type d | while IFS= read -r governor
+find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
 do
 write "$governor/timer_rate" "0"
 write "$governor/boost" "0"
@@ -830,7 +830,7 @@ do
 done
 
 # Apply governor specific tunables for schedutil
-find /sys/devices/system/cpu/ -name *schedutil* -type d | while IFS= read -r governor
+find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
 write "$governor/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
 write "$governor/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
@@ -842,7 +842,7 @@ write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
 # Apply governor specific tunables for interactive
-find /sys/devices/system/cpu/ -name *interactive* -type d | while IFS= read -r governor
+find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
 do
 write "$governor/timer_rate" "40000"
 write "$governor/boost" "0"
@@ -1438,7 +1438,7 @@ do
 done
 
 # Apply governor specific tunables for schedutil
-find /sys/devices/system/cpu/ -name *schedutil* -type d | while IFS= read -r governor
+find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
 write "$governor/up_rate_limit_us" "0"
 write "$governor/down_rate_limit_us" "0"
@@ -1450,7 +1450,7 @@ write "$governor/hispeed_freq" "$UINT_MAX"
 done
 
 # Apply governor specific tunables for interactive
-find /sys/devices/system/cpu/ -name *interactive* -type d | while IFS= read -r governor
+find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
 do
 write "$governor/timer_rate" "0"
 write "$governor/boost" "1"
@@ -2072,7 +2072,7 @@ do
 done
 
 # Apply governor specific tunables for schedutil
-find /sys/devices/system/cpu/ -name *schedutil* -type d | while IFS= read -r governor
+find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
 write "$governor/up_rate_limit_us" "46000"
 write "$governor/down_rate_limit_us" "24000"
@@ -2084,7 +2084,7 @@ write "$governor/hispeed_freq" "$cpumfreq"
 done
 
 # Apply governor specific tunables for interactive
-find /sys/devices/system/cpu/ -name *interactive* -type d | while IFS= read -r governor
+find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
 do
 write "$governor/timer_rate" "50000"
 write "$governor/boost" "0"
@@ -2705,7 +2705,7 @@ do
 done
 
 # Apply governor specific tunables for schedutil
-find /sys/devices/system/cpu/ -name *schedutil* -type d | while IFS= read -r governor
+find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
 write "$governor/up_rate_limit_us" "0"
 write "$governor/down_rate_limit_us" "0"
@@ -2717,7 +2717,7 @@ write "$governor/hispeed_freq" "$UINT_MAX"
 done
 
 # Apply governor specific tunables for interactive
-find /sys/devices/system/cpu/ -name *interactive* -type d | while IFS= read -r governor
+find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
 do
 write "$governor/timer_rate" "0"
 write "$governor/boost" "1"
