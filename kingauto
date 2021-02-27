@@ -294,6 +294,12 @@ fi
 
 btemp=$((btemp / 10))
 
+tcp=/proc/sys/net/ipv4/
+
+kernel=/proc/sys/kernel/
+
+vm=/proc/sys/vm/
+
 renice -n -6 $(pgrep system_server)
 renice -n -6 $(pgrep com.miui.home)
 renice -n -6 $(pgrep launcher)
@@ -535,26 +541,26 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Tweak some kernel settings to improve overall performance.
-write "/proc/sys/kernel/sched_child_runs_first" "1"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "5"
-write "/proc/sys/kernel/sched_autogroup_enabled" "1"
-write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
-write "/proc/sys/kernel/random/write_wakeup_threshold" "512"
-write "/proc/sys/kernel/sched_tunable_scaling" "0"
-write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_LATENCY"
-write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LATENCY))"
-write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_LATENCY / 2))"
-write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
-[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
-[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_boost" "0"
-write "/proc/sys/kernel/sched_nr_migrate" "2"
-write "/proc/sys/kernel/sched_schedstats" "0"
-write "/proc/sys/kernel/sched_rr_timeslice_ms" "1"
-write "/proc/sys/kernel/sched_cstate_aware" "1"
-write "/proc/sys/kernel/sched_sync_hint_enable" "0"
-write "/proc/sys/kernel/sched_user_hint" "0"
-write "/proc/sys/kernel/sched_conservative_pl" "0"
-write "/proc/sys/kernel/printk_devkmsg" "off"
+write "${kernel}sched_child_runs_first" "1"
+write "${kernel}perf_cpu_time_max_percent" "5"
+write "${kernel}sched_autogroup_enabled" "1"
+write "${kernel}random/read_wakeup_threshold" "64"
+write "${kernel}random/write_wakeup_threshold" "512"
+write "${kernel}sched_tunable_scaling" "0"
+write "${kernel}sched_latency_ns" "$SCHED_PERIOD_LATENCY"
+write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LATENCY))"
+write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_LATENCY / 2))"
+write "${kernel}sched_migration_cost_ns" "5000000"
+[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
+[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
+write "${kernel}sched_nr_migrate" "2"
+write "${kernel}sched_schedstats" "0"
+write "${kernel}sched_rr_timeslice_ms" "1"
+write "${kernel}sched_cstate_aware" "1"
+write "${kernel}sched_sync_hint_enable" "0"
+write "${kernel}sched_user_hint" "0"
+write "${kernel}sched_conservative_pl" "0"
+write "${kernel}printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -594,20 +600,20 @@ fi
 sync
 
 # VM settings to improve overall user experience and smoothness.
-write "/proc/sys/vm/dirty_background_ratio" "15"
-write "/proc/sys/vm/dirty_ratio" "30"
-write "/proc/sys/vm/dirty_expire_centisecs" "200"
-write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
-write "/proc/sys/vm/page-cluster" "0"
-write "/proc/sys/vm/stat_interval" "60"
+write "${vm}dirty_background_ratio" "15"
+write "${vm}dirty_ratio" "30"
+write "${vm}dirty_expire_centisecs" "200"
+write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}page-cluster" "0"
+write "${vm}stat_interval" "60"
 # Follow SSWAP on exynos SOC's
 if [[ $exynos == "true" ]]; then
-write "/proc/sys/vm/swappiness" "150"
+write "${vm}swappiness" "150"
 else
-write "/proc/sys/vm/swappiness" "100"
+write "${vm}swappiness" "100"
 fi
-write "/proc/sys/vm/laptop_mode" "0"
-write "/proc/sys/vm/vfs_cache_pressure" "200"
+write "${vm}laptop_mode" "0"
+write "${vm}vfs_cache_pressure" "200"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -630,25 +636,38 @@ kmsg1 "                                          DISABLED MULTICORE POWER SAVING
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
+# Fetch the available TCP congestion control 
+avail_con=`cat "${tcp}tcp_available_congestion_control"`
+	
+    # Attempt to set the TCP congestion control in this order
+    for tcpcc in bbr2 bbr cubic westwood 
+	do
+	    # Once a matching TCP congestion control is found, set it and break
+		if [[ "$avail_con" == *"$tcpcc"* ]]
+		then
+			write ${tcp}tcp_congestion_control $tcpcc
+			break
+		fi
+	done
+	
 # Internet Tweaks
-write "/proc/sys/net/ipv4/ip_no_pmtu_disc" "0"
-write "/proc/sys/net/ipv4/tcp_ecn" "1"
-write "/proc/sys/net/ipv4/tcp_timestamps" "0"
-write "/proc/sys/net/ipv4/route.flush" "1"
-write "/proc/sys/net/ipv4/tcp_rfc1337" "1"
-write "/proc/sys/net/ipv4/tcp_tw_reuse" "1"
-write "/proc/sys/net/ipv4/tcp_sack" "1"
-write "/proc/sys/net/ipv4/tcp_fack" "1"
-write "/proc/sys/net/ipv4/tcp_fastopen" "3"
-write "/proc/sys/net/ipv4/tcp_tw_recycle" "1"
-write "/proc/sys/net/ipv4/tcp_no_metrics_save" "1"
-write "/proc/sys/net/ipv4/tcp_syncookies" "0"
-write "/proc/sys/net/ipv4/tcp_window_scaling" "1"
-write "/proc/sys/net/ipv4/tcp_keepalive_probes" "10"
-write "/proc/sys/net/ipv4/tcp_keepalive_intvl" "30"
-write "/proc/sys/net/ipv4/tcp_fin_timeout" "30"
-write "/proc/sys/net/ipv4/tcp_low_latency" "1"
-write "/proc/sys/net/ipv4/tcp_congestion_control" "bbr2"
+write "${tcp}ip_no_pmtu_disc" "0"
+write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_timestamps" "0"
+write "${tcp}route.flush" "1"
+write "${tcp}tcp_rfc1337" "1"
+write "${tcp}tcp_tw_reuse" "1"
+write "${tcp}tcp_sack" "1"
+write "${tcp}tcp_fack" "1"
+write "${tcp}tcp_fastopen" "3"
+write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_no_metrics_save" "1"
+write "${tcp}tcp_syncookies" "0"
+write "${tcp}tcp_window_scaling" "1"
+write "${tcp}tcp_keepalive_probes" "10"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -998,27 +1017,27 @@ kmsg1 "                                          DISABLED CRC.                  
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# Tweak some kernel settings to improve overall performance.
-write "/proc/sys/kernel/sched_child_runs_first" "1"
-write "/proc/sys/kernel/sched_boost" "0"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "10"
-write "/proc/sys/kernel/sched_autogroup_enabled" "1"
-write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
-write "/proc/sys/kernel/random/write_wakeup_threshold" "256"
-write "/proc/sys/kernel/sched_tunable_scaling" "0"
-write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_BALANCE"
-write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_BALANCE / SCHED_TASKS_BALANCE))"
-write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BALANCE / 2))"
-write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
-[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
-[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_boost" "0"
-write "/proc/sys/kernel/sched_nr_migrate" "32"
-write "/proc/sys/kernel/sched_schedstats" "0"
-write "/proc/sys/kernel/sched_rr_timeslice_ms" "1"
-write "/proc/sys/kernel/sched_cstate_aware" "1"
-write "/proc/sys/kernel/sched_sync_hint_enable" "0"
-write "/proc/sys/kernel/sched_user_hint" "0"
-write "/proc/sys/kernel/printk_devkmsg" "off"
+# Tweak some kernel settings to improve overall performance
+write "${kernel}sched_child_runs_first" "1"
+write "${kernel}sched_boost" "0"
+write "${kernel}perf_cpu_time_max_percent" "10"
+write "${kernel}sched_autogroup_enabled" "1"
+write "${kernel}random/read_wakeup_threshold" "64"
+write "${kernel}random/write_wakeup_threshold" "256"
+write "${kernel}sched_tunable_scaling" "0"
+write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BALANCE"
+write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BALANCE / SCHED_TASKS_BALANCE))"
+write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BALANCE / 2))"
+write "${kernel}sched_migration_cost_ns" "5000000"
+[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
+[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
+write "${kernel}sched_nr_migrate" "32"
+write "${kernel}sched_schedstats" "0"
+write "${kernel}sched_rr_timeslice_ms" "1"
+write "${kernel}sched_cstate_aware" "1"
+write "${kernel}sched_sync_hint_enable" "0"
+write "${kernel}sched_user_hint" "0"
+write "${kernel}printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -1076,20 +1095,21 @@ fi
 sync
 
 # VM settings to improve overall user experience and smoothness.
-write "/proc/sys/vm/dirty_background_ratio" "10"
-write "/proc/sys/vm/dirty_ratio" "30"
-write "/proc/sys/vm/dirty_expire_centisecs" "1000"
-write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
-write "/proc/sys/vm/page-cluster" "0"
-write "/proc/sys/vm/stat_interval" "60"
+write "${vm}drop_caches" "3"
+write "${vm}dirty_background_ratio" "10"
+write "${vm}dirty_ratio" "30"
+write "${vm}dirty_expire_centisecs" "1000"
+write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}page-cluster" "0"
+write "${vm}stat_interval" "60"
 # Follow SSWAP on exynos SOC's
 if [[ $exynos == "true" ]]; then
-write "/proc/sys/vm/swappiness" "150"
+write "${vm}swappiness" "150"
 else
-write "/proc/sys/vm/swappiness" "100"
+write "${vm}swappiness" "100"
 fi
-write "/proc/sys/vm/laptop_mode" "0"
-write "/proc/sys/vm/vfs_cache_pressure" "100"
+write "${vm}laptop_mode" "0"
+write "${vm}vfs_cache_pressure" "100"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -1170,25 +1190,38 @@ kmsg1 "                                          DISABLED TOUCH BOOST.          
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
+# Fetch the available TCP congestion control 
+avail_con=`cat "${tcp}tcp_available_congestion_control"`
+	
+    # Attempt to set the TCP congestion control in this order
+    for tcpcc in bbr2 bbr cubic westwood 
+	do
+	    # Once a matching TCP congestion control is found, set it and break
+		if [[ "$avail_con" == *"$tcpcc"* ]]
+		then
+			write ${tcp}tcp_congestion_control $tcpcc
+			break
+		fi
+	done
+	
 # Internet Tweaks
-write "/proc/sys/net/ipv4/ip_no_pmtu_disc" "0"
-write "/proc/sys/net/ipv4/tcp_ecn" "1"
-write "/proc/sys/net/ipv4/tcp_timestamps" "0"
-write "/proc/sys/net/ipv4/route.flush" "1"
-write "/proc/sys/net/ipv4/tcp_rfc1337" "1"
-write "/proc/sys/net/ipv4/tcp_tw_reuse" "1"
-write "/proc/sys/net/ipv4/tcp_sack" "1"
-write "/proc/sys/net/ipv4/tcp_fack" "1"
-write "/proc/sys/net/ipv4/tcp_fastopen" "3"
-write "/proc/sys/net/ipv4/tcp_tw_recycle" "1"
-write "/proc/sys/net/ipv4/tcp_no_metrics_save" "1"
-write "/proc/sys/net/ipv4/tcp_syncookies" "0"
-write "/proc/sys/net/ipv4/tcp_window_scaling" "1"
-write "/proc/sys/net/ipv4/tcp_keepalive_probes" "10"
-write "/proc/sys/net/ipv4/tcp_keepalive_intvl" "30"
-write "/proc/sys/net/ipv4/tcp_fin_timeout" "30"
-write "/proc/sys/net/ipv4/tcp_low_latency" "1"
-write "/proc/sys/net/ipv4/tcp_congestion_control" "bbr2"
+write "${tcp}ip_no_pmtu_disc" "0"
+write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_timestamps" "0"
+write "${tcp}route.flush" "1"
+write "${tcp}tcp_rfc1337" "1"
+write "${tcp}tcp_tw_reuse" "1"
+write "${tcp}tcp_sack" "1"
+write "${tcp}tcp_fack" "1"
+write "${tcp}tcp_fastopen" "3"
+write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_no_metrics_save" "1"
+write "${tcp}tcp_syncookies" "0"
+write "${tcp}tcp_window_scaling" "1"
+write "${tcp}tcp_keepalive_probes" "10"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -1602,27 +1635,27 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Tweak some kernel settings to improve overall performance.
-write "/proc/sys/kernel/sched_child_runs_first" "0"
-write "/proc/sys/kernel/sched_boost" "1"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "25"
-write "/proc/sys/kernel/sched_autogroup_enabled" "0"
-write "/proc/sys/kernel/random/read_wakeup_threshold" "128"
-write "/proc/sys/kernel/random/write_wakeup_threshold" "1024"
-write "/proc/sys/kernel/sched_tunable_scaling" "0"
-write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
-write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
-write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
-write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
-[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
-[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_boost" "0"
-write "/proc/sys/kernel/sched_nr_migrate" "128"
-write "/proc/sys/kernel/sched_schedstats" "0"
-write "/proc/sys/kernel/sched_rr_timeslice_ms" "1"
-write "/proc/sys/kernel/sched_cstate_aware" "1"
-write "/proc/sys/kernel/sched_sync_hint_enable" "0"
-write "/proc/sys/kernel/sched_user_hint" "0"
-write "/proc/sys/kernel/sched_conservative_pl" "0"
-write "/proc/sys/kernel/printk_devkmsg" "off"
+write "${kernel}sched_child_runs_first" "0"
+write "${kernel}sched_boost" "1"
+write "${kernel}perf_cpu_time_max_percent" "25"
+write "${kernel}sched_autogroup_enabled" "0"
+write "${kernel}random/read_wakeup_threshold" "128"
+write "${kernel}random/write_wakeup_threshold" "1024"
+write "${kernel}sched_tunable_scaling" "0"
+write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
+write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
+write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
+write "${kernel}sched_migration_cost_ns" "5000000"
+[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
+[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
+write "${kernel}sched_nr_migrate" "128"
+write "${kernel}sched_schedstats" "0"
+write "${kernel}sched_rr_timeslice_ms" "1"
+write "${kernel}sched_cstate_aware" "1"
+write "${kernel}sched_sync_hint_enable" "0"
+write "${kernel}sched_user_hint" "0"
+write "${kernel}sched_conservative_pl" "0"
+write "${kernel}printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -1680,20 +1713,21 @@ fi
 sync
 
 # VM settings to improve overall user experience and performance.
-write "/proc/sys/vm/dirty_background_ratio" "5"
-write "/proc/sys/vm/dirty_ratio" "30"
-write "/proc/sys/vm/dirty_expire_centisecs" "500"
-write "/proc/sys/vm/dirty_writeback_centisecs" "200"
-write "/proc/sys/vm/page-cluster" "0"
-write "/proc/sys/vm/stat_interval" "60"
+write "${vm}drop_caches" "3"
+write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_ratio" "30"
+write "${vm}dirty_expire_centisecs" "500"
+write "${vm}dirty_writeback_centisecs" "200"
+write "${vm}page-cluster" "0"
+write "${vm}stat_interval" "60"
 # Follow SSWAP on exynos SOC's
 if [[ $exynos == "true" ]]; then
-write "/proc/sys/vm/swappiness" "150"
+write "${vm}swappiness" "150"
 else
-write "/proc/sys/vm/swappiness" "100"
+write "${vm}swappiness" "100"
 fi
-write "/proc/sys/vm/laptop_mode" "0"
-write "/proc/sys/vm/vfs_cache_pressure" "200"
+write "${vm}laptop_mode" "0"
+write "${vm}vfs_cache_pressure" "200"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -1774,25 +1808,38 @@ kmsg1 "                                          ENABLED TOUCH BOOST.           
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
+# Fetch the available TCP congestion control 
+avail_con=`cat "${tcp}tcp_available_congestion_control"`
+	
+    # Attempt to set the TCP congestion control in this order
+    for tcpcc in bbr2 bbr cubic westwood 
+	do
+	    # Once a matching TCP congestion control is found, set it and break
+		if [[ "$avail_con" == *"$tcpcc"* ]]
+		then
+			write ${tcp}tcp_congestion_control $tcpcc
+			break
+		fi
+	done
+	
 # Internet Tweaks
-write "/proc/sys/net/ipv4/ip_no_pmtu_disc" "0"
-write "/proc/sys/net/ipv4/tcp_ecn" "1"
-write "/proc/sys/net/ipv4/tcp_timestamps" "0"
-write "/proc/sys/net/ipv4/route.flush" "1"
-write "/proc/sys/net/ipv4/tcp_rfc1337" "1"
-write "/proc/sys/net/ipv4/tcp_tw_reuse" "1"
-write "/proc/sys/net/ipv4/tcp_sack" "1"
-write "/proc/sys/net/ipv4/tcp_fack" "1"
-write "/proc/sys/net/ipv4/tcp_fastopen" "3"
-write "/proc/sys/net/ipv4/tcp_tw_recycle" "1"
-write "/proc/sys/net/ipv4/tcp_no_metrics_save" "1"
-write "/proc/sys/net/ipv4/tcp_syncookies" "0"
-write "/proc/sys/net/ipv4/tcp_window_scaling" "1"
-write "/proc/sys/net/ipv4/tcp_keepalive_probes" "10"
-write "/proc/sys/net/ipv4/tcp_keepalive_intvl" "30"
-write "/proc/sys/net/ipv4/tcp_fin_timeout" "30"
-write "/proc/sys/net/ipv4/tcp_low_latency" "1"
-write "/proc/sys/net/ipv4/tcp_congestion_control" "bbr2"
+write "${tcp}ip_no_pmtu_disc" "0"
+write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_timestamps" "0"
+write "${tcp}route.flush" "1"
+write "${tcp}tcp_rfc1337" "1"
+write "${tcp}tcp_tw_reuse" "1"
+write "${tcp}tcp_sack" "1"
+write "${tcp}tcp_fack" "1"
+write "${tcp}tcp_fastopen" "3"
+write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_no_metrics_save" "1"
+write "${tcp}tcp_syncookies" "0"
+write "${tcp}tcp_window_scaling" "1"
+write "${tcp}tcp_keepalive_probes" "10"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -2251,26 +2298,26 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Tweak some kernel settings to improve overall performance.
-write "/proc/sys/kernel/sched_child_runs_first" "1"
-write "/proc/sys/kernel/sched_boost" "0"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "5"
-write "/proc/sys/kernel/sched_autogroup_enabled" "1"
-write "/proc/sys/kernel/random/read_wakeup_threshold" "64"
-write "/proc/sys/kernel/random/write_wakeup_threshold" "128"
-write "/proc/sys/kernel/sched_tunable_scaling" "0"
-write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_BATTERY"
-write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
-write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
-write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
-[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
-[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_boost" "0"
-write "/proc/sys/kernel/sched_nr_migrate" "8"
-write "/proc/sys/kernel/sched_schedstats" "0"
-write "/proc/sys/kernel/sched_rr_timeslice_ms" "1"
-write "/proc/sys/kernel/sched_cstate_aware" "1"
-write "/proc/sys/kernel/sched_sync_hint_enable" "0"
-write "/proc/sys/kernel/sched_user_hint" "0"
-write "/proc/sys/kernel/printk_devkmsg" "off"
+write "${kernel}sched_child_runs_first" "1"
+write "${kernel}sched_boost" "0"
+write "${kernel}perf_cpu_time_max_percent" "5"
+write "${kernel}sched_autogroup_enabled" "1"
+write "${kernel}random/read_wakeup_threshold" "64"
+write "${kernel}random/write_wakeup_threshold" "128"
+write "${kernel}sched_tunable_scaling" "0"
+write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
+write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
+write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
+write "${kernel}sched_migration_cost_ns" "5000000"
+[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
+[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
+write "${kernel}sched_nr_migrate" "8"
+write "${kernel}sched_schedstats" "0"
+write "${kernel}sched_rr_timeslice_ms" "1"
+write "${kernel}sched_cstate_aware" "1"
+write "${kernel}sched_sync_hint_enable" "0"
+write "${kernel}sched_user_hint" "0"
+write "${kernel}printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -2345,20 +2392,20 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # VM settings to improve overall user experience and performance.
-write "/proc/sys/vm/dirty_background_ratio" "5"
-write "/proc/sys/vm/dirty_ratio" "50"
-write "/proc/sys/vm/dirty_expire_centisecs" "3000"
-write "/proc/sys/vm/dirty_writeback_centisecs" "3000"
-write "/proc/sys/vm/page-cluster" "0"
-write "/proc/sys/vm/stat_interval" "60"
+write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_ratio" "50"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}page-cluster" "0"
+write "${vm}stat_interval" "60"
 # Follow SSWAP on exynos SOC's
 if [[ $exynos == "true" ]]; then
-write "/proc/sys/vm/swappiness" "150"
+write "${vm}swappiness" "150"
 else
-write "/proc/sys/vm/swappiness" "100"
+write "${vm}swappiness" "100"
 fi
-write "/proc/sys/vm/laptop_mode" "0"
-write "/proc/sys/vm/vfs_cache_pressure" "60"
+write "${vm}laptop_mode" "0"
+write "${vm}vfs_cache_pressure" "60"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -2439,25 +2486,38 @@ kmsg1 "                                          DISABLED TOUCH BOOST.          
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
+# Fetch the available TCP congestion control 
+avail_con=`cat "${tcp}tcp_available_congestion_control"`
+	
+    # Attempt to set the TCP congestion control in this order
+    for tcpcc in bbr2 bbr cubic westwood 
+	do
+	    # Once a matching TCP congestion control is found, set it and break
+		if [[ "$avail_con" == *"$tcpcc"* ]]
+		then
+			write ${tcp}tcp_congestion_control $tcpcc
+			break
+		fi
+	done
+	
 # Internet Tweaks
-write "/proc/sys/net/ipv4/ip_no_pmtu_disc" "0"
-write "/proc/sys/net/ipv4/tcp_ecn" "1"
-write "/proc/sys/net/ipv4/tcp_timestamps" "0"
-write "/proc/sys/net/ipv4/route.flush" "1"
-write "/proc/sys/net/ipv4/tcp_rfc1337" "1"
-write "/proc/sys/net/ipv4/tcp_tw_reuse" "1"
-write "/proc/sys/net/ipv4/tcp_sack" "1"
-write "/proc/sys/net/ipv4/tcp_fack" "1"
-write "/proc/sys/net/ipv4/tcp_fastopen" "3"
-write "/proc/sys/net/ipv4/tcp_tw_recycle" "1"
-write "/proc/sys/net/ipv4/tcp_no_metrics_save" "1"
-write "/proc/sys/net/ipv4/tcp_syncookies" "0"
-write "/proc/sys/net/ipv4/tcp_window_scaling" "1"
-write "/proc/sys/net/ipv4/tcp_keepalive_probes" "10"
-write "/proc/sys/net/ipv4/tcp_keepalive_intvl" "30"
-write "/proc/sys/net/ipv4/tcp_fin_timeout" "30"
-write "/proc/sys/net/ipv4/tcp_low_latency" "1"
-write "/proc/sys/net/ipv4/tcp_congestion_control" "bbr2"
+write "${tcp}ip_no_pmtu_disc" "0"
+write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_timestamps" "0"
+write "${tcp}route.flush" "1"
+write "${tcp}tcp_rfc1337" "1"
+write "${tcp}tcp_tw_reuse" "1"
+write "${tcp}tcp_sack" "1"
+write "${tcp}tcp_fack" "1"
+write "${tcp}tcp_fastopen" "3"
+write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_no_metrics_save" "1"
+write "${tcp}tcp_syncookies" "0"
+write "${tcp}tcp_window_scaling" "1"
+write "${tcp}tcp_keepalive_probes" "10"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -2870,27 +2930,27 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Tweak some kernel settings to improve overall performance.
-write "/proc/sys/kernel/sched_child_runs_first" "0"
-write "/proc/sys/kernel/sched_boost" "1"
-write "/proc/sys/kernel/perf_cpu_time_max_percent" "25"
-write "/proc/sys/kernel/sched_autogroup_enabled" "0"
-write "/proc/sys/kernel/random/read_wakeup_threshold" "128"
-write "/proc/sys/kernel/random/write_wakeup_threshold" "1024"
-write "/proc/sys/kernel/sched_tunable_scaling" "0"
-write "/proc/sys/kernel/sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
-write "/proc/sys/kernel/sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
-write "/proc/sys/kernel/sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
-write "/proc/sys/kernel/sched_migration_cost_ns" "5000000"
-[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_colocation" "0"
-[[ "$ANDROID" == "true" ]] && write "/proc/sys/kernel/sched_min_task_util_for_boost" "0"
-write "/proc/sys/kernel/sched_nr_migrate" "128"
-write "/proc/sys/kernel/sched_schedstats" "0"
-write "/proc/sys/kernel/sched_rr_timeslice_ms" "1"
-write "/proc/sys/kernel/sched_cstate_aware" "1"
-write "/proc/sys/kernel/sched_sync_hint_enable" "0"
-write "/proc/sys/kernel/sched_user_hint" "0"
-write "/proc/sys/kernel/sched_conservative_pl" "0"
-write "/proc/sys/kernel/printk_devkmsg" "off"
+write "${kernel}sched_child_runs_first" "0"
+write "${kernel}sched_boost" "1"
+write "${kernel}perf_cpu_time_max_percent" "25"
+write "${kernel}sched_autogroup_enabled" "0"
+write "${kernel}random/read_wakeup_threshold" "128"
+write "${kernel}random/write_wakeup_threshold" "1024"
+write "${kernel}sched_tunable_scaling" "0"
+write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
+write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
+write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
+write "${kernel}sched_migration_cost_ns" "5000000"
+[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
+[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
+write "${kernel}sched_nr_migrate" "128"
+write "${kernel}sched_schedstats" "0"
+write "${kernel}sched_rr_timeslice_ms" "1"
+write "${kernel}sched_cstate_aware" "1"
+write "${kernel}sched_sync_hint_enable" "0"
+write "${kernel}sched_user_hint" "0"
+write "${kernel}sched_conservative_pl" "0"
+write "${kernel}printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -2948,20 +3008,21 @@ fi
 sync
 
 # VM settings to improve overall user experience and performance.
-write "/proc/sys/vm/dirty_background_ratio" "5"
-write "/proc/sys/vm/dirty_ratio" "20"
-write "/proc/sys/vm/dirty_expire_centisecs" "500"
-write "/proc/sys/vm/dirty_writeback_centisecs" "200"
-write "/proc/sys/vm/page-cluster" "0"
+write "${vm}drop_caches" "3"
+write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_ratio" "20"
+write "${vm}dirty_expire_centisecs" "500"
+write "${vm}dirty_writeback_centisecs" "200"
+write "${vm}page-cluster" "0"
 write "/proc/sys/vm/stat_interval" "60"
 # Follow SSWAP on exynos SOC's
 if [[ $exynos == "true" ]]; then
-write "/proc/sys/vm/swappiness" "150"
+write "${vm}swappiness" "150"
 else
-write "/proc/sys/vm/swappiness" "100"
+write "${vm}swappiness" "100"
 fi
-write "/proc/sys/vm/laptop_mode" "0"
-write "/proc/sys/vm/vfs_cache_pressure" "500"
+write "${vm}laptop_mode" "0"
+write "${vm}vfs_cache_pressure" "500"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -3042,25 +3103,38 @@ kmsg1 "                                          ENABLED TOUCH BOOST.           
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
+# Fetch the available TCP congestion control 
+avail_con=`cat "${tcp}tcp_available_congestion_control"`
+	
+    # Attempt to set the TCP congestion control in this order
+    for tcpcc in bbr2 bbr cubic westwood 
+	do
+	    # Once a matching TCP congestion control is found, set it and break
+		if [[ "$avail_con" == *"$tcpcc"* ]]
+		then
+			write ${tcp}tcp_congestion_control $tcpcc
+			break
+		fi
+	done
+	
 # Internet Tweaks
-write "/proc/sys/net/ipv4/ip_no_pmtu_disc" "0"
-write "/proc/sys/net/ipv4/tcp_ecn" "1"
-write "/proc/sys/net/ipv4/tcp_timestamps" "0"
-write "/proc/sys/net/ipv4/route.flush" "1"
-write "/proc/sys/net/ipv4/tcp_rfc1337" "1"
-write "/proc/sys/net/ipv4/tcp_tw_reuse" "1"
-write "/proc/sys/net/ipv4/tcp_sack" "1"
-write "/proc/sys/net/ipv4/tcp_fack" "1"
-write "/proc/sys/net/ipv4/tcp_fastopen" "3"
-write "/proc/sys/net/ipv4/tcp_tw_recycle" "1"
-write "/proc/sys/net/ipv4/tcp_no_metrics_save" "1"
-write "/proc/sys/net/ipv4/tcp_syncookies" "0"
-write "/proc/sys/net/ipv4/tcp_window_scaling" "1"
-write "/proc/sys/net/ipv4/tcp_keepalive_probes" "10"
-write "/proc/sys/net/ipv4/tcp_keepalive_intvl" "30"
-write "/proc/sys/net/ipv4/tcp_fin_timeout" "30"
-write "/proc/sys/net/ipv4/tcp_low_latency" "1"
-write "/proc/sys/net/ipv4/tcp_congestion_control" "bbr2"
+write "${tcp}ip_no_pmtu_disc" "0"
+write "${tcp}tcp_ecn" "1"
+write "${tcp}tcp_timestamps" "0"
+write "${tcp}route.flush" "1"
+write "${tcp}tcp_rfc1337" "1"
+write "${tcp}tcp_tw_reuse" "1"
+write "${tcp}tcp_sack" "1"
+write "${tcp}tcp_fack" "1"
+write "${tcp}tcp_fastopen" "3"
+write "${tcp}tcp_tw_recycle" "1"
+write "${tcp}tcp_no_metrics_save" "1"
+write "${tcp}tcp_syncookies" "0"
+write "${tcp}tcp_window_scaling" "1"
+write "${tcp}tcp_keepalive_probes" "10"
+write "${tcp}tcp_keepalive_intvl" "30"
+write "${tcp}tcp_fin_timeout" "30"
+write "${tcp}tcp_low_latency" "1"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
