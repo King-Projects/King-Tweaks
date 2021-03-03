@@ -525,9 +525,10 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, thermald and thermal-engine.
+# Enable perfd, thermald, thermalserviced and thermal-engine.
 start perfd
 start thermald
+start thermalserviced
 start thermal-engine
 start mpdecision
 
@@ -1192,9 +1193,10 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, disable thermald and thermal-engine.
+# Enable perfd, disable thermald, thermalserviced and thermal-engine.
 start perfd
 stop thermald
+stop thermalserviced
 stop thermal-engine
 stop mpdecision
 
@@ -1890,9 +1892,10 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, thermald and thermal-engine.
+# Enable perfd, thermald, thermalserviced and thermal-engine.
 start perfd
 start thermald
+start thermalserviced
 start thermal-engine
 start mpdecision
 
@@ -2621,9 +2624,10 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Disable perfd, thermald and thermal-engine.
+# Disable perfd, thermald, thermalserviced and thermal-engine.
 stop perfd
 stop thermald
+stop thermalserviced
 stop thermal-engine
 stop mpdecision
 
