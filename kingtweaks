@@ -252,14 +252,8 @@ cpumxfreq=$cpumxfreq2
 fi
 done
 
-# Max CPU frequency ÷ 2 
-cpumfreq=$((cpumxfreq / 2))
-
 # Get max GPU frequency
 gpufreq=`cat $gpu/max_gpuclk`
-
-# Max GPU frequency ÷ 2
-gpumfreq=$((gpufreq / 2))
 
 # Variable to SOC manufacturer
 mf=`getprop ro.boot.hardware`
@@ -659,7 +653,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "1"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" "$gpufreq"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
@@ -2024,7 +2018,7 @@ write "$governor/pl" "0"
 write "$governor/iowait_boost_enable" "0"
 write "$governor/rate_limit_us" "46000"
 write "$governor/hispeed_load" "99"
-write "$governor/hispeed_freq" "$cpumfreq"
+write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
 # Apply governor specific tunables for interactive
@@ -2044,7 +2038,7 @@ write "$governor/sampling_rate" "50000"
 write "$governor/sampling_rate_min" "75000"
 write "$governor/min_sample_time" "75000"
 write "$governor/go_hispeed_load" "99"
-write "$governor/hispeed_freq" "$cpumfreq"
+write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
@@ -2072,7 +2066,6 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "1"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" "$gpumfreq"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
@@ -2235,7 +2228,7 @@ do
 if [[ -e "${minclk}scaling_min_freq" && $bpercentage > "20" ]]
 then
 write "${minclk}scaling_min_freq" "100000"
-write "${minclk}scaling_max_freq" "$cpumfreq"
+write "${minclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2244,7 +2237,7 @@ do
 if [[ -e "${mnclk}scaling_min_freq" && $bpercentage > "20" ]]
 then
 write "${mnclk}scaling_min_freq" "100000"
-write "${mnclk}scaling_max_freq" "$cpumfreq"
+write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
