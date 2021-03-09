@@ -263,36 +263,6 @@ case "$kts_profile" in
 
      	else
      	toast1
-     	fiif [[ `getprop persist.sys.locale` == "en-US" ]]
-     	then
-     	toast1
-     	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
-         then
-         toast1
-         
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
-     	then
-     	toastpt1
-     	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
-     	then
-     	toastin1
-     	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
-     	then
-     	toasttr1
-     	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
-     	then
-     	toastfr1
-
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
-     	then
-     	toastfr1
-
-     	else
-     	toast1
      	fi
 	 	};;
 	
