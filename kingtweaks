@@ -127,19 +127,14 @@ fi
 case "$kts_profile" in
  "Automatic") {
  	sleep 5
-     automatic
-	 };;
-	 
-	 "Balanced") {
-	 	sleep 5
-         
+   
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
-     	toasten
+     	toast
      	
      	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
          then
-         toasten
+         toast
          
      	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
      	then
@@ -162,19 +157,18 @@ case "$kts_profile" in
      	toastfr
 
      	else
-     	toasten
+     	toast
      	fi
 
-         killall kingauto
-	 	balanced
-
+         automatic
+         
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
-     	toasten1
+     	toast1
      	
      	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
          then
-         toasten1
+         toast1
          
      	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
      	then
@@ -197,7 +191,108 @@ case "$kts_profile" in
      	toastfr1
 
      	else
-     	toasten1
+     	toast1
+     	fi
+	     };;
+	 
+	 "Balanced") {
+	 	sleep 5
+         
+         if [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toast
+     	
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toast
+         
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt
+     	
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr
+
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr
+
+     	else
+     	toast
+     	fi
+
+         killall kingauto
+	 	balanced
+
+         if [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toast1
+     	
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toast1
+         
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt1
+     	
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin1
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr1
+
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr1
+
+     	else
+     	toast1
+     	fiif [[ `getprop persist.sys.locale` == "en-US" ]]
+     	then
+     	toast1
+     	
+     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+         then
+         toast1
+         
+     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	then
+     	toastpt1
+     	
+     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	then
+     	toastin1
+     	
+     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
+     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	then
+     	toastfr1
+
+     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	then
+     	toastfr1
+
+     	else
+     	toast1
      	fi
 	 	};;
 	
@@ -206,11 +301,11 @@ case "$kts_profile" in
              
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
-     	toasten
+     	toast
      	
      	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
          then
-         toasten
+         toast
          
      	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
      	then
@@ -233,7 +328,7 @@ case "$kts_profile" in
      	toastfr
 
      	else
-     	toasten
+     	toast
      	fi
 
              killall kingauto
@@ -241,11 +336,11 @@ case "$kts_profile" in
 
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
-     	toasten1
+     	toast1
      	
      	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
          then
-         toasten1
+         toast1
          
      	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
      	then
@@ -268,7 +363,7 @@ case "$kts_profile" in
      	toastfr1
 
      	else
-     	toasten1
+     	toast1
      	fi
 	 	};;
 	 		
@@ -277,11 +372,11 @@ case "$kts_profile" in
 
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
-     	toasten
+     	toast
      	
      	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
          then
-         toasten
+         toast
          
      	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
      	then
@@ -304,7 +399,7 @@ case "$kts_profile" in
      	toastfr
 
      	else
-     	toasten
+     	toast
      	fi
 
                  killall kingauto
@@ -312,11 +407,11 @@ case "$kts_profile" in
 
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
-     	toasten1
+     	toast1
      	
      	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
          then
-         toasten1
+         toast1
          
      	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
      	then
@@ -339,7 +434,7 @@ case "$kts_profile" in
      	toastfr1
 
      	else
-     	toasten1
+     	toast1
      	fi
 	 	};;
 
@@ -348,11 +443,11 @@ case "$kts_profile" in
 
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
-     	toasten
+     	toast
      	
      	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
          then
-         toasten
+         toast
          
      	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
      	then
@@ -375,7 +470,7 @@ case "$kts_profile" in
      	toastfr
 
      	else
-     	toasten
+     	toast
      	fi
 
                      killall kingauto
@@ -383,11 +478,11 @@ case "$kts_profile" in
 
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
-     	toasten1
+     	toast1
      	
      	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
          then
-         toasten1
+         toast1
          
      	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
      	then
@@ -410,7 +505,7 @@ case "$kts_profile" in
      	toastfr1
 
      	else
-     	toasten1
+     	toast1
      	fi
 	 	};;
 esac

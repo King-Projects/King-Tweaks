@@ -13,7 +13,7 @@ while true; do
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   gaming
   sleep 40
-  elif [ $(top -n 1 -d 1 | head -n 12 | grep -o -e 'whatsapp' -e 'telegram' -e 'facebook' -e 'chrome' -e 'instagram' -e 'docs' | head -n 1) ]; then
+  elif [ $(top -n 1 -d 1 | head -n 12 | grep -o -e 'whatsapp' -e 'telegram' -e 'netflix' -e 'wemesh' -e 'discord' -e 'youtube' -e 'facebook' -e 'chrome' -e 'instagram' -e 'docs' | head -n 1) ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   User is using social media, and etc apps. Applied balanced profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"

@@ -32,11 +32,11 @@ kmsg1() {
 	echo -e "$@"
 }
 
-toasten() {
+toast() {
 	am start -a android.intent.action.MAIN -e toasttext "Applying $kts_profile profile..." -n bellavita.toast/.MainActivity
 }
 	
-toasten1() {
+toast1() {
 	am start -a android.intent.action.MAIN -e toasttext "$kts_profile profile applied" -n bellavita.toast/.MainActivity
 }
 
@@ -579,7 +579,7 @@ if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CRC.                                                                             "
+kmsg1 "                                          DISABLED MMC CRC.                                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -650,6 +650,7 @@ write "${vm}dirty_expire_centisecs" "200"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
+write "${vm}extfrag_threshold" "750"
 # Follow SSWAP if device haven't more than 3 GB ram on exynos SOC's
 if [[ $exynos == "true" && $totalram -lt "3000" ]]; then
 write "${vm}swappiness" "150"
@@ -775,37 +776,6 @@ kmsg1 "-------------------------------------------------------------------------
 }
 # Automatic Profile
 automatic() {
-	     if [[ `getprop persist.sys.locale` == "en-US" ]]
-     	then
-     	toasten
-     	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
-         then
-         toasten
-         
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
-     	then
-     	toastpt
-     	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
-     	then
-     	toastin
-     	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
-     	then
-     	toasttr
-     	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
-     	then
-     	toastfr
-
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
-     	then
-     	toastfr
-
-     	else
-     	toasten
-     	fi
      	
      	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING AUTOMATIC PROFILE...                                                                       "
@@ -818,37 +788,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          AUTOMATIC PROFILE ENABLED.                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
-     	then
-     	toasten1
-     	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
-         then
-         toasten1
-         
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
-     	then
-     	toastpt1
-     	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
-     	then
-     	toastin1
-     	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
-     	then
-     	toasttr1
-     	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
-     	then
-     	toastfr1
-
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
-     	then
-     	toastfr1
-
-     	else
-     	toasten1
-     	fi
 }
 # Balanced Profile
 balanced() {
@@ -1140,7 +1079,7 @@ if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CRC.                                                                             "
+kmsg1 "                                          DISABLED MMC CRC.                                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -1230,6 +1169,7 @@ write "${vm}dirty_expire_centisecs" "1000"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
+write "${vm}extfrag_threshold" "750"
 # Follow SSWAP if device haven't more than 3 GB ram on exynos SOC's
 if [[ $exynos == "true" && $totalram -lt "3000" ]]; then
 write "${vm}swappiness" "150"
@@ -1760,7 +1700,7 @@ if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CRC.                                                                             "
+kmsg1 "                                          DISABLED MMC CRC.                                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -1851,6 +1791,7 @@ write "${vm}dirty_expire_centisecs" "500"
 write "${vm}dirty_writeback_centisecs" "200"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
+write "${vm}extfrag_threshold" "750"
 # Follow SSWAP if device haven't more than 3 GB ram on exynos SOC's
 if [[ $exynos == "true" && $totalram -lt "3000" ]]; then
 write "${vm}swappiness" "150"
@@ -2430,7 +2371,7 @@ if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CRC.                                                                             "
+kmsg1 "                                          DISABLED MMC CRC.                                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2536,6 +2477,7 @@ write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
+write "${vm}extfrag_threshold" "750"
 # Follow SSWAP if device haven't more than 3 GB ram on exynos SOC's
 if [[ $exynos == "true" && $totalram -lt "3000" ]]; then
 write "${vm}swappiness" "150"
@@ -3070,7 +3012,7 @@ if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CRC.                                                                             "
+kmsg1 "                                          DISABLED MMC CRC.                                                                             "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -3160,7 +3102,8 @@ write "${vm}dirty_ratio" "20"
 write "${vm}dirty_expire_centisecs" "500"
 write "${vm}dirty_writeback_centisecs" "200"
 write "${vm}page-cluster" "0"
-write "/proc/sys/vm/stat_interval" "60"
+write "${vm}stat_interval" "60"
+write "${vm}extfrag_threshold" "750"
 # Follow SSWAP if device haven't more than 3 GB ram on exynos SOC's
 if [[ $exynos == "true" && $totalram -lt "3000" ]]; then
 write "${vm}swappiness" "150"
