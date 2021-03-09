@@ -124,6 +124,37 @@ then
 kts_profilefr=Jeu
 fi
 
+renice -n -6 $(pgrep system_server)
+renice -n -6 $(pgrep com.miui.home)
+renice -n -6 $(pgrep launcher)
+renice -n -6 $(pgrep lawnchair)
+renice -n -6 $(pgrep home)
+renice -n -6 $(pgrep watchapp)
+renice -n -6 $(pgrep trebuchet)
+renice -n -6 $(pgrep deletescape)
+renice -n -1 $(pgrep dialer)
+renice -n -1 $(pgrep keyboard)
+renice -n -1 $(pgrep inputmethod)
+renice -n -9 $(pgrep fluid)
+renice -n -10 $(pgrep composer)
+renice -n -1 $(pgrep com.android.phone)
+renice -n -10 $(pgrep surfaceflinger)
+renice -n -2 $(pgrep kswapd0)
+renice -n -2 $(pgrep ksmd)
+renice -n -2 $(pgrep uksmd)
+renice -n -7 $(pgrep msm_irqbalance)
+renice -n -8 $(pgrep servicemanager)
+renice -n -9 $(pgrep kgsl_worker)
+renice -n -9 $(pgrep audioserver)
+renice -n -3 $(pgrep thermal-engine)
+renice -n -3 $(pgrep crtc_commit)
+renice -n -3 $(pgrep crtc_event)
+renice -n 5 $(pgrep android.gms)
+
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          RENICED PROCESSES.                                                                               "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
 case "$kts_profile" in
  "Automatic") {
  	sleep 5
