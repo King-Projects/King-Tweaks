@@ -333,6 +333,9 @@ then
 btemp=`cat /sys/class/power_supply/battery/batt_temp`
 fi
 
+# Get drivers info
+gpuinfo=`dumpsys SurfaceFlinger | grep GLES | awk '{print $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}'`
+
 btemp=$((btemp / 10))
 
 tcp=/proc/sys/net/ipv4/
@@ -353,7 +356,8 @@ kmsg1 "                                            ⚙️ SDK: $sdk             
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
-kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
+kmsg1 "                                            🖼️ GPU Info: $gpuinfo                                                                                           "
+kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
@@ -770,7 +774,8 @@ kmsg1 "                                            ⚙️ SDK: $sdk             
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
-kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
+kmsg1 "                                            🖼️ GPU Info: $gpuinfo                                                                                           "
+kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
@@ -1376,7 +1381,8 @@ kmsg1 "                                            ⚙️ SDK: $sdk             
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
-kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
+kmsg1 "                                            🖼️ GPU Info: $gpuinfo                                                                                           "
+kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
@@ -2017,7 +2023,8 @@ kmsg1 "                                            ⚙️ SDK: $sdk             
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
-kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
+kmsg1 "                                            🖼️ GPU Info: $gpuinfo                                                                                           "
+kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
@@ -2686,7 +2693,8 @@ kmsg1 "                                            ⚙️ SDK: $sdk             
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
-kmsg1 "                                            🖼️ GPU Governor: $GPU_GOVERNOR                                                                                  "
+kmsg1 "                                            🖼️ GPU Info: $gpuinfo                                                                                           "
+kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
