@@ -933,6 +933,20 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks
 
 	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in msm-adreno-tz interactive
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/devfreq/governor" "$governor"
+			break
+		fi
+	done
+
+	# Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpu/available_governors")"
 
 	# Attempt to set the governor in this order
@@ -945,7 +959,7 @@ kmsg1 "-------------------------------------------------------------------------
 			break
 		fi
 	done
-
+	
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
@@ -1573,6 +1587,20 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks
+
+	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in msm-adreno-tz interactive
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/devfreq/governor" "$governor"
+			break
+		fi
+	done
 
 	# Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpu/available_governors")"
@@ -2243,6 +2271,20 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks
 
 	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in msm-adreno-tz interactive
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/devfreq/governor" "$governor"
+			break
+		fi
+	done
+
+	# Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpu/available_governors")"
 
 	# Attempt to set the governor in this order
@@ -2902,6 +2944,20 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks
+
+	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in msm-adreno-tz interactive
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/devfreq/governor" "$governor"
+			break
+		fi
+	done
 
 	# Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpu/available_governors")"
