@@ -334,7 +334,7 @@ btemp=`cat /sys/class/power_supply/battery/batt_temp`
 fi
 
 # Get GPU info & it's drivers info
-gpuinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}'`
+gpuinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $2,$3,$4,$5,$6,$7,$8,$9,$13}'`
 
 btemp=$((btemp / 10))
 
