@@ -945,7 +945,6 @@ kmsg1 "-------------------------------------------------------------------------
 			break
 		fi
 	done
-done
 
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
@@ -1588,7 +1587,6 @@ kmsg1 "-------------------------------------------------------------------------
 			break
 		fi
 	done
-done
 
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
@@ -2191,23 +2189,6 @@ do
 	done
 done
 
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq
-do
-	# Fetch the available governors from the CPU
-	avail_govs="$(cat "$cpu/scaling_available_governors")"
-
-	# Attempt to set the governor in this order
-	for governor in schedutil interactive
-	do
-		# Once a matching governor is found, set it and break for this CPU
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$cpu/scaling_governor" "$governor"
-			break
-		fi
-	done
-done
-
 # Apply governor specific tunables for schedutil
 find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
@@ -2274,7 +2255,6 @@ kmsg1 "-------------------------------------------------------------------------
 			break
 		fi
 	done
-done
 
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
@@ -2936,7 +2916,6 @@ kmsg1 "-------------------------------------------------------------------------
 			break
 		fi
 	done
-done
 
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
