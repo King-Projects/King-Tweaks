@@ -5,20 +5,20 @@
 
 MODPATH=/data/adb/modules/KTSR
 
-LOG=/sdcard/KTS/KTS.log
+LOG=/sdcard/KTSR/KTSR.log
 
 if [[ -e $LOG ]] 
 then
 rm $LOG
 fi
 
-if [[ -d "/sdcard/KTS" ]] 
+if [[ -d "/sdcard/KTSR" ]] 
 then
-touch KTS.log
+touch KTSR.log
 
 else
-mkdir /sdcard/KTS
-touch KTS.log
+mkdir /sdcard/KTSR
+touch KTSR.log
 fi
 
 # Log in white and continue (unnecessary)
@@ -333,7 +333,7 @@ then
 btemp=`cat /sys/class/power_supply/battery/batt_temp`
 fi
 
-# Get GPU info & it's drivers info
+# Get GPU & it's drivers info
 gpuinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $2,$3,$4,$5,$6,$7,$8,$9,$13}'`
 
 btemp=$((btemp / 10))
@@ -632,6 +632,7 @@ write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -929,7 +930,23 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                         TWEAKED CPU.                                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# GPU Tweaks.
+# GPU Tweaks
+
+	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in *msm-adreno-tz* *interactive*
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/governor" "$governor"
+			break
+		fi
+	done
+done
+
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
@@ -1152,6 +1169,7 @@ write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -1555,7 +1573,23 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                         TWEAKED CPU.                                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# GPU Tweaks.
+# GPU Tweaks
+
+	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in *msm-adreno-tz* *interactive*
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/governor" "$governor"
+			break
+		fi
+	done
+done
+
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "1"
@@ -1775,6 +1809,7 @@ write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -2225,6 +2260,22 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # GPU Tweaks
+
+	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in *msm-adreno-tz* *interactive*
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/governor" "$governor"
+			break
+		fi
+	done
+done
+
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
@@ -2462,6 +2513,7 @@ write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "60"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -2869,7 +2921,23 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                         TWEAKED CPU.                                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# GPU Tweaks.
+# GPU Tweaks
+
+	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in *msm-adreno-tz* *interactive*
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/governor" "$governor"
+			break
+		fi
+	done
+done
+
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "2"
@@ -3089,6 +3157,7 @@ write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "500"
+write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
