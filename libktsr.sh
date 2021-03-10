@@ -434,7 +434,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *schedutil* *interactive*
+	for governor in schedutil interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -878,7 +878,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *schedutil* *interactive*
+	for governor in schedutil interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -936,7 +936,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpu/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *msm-adreno-tz* *interactive*
+	for governor in msm-adreno-tz interactive
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1521,7 +1521,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *schedutil* *interactive*
+	for governor in schedutil interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1578,7 +1578,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpu/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *msm-adreno-tz* *interactive*
+	for governor in msm-adreno-tz interactive
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -2178,7 +2178,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *schedutil* *interactive*
+	for governor in schedutil interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -2246,7 +2246,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpu/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *msm-adreno-tz* *interactive*
+	for governor in msm-adreno-tz interactive
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -2849,7 +2849,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *schedutil* *interactive*
+	for governor in schedutil interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -2907,7 +2907,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpu/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *msm-adreno-tz* *interactive*
+	for governor in msm-adreno-tz interactive
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
