@@ -132,9 +132,6 @@ SCHED_TASKS_BALANCE="8"
 
 SCHED_TASKS_THROUGHPUT="6"
 
-# Maximum unsigned integer size in C
-UINT_MAX="4294967295"
-
     # Variable to GPU directories
     for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
     do
@@ -251,7 +248,7 @@ cpumxfreq=$cpumxfreq2
 fi
 done
 
-# Get max GPU frequency
+# Get max GPU frequency (gpumx does almost the same thing)
 gpufreq=`cat $gpu/max_gpuclk`
 
 # Variable to SOC manufacturer
@@ -279,14 +276,14 @@ dm=`getprop ro.product.model`
 # Variable to get magisk version
 magisk=`magisk -c`
 
-# Detect if we're running on a exynos device
+# Detect if we're running on a exynos SOC
 if [[ `$mf | grep 'samsungexynos'` ]]; then
 exynos=true
 else
 exynos=false
 fi
 
-# Detect if we're running on a mediatek device
+# Detect if we're running on a mediatek SOC
 if [[ `$soc | grep 'mt'` ]]; then
 mtk=true
 else
@@ -389,7 +386,7 @@ start thermal-engine
 start mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, MPDECISION AND PERFD.                                                         "
+kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
    
 # Disable logd and statsd to reduce overhead.
@@ -402,8 +399,8 @@ kmsg1 "-------------------------------------------------------------------------
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "150"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "20"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -463,7 +460,7 @@ write "$governor/timer_rate" "0"
 write "$governor/boost" "0"
 write "$governor/timer_slack" "0"
 write "$governor/input_boost" "0"
-write "$governor/use_migration_notif" "1" 
+write "$governor/use_migration_notif" "0" 
 write "$governor/ignore_hispeed_on_notif" "1"
 write "$governor/use_sched_load" "1"
 write "$governor/fastlane" "1"
@@ -489,15 +486,19 @@ kmsg1 "-------------------------------------------------------------------------
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
+write "/dev/stune/background/schedtune.prefer_perf" "0"
 
-write "/dev/stune/foreground/schedtune.boost" "0"
+write "/dev/stune/foreground/schedtune.boost" "10"
 write "/dev/stune/foreground/schedtune.prefer_idle" "1"
+write "/dev/stune/foreground/schedtune.prefer_perf" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
+write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "10"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
+write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
 write "/dev/stune/schedtune.prefer_idle" "0"
@@ -575,7 +576,6 @@ write "${kernel}sched_rr_timeslice_ms" "1"
 write "${kernel}sched_cstate_aware" "1"
 write "${kernel}sched_sync_hint_enable" "0"
 write "${kernel}sched_user_hint" "0"
-write "${kernel}sched_conservative_pl" "0"
 write "${kernel}printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -630,7 +630,7 @@ else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "200"
+write "${vm}vfs_cache_pressure" "120"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -760,7 +760,6 @@ kmsg1 "-------------------------------------------------------------------------
 	kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          AUTOMATIC PROFILE ENABLED.                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 }
 # Balanced Profile
 balanced() {
@@ -808,7 +807,7 @@ start thermal-engine
 start mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, MPDECISION AND PERFD.                                                         "
+kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable logd and statsd to reduce overhead.
@@ -821,8 +820,8 @@ kmsg1 "-------------------------------------------------------------------------
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "150"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -907,15 +906,15 @@ write "$governor/timer_rate" "40000"
 write "$governor/boost" "0"
 write "$governor/timer_slack" "40000"
 write "$governor/input_boost" "0"
-write "$governor/use_migration_notif" "1" 
+write "$governor/use_migration_notif" "0" 
 write "$governor/ignore_hispeed_on_notif" "1"
 write "$governor/use_sched_load" "1"
 write "$governor/boostpulse" "0"
 write "$governor/fastlane" "1"
 write "$governor/fast_ramp_down" "0"
 write "$governor/sampling_rate" "40000"
-write "$governor/sampling_rate_min" "50000"
-write "$governor/min_sample_time" "50000"
+write "$governor/sampling_rate_min" "60000"
+write "$governor/min_sample_time" "60000"
 write "$governor/go_hispeed_load" "89"
 write "$governor/hispeed_freq" "$cpumxfreq"
 done
@@ -954,7 +953,7 @@ kmsg1 "-------------------------------------------------------------------------
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/governor" "$governor"
+			write "$gpu/gpu_governor" "$governor"
 			break
 		fi
 	done
@@ -1015,15 +1014,15 @@ fi
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
-write "/dev/stune/foreground/schedtune.prefer_perf" "0"
+write "/dev/stune/background/schedtune.prefer_perf" "0"
 
-write "/dev/stune/foreground/schedtune.boost" "0"
+write "/dev/stune/foreground/schedtune.boost" "5"
 write "/dev/stune/foreground/schedtune.prefer_idle" "1"
 write "/dev/stune/foreground/schedtune.prefer_perf" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
-write "/dev/stune/rt/schedtune.prefer_perf" "1"
+write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "10"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
@@ -1216,10 +1215,11 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Fix DT2W.
-if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
+if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" && -e "/sys/class/sec/tsp/dt2w_enable" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
+write "/sys/class/sec/tsp/dt2w_enable" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          FIXED DOUBLE TAP TO WAKEUP IF BROKEN.                                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1445,7 +1445,7 @@ stop thermal-engine
 stop mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD, MPDECISION AND ENABLED PERFD.                                               "
+kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND ENABLED PERFD.                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable logd and statsd to reduce overhead.
@@ -1494,16 +1494,17 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
-write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
+write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CAF INPUT BOOST.                                                                            "
+kmsg1 "                                          TWEAKED CAF CPU INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1554,7 +1555,7 @@ write "$governor/pl" "1"
 write "$governor/iowait_boost_enable" "1"
 write "$governor/rate_limit_us" "0"
 write "$governor/hispeed_load" "80"
-write "$governor/hispeed_freq" "$UINT_MAX"
+write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
 # Apply governor specific tunables for interactive
@@ -1564,7 +1565,7 @@ write "$governor/timer_rate" "0"
 write "$governor/boost" "1"
 write "$governor/timer_slack" "0"
 write "$governor/input_boost" "1"
-write "$governor/use_migration_notif" "1"
+write "$governor/use_migration_notif" "0"
 write "$governor/ignore_hispeed_on_notif" "1"
 write "$governor/use_sched_load" "1"
 write "$governor/fastlane" "1"
@@ -1573,7 +1574,7 @@ write "$governor/sampling_rate" "0"
 write "$governor/sampling_rate_min" "0"
 write "$governor/min_sample_time" "0"
 write "$governor/go_hispeed_load" "80"
-write "$governor/hispeed_freq" "$UINT_MAX"
+write "$governor/hispeed_freq" "$cpumxfreq"
 done
 	
 for cpu in /sys/devices/system/cpu/cpu*
@@ -1610,7 +1611,7 @@ kmsg1 "-------------------------------------------------------------------------
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/governor" "$governor"
+			write "$gpu/gpu_governor" "$governor"
 			break
 		fi
 	done
@@ -1759,7 +1760,6 @@ write "${kernel}sched_rr_timeslice_ms" "1"
 write "${kernel}sched_cstate_aware" "1"
 write "${kernel}sched_sync_hint_enable" "0"
 write "${kernel}sched_user_hint" "0"
-write "${kernel}sched_conservative_pl" "0"
 write "${kernel}printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2117,7 +2117,7 @@ start thermal-engine
 start mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, MPDECISION AND PERFD.                                                         "
+kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable logd and statsd to reduce overhead.
@@ -2130,8 +2130,8 @@ kmsg1 "-------------------------------------------------------------------------
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "5"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "500"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2166,9 +2166,10 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
+write "/sys/module/cpu_boost/parameters/input_boost_enabled" "0"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED CAF INPUT BOOST.                                                                            "
+kmsg1 "                                          DISABLED CAF CPU INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2235,7 +2236,7 @@ write "$governor/timer_rate" "50000"
 write "$governor/boost" "0"
 write "$governor/timer_slack" "50000"
 write "$governor/input_boost" "0"
-write "$governor/use_migration_notif" "1" 
+write "$governor/use_migration_notif" "0" 
 write "$governor/ignore_hispeed_on_notif" "1"
 write "$governor/use_sched_load" "1"
 write "$governor/boostpulse" "0"
@@ -2292,7 +2293,7 @@ kmsg1 "-------------------------------------------------------------------------
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/governor" "$governor"
+			write "$gpu/gpu_governor" "$governor"
 			break
 		fi
 	done
@@ -2800,7 +2801,7 @@ stop thermal-engine
 stop mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD, MPDECISION AND PERFD.                                                         "
+kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Disable logd and statsd to reduce overhead.
@@ -2849,16 +2850,17 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
-write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
+write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CAF INPUT BOOST.                                                                            "
+kmsg1 "                                          TWEAKED CAF CPU INPUT BOOST.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2910,7 +2912,7 @@ write "$governor/pl" "1"
 write "$governor/iowait_boost_enable" "1"
 write "$governor/rate_limit_us" "0"
 write "$governor/hispeed_load" "80"
-write "$governor/hispeed_freq" "$UINT_MAX"
+write "$governor/hispeed_freq" "cpumxfreq"
 done
 
 # Apply governor specific tunables for interactive
@@ -2920,7 +2922,7 @@ write "$governor/timer_rate" "0"
 write "$governor/boost" "1"
 write "$governor/timer_slack" "0"
 write "$governor/input_boost" "1"
-write "$governor/use_migration_notif" "1"
+write "$governor/use_migration_notif" "0"
 write "$governor/ignore_hispeed_on_notif" "1"
 write "$governor/use_sched_load" "1"
 write "$governor/boostpulse" "0"
@@ -2930,7 +2932,7 @@ write "$governor/sampling_rate" "0"
 write "$governor/sampling_rate_min" "0"
 write "$governor/min_sample_time" "0"
 write "$governor/go_hispeed_load" "80"
-write "$governor/hispeed_freq" "$UINT_MAX"
+write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
@@ -2967,7 +2969,7 @@ kmsg1 "-------------------------------------------------------------------------
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/governor" "$governor"
+			write "$gpu/gpu_governor" "$governor"
 			break
 		fi
 	done
