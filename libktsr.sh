@@ -221,12 +221,11 @@ UINT_MAX="4294967295"
     GPU_GOVERNOR=`cat $gpug/governor`
     fi
 
-    if [[ -e $gpu/min_pwrlevel ]]; then
-    gpuminpl=`cat $gpu/min_pwrlevel`
-    gpupl=$((gpuminpl + 1))
+    if [[ -e $gpu/num_pwrlevels ]]; then
+    gpunpl=`cat $gpu/num_pwrlevels`
     fi
     
-    gpumx=`cat $gpu/devfreq/available_frequencies | awk -v var="$gpupl" '{print $var}'`
+    gpumx=`cat $gpu/devfreq/available_frequencies | awk -v var="$gpunpl" '{print $var}'`
     
     if [[ $gpumx != `cat $gpu/max_gpuclk` ]]; then
     gpumx=`cat $gpu/devfreq/available_frequencies | awk '{print $1}'`
