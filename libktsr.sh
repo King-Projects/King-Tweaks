@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # Written by Draco (tytydraco @ GitHub)
-# Modified by Pedrozzz (pedrozzz0 @ GitHub)
+# KTSR by Pedro (pedrozzz0 @ GitHub)
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 MODPATH=/data/adb/modules/KTSR
@@ -222,13 +222,22 @@ SCHED_TASKS_THROUGHPUT="6"
     gpunpl=`cat $gpu/num_pwrlevels`
     fi
     
-    gpumx=`cat $gpu/devfreq/available_frequencies | awk -v var="$gpunpl" '{print $var}'`
+    gpumx=`cat $gpug/available_frequencies | awk -v var="$gpunpl" '{print $var}'`
     
-    if [[ $gpumx != `cat $gpu/max_gpuclk` ]]; then
-    gpumx=`cat $gpu/devfreq/available_frequencies | awk '{print $1}'`
+    if [[ $gpumx != $gpufreq ]]; then
+    gpumx=`cat $gpug/available_frequencies | awk '{print $1}'`
 
-    elif [[ $gpumx != `cat $gpu/max_gpuclk` ]]; then
+    elif [[ $gpumx != $gpufreq ]]; then
     gpumx=$gpufreq
+    fi
+    
+    gpumx2=`cat $gpug/gpu_freq_table | awk '{print $7}'`
+    
+    if [[ $gpumx2 != $gpufreq ]]; then
+    gpumx2=`cat $gpug/gpu_freq_table | awk '{print $1}'`
+    
+    elif [[ $gpumx2 != $gpufreq ]]; then
+    gpumx2=$gpufreq
     fi
     
 # Get running CPU governor    
@@ -236,6 +245,12 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 CPU_GOVERNOR=`cat $cpu/scaling_governor` 
 done
+
+# Get GPU minimum power level
+gpuminpl=`cat $gpu/min_pwrlevel`
+
+# Get GPU maximum power level
+gpumaxpl=`cat $gpu/max_pwrlevel`
 
 # Get max CPU frequency
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
@@ -249,7 +264,12 @@ fi
 done
 
 # Get max GPU frequency (gpumx does almost the same thing)
+if [[ -e $gpu/max_gpuclk ]]; then
 gpufreq=`cat $gpu/max_gpuclk`
+
+elif [[ -e $gpug/gpu_max_clock ]]; then
+gpufreq=`cat $gpug/gpu_max_clock`
+fi
 
 # Variable to SOC manufacturer
 mf=`getprop ro.boot.hardware`
@@ -630,7 +650,7 @@ else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "120"
+write "${vm}vfs_cache_pressure" "200"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -931,29 +951,29 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks
 
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+	avail_govs="$(cat "$gpug/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz interactive
+	for governor in msm-adreno-tz simple_ondemand ondemand
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/devfreq/governor" "$governor"
+			write "$gpug/governor" "$governor"
 			break
 		fi
 	done
-
+	
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/available_governors")"
+	avail_govs="$(cat "$gpug/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz interactive
+	for governor in Interactive Static
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/gpu_governor" "$governor"
+			write "$gpug/gpu_governor" "$governor"
 			break
 		fi
 	done
@@ -971,6 +991,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "66"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
+write "$gpug/gpu_min_clock" "100"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1589,29 +1610,29 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks
 
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+	avail_govs="$(cat "$gpug/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz interactive
+	for governor in msm-adreno-tz simple_ondemand ondemand
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/devfreq/governor" "$governor"
+			write "$gpug/governor" "$governor"
 			break
 		fi
 	done
-
+	
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/available_governors")"
+	avail_govs="$(cat "$gpug/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz interactive
+	for governor in Booster Interactive Static
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/gpu_governor" "$governor"
+			write "$gpug/gpu_governor" "$governor"
 			break
 		fi
 	done
@@ -1621,7 +1642,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" $gpufreq
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
@@ -1629,6 +1650,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "156"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
+write "$gpug/gpu_min_clock" "100"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1833,7 +1855,7 @@ else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "200"
+write "${vm}vfs_cache_pressure" "120"
 write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2271,29 +2293,29 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks
 
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+	avail_govs="$(cat "$gpug/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz interactive
+	for governor in msm-adreno-tz simple_ondemand ondemand
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/devfreq/governor" "$governor"
+			write "$gpug/governor" "$governor"
 			break
 		fi
 	done
-
+	
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/available_governors")"
+	avail_govs="$(cat "$gpug/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz interactive
+	for governor in Interactive Static
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/gpu_governor" "$governor"
+			write "$gpug/gpu_governor" "$governor"
 			break
 		fi
 	done
@@ -2310,6 +2332,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "36"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
+write "$gpug/gpu_min_clock" "100"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2947,46 +2970,47 @@ kmsg1 "-------------------------------------------------------------------------
 # GPU Tweaks
 
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+	avail_govs="$(cat "$gpug/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz interactive
+	for governor in msm-adreno-tz simple_ondemand ondemand
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/devfreq/governor" "$governor"
+			write "$gpug/governor" "$governor"
 			break
 		fi
 	done
-
+	
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/available_governors")"
+	avail_govs="$(cat "$gpug/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz interactive
+	for governor in Booster Interactive Static
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpu/gpu_governor" "$governor"
+			write "$gpug/gpu_governor" "$governor"
 			break
 		fi
 	done
 
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "2"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "3"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" `cat $gpu/max_gpuclk`
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" $gpufreq
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" $gpumx
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" `cat $gpu/max_pwrlevel`
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" $gpumaxpl
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "1006"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "0"
+write "$gpug/gpu_min_clock" "$gpumx2"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
@@ -3118,7 +3142,6 @@ write "${kernel}sched_rr_timeslice_ms" "1"
 write "${kernel}sched_cstate_aware" "1"
 write "${kernel}sched_sync_hint_enable" "0"
 write "${kernel}sched_user_hint" "0"
-write "${kernel}sched_conservative_pl" "0"
 write "${kernel}printk_devkmsg" "off"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"

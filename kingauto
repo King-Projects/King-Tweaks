@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# KTS by pedrozzz (pedrozzz0 @ GitHub)
+# KTSR by pedro (pedrozzz0 @ GitHub)
 
 # Load libraries
 MODPATH=/data/adb/modules/KTSR
@@ -30,16 +30,12 @@ while true; do
   kmsg "                                   Device screen is turned off. Applied battery profile and extended check time."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   battery
-  dumpsys deviceidle enable light
-  dumpsys deviceidle enable deep
   sleep 300
   elif [ $(cat /sys/class/leds/lcd-backlight/brightness) == "0" ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device screen is turned off. Applied battery profile, extended check time."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   battery
-  dumpsys deviceidle enable light
-  dumpsys deviceidle enable deep
   sleep 300
   elif [ $(cat /sys/class/power_supply/battery/status) == "Charging" ]; then
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"

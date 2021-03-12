@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# KTS by pedrozzz (pedrozzz0 @ GitHub)
+# KTSR by pedro (pedrozzz0 @ GitHub)
 
 MODPATH=/data/adb/modules/KTSR
 . $MODPATH/libs/libktsr.sh

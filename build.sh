@@ -1,4 +1,5 @@
 #!/system/bin/sh
+# By pedro (pedrozzz0 @ GitHub)
 # Thanks to bdashore3 @ GitHub
 # Thanks to Draco (tytydraco @ GitHub)
 
