@@ -7,20 +7,6 @@ MODPATH=/data/adb/modules/KTSR
 
 LOG=/sdcard/KTSR/KTSR.log
 
-if [[ -e $LOG ]] 
-then
-rm $LOG
-fi
-
-if [[ -d "/sdcard/KTSR" ]] 
-then
-touch KTSR.log
-
-else
-mkdir /sdcard/KTSR
-touch KTSR.log
-fi
-
 # Log in white and continue (unnecessary)
 kmsg() {
 	echo -e "[*] $@" >> $LOG
@@ -103,13 +89,6 @@ write() {
 	# Log the success
 	kmsg "$1 $curval -> $2"
 }
-
-# Check for root permissions and bail if not granted
-if [[ "`id -u`" -ne 0 ]]
-then
-kmsg1 "[!] No root permissions. Exiting."
-exit 1
-fi
 
 # Detect if we are running on Android
 grep -q android /proc/cmdline && ANDROID=true

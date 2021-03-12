@@ -8,54 +8,63 @@ MODPATH=/data/adb/modules/KTSR
 (
 while true; do
   if [ $(top -n 1 -d 1 | head -n 12 | grep -o -e 'netease' -e 'linegames' -e 'kakaogames' -e 'telltalegames' -e 'bandainamco' -e 'innersloth' -e 'kiloo' -e 'imaginalis' -e 'refuelgames' -e 'scottgames' -e 'clickteam' -e 'minigames' -e 'headupgames' -e 'mobigames' -e 'callofduty' -e 'ubisoft' -e 'ppsspp' -e 'cf' -e 'feralinteractive' -e 'riotgames' -e 'joymax' -e 'deadeffect' -e 'wolvesinteractive' -e 'miniclip' -e 'playgendary' -e 'mojang' -e 'miHoYo' -e 'nekki' -e 'gamedevltd' -e 'netmarble' -e 'eyougame' -e 'yoozoogames' -e 'gameloft' -e 'garena' -e 'moontoon' -e 'legends' -e 'wildrift' -e 'activision' -e 'freefireth' -e 'konami' -e 'gamevil' -e 'battle' -e 'impact' -e 'gameloft' -e 'ppsspp' -e 'madfingergames' -e 'supercell' -e 'asphalt' -e 'ngame' -e 'fifamobile' -e 'blackdesertm' -e 'rockstargames' -e 'dhlove' -e 'criticalops' -e 'standoff2' -e 'firsttouchgames' | head -n 1) ]; then
+  . $MODPATH/libs/libktsr.sh
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   User is playing. Applied gaming profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   gaming
   sleep 40
   elif [ $(top -n 1 -d 1 | head -n 12 | grep -o -e 'whatsapp' -e 'telegram' -e 'netflix' -e 'wemesh' -e 'discord' -e 'youtube' -e 'facebook' -e 'chrome' -e 'instagram' -e 'docs' | head -n 1) ]; then
+  . $MODPATH/libs/libktsr.sh
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   User is using social media, and etc apps. Applied balanced profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   balanced
   sleep 40
   elif [ $(top -n 1 -d 1 | head -n 12 | grep -o -e 'geekbench' -e 'androbench2' -e 'futuremark' -e 'cputhrottlingtest' -e 'camera' -e 'cam' | head -n 1) ]; then
+  . $MODPATH/libs/libktsr.sh
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   User is running benchmark / heavy apps. Applied extreme profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   extreme
   sleep 40
   elif [ $(cat /sys/class/backlight/panel*-backlight/brightness) == "0" ]; then
+  . $MODPATH/libs/libktsr.sh
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device screen is turned off. Applied battery profile and extended check time."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   battery
   sleep 300
   elif [ $(cat /sys/class/leds/lcd-backlight/brightness) == "0" ]; then
+  . $MODPATH/libs/libktsr.sh
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device screen is turned off. Applied battery profile, extended check time."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   battery
   sleep 300
   elif [ $(cat /sys/class/power_supply/battery/status) == "Charging" ]; then
+  . $MODPATH/libs/libktsr.sh
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device is charging. Applied battery profile and extended check time to avoid overheat."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   battery
   sleep 300
   elif [ $btemp > "45" ]; then
+  . $MODPATH/libs/libktsr.sh
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device is hot, trying to cooldown by applying battery profile and extending check time..."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   battery
   sleep 150
   elif [ $bpercentage <= "15" ]; then
+  . $MODPATH/libs/libktsr.sh
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   Device battery is lower than 20%, applied battery profile and extended check time to reduce battery comsumption."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   battery
   sleep 300
   else
+  . $MODPATH/libs/libktsr.sh
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
   kmsg "                                   No considerable usage found. Applied latency profile."
   kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"

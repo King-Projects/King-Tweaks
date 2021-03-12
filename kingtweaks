@@ -4,6 +4,27 @@
 MODPATH=/data/adb/modules/KTSR
 . $MODPATH/libs/libktsr.sh
 
+# Check for root permissions and bail if not granted
+if [[ "`id -u`" -ne 0 ]]
+then
+kmsg1 "[!] No root permissions. Exiting."
+exit 1
+fi
+
+if [[ -e $LOG ]] 
+then
+rm $LOG
+fi
+
+if [[ -d "/sdcard/KTSR" ]] 
+then
+touch KTSR.log
+
+else
+mkdir /sdcard/KTSR
+touch KTSR.log
+fi
+
 boot_run_once=false
 kts_mode=$(getprop persist.kingtweaks.mode)
 [ -z "$kts_mode" ] && setprop persist.kingtweaks.mode "1"
@@ -159,6 +180,8 @@ case "$kts_profile" in
  "Automatic") {
  	sleep 5
    
+ 	. $MODPATH/libs/libktsr.sh
+
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
      	toast
@@ -229,6 +252,8 @@ case "$kts_profile" in
 	 "Balanced") {
 	 	sleep 5
          
+	 	. $MODPATH/libs/libktsr.sh
+	 	
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
      	toast
@@ -299,7 +324,9 @@ case "$kts_profile" in
 	
 	 	"Extreme") {
 	 		sleep 5
-             
+            
+	 		. $MODPATH/libs/libktsr.sh
+	 		
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
      	toast
@@ -371,6 +398,8 @@ case "$kts_profile" in
 	 		"Battery") {
 	 			sleep 5
 
+	 			. $MODPATH/libs/libktsr.sh
+	 			
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
      	toast
@@ -442,6 +471,8 @@ case "$kts_profile" in
 	 			"Gaming") {
 	 				sleep 5
 
+	 				. $MODPATH/libs/libktsr.sh
+	 				
          if [[ `getprop persist.sys.locale` == "en-US" ]]
      	then
      	toast
