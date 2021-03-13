@@ -874,7 +874,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in schedutil interactive
+	for governor in conservative schedutil interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -900,9 +900,9 @@ done
 # Apply governor specific tunables for interactive
 find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
 do
-write "$governor/timer_rate" "40000"
+write "$governor/timer_rate" "42000"
 write "$governor/boost" "0"
-write "$governor/timer_slack" "40000"
+write "$governor/timer_slack" "42000"
 write "$governor/input_boost" "0"
 write "$governor/use_migration_notif" "0" 
 write "$governor/ignore_hispeed_on_notif" "1"
@@ -910,11 +910,22 @@ write "$governor/use_sched_load" "1"
 write "$governor/boostpulse" "0"
 write "$governor/fastlane" "1"
 write "$governor/fast_ramp_down" "0"
-write "$governor/sampling_rate" "40000"
+write "$governor/sampling_rate" "42000"
 write "$governor/sampling_rate_min" "60000"
 write "$governor/min_sample_time" "60000"
 write "$governor/go_hispeed_load" "89"
 write "$governor/hispeed_freq" "$cpumxfreq"
+done
+
+# Apply governor specific tunables for conservative
+find /sys/devices/system/cpu/ -name conservative -type d | while IFS= read -r governor
+do
+write "$governor/down_threshold" "20"
+write "$governor/freq_step" "15"
+write "$governor/ignore_nice_load" "0"
+write "$governor/sampling_down_factor" "1"
+write "$governor/sampling_rate" "42000"
+write "$governor/up_threshold" "67"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
@@ -2206,7 +2217,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in schedutil interactive
+	for governor in conservative schedutil interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -2243,10 +2254,21 @@ write "$governor/boostpulse" "0"
 write "$governor/fastlane" "1"
 write "$governor/fast_ramp_down" "1"
 write "$governor/sampling_rate" "50000"
-write "$governor/sampling_rate_min" "75000"
-write "$governor/min_sample_time" "75000"
+write "$governor/sampling_rate_min" "70000"
+write "$governor/min_sample_time" "70000"
 write "$governor/go_hispeed_load" "99"
 write "$governor/hispeed_freq" "$cpumxfreq"
+done
+
+# Apply governor specific tunables for conservative
+find /sys/devices/system/cpu/ -name conservative -type d | while IFS= read -r governor
+do
+write "$governor/down_threshold" "20"
+write "$governor/freq_step" "10"
+write "$governor/ignore_nice_load" "0"
+write "$governor/sampling_down_factor" "1"
+write "$governor/sampling_rate" "50000"
+write "$governor/up_threshold" "73"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
