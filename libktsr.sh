@@ -212,8 +212,7 @@ SCHED_TASKS_THROUGHPUT="6"
     
     gpumx2=`cat $gpug/gpu_freq_table | awk '{print $7}'`
     
-    if [[ $gpumx2 != $gpufreq ]]; then
-    gpumx2=`cat $gpug/gpu_freq_table | awk '{print $1}'`
+    gpumin=`cat $gpug/gpu_freq_table | awk '{print $1}'`
     
     elif [[ $gpumx2 != $gpufreq ]]; then
     gpumx2=$gpufreq
@@ -970,7 +969,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "66"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
-write "$gpug/gpu_min_clock" "100"
+write "$gpug/gpu_min_clock" $gpumin
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1629,7 +1628,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "156"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
-write "$gpug/gpu_min_clock" "100"
+write "$gpug/gpu_min_clock" $gpumin
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2311,7 +2310,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "36"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
-write "$gpug/gpu_min_clock" "100"
+write "$gpug/gpu_min_clock" $gpumin
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
