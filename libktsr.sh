@@ -932,7 +932,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpug/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz simple_ondemand ondemand
+	for governor in simple_ondemand ondemand msm-adreno-tz
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -2274,7 +2274,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpug/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz simple_ondemand ondemand
+	for governor in simple_ondemand ondemand msm-adreno-tz
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
