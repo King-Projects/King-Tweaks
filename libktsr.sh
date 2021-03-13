@@ -874,7 +874,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in conservative schedutil interactive
+	for governor in schedutil interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -915,17 +915,6 @@ write "$governor/sampling_rate_min" "60000"
 write "$governor/min_sample_time" "60000"
 write "$governor/go_hispeed_load" "89"
 write "$governor/hispeed_freq" "$cpumxfreq"
-done
-
-# Apply governor specific tunables for conservative
-find /sys/devices/system/cpu/ -name conservative -type d | while IFS= read -r governor
-do
-write "$governor/down_threshold" "20"
-write "$governor/freq_step" "15"
-write "$governor/ignore_nice_load" "0"
-write "$governor/sampling_down_factor" "1"
-write "$governor/sampling_rate" "42000"
-write "$governor/up_threshold" "67"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
@@ -1640,6 +1629,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "156"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
 write "$gpug/gpu_min_clock" $gpumin
+write "$gpu/highspeed_clock" $gpumx2
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2264,11 +2254,11 @@ done
 find /sys/devices/system/cpu/ -name conservative -type d | while IFS= read -r governor
 do
 write "$governor/down_threshold" "20"
-write "$governor/freq_step" "10"
+write "$governor/freq_step" "15"
 write "$governor/ignore_nice_load" "0"
 write "$governor/sampling_down_factor" "1"
 write "$governor/sampling_rate" "50000"
-write "$governor/up_threshold" "73"
+write "$governor/up_threshold" "67"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
@@ -3010,7 +3000,8 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "1006"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "0"
-write "$gpug/gpu_min_clock" "$gpumx2"
+write "$gpug/gpu_min_clock" $gpumx2
+write "$gpu/highspeed_clock" $gpumx2
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
