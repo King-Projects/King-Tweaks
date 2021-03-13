@@ -212,11 +212,11 @@ SCHED_TASKS_THROUGHPUT="6"
     
     gpumx2=`cat $gpug/gpu_freq_table | awk '{print $7}'`
     
-    gpumin=`cat $gpug/gpu_freq_table | awk '{print $1}'`
-    
-    elif [[ $gpumx2 != $gpufreq ]]; then
+    if [[ $gpumx2 != $gpufreq ]]; then
     gpumx2=$gpufreq
     fi
+    
+    gpumin=`cat $gpug/gpu_freq_table | awk '{print $1}'`
     
 # Get running CPU governor    
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
