@@ -398,7 +398,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "20"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -499,7 +499,8 @@ write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "10"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
-write "/dev/stune/top-app/schedtune.sched_boost" "1"
+write "/dev/stune/top-app/schedtune.sched_boost" "15"
+write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
 write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -823,7 +824,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1032,7 +1033,8 @@ write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "10"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
-write "/dev/stune/top-app/schedtune.sched_boost" "1"
+write "/dev/stune/top-app/schedtune.sched_boost" "15"
+write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
 write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -1501,7 +1503,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
-write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "500"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1511,7 +1513,7 @@ kmsg1 "-------------------------------------------------------------------------
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "500"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1683,17 +1685,19 @@ write "/dev/stune/background/schedtune.prefer_perf" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "50"
 write "/dev/stune/foreground/schedtune.prefer_idle" "0"
-write "/dev/stune/foreground/schedtune.sched_boost" "1"
+write "/dev/stune/foreground/schedtune.sched_boost" "15"
+write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
 write "/dev/stune/foreground/schedtune.prefer_perf" "1"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
-write "/dev/stune/rt/schedtune.sched_boost" "1"
+write "/dev/stune/rt/schedtune.sched_boost" "0"
 write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "50"
 write "/dev/stune/top-app/schedtune.prefer_idle" "0"
-write "/dev/stune/top-app/schedtune.sched_boost" "1"
+write "/dev/stune/top-app/schedtune.sched_boost" "15"
+write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
 write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -2144,7 +2148,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2393,7 +2397,8 @@ write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "5"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
-write "/dev/stune/top-app/schedtune.sched_boost" "1"
+write "/dev/stune/top-app/schedtune.sched_boost" "15"
+write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
 write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -2879,7 +2884,7 @@ kmsg1 "-------------------------------------------------------------------------
 if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
-write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "500"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2889,7 +2894,7 @@ kmsg1 "-------------------------------------------------------------------------
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "500"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3063,17 +3068,19 @@ write "/dev/stune/background/schedtune.prefer_perf" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "50"
 write "/dev/stune/foreground/schedtune.prefer_idle" "0"
-write "/dev/stune/foreground/schedtune.sched_boost" "1"
+write "/dev/stune/foreground/schedtune.sched_boost" "15"
+write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
 write "/dev/stune/foreground/schedtune.prefer_perf" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
-write "/dev/stune/rt/schedtune.sched_boost" "1"
+write "/dev/stune/rt/schedtune.sched_boost" "0"
 write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "50"
 write "/dev/stune/top-app/schedtune.prefer_idle" "0"
-write "/dev/stune/top-app/schedtune.sched_boost" "1"
+write "/dev/stune/top-app/schedtune.sched_boost" "15"
+write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
 write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
