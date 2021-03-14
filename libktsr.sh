@@ -354,7 +354,7 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
+kmsg1 "                                            👑 KTSR Version: $bversion                                                                                       "
 kmsg1 "                                            📀 Build Type: $btype                                                                                           "
 kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
 kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                          "
@@ -484,18 +484,22 @@ kmsg1 "-------------------------------------------------------------------------
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
+write "/dev/stune/background/schedtune.sched_boost" "0"
 write "/dev/stune/background/schedtune.prefer_perf" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "10"
 write "/dev/stune/foreground/schedtune.prefer_idle" "1"
+write "/dev/stune/foreground/schedtune.sched_boost" "0"
 write "/dev/stune/foreground/schedtune.prefer_perf" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
+write "/dev/stune/rt/schedtune.sched_boost" "0"
 write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "10"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
+write "/dev/stune/top-app/schedtune.sched_boost" "1"
 write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -629,7 +633,7 @@ write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ $totalram -lt "4000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -775,7 +779,7 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
+kmsg1 "                                            👑 KTSR Version: $bversion                                                                                       "
 kmsg1 "                                            📀 Build Type: $btype                                                                                           "
 kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
 kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                          "
@@ -969,7 +973,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "66"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
-write "$gpug/gpu_min_clock" $gpumin
+[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpug/gpu_min_clock" $gpumin
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1013,18 +1017,22 @@ fi
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
+write "/dev/stune/background/schedtune.sched_boost" "0"
 write "/dev/stune/background/schedtune.prefer_perf" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "5"
 write "/dev/stune/foreground/schedtune.prefer_idle" "1"
+write "/dev/stune/foreground/schedtune.sched_boost" "0"
 write "/dev/stune/foreground/schedtune.prefer_perf" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
+write "/dev/stune/rt/schedtune.sched_boost" "0"
 write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "10"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
+write "/dev/stune/top-app/schedtune.sched_boost" "1"
 write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -1179,7 +1187,7 @@ write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ $totalram -lt "4000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -1414,7 +1422,7 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
+kmsg1 "                                            👑 KTSR Version: $bversion                                                                                       "
 kmsg1 "                                            📀 Build Type: $btype                                                                                           "
 kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
 kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                          "
@@ -1617,19 +1625,19 @@ kmsg1 "-------------------------------------------------------------------------
 
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "2"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" $gpufreq
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "1"
+[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "3"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "156"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
-write "$gpug/gpu_min_clock" $gpumin
-write "$gpu/highspeed_clock" $gpumx2
+[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpug/gpu_min_clock" $gpumin
+[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpu/highspeed_clock" $gpumx2
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1670,18 +1678,22 @@ fi
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
+write "/dev/stune/background/schedtune.sched_boost" "0"
 write "/dev/stune/background/schedtune.prefer_perf" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "50"
 write "/dev/stune/foreground/schedtune.prefer_idle" "0"
+write "/dev/stune/foreground/schedtune.sched_boost" "1"
 write "/dev/stune/foreground/schedtune.prefer_perf" "1"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
+write "/dev/stune/rt/schedtune.sched_boost" "1"
 write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "50"
 write "/dev/stune/top-app/schedtune.prefer_idle" "0"
+write "/dev/stune/top-app/schedtune.sched_boost" "1"
 write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -1835,7 +1847,7 @@ write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "120"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ $totalram -lt "4000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -2088,7 +2100,7 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
+kmsg1 "                                            👑 KTSR Version: $bversion                                                                                       "
 kmsg1 "                                            📀 Build Type: $btype                                                                                           "
 kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
 kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                          "
@@ -2322,7 +2334,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "36"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
-write "$gpug/gpu_min_clock" $gpumin
+[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpug/gpu_min_clock" $gpumin
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2366,18 +2378,22 @@ fi
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
+write "/dev/stune/background/schedtune.sched_boost" "0"
 write "/dev/stune/background/schedtune.prefer_perf" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "1"
 write "/dev/stune/foreground/schedtune.prefer_idle" "1"
+write "/dev/stune/foreground/schedtune.sched_boost" "0"
 write "/dev/stune/foreground/schedtune.prefer_perf" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
+write "/dev/stune/rt/schedtune.sched_boost" "0"
 write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "5"
 write "/dev/stune/top-app/schedtune.prefer_idle" "1"
+write "/dev/stune/top-app/schedtune.sched_boost" "1"
 write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -2548,7 +2564,7 @@ write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "60"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ $totalram -lt "4000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
@@ -2784,7 +2800,7 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTS Version: $bversion                                                                                       "
+kmsg1 "                                            👑 KTSR Version: $bversion                                                                                       "
 kmsg1 "                                            📀 Build Type: $btype                                                                                           "
 kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
 kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                          "
@@ -3000,8 +3016,8 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "1"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "1006"
 [[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "0"
-write "$gpug/gpu_min_clock" $gpumx2
-write "$gpu/highspeed_clock" $gpumx2
+[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpug/gpu_min_clock" $gpumx2
+[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpu/highspeed_clock" $gpumx2
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
@@ -3042,18 +3058,22 @@ fi
 then
 write "/dev/stune/background/schedtune.boost" "0"
 write "/dev/stune/background/schedtune.prefer_idle" "0"
+write "/dev/stune/background/schedtune.sched_boost" "0"
 write "/dev/stune/background/schedtune.prefer_perf" "0"
 
 write "/dev/stune/foreground/schedtune.boost" "50"
 write "/dev/stune/foreground/schedtune.prefer_idle" "0"
+write "/dev/stune/foreground/schedtune.sched_boost" "1"
 write "/dev/stune/foreground/schedtune.prefer_perf" "0"
 
 write "/dev/stune/rt/schedtune.boost" "0"
 write "/dev/stune/rt/schedtune.prefer_idle" "0"
+write "/dev/stune/rt/schedtune.sched_boost" "1"
 write "/dev/stune/rt/schedtune.prefer_perf" "0"
 
 write "/dev/stune/top-app/schedtune.boost" "50"
 write "/dev/stune/top-app/schedtune.prefer_idle" "0"
+write "/dev/stune/top-app/schedtune.sched_boost" "1"
 write "/dev/stune/top-app/schedtune.prefer_perf" "1"
 
 write "/dev/stune/schedtune.boost" "0"
@@ -3207,7 +3227,7 @@ write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "500"
-write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ $totalram -lt "4000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED VM TWEAKS.                                                                                  "
