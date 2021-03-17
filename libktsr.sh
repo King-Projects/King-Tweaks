@@ -1346,6 +1346,7 @@ then
 write "/sys/module/lpm_levels/parameters/sleep_disabled" "N"
 write "${lpm}idle_enabled" "Y"
 write "${lpm}suspend_enabled" "Y"
+break
 fi
 done
 
@@ -2026,6 +2027,7 @@ write "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
 write "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
 write "${lpm}idle_enabled" "N"
 write "${lpm}suspend_enabled" "N"
+break
 fi
 done
 
@@ -2735,6 +2737,7 @@ write "/sys/module/lpm_levels/parameters/lpm_prediction" "Y"
 write "/sys/module/lpm_levels/parameters/sleep_disabled" "N"
 write "${lpm}idle_enabled" "Y"
 write "${lpm}suspend_enabled" "Y"
+break
 fi
 done
 
@@ -3409,6 +3412,7 @@ write "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
 write "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
 write "${lpm}idle_enabled" "N"
 write "${lpm}suspend_enabled" "N"
+break
 fi
 done
 

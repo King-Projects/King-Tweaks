@@ -247,6 +247,8 @@ case "$kts_profile" in
      	else
      	toast1
      	fi
+ 
+         break
 	     };;
 	 
 	 "Balanced") {
@@ -320,6 +322,8 @@ case "$kts_profile" in
      	else
      	toast1
      	fi
+  
+         break
 	 	};;
 	
 	 	"Extreme") {
@@ -393,6 +397,8 @@ case "$kts_profile" in
      	else
      	toast1
      	fi
+         
+         break
 	 	};;
 	 		
 	 		"Battery") {
@@ -466,6 +472,8 @@ case "$kts_profile" in
      	else
      	toast1
      	fi
+         
+         break
 	 	};;
 
 	 			"Gaming") {
@@ -539,6 +547,8 @@ case "$kts_profile" in
      	else
      	toast1
      	fi
+         
+         break
 	 	};;
 esac
 done
