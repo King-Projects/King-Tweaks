@@ -247,8 +247,6 @@ case "$kts_profile" in
      	else
      	toast1
      	fi
- 
-         break
 	     };;
 	 
 	 "Balanced") {
