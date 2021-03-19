@@ -350,6 +350,10 @@ kernel=/proc/sys/kernel/
 
 vm=/proc/sys/vm/
 
+cpuset=/dev/cpuset/
+
+stune=/dev/stune/
+
 # Latency Profile
 latency() {
      	init=`date +%s`
@@ -492,34 +496,43 @@ kmsg1 "                                         TWEAKED CPU.                    
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 # Schedtune Tweaks
-[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune" ]]
-then
-write "/dev/stune/background/schedtune.boost" "0"
-write "/dev/stune/background/schedtune.prefer_idle" "0"
-write "/dev/stune/background/schedtune.sched_boost" "0"
-write "/dev/stune/background/schedtune.prefer_perf" "0"
+[[ $ANDROID == "true" ]] && if [[ -d "$stune" ]]; then
+write "${stune}background/schedtune.boost" "0"
+write "${stune}background/schedtune.prefer_idle" "0"
+write "${stune}background/schedtune.sched_boost" "0"
+write "${stune}background/schedtune.prefer_perf" "0"
 
-write "/dev/stune/foreground/schedtune.boost" "10"
-write "/dev/stune/foreground/schedtune.prefer_idle" "1"
-write "/dev/stune/foreground/schedtune.sched_boost" "0"
-write "/dev/stune/foreground/schedtune.prefer_perf" "0"
+write "${stune}foreground/schedtune.boost" "10"
+write "${stune}foreground/schedtune.prefer_idle" "1"
+write "${stune}foreground/schedtune.sched_boost" "0"
+write "${stune}foreground/schedtune.prefer_perf" "0"
 
-write "/dev/stune/rt/schedtune.boost" "0"
-write "/dev/stune/rt/schedtune.prefer_idle" "0"
-write "/dev/stune/rt/schedtune.sched_boost" "0"
-write "/dev/stune/rt/schedtune.prefer_perf" "0"
+write "${stune}rt/schedtune.boost" "0"
+write "${stune}rt/schedtune.prefer_idle" "0"
+write "${stune}rt/schedtune.sched_boost" "0"
+write "${stune}rt/schedtune.prefer_perf" "0"
 
-write "/dev/stune/top-app/schedtune.boost" "10"
-write "/dev/stune/top-app/schedtune.prefer_idle" "1"
-write "/dev/stune/top-app/schedtune.sched_boost" "15"
-write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
-write "/dev/stune/top-app/schedtune.prefer_perf" "1"
+write "${stune}top-app/schedtune.boost" "10"
+write "${stune}top-app/schedtune.prefer_idle" "1"
+write "${stune}top-app/schedtune.sched_boost" "15"
+write "${stune}top-app/schedtune.sched_boost_no_override" "0"
+write "${stune}top-app/schedtune.prefer_perf" "1"
 
-write "/dev/stune/schedtune.boost" "0"
-write "/dev/stune/schedtune.prefer_idle" "0"
+write "${stune}schedtune.boost" "0"
+write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# CPUSET Tweaks
+if [[ -d "$cpuset" && $soc == "trinket" ]]; then
+write "${cpuset}background/cpus" "0-3"
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-3,5-7"
+write "${cpuset}restricted/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-5"
+write "${cpuset}top-app/cpus" "0-7"
 fi
 
 # FS Tweaks
@@ -705,23 +718,6 @@ write "${tcp}tcp_low_latency" "1"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable KSM
-if [[ -e "/sys/kernel/mm/ksm/run" ]] 
-then
-write "/sys/kernel/mm/ksm/run" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED KSM.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable UKSM
-elif [[ -e "/sys/kernel/mm/uksm/run" ]] 
-then
-write "/sys/kernel/mm/uksm/run" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED UKSM.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
@@ -1026,34 +1022,44 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune Tweaks
-[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "$stune" ]]
 then
-write "/dev/stune/background/schedtune.boost" "0"
-write "/dev/stune/background/schedtune.prefer_idle" "0"
-write "/dev/stune/background/schedtune.sched_boost" "0"
-write "/dev/stune/background/schedtune.prefer_perf" "0"
+write "${stune}background/schedtune.boost" "0"
+write "${stune}background/schedtune.prefer_idle" "0"
+write "${stune}background/schedtune.sched_boost" "0"
+write "${stune}background/schedtune.prefer_perf" "0"
 
-write "/dev/stune/foreground/schedtune.boost" "5"
-write "/dev/stune/foreground/schedtune.prefer_idle" "1"
-write "/dev/stune/foreground/schedtune.sched_boost" "0"
-write "/dev/stune/foreground/schedtune.prefer_perf" "0"
+write "${stune}foreground/schedtune.boost" "5"
+write "${stune}foreground/schedtune.prefer_idle" "1"
+write "${stune}foreground/schedtune.sched_boost" "0"
+write "${stune}foreground/schedtune.prefer_perf" "0"
 
-write "/dev/stune/rt/schedtune.boost" "0"
-write "/dev/stune/rt/schedtune.prefer_idle" "0"
-write "/dev/stune/rt/schedtune.sched_boost" "0"
-write "/dev/stune/rt/schedtune.prefer_perf" "0"
+write "${stune}rt/schedtune.boost" "0"
+write "${stune}rt/schedtune.prefer_idle" "0"
+write "${stune}rt/schedtune.sched_boost" "0"
+write "${stune}rt/schedtune.prefer_perf" "0"
 
-write "/dev/stune/top-app/schedtune.boost" "10"
-write "/dev/stune/top-app/schedtune.prefer_idle" "1"
-write "/dev/stune/top-app/schedtune.sched_boost" "15"
-write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
-write "/dev/stune/top-app/schedtune.prefer_perf" "1"
+write "${stune}top-app/schedtune.boost" "10"
+write "${stune}top-app/schedtune.prefer_idle" "1"
+write "${stune}top-app/schedtune.sched_boost" "15"
+write "${stune}top-app/schedtune.sched_boost_no_override" "0"
+write "${stune}top-app/schedtune.prefer_perf" "1"
 
-write "/dev/stune/schedtune.boost" "0"
-write "/dev/stune/schedtune.prefer_idle" "0"
+write "${stune}schedtune.boost" "0"
+write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# CPUSET Tweaks
+if [[ -d "$cpuset" && $soc == "trinket" ]]; then
+write "${cpuset}background/cpus" "0-3"
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-3,5-7"
+write "${cpuset}restricted/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-5"
+write "${cpuset}top-app/cpus" "0-7"
 fi
 
 # FS Tweaks
@@ -1333,23 +1339,6 @@ done
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED HIGH PERFORMANCE AUDIO.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable KSM
-if [[ -e "/sys/kernel/mm/ksm/run" ]] 
-then
-write "/sys/kernel/mm/ksm/run" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED KSM.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable UKSM
-elif [[ -e "/sys/kernel/mm/uksm/run" ]] 
-then
-write "/sys/kernel/mm/uksm/run" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED UKSM.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 # Enable LPM sleep in latency / balanced / battery profile
 for lpm in /sys/module/lpm_levels/system/*/*/*/
@@ -1690,35 +1679,45 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune Tweaks
-[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "$stune" ]]
 then
-write "/dev/stune/background/schedtune.boost" "0"
-write "/dev/stune/background/schedtune.prefer_idle" "0"
-write "/dev/stune/background/schedtune.sched_boost" "0"
-write "/dev/stune/background/schedtune.prefer_perf" "0"
+write "${stune}background/schedtune.boost" "0"
+write "${stune}background/schedtune.prefer_idle" "0"
+write "${stune}background/schedtune.sched_boost" "0"
+write "${stune}background/schedtune.prefer_perf" "0"
 
-write "/dev/stune/foreground/schedtune.boost" "50"
-write "/dev/stune/foreground/schedtune.prefer_idle" "0"
-write "/dev/stune/foreground/schedtune.sched_boost" "15"
-write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
-write "/dev/stune/foreground/schedtune.prefer_perf" "1"
+write "${stune}foreground/schedtune.boost" "50"
+write "${stune}foreground/schedtune.prefer_idle" "0"
+write "${stune}foreground/schedtune.sched_boost" "15"
+write "${stune}top-app/schedtune.sched_boost_no_override" "0"
+write "${stune}foreground/schedtune.prefer_perf" "1"
 
-write "/dev/stune/rt/schedtune.boost" "0"
-write "/dev/stune/rt/schedtune.prefer_idle" "0"
-write "/dev/stune/rt/schedtune.sched_boost" "0"
-write "/dev/stune/rt/schedtune.prefer_perf" "0"
+write "${stune}rt/schedtune.boost" "0"
+write "${stune}rt/schedtune.prefer_idle" "0"
+write "${stune}rt/schedtune.sched_boost" "0"
+write "${stune}rt/schedtune.prefer_perf" "0"
 
-write "/dev/stune/top-app/schedtune.boost" "50"
-write "/dev/stune/top-app/schedtune.prefer_idle" "0"
-write "/dev/stune/top-app/schedtune.sched_boost" "15"
-write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
-write "/dev/stune/top-app/schedtune.prefer_perf" "1"
+write "${stune}top-app/schedtune.boost" "50"
+write "${stune}top-app/schedtune.prefer_idle" "0"
+write "${stune}top-app/schedtune.sched_boost" "15"
+write "${stune}top-app/schedtune.sched_boost_no_override" "0"
+write "${stune}top-app/schedtune.prefer_perf" "1"
 
-write "/dev/stune/schedtune.boost" "0"
-write "/dev/stune/schedtune.prefer_idle" "0"
+write "${stune}schedtune.boost" "0"
+write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# CPUSET Tweaks
+if [[ -d "$cpuset" && $soc == "trinket" ]]; then
+write "${cpuset}background/cpus" "0-3"
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-3,5-7"
+write "${cpuset}restricted/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-5"
+write "${cpuset}top-app/cpus" "0-7"
 fi
 
 # FS Tweaks
@@ -2005,23 +2004,6 @@ done
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                           ENABLED HIGH PERFORMANCE AUDIO.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable KSM
-if [[ -e "/sys/kernel/mm/ksm/run" ]] 
-then
-write "/sys/kernel/mm/ksm/run" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED KSM.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable UKSM
-elif [[ -e "/sys/kernel/mm/uksm/run" ]] 
-then
-write "/sys/kernel/mm/uksm/run" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED UKSM.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 # Disable arch power
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
@@ -2386,7 +2368,7 @@ if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "10000"
-write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "35"
+write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                         ENABLED AND TWEAKED ADRENO IDLER.                                                                 "
@@ -2394,34 +2376,44 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune tweaks
-[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "$stune" ]]
 then
-write "/dev/stune/background/schedtune.boost" "0"
-write "/dev/stune/background/schedtune.prefer_idle" "0"
-write "/dev/stune/background/schedtune.sched_boost" "0"
-write "/dev/stune/background/schedtune.prefer_perf" "0"
+write "${stune}background/schedtune.boost" "0"
+write "${stune}background/schedtune.prefer_idle" "0"
+write "${stune}background/schedtune.sched_boost" "0"
+write "${stune}background/schedtune.prefer_perf" "0"
 
-write "/dev/stune/foreground/schedtune.boost" "1"
-write "/dev/stune/foreground/schedtune.prefer_idle" "1"
-write "/dev/stune/foreground/schedtune.sched_boost" "0"
-write "/dev/stune/foreground/schedtune.prefer_perf" "0"
+write "${stune}foreground/schedtune.boost" "1"
+write "${stune}foreground/schedtune.prefer_idle" "1"
+write "${stune}foreground/schedtune.sched_boost" "0"
+write "${stune}foreground/schedtune.prefer_perf" "0"
 
-write "/dev/stune/rt/schedtune.boost" "0"
-write "/dev/stune/rt/schedtune.prefer_idle" "0"
-write "/dev/stune/rt/schedtune.sched_boost" "0"
-write "/dev/stune/rt/schedtune.prefer_perf" "0"
+write "${stune}schedtune.boost" "0"
+write "${stune}schedtune.prefer_idle" "0"
+write "${stune}schedtune.sched_boost" "0"
+write "${stune}schedtune.prefer_perf" "0"
 
-write "/dev/stune/top-app/schedtune.boost" "5"
-write "/dev/stune/top-app/schedtune.prefer_idle" "1"
-write "/dev/stune/top-app/schedtune.sched_boost" "15"
-write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
-write "/dev/stune/top-app/schedtune.prefer_perf" "1"
+write "${stune}schedtune.boost" "5"
+write "${stune}schedtune.prefer_idle" "1"
+write "${stune}schedtune.sched_boost" "15"
+write "${stune}schedtune.sched_boost_no_override" "0"
+write "${stune}schedtune.prefer_perf" "1"
 
-write "/dev/stune/schedtune.boost" "0"
-write "/dev/stune/schedtune.prefer_idle" "0"
+write "${stune}schedtune.boost" "0"
+write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# CPUSET Tweaks
+if [[ -d "$cpuset" && $soc == "trinket" ]]; then
+write "${cpuset}background/cpus" "0-3"
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-3,5-7"
+write "${cpuset}restricted/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-5"
+write "${cpuset}top-app/cpus" "0-7"
 fi
 
 # FS Tweaks
@@ -2726,23 +2718,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED HIGH PERFORMANCE AUDIO.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Disable KSM
-if [[ -e "/sys/kernel/mm/ksm/run" ]] 
-then
-write "/sys/kernel/mm/ksm/run" "0"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED KSM.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Disable UKSM
-elif [[ -e "/sys/kernel/mm/uksm/run" ]] 
-then
-write "/sys/kernel/mm/uksm/run" "0"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED UKSM.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
 # Enable LPM sleep in latency / balanced / battery profile
 for lpm in /sys/module/lpm_levels/system/*/*/*/
 do
@@ -3039,7 +3014,7 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $adreno == "true" ]] && write "$gpu/force_rail_on" "1"
 [[ $adreno == "true" ]] && write "$gpu/idle_timer" "1006"
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "0"
-[[ $adreno == "true" ]] && write "$gpug/gpu_min_clock" $gpumx2
+[[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumx2
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
@@ -3077,35 +3052,45 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Schedtune Tweaks
-[[ $ANDROID == "true" ]] && if [[ -d "/dev/stune" ]]
+[[ $ANDROID == "true" ]] && if [[ -d "$stune" ]]
 then
-write "/dev/stune/background/schedtune.boost" "0"
-write "/dev/stune/background/schedtune.prefer_idle" "0"
-write "/dev/stune/background/schedtune.sched_boost" "0"
-write "/dev/stune/background/schedtune.prefer_perf" "0"
+write "${stune}background/schedtune.boost" "0"
+write "${stune}background/schedtune.prefer_idle" "0"
+write "${stune}background/schedtune.sched_boost" "0"
+write "${stune}background/schedtune.prefer_perf" "0"
 
-write "/dev/stune/foreground/schedtune.boost" "50"
-write "/dev/stune/foreground/schedtune.prefer_idle" "0"
-write "/dev/stune/foreground/schedtune.sched_boost" "15"
-write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
-write "/dev/stune/foreground/schedtune.prefer_perf" "0"
+write "${stune}foreground/schedtune.boost" "50"
+write "${stune}foreground/schedtune.prefer_idle" "0"
+write "${stune}foreground/schedtune.sched_boost" "15"
+write "${stune}foreground/schedtune.sched_boost_no_override" "0"
+write "${stune}foreground/schedtune.prefer_perf" "0"
 
-write "/dev/stune/rt/schedtune.boost" "0"
-write "/dev/stune/rt/schedtune.prefer_idle" "0"
-write "/dev/stune/rt/schedtune.sched_boost" "0"
-write "/dev/stune/rt/schedtune.prefer_perf" "0"
+write "${stune}rt/schedtune.boost" "0"
+write "${stune}rt/schedtune.prefer_idle" "0"
+write "${stune}rt/schedtune.sched_boost" "0"
+write "${stune}rt/schedtune.prefer_perf" "0"
 
-write "/dev/stune/top-app/schedtune.boost" "50"
-write "/dev/stune/top-app/schedtune.prefer_idle" "0"
-write "/dev/stune/top-app/schedtune.sched_boost" "15"
-write "/dev/stune/top-app/schedtune.sched_boost_no_override" "0"
-write "/dev/stune/top-app/schedtune.prefer_perf" "1"
+write "${stune}top-app/schedtune.boost" "50"
+write "${stune}top-app/schedtune.prefer_idle" "0"
+write "${stune}top-app/schedtune.sched_boost" "15"
+write "${stune}top-app/schedtune.sched_boost_no_override" "0"
+write "${stune}top-app/schedtune.prefer_perf" "1"
 
-write "/dev/stune/schedtune.boost" "0"
-write "/dev/stune/schedtune.prefer_idle" "0"
+write "${stune}schedtune.boost" "0"
+write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# CPUSET Tweaks
+if [[ -d "$cpuset" && $soc == "trinket" ]]; then
+write "${cpuset}background/cpus" "0-3"
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-3,5-7"
+write "${cpuset}restricted/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-5"
+write "${cpuset}top-app/cpus" "0-7"
 fi
 
 # FS Tweaks
@@ -3392,23 +3377,6 @@ done
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED HIGH PERFORMANCE AUDIO.                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable KSM
-if [[ -e "/sys/kernel/mm/ksm/run" ]] 
-then
-write "/sys/kernel/mm/ksm/run" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED KSM.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Enable UKSM
-elif [[ -e "/sys/kernel/mm/uksm/run" ]] 
-then
-write "/sys/kernel/mm/uksm/run" "1"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED UKSM.                                                                              "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
 
 # Disable arch power
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
