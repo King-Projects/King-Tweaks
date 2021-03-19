@@ -116,6 +116,7 @@ SCHED_TASKS_THROUGHPUT="6"
     do
     if [ -d "$gpul" ]; then
         gpu=$gpul
+        adreno=true
         fi
         done
         
@@ -123,6 +124,7 @@ SCHED_TASKS_THROUGHPUT="6"
     do
     if [ -d "$gpul1" ]; then
         gpu=$gpul1
+        adreno=true
         fi
         done
         
@@ -149,8 +151,10 @@ SCHED_TASKS_THROUGHPUT="6"
         
 	if [ -d "/sys/class/kgsl/kgsl-3d0" ]; then
 		gpu="/sys/class/kgsl/kgsl-3d0"
+		adreno=true
 	elif [ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0" ]; then
 		gpu="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0"
+		adreno=true
 	elif [ -d "/sys/devices/platform/gpusysfs" ]; then
 		gpu="/sys/devices/platform/gpusysfs"
 	elif [ -d "/sys/devices/platform/mali.0" ]; then
@@ -223,6 +227,10 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 CPU_GOVERNOR=`cat $cpu/scaling_governor` 
 done
+
+if [[ -z $adreno ]]; then
+adreno=false
+fi
 
 # Get GPU minimum power level
 gpuminpl=`cat $gpu/min_pwrlevel`
@@ -331,6 +339,10 @@ fi
 gpuinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $2,$3,$4,$5,$6,$7,$8,$9,$13}'`
 
 btemp=$((btemp / 10))
+
+###############################
+# Abbreviations
+###############################
 
 tcp=/proc/sys/net/ipv4/
 
@@ -961,20 +973,20 @@ kmsg1 "-------------------------------------------------------------------------
 		fi
 	done
 	
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "1"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "1"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" "$gpufreq"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "66"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
-[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpug/gpu_min_clock" $gpumin
+[[ $adreno == "true" ]] && write "$gpu/throttling" "1"
+[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
+[[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
+[[ $adreno == "true" ]] && write "$gpu/bus_split" "1"
+[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" "$gpufreq"
+[[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
+[[ $adreno == "true" ]] && write "$gpu/force_bus_on" "0"
+[[ $adreno == "true" ]] && write "$gpu/force_clk_on" "0"
+[[ $adreno == "true" ]] && write "$gpu/force_rail_on" "0"
+[[ $adreno == "true" ]] && write "$gpu/idle_timer" "66"
+[[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
+[[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1314,6 +1326,7 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "0"
+break
 fi
 done
 
@@ -1626,21 +1639,21 @@ kmsg1 "-------------------------------------------------------------------------
 		fi
 	done
 
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "2"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" $gpufreq
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "3"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "156"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
-[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpug/gpu_min_clock" $gpumin
-[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpu/highspeed_clock" $gpumx2
+[[ $adreno == "true" ]] && write "$gpu/throttling" "0"
+[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "2"
+[[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
+[[ $adreno == "true" ]] && write "$gpu/bus_split" "0"
+[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" $gpufreq
+[[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" "3"
+[[ $adreno == "true" ]] && write "$gpu/force_bus_on" "0"
+[[ $adreno == "true" ]] && write "$gpu/force_clk_on" "0"
+[[ $adreno == "true" ]] && write "$gpu/force_rail_on" "0"
+[[ $adreno == "true" ]] && write "$gpu/idle_timer" "156"
+[[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
+[[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
+[[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1985,6 +1998,7 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "1"
+break
 fi
 done
 
@@ -2328,19 +2342,19 @@ kmsg1 "-------------------------------------------------------------------------
 		fi
 	done
 
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "1"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "1"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "36"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "1"
-[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpug/gpu_min_clock" $gpumin
+[[ $adreno == "true" ]] && write "$gpu/throttling" "1"
+[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
+[[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
+[[ $adreno == "true" ]] && write "$gpu/bus_split" "1"
+[[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
+[[ $adreno == "true" ]] && write "$gpu/force_bus_on" "0"
+[[ $adreno == "true" ]] && write "$gpu/force_clk_on" "0"
+[[ $adreno == "true" ]] && write "$gpu/force_rail_on" "0"
+[[ $adreno == "true" ]] && write "$gpu/idle_timer" "36"
+[[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
+[[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2704,6 +2718,7 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "0"
+break
 fi
 done
 
@@ -3011,21 +3026,21 @@ kmsg1 "-------------------------------------------------------------------------
 		fi
 	done
 
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/throttling" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/thermal_pwrlevel" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/adrenoboost" "3"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_no_nap" "1"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/bus_split" "0"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/max_freq" $gpufreq
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/devfreq/min_freq" $gpumx
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/default_pwrlevel" $gpumaxpl
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_bus_on" "1"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_clk_on" "1"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/force_rail_on" "1"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/idle_timer" "1006"
-[[ $mtk == "false" ]] || [[ $exynos == "false" ]] && write "$gpu/pwrnap" "0"
-[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpug/gpu_min_clock" $gpumx2
-[[ $mtk == "true" ]] || [[ $exynos == "true" ]] && write "$gpu/highspeed_clock" $gpumx2
+[[ $adreno == "true" ]] && write "$gpu/throttling" "0"
+[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "3"
+[[ $adreno == "true" ]] && write "$gpu/force_no_nap" "1"
+[[ $adreno == "true" ]] && write "$gpu/bus_split" "0"
+[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" $gpufreq
+[[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" $gpumx
+[[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" $gpumaxpl
+[[ $adreno == "true" ]] && write "$gpu/force_bus_on" "1"
+[[ $adreno == "true" ]] && write "$gpu/force_clk_on" "1"
+[[ $adreno == "true" ]] && write "$gpu/force_rail_on" "1"
+[[ $adreno == "true" ]] && write "$gpu/idle_timer" "1006"
+[[ $adreno == "true" ]] && write "$gpu/pwrnap" "0"
+[[ $adreno == "true" ]] && write "$gpug/gpu_min_clock" $gpumx2
+[[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
@@ -3370,6 +3385,7 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "1"
+break
 fi
 done
 
