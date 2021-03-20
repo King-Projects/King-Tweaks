@@ -321,7 +321,7 @@ done
 kname=`uname -r`
 
 # Get kernel build date
-kbdd=`uname -v | awk '{print $5, $6, $7, $8, $9}'`
+kbdd=`uname -v | awk '{print $5, $6, $7, $8, $9, $10}'`
 
 # Get device total device ram
 totalram=`free -m | awk '/Mem:/{print $2}'`
