@@ -317,26 +317,31 @@ cpusched=Unknown
 fi
 done
 
+# Get kernel name
 kname=`uname -r`
 
-kbuild=`uname -v | awk '{print $5, $6, $7, $8, $9}'`
+# Get kernel build date
+kbdd=`uname -v | awk '{print $5, $6, $7, $8, $9}'`
 
-# Variable to total device ram
+# Get device total device ram
 totalram=`free -m | awk '/Mem:/{print $2}'`
 
-# Variable to battery actual capacity
-bpercentage=`cat /sys/class/power_supply/battery/capacity`
+# Get battery actual capacity
+gbpercentage=`cat /sys/class/power_supply/battery/capacity`
 
-# Variable to KTS version
-bversion=`cat $MODPATH/module.prop | grep version= | sed "s/version=//"`
+# Get KTSR version
+gbversion=`cat $MODPATH/module.prop | grep version= | sed "s/version=//"`
 
-# Variable to KTS build type
-btype=`cat $MODPATH/info.prop | grep buildtype= | sed "s/buildtype=//"`
+# Get KTSR build type
+gbtype=`cat $MODPATH/info.prop | grep buildtype= | sed "s/buildtype=//"`
 
-# Variable to KTS build date
-bdate=`cat $MODPATH/info.prop | grep builddate= | sed "s/builddate=//"`
+# Get KTSR build date
+gbdate=`cat $MODPATH/info.prop | grep builddate= | sed "s/builddate=//"`
 
-# Variable to battery temperature
+# Get KTSR build codename
+gbcodename=`cat $MODPATH/info.prop | grep codename= | sed "s/codename=//"`
+
+# Get battery temperature
 if [[ -e /sys/class/power_supply/battery/temp ]]
 then
 btemp=`cat /sys/class/power_supply/battery/temp`
@@ -349,7 +354,8 @@ fi
 # Get GPU & it's drivers info
 gpuinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $2,$3,$4,$5,$6,$7,$8,$9,$13}'`
 
-btemp=$((btemp / 10))
+# Ignore the decimal
+gbtemp=$((btemp / 10))
 
 ###############################
 # Abbreviations
@@ -372,7 +378,7 @@ latency() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build: $kbuild                                                                                               "
+kmsg1 "                                            🗓️ Kernel Build: $kbdd                                                                                       "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
@@ -382,11 +388,12 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTSR Version: $bversion                                                                                      "
-kmsg1 "                                            📀 Build Type: $btype                                                                                           "
-kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
-kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                          "
-kmsg1 "                                            🌡️ Battery Temperature: $btemp°C                                                                                "
+kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
+kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                     "
+kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
+kmsg1 "                                            ⏰ Build Date: $gbdate                                                                                          "
+kmsg1 "                                            🔋 Battery Charge Level: $gbpercentage%                                                                         "
+kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -794,7 +801,7 @@ balanced() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build: $kbuild                                                                                               "
+kmsg1 "                                            🗓️ Kernel Build: $kbdd                                                                                       "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
@@ -804,11 +811,12 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTSR Version: $bversion                                                                                      "
-kmsg1 "                                            📀 Build Type: $btype                                                                                           "
-kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
-kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                          "
-kmsg1 "                                            🌡️ Battery Temperature: $btemp°C                                                                                "
+kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
+kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                     "
+kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
+kmsg1 "                                            ⏰ Build Date: $gbdate                                                                                          "
+kmsg1 "                                            🔋 Battery Charge Level: $gbpercentage%                                                                         "
+kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1437,7 +1445,7 @@ extreme() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build: $kbuild                                                                                               "
+kmsg1 "                                            🗓️ Kernel Build: $kbdd                                                                                       "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
@@ -1447,11 +1455,12 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTSR Version: $bversion                                                                                      "
-kmsg1 "                                            📀 Build Type: $btype                                                                                           "
-kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
-kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                          "
-kmsg1 "                                            🌡️ Battery Temperature: $btemp°C                                                                                "
+kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
+kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                     "
+kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
+kmsg1 "                                            ⏰ Build Date: $gbdate                                                                                          "
+kmsg1 "                                            🔋 Battery Charge Level: $gbpercentage%                                                                         "
+kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2116,7 +2125,7 @@ battery() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build: $kbuild                                                                                               "
+kmsg1 "                                            🗓️ Kernel Build: $kbdd                                                                                       "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
@@ -2126,11 +2135,12 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTSR Version: $bversion                                                                                      "
-kmsg1 "                                            📀 Build Type: $btype                                                                                           "
-kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
-kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                          "
-kmsg1 "                                            🌡️ Battery Temperature: $btemp°C                                                                                "
+kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
+kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                     "
+kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
+kmsg1 "                                            ⏰ Build Date: $gbdate                                                                                          "
+kmsg1 "                                            🔋 Battery Charge Level: $gbpercentage%                                                                         "
+kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2816,7 +2826,7 @@ gaming() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build: $kbuild                                                                                               "
+kmsg1 "                                            🗓️ Kernel Build: $kbdd                                                                                       "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
@@ -2826,11 +2836,12 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
-kmsg1 "                                            👑 KTSR Version: $bversion                                                                                      "
-kmsg1 "                                            📀 Build Type: $btype                                                                                           "
-kmsg1 "                                            ⏰ Build Date: $bdate                                                                                           "
-kmsg1 "                                            🔋 Battery Charge Level: $bpercentage%                                                                          "
-kmsg1 "                                            🌡️ Battery Temperature: $btemp°C                                                                                "
+kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
+kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                     "
+kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
+kmsg1 "                                            ⏰ Build Date: $gbdate                                                                                          "
+kmsg1 "                                            🔋 Battery Charge Level: $gbpercentage%                                                                         "
+kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
