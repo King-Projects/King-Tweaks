@@ -24,12 +24,12 @@ Thanks to [corruptor64](https://forum.xda-developers.com/member.php?s=1f3e5a492f
 
 Thanks to [Dan](https://forum.xda-developers.com/m/paget96.5514152/) by his [LSpeed](https://t.me/paget96_projects_channel) app / module.
 
-And everyone that supports King Tweaks project. ❤️
+Thanks to [Matt Yang](https://github.com/yc9559)
+
+And everyone that supports my projects. ❤️
 
 # Telegram
 
-**Channel**: [Link](https://t.me/kingcreationschannel) @kingcreationschannel
+**Channel**: [Link](https://t.me/kingprojectz) @kingprojectz
 
-**Group (EN)**: [Link](https://t.me/kingcreationsen) @kingcreationsen
-
-**Group / Grupo (PT)**: [Link](https://t.me/kingcreationspt) @kingcreationspt
+**Group (EN)**: [Link](https://t.me/kingprojectzdiscussion) @kingprojectzdiscussion
