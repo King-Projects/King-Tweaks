@@ -2319,7 +2319,6 @@ write "$cpu/online" "0"
 elif [[ $gbpercentage > "20" ]]
 then
 write "$cpu/online" "1"
-break
 fi
 done
 
