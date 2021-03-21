@@ -2312,16 +2312,14 @@ done
 
 for cpu in /sys/devices/system/cpu/cpu*
 do
-if [[ $bpercentage < "20" ]]
+if [[ $gbpercentage < "20" ]]
 then
-write "/sys/devices/system/cpu/cpu1/online" "0"
-write "/sys/devices/system/cpu/cpu2/online" "0"
-write "/sys/devices/system/cpu/cpu5/online" "0"
-write "/sys/devices/system/cpu/cpu6/online" "0"
+write "$cpu/online" "0"
 
-elif [[ $bpercentage > "20" ]]
+elif [[ $gbpercentage > "20" ]]
 then
 write "$cpu/online" "1"
+break
 fi
 done
 
