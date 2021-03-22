@@ -327,7 +327,12 @@ kbdd=`uname -v | awk '{print $5, $6, $7, $8, $9, $10}'`
 totalram=`free -m | awk '/Mem:/{print $2}'`
 
 # Get battery actual capacity
+if [[ -e /sys/class/power_supply/battery/capacity ]]; then
 gbpercentage=`cat /sys/class/power_supply/battery/capacity`
+
+else
+gbpercentage=`dumpsys battery | awk '/level/{print $2}'`
+fi
 
 # Get KTSR version
 gbversion=`cat $MODPATH/module.prop | grep version= | sed "s/version=//"`
@@ -349,6 +354,9 @@ btemp=`cat /sys/class/power_supply/battery/temp`
 elif [[ -e /sys/class/power_supply/battery/batt_temp ]]
 then 
 btemp=`cat /sys/class/power_supply/battery/batt_temp`
+
+else 
+btemp=`dumpsys battery | awk '/temperature/{print $2}'`
 fi
 
 # Get GPU & it's drivers info
@@ -356,6 +364,66 @@ gpuinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $2,$3,$4,$5,$6,$7,$8,$9,$13
 
 # Ignore the decimal
 gbtemp=$((btemp / 10))
+
+# Get battery health
+if [[ -e /sys/class/power_supply/battery/health ]]; then
+gbhealth=`cat /sys/class/power_supply/battery/health`
+
+else
+gbhealth=`dumpsys battery | awk '/health/{print $2}'`
+fi
+
+if [[ $gbhealth == "1" ]]; then
+bhealth=Unknown
+
+elif [[ $gbhealth == "2" ]]; then
+bhealth=Good
+
+elif [[ $gbhealth == "3" ]]; then
+bhealth=Overheat
+
+elif [[ $gbhealth == "4" ]]; then
+bhealth=Dead
+
+elif [[ $gbhealth == "5" ]]; then
+bhealth=Over voltage
+
+elif [[ $gbhealth == "6" ]]; then
+bhealth=Unspecified failure
+
+elif [[ $gbhealth == "7" ]]; then
+bhealth=Cold
+
+else
+bhealth=$gbhealth
+fi
+
+# Get battery status
+if [[ -e /sys/class/power_supply/battery/status ]]; then
+gbstatus=`cat /sys/class/power_supply/battery/status`
+
+else
+gbstatus=`dumpsys battery | awk '/status/{print $2}'`
+fi
+
+if [[ $gbstatus == "1" ]]; then
+bstatus=Unknown
+
+elif [[ $gbstatus == "2" ]]; then
+bstatus=Charging
+
+elif [[ $gbstatus == "3" ]]; then
+bstatus=Discharging
+
+elif [[ $gbstatus == "4" ]]; then
+bstatus=Not charging
+
+elif [[ $gbstatus == "5" ]]; then
+bstatus=Full
+
+else
+bstatus=$gbstatus
+fi
 
 ###############################
 # Abbreviations
@@ -378,7 +446,7 @@ latency() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build: $kbdd                                                                                       "
+kmsg1 "                                            🗓️ Kernel Build: $kbdd                                                                                          "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
@@ -389,10 +457,12 @@ kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOV
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
-kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                     "
+kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
 kmsg1 "                                            ⏰ Build Date: $gbdate                                                                                          "
 kmsg1 "                                            🔋 Battery Charge Level: $gbpercentage%                                                                         "
+kmsg1 "                                            🩹 Battery Health: $bhealth                                                                                     "
+kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
