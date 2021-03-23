@@ -257,17 +257,17 @@ elif [[ -e $gpug/gpu_max_clock ]]; then
 gpufreq=`cat $gpug/gpu_max_clock`
 fi
 
-# Variable to SOC manufacturer
+# Get SOC manufacturer
 mf=`getprop ro.boot.hardware`
 
-# Variable to device SOC
+# Get device SOC
 soc=`getprop ro.board.platform`
 
 if [[ $soc == " " ]]; then
 soc=`getprop ro.product.board`
 fi
 
-# Variable to device SDK
+# Get device SDK
 sdk=`getprop ro.build.version.sdk`
 
 if [[ $sdk == " " ]]; then
@@ -277,14 +277,14 @@ elif [[ $sdk == " " ]]; then
 sdk=`getprop ro.vndk.version`
 fi
 
-# Variable to device architeture
+# Get device architeture
 aarch=`getprop ro.product.cpu.abi | awk -F- '{print $1}'`
 
-# Variable to device android release version
+# Get android version
 arv=`getprop ro.build.version.release`
 
-# Variable to device model
-dm=`getprop ro.product.model`
+# Get device model
+dm=`getprop ro.product.system.model`
 
 # Variable to get magisk version
 magisk=`magisk -c`
@@ -359,8 +359,11 @@ else
 btemp=`dumpsys battery | awk '/temperature/{print $2}'`
 fi
 
-# Get GPU & it's drivers info
-gpuinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $2,$3,$4,$5,$6,$7,$8,$9,$13}'`
+# Get GPU info
+gpuinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,`
+
+# Get drivers info
+driversinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,`
 
 # Ignore the decimal
 gbtemp=$((btemp / 10))
@@ -446,13 +449,14 @@ latency() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build Date: $kbdd                                                                                          "
+kmsg1 "                                            🗓️ Kernel Build Date: $kbdd                                                                                     "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
 kmsg1 "                                            🖼️ GPU Info: $gpuinfo                                                                                           "
+kmsg1 "                                            📲 Drivers Info: $driversinfo                                                                                   "
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
@@ -871,13 +875,14 @@ balanced() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build Date: $kbdd                                                                                          "
+kmsg1 "                                            🗓️ Kernel Build Date: $kbdd                                                                                     "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
 kmsg1 "                                            🖼️ GPU Info: $gpuinfo                                                                                           "
+kmsg1 "                                            📲 Drivers Info: $driversinfo                                                                                   "
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
@@ -1518,13 +1523,14 @@ extreme() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build Date: $kbdd                                                                                          "
+kmsg1 "                                            🗓️ Kernel Build Date: $kbdd                                                                                     "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
 kmsg1 "                                            🖼️ GPU Info: $gpuinfo                                                                                           "
+kmsg1 "                                            📲 Drivers Info: $driversinfo                                                                                   "
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
@@ -2200,13 +2206,14 @@ battery() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build Date: $kbdd                                                                                          "
+kmsg1 "                                            🗓️ Kernel Build Date: $kbdd                                                                                     "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
 kmsg1 "                                            🖼️ GPU Info: $gpuinfo                                                                                           "
+kmsg1 "                                            📲 Drivers Info: $driversinfo                                                                                   "
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
@@ -2900,13 +2907,14 @@ gaming() {
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
 kmsg1 "                                            🔧 Kernel: $kname                                                                                               "
-kmsg1 "                                            🗓️ Kernel Build Date: $kbdd                                                                                          "
+kmsg1 "                                            🗓️ Kernel Build Date: $kbdd                                                                                     "
 kmsg1 "                                            🛠️ SOC: $mf, $soc                                                                                               "
 kmsg1 "                                            ⚙️ SDK: $sdk                                                                                                    "
 kmsg1 "                                            ⚒️ CPU Governor: $CPU_GOVERNOR                                                                                  "
 kmsg1 "                                            ⚖️ CPU Scheduling Type: $cpusched                                                                               "
 kmsg1 "                                            ⛓️ CPU AArch: $aarch                                                                                            "
 kmsg1 "                                            🖼️ GPU Info: $gpuinfo                                                                                           "
+kmsg1 "                                            📲 Drivers Info: $driversinfo                                                                                   "
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dm                                                                                                  "
