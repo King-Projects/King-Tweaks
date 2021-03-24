@@ -551,11 +551,11 @@ done
 # Apply governor specific tunables for schedutil
 find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
-write "$governor/up_rate_limit_us" "0"
-write "$governor/down_rate_limit_us" "0"
+write "$governor/up_rate_limit_us" "1000"
+write "$governor/down_rate_limit_us" "1000"
 write "$governor/pl" "1"
 write "$governor/iowait_boost_enable" "1"
-write "$governor/rate_limit_us" "0"
+write "$governor/rate_limit_us" "5000"
 write "$governor/hispeed_load" "89"
 write "$governor/hispeed_freq" "$cpumxfreq"
 done
@@ -563,18 +563,18 @@ done
 # Apply governor specific tunables for interactive
 find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
 do
-write "$governor/timer_rate" "0"
+write "$governor/timer_rate" "1000"
 write "$governor/boost" "0"
-write "$governor/timer_slack" "0"
+write "$governor/timer_slack" "1000"
 write "$governor/input_boost" "0"
 write "$governor/use_migration_notif" "0" 
 write "$governor/ignore_hispeed_on_notif" "1"
 write "$governor/use_sched_load" "1"
 write "$governor/fastlane" "1"
 write "$governor/fast_ramp_down" "0"
-write "$governor/sampling_rate" "0"
-write "$governor/sampling_rate_min" "0"
-write "$governor/min_sample_time" "0"
+write "$governor/sampling_rate" "1000"
+write "$governor/sampling_rate_min" "5000"
+write "$governor/min_sample_time" "5000"
 write "$governor/go_hispeed_load" "89"
 write "$governor/hispeed_freq" "$cpumxfreq"
 done
