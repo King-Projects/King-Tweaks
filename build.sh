@@ -19,21 +19,27 @@ read -p 'Build type: ' build_type
 
 read -p 'Codename: ' codename
 
+init=`date +%s`
+
 echo "builddate=$date
 buildtype=$build_type
-codename=$codename" > $(pwd)/info.prop
- 
+codename=$codename" > $(pwd)/ktsr.prop
+
 echo "Zipping ${blink}KTSR-$version-$build_type-$codename${default}..."
 
 zip -r "KTSR-$version-$build_type-$codename.zip" . -x *.git* -x *.zip -x C1.sh -x kingauto -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
 
 mv "KTSR-$version-$build_type-$codename.zip" ../out
 
-rm $(pwd)/info.prop
+rm $(pwd)/ktsr.prop
+
+exit=`date +%s`
+
+exectime=$((init - exit))
 
 if [ $? -ne 1 ]; then
-echo "${boldgreen}Build done${blue}, check the folder to the finished build."
+echo "${boldgreen}Build done in $((exectime / 60)) minutes and $((exectime % 60)) seconds!${blue} Check the folder to the finished build."
 
 else
-echo "${boldred}Build failed!${yellow}, please fix the error(s) and try again."
+echo "${boldred}Build failed in $((exectime / 60)) minutes and $((exectime % 60)) seconds!${yellow} Please fix the error(s) and try again."
 fi
