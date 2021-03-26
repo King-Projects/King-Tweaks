@@ -35,11 +35,11 @@ rm $(pwd)/ktsr.prop
 
 exit=`date +%s`
 
-exectime=$((init - exit))
+exectime=$((exit - init))
 
 if [ $? -ne 1 ]; then
-echo "${boldgreen}Build done in $((exectime / 60)) minutes and $((exectime % 60)) seconds!${blue} Check the folder to the finished build."
+echo "${boldgreen}Build done in $((exectime / 60)) minutes and $exectime seconds!${blue} Check the folder to the finished build."
 
 else
-echo "${boldred}Build failed in $((exectime / 60)) minutes and $((exectime % 60)) seconds!${yellow} Please fix the error(s) and try again."
+echo "${boldred}Build failed in $((exectime / 60)) minutes and $exectime seconds!${yellow} Please fix the error(s) and try again."
 fi
