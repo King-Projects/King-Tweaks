@@ -615,19 +615,6 @@ kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.      
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# CPUSET Tweaks
-if [[ -d "$cpuset" && $soc == "trinket" ]]; then
-write "${cpuset}background/cpus" "0-3"
-write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-3,5-7"
-write "${cpuset}restricted/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-5"
-write "${cpuset}top-app/cpus" "0-7"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CPUSET.                                                                                        "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
 # FS Tweaks
 if [[ -d "/proc/sys/fs" ]]
 then
@@ -1141,19 +1128,6 @@ write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                           "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
-# CPUSET Tweaks
-if [[ -d "$cpuset" && $soc == "trinket" ]]; then
-write "${cpuset}background/cpus" "0-3"
-write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-3,5-7"
-write "${cpuset}restricted/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-5"
-write "${cpuset}top-app/cpus" "0-7"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CPUSET.                                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -1805,19 +1779,6 @@ kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.      
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
-# CPUSET Tweaks
-if [[ -d "$cpuset" && $soc == "trinket" ]]; then
-write "${cpuset}background/cpus" "0-3"
-write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-3,5-7"
-write "${cpuset}restricted/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-5"
-write "${cpuset}top-app/cpus" "0-7"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CPUSET.                                                                                        "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
 # FS Tweaks
 if [[ -d "/proc/sys/fs" ]]
 then
@@ -2300,11 +2261,11 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 64
+write "${queue}read_ahead_kb" 128
 write "${queue}iosched/low_latency" 1
 write "${queue}nomerges" 0
 write "${queue}rq_affinity" 0
-write "${queue}nr_requests" 32
+write "${queue}nr_requests" 64
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2318,7 +2279,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in conservative schedutil interactive
+	for governor in schedutil interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -2359,17 +2320,6 @@ write "$governor/sampling_rate_min" "70000"
 write "$governor/min_sample_time" "70000"
 write "$governor/go_hispeed_load" "99"
 write "$governor/hispeed_freq" "$cpumxfreq"
-done
-
-# Apply governor specific tunables for conservative
-find /sys/devices/system/cpu/ -name conservative -type d | while IFS= read -r governor
-do
-write "$governor/down_threshold" "20"
-write "$governor/freq_step" "15"
-write "$governor/ignore_nice_load" "0"
-write "$governor/sampling_down_factor" "1"
-write "$governor/sampling_rate" "50000"
-write "$governor/up_threshold" "67"
 done
 
 for cpu in /sys/devices/system/cpu/cpu*
@@ -2482,34 +2432,21 @@ write "${stune}foreground/schedtune.prefer_idle" "1"
 write "${stune}foreground/schedtune.sched_boost" "0"
 write "${stune}foreground/schedtune.prefer_perf" "0"
 
-write "${stune}schedtune.boost" "0"
-write "${stune}schedtune.prefer_idle" "0"
-write "${stune}schedtune.sched_boost" "0"
-write "${stune}schedtune.prefer_perf" "0"
+write "${stune}rt/schedtune.boost" "0"
+write "${stune}rt/schedtune.prefer_idle" "0"
+write "${stune}rt/schedtune.sched_boost" "0"
+write "${stune}rt/schedtune.prefer_perf" "0"
 
-write "${stune}schedtune.boost" "5"
-write "${stune}schedtune.prefer_idle" "1"
-write "${stune}schedtune.sched_boost" "15"
-write "${stune}schedtune.sched_boost_no_override" "0"
-write "${stune}schedtune.prefer_perf" "1"
+write "${stune}top-app/schedtune.boost" "5"
+write "${stune}top-app/schedtune.prefer_idle" "1"
+write "${stune}top-app/schedtune.sched_boost" "15"
+write "${stune}top-app/schedtune.sched_boost_no_override" "0"
+write "${stune}top-app/schedtune.prefer_perf" "1"
 
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                           "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
-# CPUSET Tweaks
-if [[ -d "$cpuset" && $soc == "trinket" ]]; then
-write "${cpuset}background/cpus" "0-3"
-write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-3,5-7"
-write "${cpuset}restricted/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-5"
-write "${cpuset}top-app/cpus" "0-7"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CPUSET.                                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -3176,19 +3113,6 @@ write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                        "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-fi
-
-# CPUSET Tweaks
-if [[ -d "$cpuset" && $soc == "trinket" ]]; then
-write "${cpuset}background/cpus" "0-3"
-write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-3,5-7"
-write "${cpuset}restricted/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-5"
-write "${cpuset}top-app/cpus" "0-7"
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          TWEAKED CPUSET.                                                                                        "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
