@@ -371,6 +371,10 @@ gbtemp=$((btemp / 10))
 # Get display FPS 
 df=`dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .`
 
+if [[ $df == " " ]]; then
+df=`dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .`
+fi
+
 # Get battery health
 if [[ -e /sys/class/power_supply/battery/health ]]; then
 gbhealth=`cat /sys/class/power_supply/battery/health`
