@@ -1,9 +1,4 @@
 #!/system/bin/sh
-# Thanks to Eight (iamlazy123 @ GitHub)
-
-# Enable sRGB
-echo '1' > /sys/module/mdss_fb/parameters/srgb_enabled
-echo '1' > /sys/class/graphics/fb0/msm_fb_srgb
 
 # King Xvision 
 echo 1 > /sys/devices/platform/kcal_ctrl.0/kcal_enable

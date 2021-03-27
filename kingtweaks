@@ -2,6 +2,8 @@
 # KTSR by pedro (pedrozzz0 @ GitHub)
 
 MODPATH=/data/adb/modules/KTSR
+
+# Load libraries
 . $MODPATH/libs/libktsr.sh
 
 # Check for root permissions and bail if not granted
@@ -11,18 +13,18 @@ kmsg1 "[!] No root permissions. Exiting."
 exit 1
 fi
 
-if [[ -e $LOG ]] 
+if [[ -e $KLOG ]] 
 then
-rm $LOG
+rm $KLOG
 fi
 
 if [[ -d "/sdcard/KTSR" ]] 
 then
-touch KTSR.log
+touch $KLOG
 
 else
 mkdir /sdcard/KTSR
-touch KTSR.log
+touch $KLOG
 fi
 
 boot_run_once=false

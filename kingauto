@@ -1,8 +1,9 @@
 #!/system/bin/sh
 # KTSR by pedro (pedrozzz0 @ GitHub)
 
-# Load libraries
 MODPATH=/data/adb/modules/KTSR
+
+# Load libraries
 . $MODPATH/libs/libktsr.sh
 
 (

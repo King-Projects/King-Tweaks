@@ -5,16 +5,16 @@
 
 MODPATH=/data/adb/modules/KTSR
 
-LOG=/sdcard/KTSR/KTSR.log
+KLOG=/sdcard/KTSR/KTSR.log
 
 # Log in white and continue (unnecessary)
 kmsg() {
-	echo -e "[*] $@" >> $LOG
+	echo -e "[*] $@" >> $KLOG
 	echo -e "[*] $@"
 }
 
 kmsg1() {
-	echo -e "$@" >> $LOG
+	echo -e "$@" >> $KLOG
 	echo -e "$@"
 }
 
@@ -283,8 +283,8 @@ aarch=`getprop ro.product.cpu.abi | awk -F- '{print $1}'`
 # Get android version
 arv=`getprop ro.build.version.release`
 
-# Get device model
-dm=`getprop ro.product.system.model`
+# Get device codename
+dcdm=`getprop ro.product.device`
 
 # Variable to get magisk version
 magisk=`magisk -c`
@@ -335,16 +335,16 @@ gbpercentage=`dumpsys battery | awk '/level/{print $2}'`
 fi
 
 # Get KTSR version
-gbversion=`cat $MODPATH/module.prop | grep version= | sed "s/version=//"`
+gbversion=`cat $MODPATH/ktsr.prop | grep version= | sed "s/version=//"`
 
 # Get KTSR build type
-gbtype=`cat $MODPATH/info.prop | grep buildtype= | sed "s/buildtype=//"`
+gbtype=`cat $MODPATH/ktsr.prop | grep buildtype= | sed "s/buildtype=//"`
 
 # Get KTSR build date
-gbdate=`cat $MODPATH/info.prop | grep builddate= | sed "s/builddate=//"`
+gbdate=`cat $MODPATH/ktsr.prop | grep builddate= | sed "s/builddate=//"`
 
 # Get KTSR build codename
-gbcodename=`cat $MODPATH/info.prop | grep codename= | sed "s/codename=//"`
+gbcodename=`cat $MODPATH/ktsr.prop | grep codename= | sed "s/codename=//"`
 
 # Get battery temperature
 if [[ -e /sys/class/power_supply/battery/temp ]]
@@ -367,6 +367,9 @@ driversinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12
 
 # Ignore the decimal
 gbtemp=$((btemp / 10))
+
+# Get display FPS 
+df=`dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .`
 
 # Get battery health
 if [[ -e /sys/class/power_supply/battery/health ]]; then
@@ -459,7 +462,8 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            📲 Drivers Info: $driversinfo                                                                                   "
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
-kmsg1 "                                            📱 Device: $dm                                                                                                  "
+kmsg1 "                                            📱 Device: $dcdm                                                                                                "
+kmsg1 "                                            🎞️ FPS: $df                                                                                                "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
@@ -485,10 +489,11 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, thermald, thermalserviced and thermal-engine.
+# Enable perfd, mi_thermald, thermald, thermalserviced and thermal-engine.
 start perfd
 start thermald
 start thermalserviced
+start mi_thermald
 start thermal-engine       	
 start mpdecision
 
@@ -496,14 +501,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
    
-# Disable logd and statsd to reduce overhead.
-stop logd
-stop statsd
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED STATSD AND LOGD.                                                                            "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "20"
@@ -519,11 +516,11 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 32
+write "${queue}read_ahead_kb" 64
 write "${queue}iosched/low_latency" 1
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 16
+write "${queue}nr_requests" 32
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -885,7 +882,8 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            📲 Drivers Info: $driversinfo                                                                                   "
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
-kmsg1 "                                            📱 Device: $dm                                                                                                  "
+kmsg1 "                                            📱 Device: $dcdm                                                                                                "
+kmsg1 "                                            🎞️ FPS: $df                                                                                                "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
@@ -911,23 +909,16 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, thermald, thermalserviced and thermal-engine.
+# Enable perfd, mi_thermald, thermald, thermalserviced and thermal-engine.
 start perfd
 start thermald
 start thermalserviced
+start mi_thermald
 start thermal-engine
 start mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Disable logd and statsd to reduce overhead.
-stop logd
-stop statsd
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED STATSD AND LOGD.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -1533,7 +1524,8 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            📲 Drivers Info: $driversinfo                                                                                   "
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
-kmsg1 "                                            📱 Device: $dm                                                                                                  "
+kmsg1 "                                            📱 Device: $dcdm                                                                                                "
+kmsg1 "                                            🎞️ FPS: $df                                                                                                "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
@@ -1559,23 +1551,16 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, disable thermald, thermalserviced and thermal-engine.
+# Enable perfd, disable mi_thermald, thermald, thermalserviced and thermal-engine.
 start perfd
 stop thermald
 stop thermalserviced
+stop mi_thermald
 stop thermal-engine
 stop mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND ENABLED PERFD.                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Disable logd and statsd to reduce overhead.
-stop logd
-stop statsd
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED STATSD AND LOGD.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -2216,7 +2201,8 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            📲 Drivers Info: $driversinfo                                                                                   "
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
-kmsg1 "                                            📱 Device: $dm                                                                                                  "
+kmsg1 "                                            📱 Device: $dcdm                                                                                                "
+kmsg1 "                                            🎞️ FPS: $df                                                                                                "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
@@ -2242,23 +2228,16 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, thermald, thermalserviced and thermal-engine.
+# Enable perfd, mi_thermald, thermald, thermalserviced and thermal-engine.
 start perfd
 start thermald
 start thermalserviced
+start mi_thermald
 start thermal-engine
 start mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Disable logd and statsd to reduce overhead.
-stop logd
-stop statsd
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED STATSD AND LOGD.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -2917,7 +2896,8 @@ kmsg1 "                                            🖼️ GPU Info: $gpuinfo   
 kmsg1 "                                            📲 Drivers Info: $driversinfo                                                                                   "
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
-kmsg1 "                                            📱 Device: $dm                                                                                                  "
+kmsg1 "                                            📱 Device: $dcdm                                                                                                "
+kmsg1 "                                            🎞️ FPS: $df                                                                                                "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
@@ -2943,23 +2923,16 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Disable perfd, thermald, thermalserviced and thermal-engine.
+# Disable perfd, mi_thermald, thermald, thermalserviced and thermal-engine.
 stop perfd
 stop thermald
 stop thermalserviced
+stop mi_thermald
 stop thermal-engine
 stop mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-
-# Disable logd and statsd to reduce overhead.
-stop logd
-stop statsd
-
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED STATSD AND LOGD.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
