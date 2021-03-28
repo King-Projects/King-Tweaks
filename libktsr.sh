@@ -335,7 +335,7 @@ gbpercentage=`dumpsys battery | awk '/level/{print $2}'`
 fi
 
 # Get KTSR version
-gbversion=`cat $MODPATH/ktsr.prop | grep version= | sed "s/version=//"`
+gbversion=`cat $MODPATH/module.prop | grep version= | sed "s/version=//"`
 
 # Get KTSR build type
 gbtype=`cat $MODPATH/ktsr.prop | grep buildtype= | sed "s/buildtype=//"`
@@ -373,6 +373,9 @@ df=`dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d 
 
 if [[ $df != [0-9] ]]; then
 df=`dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .`
+
+elif [[ $df != [0-9] ]]; then
+df=`dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .`
 fi
 
 # Get battery health
