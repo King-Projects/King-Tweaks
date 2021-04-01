@@ -523,11 +523,11 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 64
+write "${queue}read_ahead_kb" 32
 write "${queue}iosched/low_latency" 1
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 32
+write "${queue}nr_requests" 16
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -731,7 +731,7 @@ fi
 sync
 
 # VM settings to improve overall user experience and smoothness.
-write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "25"
 write "${vm}dirty_expire_centisecs" "200"
 write "${vm}dirty_writeback_centisecs" "3000"
@@ -2268,11 +2268,11 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 128
+write "${queue}read_ahead_kb" 64
 write "${queue}iosched/low_latency" 1
 write "${queue}nomerges" 0
 write "${queue}rq_affinity" 0
-write "${queue}nr_requests" 64
+write "${queue}nr_requests" 512
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2437,7 +2437,7 @@ write "${stune}background/schedtune.prefer_idle" "0"
 write "${stune}background/schedtune.sched_boost" "0"
 write "${stune}background/schedtune.prefer_perf" "0"
 
-write "${stune}foreground/schedtune.boost" "1"
+write "${stune}foreground/schedtune.boost" "0"
 write "${stune}foreground/schedtune.prefer_idle" "1"
 write "${stune}foreground/schedtune.sched_boost" "0"
 write "${stune}foreground/schedtune.prefer_perf" "0"
@@ -2447,7 +2447,7 @@ write "${stune}rt/schedtune.prefer_idle" "0"
 write "${stune}rt/schedtune.sched_boost" "0"
 write "${stune}rt/schedtune.prefer_perf" "0"
 
-write "${stune}top-app/schedtune.boost" "5"
+write "${stune}top-app/schedtune.boost" "0"
 write "${stune}top-app/schedtune.prefer_idle" "1"
 write "${stune}top-app/schedtune.sched_boost" "15"
 write "${stune}top-app/schedtune.sched_boost_no_override" "1"
@@ -2484,7 +2484,7 @@ fi
 if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
-write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
+write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "ARCH_POWER" 
@@ -2511,9 +2511,9 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # Tweak some kernel settings to improve overall performance.
-write "${kernel}sched_child_runs_first" "1"
+write "${kernel}sched_child_runs_first" "0"
 write "${kernel}sched_boost" "0"
-write "${kernel}perf_cpu_time_max_percent" "5"
+write "${kernel}perf_cpu_time_max_percent" "3"
 write "${kernel}sched_autogroup_enabled" "1"
 write "${kernel}random/read_wakeup_threshold" "64"
 write "${kernel}random/write_wakeup_threshold" "128"
@@ -2524,7 +2524,7 @@ write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
 write "${kernel}sched_migration_cost_ns" "5000000"
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
-write "${kernel}sched_nr_migrate" "8"
+write "${kernel}sched_nr_migrate" "192"
 write "${kernel}sched_schedstats" "0"
 write "${kernel}sched_enable_thread_grouping" "1"
 write "${kernel}sched_rr_timeslice_ms" "1"
@@ -2606,10 +2606,10 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # VM settings to improve overall user experience and performance.
-write "${vm}dirty_background_ratio" "15"
-write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "3000"
-write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_ratio" "10"
+write "${vm}dirty_expire_centisecs" "500"
+write "${vm}dirty_writeback_centisecs" "200"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
@@ -3257,8 +3257,8 @@ sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "20"
-write "${vm}dirty_expire_centisecs" "500"
-write "${vm}dirty_writeback_centisecs" "200"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
