@@ -673,7 +673,7 @@ fi
 
 # Tweak some kernel settings to improve overall performance.
 write "${kernel}sched_child_runs_first" "1"
-write "${kernel}perf_cpu_time_max_percent" "5"
+write "${kernel}perf_cpu_time_max_percent" "4"
 write "${kernel}sched_autogroup_enabled" "1"
 write "${kernel}random/read_wakeup_threshold" "64"
 write "${kernel}random/write_wakeup_threshold" "512"
@@ -702,7 +702,7 @@ for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "100000"
+write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
@@ -711,7 +711,7 @@ for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ -e "${mnclk}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "100000"
+write "${mnclk}scaling_min_freq" "300000"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
@@ -731,8 +731,8 @@ fi
 sync
 
 # VM settings to improve overall user experience and smoothness.
-write "${vm}dirty_background_ratio" "15"
-write "${vm}dirty_ratio" "30"
+write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_ratio" "25"
 write "${vm}dirty_expire_centisecs" "200"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
@@ -1229,7 +1229,7 @@ for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "100000"
+write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
@@ -1238,7 +1238,7 @@ for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ -e "${mnclk}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "100000"
+write "${mnclk}scaling_min_freq" "300000"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
@@ -1610,7 +1610,7 @@ write "${queue}read_ahead_kb" 256
 write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 128
+write "${queue}nr_requests" 512
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2551,7 +2551,7 @@ for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" && $bpercentage > "20" ]]
 then
-write "${minclk}scaling_min_freq" "100000"
+write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
@@ -2560,7 +2560,7 @@ for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ -e "${mnclk}scaling_min_freq" && $bpercentage > "20" ]]
 then
-write "${mnclk}scaling_min_freq" "100000"
+write "${mnclk}scaling_min_freq" "300000"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
@@ -2570,7 +2570,7 @@ for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" && $bpercentage < "20" ]]
 then
-write "${minclk}scaling_min_freq" "100000"
+write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
@@ -2579,7 +2579,7 @@ for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ -e "${mnclk}scaling_min_freq" && $bpercentage < "20" ]]
 then
-write "${mnclk}scaling_min_freq" "100000"
+write "${mnclk}scaling_min_freq" "300000"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
@@ -2606,8 +2606,8 @@ kmsg1 "-------------------------------------------------------------------------
 fi
 
 # VM settings to improve overall user experience and performance.
-write "${vm}dirty_background_ratio" "5"
-write "${vm}dirty_ratio" "50"
+write "${vm}dirty_background_ratio" "15"
+write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
@@ -2620,7 +2620,7 @@ else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "80"
+write "${vm}vfs_cache_pressure" "60"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2948,7 +2948,7 @@ write "${queue}read_ahead_kb" 256
 write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 128
+write "${queue}nr_requests" 512
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
