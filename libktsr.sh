@@ -801,6 +801,7 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
+write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -1397,6 +1398,7 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
+write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -1929,7 +1931,7 @@ else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "120"
+write "${vm}vfs_cache_pressure" "150"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2043,6 +2045,7 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
+write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -2620,7 +2623,7 @@ else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "60"
+write "${vm}vfs_cache_pressure" "50"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2734,6 +2737,7 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
+write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
@@ -3269,7 +3273,7 @@ else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "150"
+write "${vm}vfs_cache_pressure" "200"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3383,6 +3387,7 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
+write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED INTERNET TWEAKS.                                                                            "
