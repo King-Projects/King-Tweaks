@@ -2333,7 +2333,10 @@ for cpu in /sys/devices/system/cpu/cpu*
 do
 if [[ $gbpercentage < "20" ]]
 then
-write "$cpu/online" "0"
+write "/sys/devices/system/cpu/cpu1/online" "0"
+write "/sys/devices/system/cpu/cpu2/online" "0"
+write "/sys/devices/system/cpu/cpu5/online" "0"
+write "/sys/devices/system/cpu/cpu6/online" "0"
 
 elif [[ $gbpercentage > "20" ]]
 then
