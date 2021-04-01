@@ -371,10 +371,10 @@ gbtemp=$((btemp / 10))
 # Get display FPS 
 df=`dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .`
 
-if [[ $df != [0-9] ]]; then
+if [[ -z $df ]]; then
 df=`dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .`
 
-elif [[ $df != [0-9] ]]; then
+elif [[ -z $df ]]; then
 df=`dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .`
 fi
 
