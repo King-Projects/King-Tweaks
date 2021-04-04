@@ -677,6 +677,7 @@ write "${kernel}perf_cpu_time_max_percent" "4"
 write "${kernel}sched_autogroup_enabled" "1"
 write "${kernel}random/read_wakeup_threshold" "64"
 write "${kernel}random/write_wakeup_threshold" "512"
+write "${kernel}random/urandom_min_reseed_secs" "90"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_LATENCY"
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LATENCY))"
@@ -692,6 +693,7 @@ write "${kernel}sched_cstate_aware" "1"
 write "${kernel}sched_sync_hint_enable" "0"
 write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
+write "${kernel}timer_migration" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -733,7 +735,7 @@ sync
 # VM settings to improve overall user experience and smoothness.
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "25"
-write "${vm}dirty_expire_centisecs" "200"
+write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
@@ -1211,6 +1213,7 @@ write "${kernel}sched_cstate_aware" "1"
 write "${kernel}sched_sync_hint_enable" "0"
 write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
+write "${kernel}timer_migration" "1"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -1844,6 +1847,7 @@ write "${kernel}perf_cpu_time_max_percent" "25"
 write "${kernel}sched_autogroup_enabled" "0"
 write "${kernel}random/read_wakeup_threshold" "128"
 write "${kernel}random/write_wakeup_threshold" "1024"
+write "${kernel}random/urandom_min_reseed_secs" "90"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
@@ -1859,6 +1863,7 @@ write "${kernel}sched_cstate_aware" "1"
 write "${kernel}sched_sync_hint_enable" "0"
 write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
+write "${kernel}timer_migration" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -2066,13 +2071,12 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "1"
-break
-fi
-done
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                           ENABLED HIGH PERFORMANCE AUDIO.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+break
+fi
+done
 
 # Disable arch power
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
@@ -2520,6 +2524,7 @@ write "${kernel}perf_cpu_time_max_percent" "3"
 write "${kernel}sched_autogroup_enabled" "1"
 write "${kernel}random/read_wakeup_threshold" "64"
 write "${kernel}random/write_wakeup_threshold" "128"
+write "${kernel}random/urandom_min_reseed_secs" "90"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
@@ -2535,6 +2540,7 @@ write "${kernel}sched_cstate_aware" "1"
 write "${kernel}sched_sync_hint_enable" "0"
 write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
+write "${kernel}timer_migration" "1"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -2758,13 +2764,12 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "0"
-break
-fi
-done
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED HIGH PERFORMANCE AUDIO.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+break
+fi
+done
 
 # Enable LPM sleep in balanced / battery profile
 for lpm in /sys/module/lpm_levels/system/*/*/*/
@@ -3186,6 +3191,7 @@ write "${kernel}perf_cpu_time_max_percent" "25"
 write "${kernel}sched_autogroup_enabled" "0"
 write "${kernel}random/read_wakeup_threshold" "128"
 write "${kernel}random/write_wakeup_threshold" "1024"
+write "${kernel}random/urandom_min_reseed_secs" "90"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
@@ -3201,6 +3207,7 @@ write "${kernel}sched_cstate_aware" "1"
 write "${kernel}sched_sync_hint_enable" "0"
 write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
+write "${kernel}timer_migration" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
