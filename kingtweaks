@@ -21,10 +21,6 @@ fi
 if [[ -d "/sdcard/KTSR" ]] 
 then
 touch $KLOG
-
-else
-mkdir /sdcard/KTSR
-touch $KLOG
 fi
 
 boot_run_once=false
