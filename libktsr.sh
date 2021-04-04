@@ -1413,13 +1413,12 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "0"
-break
-fi
-done
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          DISABLED HIGH PERFORMANCE AUDIO.                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+break
+fi
+done
 
 # Enable LPM sleep in balanced / battery profile
 for lpm in /sys/module/lpm_levels/system/*/*/*/
@@ -3415,13 +3414,12 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "1"
-break
-fi
-done
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLED HIGH PERFORMANCE AUDIO.                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+break
+fi
+done
 
 # Disable arch power
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
