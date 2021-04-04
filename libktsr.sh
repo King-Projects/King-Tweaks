@@ -520,6 +520,18 @@ fi
 # I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
+
+    # Choose the first governor available
+	avail_scheds="$(cat "$queue/scheduler")"
+	for sched in tripndroid bfq-sq bfq-mq bfq zen anxiety mq-deadline cfq noop none
+	do
+		if [[ "$avail_scheds" == *"$sched"* ]]
+		then
+			write "$queue/scheduler" "$sched"
+			break
+		fi
+	done
+	
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
@@ -955,6 +967,18 @@ kmsg1 "-------------------------------------------------------------------------
 # I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
+
+    # Choose the first governor available
+	avail_scheds="$(cat "$queue/scheduler")"
+	for sched in tripndroid bfq-sq bfq-mq bfq zen anxiety mq-deadline cfq noop none
+	do
+		if [[ "$avail_scheds" == *"$sched"* ]]
+		then
+			write "$queue/scheduler" "$sched"
+			break
+		fi
+	done
+	
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
@@ -1607,6 +1631,18 @@ fi
 # I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
+
+    # Choose the first governor available
+	avail_scheds="$(cat "$queue/scheduler")"
+	for sched in tripndroid bfq-sq bfq-mq bfq zen anxiety mq-deadline cfq noop none
+	do
+		if [[ "$avail_scheds" == *"$sched"* ]]
+		then
+			write "$queue/scheduler" "$sched"
+			break
+		fi
+	done
+	
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
@@ -2271,6 +2307,18 @@ fi
 # I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
+
+    # Choose the first governor available
+	avail_scheds="$(cat "$queue/scheduler")"
+	for sched in tripndroid bfq-sq bfq-mq bfq zen anxiety mq-deadline cfq noop none
+	do
+		if [[ "$avail_scheds" == *"$sched"* ]]
+		then
+			write "$queue/scheduler" "$sched"
+			break
+		fi
+	done
+	
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
@@ -2949,6 +2997,18 @@ fi
 # I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
+
+    # Choose the first governor available
+	avail_scheds="$(cat "$queue/scheduler")"
+	for sched in tripndroid bfq-sq bfq-mq bfq zen anxiety mq-deadline cfq noop none
+	do
+		if [[ "$avail_scheds" == *"$sched"* ]]
+		then
+			write "$queue/scheduler" "$sched"
+			break
+		fi
+	done
+	
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
