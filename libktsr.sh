@@ -496,18 +496,22 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, mi_thermald, thermald, thermalserviced and thermal-engine.
-start perfd
-start thermald
-start thermalserviced
-start mi_thermald
-start thermal-engine       	
+# Enable perf and mpdecision.
+start perfd  	
 start mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
+kmsg1 "                                          ENABLED PERFD AND MPDECISION.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-   
+
+# Do not stop thermal daemons, configure thermal config instead
+if [[ -e "/sys/class/thermal/thermal_message" ]]; then
+write "/sys/class/thermal/thermal_message/sconfig" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKED THERMAL PROFILE.                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "20"
@@ -918,17 +922,21 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, mi_thermald, thermald, thermalserviced and thermal-engine.
+# Enable perfd and mpdecision
 start perfd
-start thermald
-start thermalserviced
-start mi_thermald
-start thermal-engine
 start mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
+kmsg1 "                                          ENABLED PERFD AND MPDECISION.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+# Do not stop thermal daemons, configure thermal config instead
+if [[ -e "/sys/class/thermal/thermal_message" ]]; then
+write "/sys/class/thermal/thermal_message/sconfig" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKED THERMAL PROFILE.                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
@@ -1560,17 +1568,20 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, disable mi_thermald, thermald, thermalserviced and thermal-engine.
+# Enable perfd and disable mpdecision.
 start perfd
-stop thermald
-stop thermalserviced
-stop mi_thermald
-stop thermal-engine
 stop mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND ENABLED PERFD.                                               "
+kmsg1 "                                          ENABLED PERFD AND DISABLED MPDECISION.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/class/thermal/thermal_message" ]]; then
+write "/sys/class/thermal/thermal_message/sconfig" "10"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKED THERMAL PROFILE.                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
@@ -2238,17 +2249,20 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Enable perfd, mi_thermald, thermald, thermalserviced and thermal-engine.
+# Enable perfd and mpdecision.
 start perfd
-start thermald
-start thermalserviced
-start mi_thermald
-start thermal-engine
 start mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          ENABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
+kmsg1 "                                          ENABLED PERFD AND MPDECISION.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/class/thermal/thermal_message" ]]; then
+write "/sys/class/thermal/thermal_message/sconfig" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKED THERMAL PROFILE.                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
@@ -2926,17 +2940,20 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                          DISABLED KERNEL PANIC.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Disable perfd, mi_thermald, thermald, thermalserviced and thermal-engine.
+# Disable perfd and mpdecision.
 stop perfd
-stop thermald
-stop thermalserviced
-stop mi_thermald
-stop thermal-engine
 stop mpdecision
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                          DISABLED THERMAL-ENGINE, THERMALD, THERMALSERVICED, MPDECISION AND PERFD.                                                         "
+kmsg1 "                                          DISABLED PERFD AND MPDECISION.                                                         "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/sys/class/thermal/thermal_message" ]]; then
+write "/sys/class/thermal/thermal_message/sconfig" "10"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          TWEAKED THERMAL PROFILE.                                                                                  "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
