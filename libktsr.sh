@@ -711,6 +711,10 @@ write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
 write "${kernel}timer_migration" "0"
 
+# Use rcu_normal instead of rcu_expedited
+write "/sys/kernel/rcu_expedited" 0
+write "/sys/kernel/rcu_normal" 1
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1245,7 +1249,11 @@ write "${kernel}sched_cstate_aware" "1"
 write "${kernel}sched_sync_hint_enable" "0"
 write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
-write "${kernel}timer_migration" "1"
+write "${kernel}timer_migration" "0"
+
+# Use rcu_normal instead of rcu_expedited
+write "/sys/kernel/rcu_expedited" 0
+write "/sys/kernel/rcu_normal" 1
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -1910,6 +1918,10 @@ write "${kernel}sched_sync_hint_enable" "0"
 write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
 write "${kernel}timer_migration" "0"
+
+# Use rcu_normal instead of rcu_expedited
+write "/sys/kernel/rcu_expedited" 0
+write "/sys/kernel/rcu_normal" 1
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -2603,6 +2615,10 @@ write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
 write "${kernel}timer_migration" "1"
 
+# Use rcu_normal instead of rcu_expedited
+write "/sys/kernel/rcu_expedited" 0
+write "/sys/kernel/rcu_normal" 1
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3285,6 +3301,10 @@ write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
 write "${kernel}timer_migration" "0"
 
+# Use rcu_normal instead of rcu_expedited
+write "/sys/kernel/rcu_expedited" 0
+write "/sys/kernel/rcu_normal" 1
+
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3356,7 +3376,7 @@ else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "200"
+write "${vm}vfs_cache_pressure" "500"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
