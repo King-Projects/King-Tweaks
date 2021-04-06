@@ -67,9 +67,9 @@ while true; do
   sleep 300
   elif [ $bstatus == "Charging" ]; then
   . $MODPATH/libs/libktsr.sh
-  kmsg1 "-----------------------------------------------------------------------------------------------------------------------"
-  kmsg  "Device is charging, trying to cooldown to reduce battery cycles by applying battery profile and extending check time..."
-  kmsg1 "-----------------------------------------------------------------------------------------------------------------------"
+  kmsg1 "-----------------------------------------------------------------------------------------------------------"
+  kmsg  "Device is charging, trying to reduce battery cycles by applying battery profile and extending check time..."
+  kmsg1 "-----------------------------------------------------------------------------------------------------------"
   battery
   sleep 300
   elif [ $gbpercentage < "20" && $bstatus == "Discharging" ]; then
@@ -89,15 +89,23 @@ while true; do
  fi
 done
 
-if [[ $availram <= "$((totalram*20/100))" ]]; then
+if [[ $availram <= "$((totalram*23/100))" ]]; then
+kmsg1 "----------------------------------------------------------------------"
+kmsg  "Device ram is almost fully in use, dropping caches to free some RAM..."
+kmsg1 "----------------------------------------------------------------------"
 write "$vm/drop_caches" "3"
 fi
 
-if [[ $gbtemp >= "49" ]]; then
+if [[ $gbtemp >= "46" && $bstatus == "Charging" ]]; then
+kmsg1 "---------------------------------------------------------------------------------"
+kmsg  "Device is hot and charging, reducing max constant current to avoid overheating..."
+kmsg1 "---------------------------------------------------------------------------------"
 thermal_current
 
-elif [[ $gbtemp == "39" ]]; then
+elif [[ $gbtemp <= "40" && $bstatus == "Charging" ]]; then
+kmsg1 "-----------------------------------------------------------------------"
+kmsg  "Device is less hot now, changing max constant current to default now..."
+kmsg1 "-----------------------------------------------------------------------"
 default_current
 fi
-
 )&
