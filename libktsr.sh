@@ -205,7 +205,7 @@ SCHED_TASKS_THROUGHPUT="6"
     gpunpl=`cat $gpu/num_pwrlevels`
     fi
     
-    gpumx=`cat $gpug/available_frequencies | awk -v var="$gpunpl" '{print $var}'`
+    gpumx=`cat $gpug/available_frequencies | awk -v var="$gpunpl" '{print $gpunpl}'`
     
     if [[ $gpumx != $gpufreq ]]; then
     gpumx=`cat $gpug/available_frequencies | awk '{print $1}'`
@@ -290,7 +290,7 @@ dcdm=`getprop ro.product.device`
 magisk=`magisk -c`
 
 # Detect if we're running on a exynos SOC
-if [[ `$mf | grep 'samsungexynos'` ]]; then
+if [[ `$mf | grep 'samsungexynos'` || `$soc | grep 'universal'` ]]; then
 exynos=true
 else
 exynos=false
@@ -323,8 +323,11 @@ kname=`uname -r`
 # Get kernel build date
 kbdd=`uname -v | awk '{print $5, $6, $7, $8, $9, $10}'`
 
-# Get device total device ram
+# Get device total amount of memory RAM
 totalram=`free -m | awk '/Mem:/{print $2}'`
+
+# Get device total amount of available RAM
+availram=`free -m | grep Mem: | awk '{print $7}'`
 
 # Get battery actual capacity
 if [[ -e /sys/class/power_supply/battery/capacity ]]; then
@@ -470,7 +473,7 @@ kmsg1 "                                            📲 Drivers Info: $driversin
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dcdm                                                                                                "
-kmsg1 "                                            🎞️ FPS: $df                                                                                                "
+kmsg1 "                                            🎞️ FPS: $df                                                                                                     "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
@@ -480,6 +483,7 @@ kmsg1 "                                            🩹 Battery Health: $bhealth
 kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -527,7 +531,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq zen anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -760,8 +764,8 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Follow SSWAP if device haven't more than 3 GB ram on exynos SOC's
-if [[ $exynos == "true" && $totalram -lt "3000" ]]; then
+# Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
+if [[ $exynos == "true" && $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "150"
 else
 write "${vm}swappiness" "100"
@@ -900,7 +904,7 @@ kmsg1 "                                            📲 Drivers Info: $driversin
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dcdm                                                                                                "
-kmsg1 "                                            🎞️ FPS: $df                                                                                                "
+kmsg1 "                                            🎞️ FPS: $df                                                                                                     "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
@@ -910,6 +914,7 @@ kmsg1 "                                            🩹 Battery Health: $bhealth
 kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -982,7 +987,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq zen anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1319,8 +1324,8 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Follow SSWAP if device haven't more than 3 GB ram on exynos SOC's
-if [[ $exynos == "true" && $totalram -lt "3000" ]]; then
+# Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
+if [[ $exynos == "true" && $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "150"
 else
 write "${vm}swappiness" "100"
@@ -1550,7 +1555,7 @@ kmsg1 "                                            📲 Drivers Info: $driversin
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dcdm                                                                                                "
-kmsg1 "                                            🎞️ FPS: $df                                                                                                "
+kmsg1 "                                            🎞️ FPS: $df                                                                                                     "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
@@ -1560,6 +1565,7 @@ kmsg1 "                                            🩹 Battery Health: $bhealth
 kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -1653,7 +1659,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq zen anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1669,7 +1675,7 @@ write "${queue}read_ahead_kb" 256
 write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 512
+write "${queue}nr_requests" 128
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1987,8 +1993,8 @@ write "${vm}dirty_writeback_centisecs" "200"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Follow SSWAP if device haven't more than 3 GB ram on exynos SOC's
-if [[ $exynos == "true" && $totalram -lt "3000" ]]; then
+# Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
+if [[ $exynos == "true" && $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "150"
 else
 write "${vm}swappiness" "100"
@@ -2235,7 +2241,7 @@ kmsg1 "                                            📲 Drivers Info: $driversin
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dcdm                                                                                                "
-kmsg1 "                                            🎞️ FPS: $df                                                                                                "
+kmsg1 "                                            🎞️ FPS: $df                                                                                                     "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
@@ -2245,6 +2251,7 @@ kmsg1 "                                            🩹 Battery Health: $bhealth
 kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -2336,7 +2343,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq zen anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -2699,8 +2706,8 @@ write "${vm}dirty_writeback_centisecs" "200"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Follow SSWAP if device haven't more than 3 GB ram on exynos SOC's
-if [[ $exynos == "true" && $totalram -lt "3000" ]]; then
+# Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
+if [[ $exynos == "true" && $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "150"
 else
 write "${vm}swappiness" "100"
@@ -2930,7 +2937,7 @@ kmsg1 "                                            📲 Drivers Info: $driversin
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dcdm                                                                                                "
-kmsg1 "                                            🎞️ FPS: $df                                                                                                "
+kmsg1 "                                            🎞️ FPS: $df                                                                                                     "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
 kmsg1 "                                            📀 Build Type: $gbtype                                                                                          "
@@ -2940,6 +2947,7 @@ kmsg1 "                                            🩹 Battery Health: $bhealth
 kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
+kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                                     "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
@@ -3033,7 +3041,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq zen anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -3049,7 +3057,7 @@ write "${queue}read_ahead_kb" 256
 write "${queue}iosched/low_latency" 0
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 512
+write "${queue}nr_requests" 128
 done
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3369,8 +3377,8 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Follow SSWAP if device haven't more than 3 GB ram on exynos SOC's
-if [[ $exynos == "true" && $totalram -lt "3000" ]]; then
+# Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
+if [[ $exynos == "true" && $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "150"
 else
 write "${vm}swappiness" "100"
