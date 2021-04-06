@@ -327,7 +327,7 @@ kbdd=`uname -v | awk '{print $5, $6, $7, $8, $9, $10}'`
 totalram=`free -m | awk '/Mem:/{print $2}'`
 
 # Get device total amount of available RAM
-availram=`free -m | grep Mem: | awk '{print $7}'`
+availram=`free -m | grep Mem: | awk '{print $6}'`
 
 # Get battery actual capacity
 if [[ -e /sys/class/power_supply/battery/capacity ]]; then
