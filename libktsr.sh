@@ -205,7 +205,7 @@ SCHED_TASKS_THROUGHPUT="6"
     gpunpl=`cat $gpu/num_pwrlevels`
     fi
     
-    gpumx=`cat $gpug/available_frequencies | awk -v var="$gpunpl" '{print $gpunpl}'`
+    gpumx=`cat $gpug/available_frequencies | awk -v var="$gpunpl" '{print $var}'`
     
     if [[ $gpumx != $gpufreq ]]; then
     gpumx=`cat $gpug/available_frequencies | awk '{print $1}'`
@@ -324,10 +324,10 @@ kname=`uname -r`
 kbdd=`uname -v | awk '{print $5, $6, $7, $8, $9, $10}'`
 
 # Get device total amount of memory RAM
-totalram=`free -m | awk '/Mem:/{print $2}'`
+totalram=`busybox free -m | awk '/Mem:/{print $2}'`
 
 # Get device total amount of available RAM
-availram=`free -m | grep Mem: | awk '{print $6}'`
+availram=`busybox free -m | grep Mem: | awk '{print $7}'`
 
 # Get battery actual capacity
 if [[ -e /sys/class/power_supply/battery/capacity ]]; then

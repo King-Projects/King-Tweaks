@@ -6,6 +6,10 @@ MODPATH=/data/adb/modules/KTSR
 # Load libraries
 . $MODPATH/libs/libktsr.sh
 
+if [[ -e /sdcard/KTSR/battcurrent.log ]]; then
+rm /sdcard/KTSR/battcurrent.log
+fi
+
 save_current(){
 for i in /sys/class/power_supply/*/constant_charge*; do
 cat "$i" >> /sdcard/KTSR/battcurrent.log
@@ -89,7 +93,7 @@ while true; do
  fi
 done
 
-if [[ $availram <= "$((totalram*23/100))" ]]; then
+if [[ $availram <= "$((totalram*20/100))" ]]; then
 kmsg1 "----------------------------------------------------------------------"
 kmsg  "Device ram is almost fully in use, dropping caches to free some RAM..."
 kmsg1 "----------------------------------------------------------------------"

@@ -29,11 +29,11 @@ echo ""
 echo "Build starting at $(date)"
 echo ""
 
-echo "Zipping ${blink}KTSR-$version-$build_type-$codename${default}..."
+echo "Zipping ${blink}KTSR-v$version-$build_type-$codename${default}..."
 
-zip -r "KTSR-$version-$build_type-$codename.zip" . -x *.git* -x *.zip -x *.yml -x C1.sh -x kingauto -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
+zip -r "KTSR-v$version-$build_type-$codename.zip" . -x *.git* -x *.zip -x *.yml -x C1.sh -x kingauto -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
 
-mv "KTSR-$version-$build_type-$codename.zip" ../out
+mv "KTSR-v$version-$build_type-$codename.zip" ../out
 
 rm $(pwd)/ktsr.prop
 
