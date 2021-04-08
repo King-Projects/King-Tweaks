@@ -519,7 +519,7 @@ fi
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "20"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -715,9 +715,11 @@ write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
 write "${kernel}timer_migration" "0"
 
-# Use rcu_normal instead of rcu_expedited
+# Prefer rcu_normal instead of rcu_expedited
+if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -871,6 +873,12 @@ exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg1 "----------------------------------------------------------------------------"
+kmsg1 "Module Creator: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg1 "Telegram Channel: https://t.me/kingprojectz"
+kmsg1 "Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg1 "----------------------------------------------------------------------------"
 }
 # Automatic Profile
 automatic() {
@@ -950,7 +958,7 @@ fi
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1256,9 +1264,11 @@ write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
 write "${kernel}timer_migration" "0"
 
-# Use rcu_normal instead of rcu_expedited
+# Prefer rcu_normal instead of rcu_expedited
+if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -1536,6 +1546,12 @@ exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg1 "----------------------------------------------------------------------------"
+kmsg1 "Module Creator: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg1 "Telegram Channel: https://t.me/kingprojectz"
+kmsg1 "Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg1 "----------------------------------------------------------------------------"
 }
 # Extreme Profile
 extreme() {
@@ -1600,7 +1616,7 @@ fi
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1925,9 +1941,11 @@ write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
 write "${kernel}timer_migration" "0"
 
-# Use rcu_normal instead of rcu_expedited
+# Prefer rcu_normal instead of rcu_expedited
+if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -2222,6 +2240,12 @@ exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg1 "----------------------------------------------------------------------------"
+kmsg1 "Module Creator: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg1 "Telegram Channel: https://t.me/kingprojectz"
+kmsg1 "Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg1 "----------------------------------------------------------------------------"
 }
 # Battery Profile
 battery() {
@@ -2286,7 +2310,7 @@ fi
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2622,9 +2646,11 @@ write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
 write "${kernel}timer_migration" "1"
 
-# Use rcu_normal instead of rcu_expedited
+# Prefer rcu_normal instead of rcu_expedited
+if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -2918,6 +2944,12 @@ exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg1 "----------------------------------------------------------------------------"
+kmsg1 "Module Creator: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg1 "Telegram Channel: https://t.me/kingprojectz"
+kmsg1 "Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg1 "----------------------------------------------------------------------------"
 }
 # Gaming Profile
 gaming() {
@@ -2982,7 +3014,7 @@ fi
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
+write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED STUNE BOOST.                                                                                  "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3309,9 +3341,11 @@ write "${kernel}sched_user_hint" "0"
 write "${kernel}printk_devkmsg" "off"
 write "${kernel}timer_migration" "0"
 
-# Use rcu_normal instead of rcu_expedited
+# Prefer rcu_normal instead of rcu_expedited
+if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          TWEAKED KERNEL SETTINGS.                                                                            "
@@ -3606,4 +3640,10 @@ exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          EXECUTION DONE IN $exectime SECONDS.                                                                   "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+
+kmsg1 "----------------------------------------------------------------------------"
+kmsg1 "Module Creator: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg1 "Telegram Channel: https://t.me/kingprojectz"
+kmsg1 "Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg1 "----------------------------------------------------------------------------"
 }
