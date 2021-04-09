@@ -11,8 +11,11 @@ rm /sdcard/KTSR/battcurrent.log
 fi
 
 save_current(){
-for i in /sys/class/power_supply/*/constant_charge*; do
+for i in /sys/class/*/*/*constant_charge*; do
+for x in /sys/class/*/*/*current_max*; do
 cat "$i" >> /sdcard/KTSR/battcurrent.log
+done
+cat "$x" >> /sdcard/KTSR/battcurrent.log
 done
 cat "/sys/class/qc_battery/restrict_cur" >> /sdcard/KTSR/battcurrent.log
 }
@@ -24,15 +27,21 @@ done
 }
 
 default_current(){
-for i in /sys/class/power_supply/*/constant_charge*; do
+for i in /sys/class/*/*/*constant_charge*; do
+for x in /sys/class/*/*/*current_max*; do
 write "$i" "$current"
+done
+write "$x" "$current"
 done
 write "/sys/class/qc_battery/restrict_cur" "$current"
 }
 
 thermal_current(){
-for i in /sys/class/power_supply/*/constant_charge*; do
+for i in /sys/class/power_supply/*/*constant_charge*; do
+for x in /sys/class/*/*/*current_max*; do
 write "$i" "1800000"
+done
+write "$x" "1800000"
 done
 write "/sys/class/qc_battery/restrict_cur" "1800000"
 }
