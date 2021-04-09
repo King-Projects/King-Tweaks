@@ -35,8 +35,8 @@ echo "**********************************"
 echo ""
 echo "[*] Profile active: $kts_profile"
 echo ""
-sleep 1.6
-echo "[*] Available profiles:"
+sleep 1.4
+echo "[*] Available profiles: "
 echo ""
 sleep 1.2
 echo "[1] Automatic: Change your profile automatically based on specific circumstances and do additional tweaking for a better user-experience."
@@ -54,23 +54,24 @@ sleep 2.5
 echo "[5] Gaming: Recommended to gamers who want the best performance possible while playing, with almost zero throttling, tweaks both CPU / GPU and more to achieve it, will probably drain a lot of battery life."
 echo ""
 sleep 3.5
+echo "[*] Other misc options: "
+echo ""
+sleep 1.3
 echo "[6] Optimize apps package"
 echo ""
-sleep 1.5
+sleep 1.3
 echo "[7] Optimize databases"
 echo ""
-sleep 1.2
-echo "[8] Access our telegram channel"
+sleep 1.3
+echo "[8] Access our telegram group"
 echo ""
-sleep 1.8
-echo "[9] Access our telegram group"
+sleep 1.3
+echo "[0] Exit"
 echo ""
-sleep 1.8
-PS3="[*] Select the desired option: "
-options=("Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Optimize apps" "Optimize databases" "Telegram group" "Exit")
-select opt in "${options[@]}"
-do
-		case $opt in
+sleep 0.9
+echo -n "[*] Select the desired option: "
+read option
+		case $option in
 			"1")
 				setprop persist.kingtweaks.mode 1
 				;;
@@ -124,12 +125,11 @@ do
 						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
 						;;
 						
-						"Exit")
+						"0")
 						echo "[:)] See ya soon!"; break
 						;;
 						
 						*)
-						echo "[!] Unexpected response, aborting..."; sleep 1.2; clear; exit 1
+						echo "[!] Unexpected response, aborting..."; sleep 0.8; clear; break
 						;;
 						esac
-done
