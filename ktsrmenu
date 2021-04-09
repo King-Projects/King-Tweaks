@@ -26,9 +26,9 @@ fi
 
 clear
 echo ""
-echo "********************************"
-echo "* KTSR Alt. Profile Controller *"
-echo "**********************"*********"
+echo "**********************************"
+echo "* KTSR (Alt.) Profile Controller *"
+echo "**********************************"
 echo ""
 echo "[*] Profile active: $kts_profile"
 echo ""
