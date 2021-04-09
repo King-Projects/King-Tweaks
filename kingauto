@@ -6,12 +6,6 @@ MODPATH=/data/adb/modules/KTSR
 # Load libraries
 . $MODPATH/libs/libktsr.sh
 
-# Get device total amount of memory RAM
-totalram=`busybox free -m | awk '/Mem:/{print $2}'`
-
-# Get device total amount of available RAM
-availram=`busybox free -m | grep Mem: | awk '{print $7}'`
-
 fullram=$((totalram * 20 / 100))
 
 if [[ -e /sdcard/KTSR/battcurrent.log ]]; then
@@ -86,14 +80,14 @@ while true; do
   kmsg1 "--------------------------------------------------------------------------"
   battery
   sleep 300
-  elif [ $bstatus == "Charging" ]; then
+  elif [ "$bstatus" == "Charging" ]; then
   . $MODPATH/libs/libktsr.sh
   kmsg1 "-----------------------------------------------------------------------------------------------------------"
   kmsg  "Device is charging, trying to reduce battery cycles by applying battery profile and extending check time..."
   kmsg1 "-----------------------------------------------------------------------------------------------------------"
   battery
   sleep 300
-  elif [ $gbpercentage < "20" && $bstatus == "Discharging" ]; then
+  elif [ "$gbpercentage" -lt "20" && "$bstatus" == "Discharging" ]; then
   . $MODPATH/libs/libktsr.sh
   kmsg1 "----------------------------------------------------------------------------------------------------------------"
   kmsg  "Device battery is lower than 20%, applied battery profile and extended check time to reduce battery comsumption."
@@ -110,20 +104,20 @@ while true; do
  fi
 done
 
-if [[ $fullram >= $availram ]]; then
+if [[ $availram -lt $fullram ]]; then
 kmsg1 "----------------------------------------------------------------------"
 kmsg  "Device ram is almost fully in use, dropping caches to free some RAM..."
 kmsg1 "----------------------------------------------------------------------"
 write "$vm/drop_caches" "3"
 fi
 
-if [[ $gbtemp >= "46" && $bstatus == "Charging" ]]; then
+if [[ $gbtemp -gt "46" && $bstatus == "Charging" ]]; then
 kmsg1 "---------------------------------------------------------------------------------"
 kmsg  "Device is hot and charging, reducing max constant current to avoid overheating..."
 kmsg1 "---------------------------------------------------------------------------------"
 thermal_current
 
-elif [[ $gbtemp <= "40" && $bstatus == "Charging" ]]; then
+elif [[ $gbtemp -lt "40" && $bstatus == "Charging" ]]; then
 kmsg1 "-----------------------------------------------------------------------"
 kmsg  "Device is less hot now, changing max constant current to default now..."
 kmsg1 "-----------------------------------------------------------------------"
