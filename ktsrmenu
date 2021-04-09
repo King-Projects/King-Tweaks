@@ -26,13 +26,16 @@ fi
 
 clear
 echo ""
-echo "***************************"
-echo "* KTSR Profile Controller *"
-echo "***************************"
+echo "**********************************"
+echo "* KTSR (Alt.) Profile Controller *"
+echo "**********************"***********"
 echo ""
 echo "[*] Profile active: $kts_profile"
 echo ""
-sleep 2.5
+sleep 1.6
+echo "[*] Available profiles:"
+echo ""
+sleep 1.2
 echo "[1] Automatic: Change your profile automatically based on specific circumstancies and do additional tweaking for a better user-experience."
 echo ""
 sleep 2
@@ -49,7 +52,7 @@ echo "[5] Gaming: Recommended to gamers who want the best performance possible w
 echo ""
 sleep 3.5
 PS3="[*] Select the desired option: "
-select opt in "1" "2" "3" "4" "5" "Exit"; do
+select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Exit"; do
 		case ${opt} in
 			"1")
 				setprop persist.kingtweaks.mode 1;
@@ -76,7 +79,7 @@ select opt in "1" "2" "3" "4" "5" "Exit"; do
 						;;
 						
 						*)
-						echo "[!] Unexpected response, exiting..."; clear; exit 1
+						echo "[!] Unexpected response, exiting..."; sleep 0.8; clear; exit 1
 						;;
 						esac
 done
