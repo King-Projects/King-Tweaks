@@ -875,9 +875,9 @@ kmsg1 "                                          EXECUTION DONE IN $exectime SEC
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "----------------------------------------------------------------------------"
-kmsg1 "Module Creator: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg1 "Telegram Channel: https://t.me/kingprojectz"
-kmsg1 "Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg "Telegram Channel: https://t.me/kingprojectz"
+kmsg "Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg1 "----------------------------------------------------------------------------"
 }
 # Automatic Profile
@@ -1548,9 +1548,9 @@ kmsg1 "                                          EXECUTION DONE IN $exectime SEC
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "----------------------------------------------------------------------------"
-kmsg1 "Module Creator: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg1 "Telegram Channel: https://t.me/kingprojectz"
-kmsg1 "Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg "Telegram Channel: https://t.me/kingprojectz"
+kmsg "Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg1 "----------------------------------------------------------------------------"
 }
 # Extreme Profile
@@ -2242,9 +2242,9 @@ kmsg1 "                                          EXECUTION DONE IN $exectime SEC
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "----------------------------------------------------------------------------"
-kmsg1 "Module Creator: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg1 "Telegram Channel: https://t.me/kingprojectz"
-kmsg1 "Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg "Telegram Channel: https://t.me/kingprojectz"
+kmsg "Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg1 "----------------------------------------------------------------------------"
 }
 # Battery Profile
@@ -2946,9 +2946,9 @@ kmsg1 "                                          EXECUTION DONE IN $exectime SEC
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "----------------------------------------------------------------------------"
-kmsg1 "Module Creator: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg1 "Telegram Channel: https://t.me/kingprojectz"
-kmsg1 "Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg "Telegram Channel: https://t.me/kingprojectz"
+kmsg "Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg1 "----------------------------------------------------------------------------"
 }
 # Gaming Profile
@@ -3642,8 +3642,8 @@ kmsg1 "                                          EXECUTION DONE IN $exectime SEC
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
 kmsg1 "----------------------------------------------------------------------------"
-kmsg1 "Module Creator: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg1 "Telegram Channel: https://t.me/kingprojectz"
-kmsg1 "Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg "Telegram Channel: https://t.me/kingprojectz"
+kmsg "Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg1 "----------------------------------------------------------------------------"
 }

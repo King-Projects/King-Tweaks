@@ -1,0 +1,82 @@
+#!/system/bin/sh
+# KTSR by pedrozzz0 @ GitHub
+
+kts_mode=$(getprop persist.kingtweaks.mode)
+
+if [[ "$kts_mode" == "1" ]]
+then
+kts_profile=Automatic
+
+elif [[ "$kts_mode" == "2" ]]
+then
+kts_profile=Battery
+        	
+elif [[ "$kts_mode" == "3" ]]
+then
+kts_profile=Balanced
+        	
+elif [[ "$kts_mode" == "4" ]]
+then
+kts_profile=Extreme
+
+elif [[ "$kts_mode" == "5" ]]
+then
+kts_profile=Gaming
+fi
+
+clear
+echo ""
+echo "***************************"
+echo "* KTSR Profile Controller *"
+echo "***************************"
+echo ""
+echo "[*] Profile active: $kts_profile"
+echo ""
+sleep 2.5
+echo "[1] Automatic: Change your profile automatically based on specific circumstancies and do additional tweaking for a better user-experience."
+echo ""
+sleep 2
+echo "[2] Battery: Reduce power draw to reduce battery drain, ensuring a juicy battery life."
+echo ""
+sleep 1.5
+echo "[3] Balanced: Balanced between battery life and performance, perfect to be used as daily driver."
+echo ""
+sleep 2
+echo "[4] Extreme: Tweaks both CPU / GPU and more for less throttling, maintaining a consistent performance. May drain more battery also. Recommended to benchmarking / heavy apps."
+echo ""
+sleep 2.5
+echo "[5] Gaming: Recommended to gamers who want the best performance possible while playing, with almost zero throttling, tweaks both CPU / GPU and more to achieve it, will probably drain a lot of battery life."
+echo ""
+sleep 3.5
+PS3="[*] Select the desired option: "
+select opt in "1" "2" "3" "4" "5" "Exit"; do
+		case ${opt} in
+			"1")
+				setprop persist.kingtweaks.mode 1;
+				;;
+				
+						"2")
+						setprop persist.kingtweaks.mode 2;
+						;;
+						
+						"3")
+						setprop persist.kingtweaks.mode 3;
+						;;
+						
+						"4")
+						setprop persist.kingtweaks.mode 4;
+						;;
+						
+						"5")
+						setprop persist.kingtweaks.mode 5;
+						;;
+						
+						"Exit")
+						exit 0
+						;;
+						
+						*)
+						echo "[!] Unexpected response, exiting..."; clear; exit 1
+						;;
+						esac
+done
