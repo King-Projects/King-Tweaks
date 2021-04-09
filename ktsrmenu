@@ -116,6 +116,7 @@ select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Optimize apps
 						else
 						echo "[!] SQLite not found, aborting..."; exit 1
                         fi
+                        ;;
                         
 						"8")
 						am start -a android.intent.action.VIEW -d https://t.me/kingprojectz;
