@@ -7,7 +7,7 @@ MODPATH=/data/adb/modules/KTSR
 . $MODPATH/libs/libktsr.sh
 
 # Check for root permissions and bail if not granted
-if [[ "`id -u`" -ne 0 ]]
+if [[ "$(id -u)" -ne 0 ]]
 then
 kmsg1 "[!] No root permissions. Exiting."
 exit 1
@@ -15,12 +15,12 @@ fi
 
 if [[ -e $KLOG ]] 
 then
-rm $KLOG
+rm "$KLOG"
 fi
 
 if [[ -d "/sdcard/KTSR" ]] 
 then
-touch $KLOG
+touch "$KLOG"
 fi
 
 boot_run_once=false
@@ -180,31 +180,31 @@ case "$kts_profile" in
    
  	. $MODPATH/libs/libktsr.sh
 
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast
      	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
          toast
          
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt
      	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
      	toastin
      	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
      	then
      	toasttr
      	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
      	then
      	toastfr
 
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
      	then
      	toastfr
 
@@ -214,31 +214,31 @@ case "$kts_profile" in
 
          automatic
          
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast1
      	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
          toast1
          
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt1
      	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
      	toastin1
      	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
      	then
      	toasttr1
      	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
      	then
      	toastfr1
 
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
      	then
      	toastfr1
 
@@ -252,31 +252,31 @@ case "$kts_profile" in
          
 	 	. $MODPATH/libs/libktsr.sh
 	 	
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast
      	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
          toast
          
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt
      	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
      	toastin
      	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
      	then
      	toasttr
      	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
      	then
      	toastfr
 
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
      	then
      	toastfr
 
@@ -287,31 +287,31 @@ case "$kts_profile" in
          killall kingauto
 	 	balanced
 
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast1
      	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
          toast1
          
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt1
      	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
      	toastin1
      	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
      	then
      	toasttr1
      	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
      	then
      	toastfr1
 
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
      	then
      	toastfr1
 
@@ -325,31 +325,31 @@ case "$kts_profile" in
             
 	 		. $MODPATH/libs/libktsr.sh
 	 		
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast
      	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
          toast
          
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt
      	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
      	toastin
      	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
      	then
      	toasttr
      	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
      	then
      	toastfr
 
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
      	then
      	toastfr
 
@@ -360,31 +360,31 @@ case "$kts_profile" in
              killall kingauto
 	 		extreme
 
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast1
      	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
          toast1
          
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt1
      	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
      	toastin1
      	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
      	then
      	toasttr1
      	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
      	then
      	toastfr1
 
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
      	then
      	toastfr1
 
@@ -398,31 +398,31 @@ case "$kts_profile" in
 
 	 			. $MODPATH/libs/libktsr.sh
 	 			
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast
      	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
          toast
          
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt
      	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
      	toastin
      	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
      	then
      	toasttr
      	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
      	then
      	toastfr
 
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
      	then
      	toastfr
 
@@ -433,31 +433,31 @@ case "$kts_profile" in
                  killall kingauto
 	 			battery
 
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast1
      	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
          toast1
          
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt1
      	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
      	toastin1
      	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
      	then
      	toasttr1
      	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
      	then
      	toastfr1
 
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
      	then
      	toastfr1
 
@@ -471,31 +471,31 @@ case "$kts_profile" in
 
 	 				. $MODPATH/libs/libktsr.sh
 	 				
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast
      	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
          toast
          
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt
      	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
      	toastin
      	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
      	then
      	toasttr
      	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
      	then
      	toastfr
 
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
      	then
      	toastfr
 
@@ -506,31 +506,31 @@ case "$kts_profile" in
                      killall kingauto
 	 				gaming
 
-         if [[ `getprop persist.sys.locale` == "en-US" ]]
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast1
      	
-     	elif [[ `getprop persist.sys.locale` == "en-GB" ]]
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
          then
          toast1
          
-     	elif [[ `getprop persist.sys.locale` == "pt-BR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
      	then
      	toastpt1
      	
-     	elif [[ `getprop persist.sys.locale` == "id-ID" ]]
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
      	then
      	toastin1
      	
-     	elif [[ `getprop persist.sys.locale` == "tr-TR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
      	then
      	toasttr1
      	
-     	elif [[ `getprop persist.sys.locale` == "fr-FR" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
      	then
      	toastfr1
 
-     	elif [[ `getprop persist.sys.locale` == "fr-CA" ]]
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
      	then
      	toastfr1
 
