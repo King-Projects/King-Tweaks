@@ -39,10 +39,10 @@ sleep 1.6
 echo "[*] Available profiles:"
 echo ""
 sleep 1.2
-echo "[1] Automatic: Change your profile automatically based on specific circumstancies and do additional tweaking for a better user-experience."
+echo "[1] Automatic: Change your profile automatically based on specific circumstances and do additional tweaking for a better user-experience."
 echo ""
 sleep 2
-echo "[2] Battery: Reduce power draw to reduce battery drain, ensuring a juicy battery life."
+echo "[2] Battery: Reduce power draw to less battery drain and energetic comsumption, ensuring a juicy battery life."
 echo ""
 sleep 1.5
 echo "[3] Balanced: Balanced between battery life and performance, perfect to be used as daily driver."
@@ -54,8 +54,14 @@ sleep 2.5
 echo "[5] Gaming: Recommended to gamers who want the best performance possible while playing, with almost zero throttling, tweaks both CPU / GPU and more to achieve it, will probably drain a lot of battery life."
 echo ""
 sleep 3.5
+echo "[6] Access our telegram channel"
+echo ""
+sleep 1.8
+echo "[7] Access our telegram group"
+echo ""
+sleep 1.8
 PS3="[*] Select the desired option: "
-select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Exit"; do
+select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Telegram Channel" "Telegram Group" "Exit"; do
 		case ${opt} in
 			"1")
 				setprop persist.kingtweaks.mode 1;
@@ -75,6 +81,14 @@ select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Exit"; do
 						
 						"5")
 						setprop persist.kingtweaks.mode 5;
+						;;
+						
+						"6")
+						am start -a android.intent.action.VIEW -d https://t.me/kingprojectz;
+						;;
+						
+						"7")
+						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion;
 						;;
 						
 						"Exit")
