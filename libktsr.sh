@@ -67,7 +67,7 @@ write() {
     fi
 
 	# Fetch the current key value
-	local curval=`cat "$1" 2> /dev/null`
+	local curval=$(cat "$1" 2> /dev/null)
 	
 	# Bail out if value is already set
 	if [[ "$curval" == "$2" ]]
@@ -225,7 +225,7 @@ SCHED_TASKS_THROUGHPUT="6"
 # Get running CPU governor    
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-CPU_GOVERNOR=`cat $cpu/scaling_governor` 
+CPU_GOVERNOR=$(cat $cpu/scaling_governor)
 done
 
 if [[ -z $adreno ]]; then
@@ -233,16 +233,16 @@ adreno=false
 fi
 
 # Get GPU minimum power level
-gpuminpl=`cat $gpu/min_pwrlevel`
+gpuminpl=$(cat $gpu/min_pwrlevel)
 
 # Get GPU maximum power level
-gpumaxpl=`cat $gpu/max_pwrlevel`
+gpumaxpl=$(cat $gpu/max_pwrlevel)
 
 # Get max CPU frequency
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-cpumxfreq=`cat $cpu/scaling_max_freq`
-cpumxfreq2=`cat $cpu/cpuinfo_max_freq`
+cpumxfreq=$(cat $cpu/scaling_max_freq)
+cpumxfreq2=$(cat $cpu/cpuinfo_max_freq)
 
 if [[ $cpumxfreq2 > $cpumxfreq ]]; then
 cpumxfreq=$cpumxfreq2
@@ -251,53 +251,53 @@ done
 
 # Get max GPU frequency (gpumx does almost the same thing)
 if [[ -e $gpu/max_gpuclk ]]; then
-gpufreq=`cat $gpu/max_gpuclk`
+gpufreq=$(cat $gpu/max_gpuclk)
 
 elif [[ -e $gpug/gpu_max_clock ]]; then
-gpufreq=`cat $gpug/gpu_max_clock`
+gpufreq=$(cat $gpug/gpu_max_clock)
 fi
 
 # Get SOC manufacturer
-mf=`getprop ro.boot.hardware`
+mf=$(getprop ro.boot.hardware)
 
 # Get device SOC
-soc=`getprop ro.board.platform`
+soc=$(getprop ro.board.platform)
 
 if [[ $soc == " " ]]; then
-soc=`getprop ro.product.board`
+soc=$(getprop ro.product.board)
 fi
 
 # Get device SDK
-sdk=`getprop ro.build.version.sdk`
+sdk=$(getprop ro.build.version.sdk)
 
 if [[ $sdk == " " ]]; then
-sdk=`getprop ro.vendor.build.version.sdk`
+sdk=$(getprop ro.vendor.build.version.sdk)
 
 elif [[ $sdk == " " ]]; then
-sdk=`getprop ro.vndk.version`
+sdk=$(getprop ro.vndk.version)
 fi
 
 # Get device architeture
-aarch=`getprop ro.product.cpu.abi | awk -F- '{print $1}'`
+aarch=$(getprop ro.product.cpu.abi | awk -F- '{print $1}')
 
 # Get android version
-arv=`getprop ro.build.version.release`
+arv=$(getprop ro.build.version.release)
 
 # Get device codename
-dcdm=`getprop ro.product.device`
+dcdm=$(getprop ro.product.device)
 
 # Variable to get magisk version
-magisk=`magisk -c`
+magisk=$(magisk -c)
 
 # Detect if we're running on a exynos SOC
-if [[ `$mf | grep 'samsungexynos'` || `$soc | grep 'universal'` ]]; then
+if [[ $(mf | grep 'samsungexynos') ]] || [[ $(soc | grep 'universal') ]]; then
 exynos=true
 else
 exynos=false
 fi
 
 # Detect if we're running on a mediatek SOC
-if [[ `$soc | grep 'mt'` ]]; then
+if [[ $(soc | grep 'mt') ]]; then
 mtk=true
 else
 mtk=false
@@ -306,10 +306,10 @@ fi
 # Detect CPU scheduling type
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-if [[ `cat $cpu/scaling_available_governors | grep 'sched'` ]]; then
+if [[ $(cat $cpu/scaling_available_governors | grep 'sched') ]]; then
 cpusched=EAS
 
-elif [[ `cat $cpu/scaling_available_governors | grep 'interactive'` ]]; then
+elif [[ $(cat $cpu/scaling_available_governors | grep 'interactive') ]]; then
 cpusched=HMP
 
 else
@@ -317,76 +317,76 @@ cpusched=Unknown
 fi
 done
 
-# Get kernel name
-kname=`uname -r`
+# Get kernel name and version
+kname=$(uname -r)
 
 # Get kernel build date
-kbdd=`uname -v | awk '{print $5, $6, $7, $8, $9, $10}'`
+kbdd=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 
 # Get device total amount of memory RAM
-totalram=`busybox free -m | awk '/Mem:/{print $2}'`
+totalram=$(busybox free -m | awk '/Mem:/{print $2}')
 
 # Get device total amount of available RAM
-availram=`busybox free -m | grep Mem: | awk '{print $7}'`
+availram=$(busybox free -m | grep Mem: | awk '{print $7}')
 
 # Get battery actual capacity
 if [[ -e /sys/class/power_supply/battery/capacity ]]; then
-gbpercentage=`cat /sys/class/power_supply/battery/capacity`
+gbpercentage=$(cat /sys/class/power_supply/battery/capacity)
 
 else
-gbpercentage=`dumpsys battery | awk '/level/{print $2}'`
+gbpercentage=$(dumpsys battery | awk '/level/{print $2}')
 fi
 
 # Get KTSR version
-gbversion=`cat $MODPATH/module.prop | grep version= | sed "s/version=//"`
+gbversion=$(cat $MODPATH/module.prop | grep version= | sed "s/version=//")
 
 # Get KTSR build type
-gbtype=`cat $MODPATH/ktsr.prop | grep buildtype= | sed "s/buildtype=//"`
+gbtype=$(cat $MODPATH/ktsr.prop | grep buildtype= | sed "s/buildtype=//")
 
 # Get KTSR build date
-gbdate=`cat $MODPATH/ktsr.prop | grep builddate= | sed "s/builddate=//"`
+gbdate=$(cat $MODPATH/ktsr.prop | grep builddate= | sed "s/builddate=//")
 
 # Get KTSR build codename
-gbcodename=`cat $MODPATH/ktsr.prop | grep codename= | sed "s/codename=//"`
+gbcodename=$(cat $MODPATH/ktsr.prop | grep codename= | sed "s/codename=//")
 
 # Get battery temperature
 if [[ -e /sys/class/power_supply/battery/temp ]]
 then
-btemp=`cat /sys/class/power_supply/battery/temp`
+btemp=$(cat /sys/class/power_supply/battery/temp)
 
 elif [[ -e /sys/class/power_supply/battery/batt_temp ]]
 then 
-btemp=`cat /sys/class/power_supply/battery/batt_temp`
+btemp=$(cat /sys/class/power_supply/battery/batt_temp)
 
 else 
-btemp=`dumpsys battery | awk '/temperature/{print $2}'`
+btemp=$(dumpsys battery | awk '/temperature/{print $2}')
 fi
 
 # Get GPU info
-gpuinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,`
+gpuinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 
 # Get drivers info
-driversinfo=`dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,`
+driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
 
 # Ignore the decimal
 gbtemp=$((btemp / 10))
 
 # Get display FPS 
-df=`dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .`
+df=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
 
 if [[ -z $df ]]; then
-df=`dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .`
+df=$(dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .)
 
 elif [[ -z $df ]]; then
-df=`dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .`
+df=$(dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .)
 fi
 
 # Get battery health
 if [[ -e /sys/class/power_supply/battery/health ]]; then
-gbhealth=`cat /sys/class/power_supply/battery/health`
+gbhealth=$(cat /sys/class/power_supply/battery/health)
 
 else
-gbhealth=`dumpsys battery | awk '/health/{print $2}'`
+gbhealth=$(dumpsys battery | awk '/health/{print $2}')
 fi
 
 if [[ $gbhealth == "1" ]]; then
@@ -416,10 +416,10 @@ fi
 
 # Get battery status
 if [[ -e /sys/class/power_supply/battery/status ]]; then
-gbstatus=`cat /sys/class/power_supply/battery/status`
+gbstatus=$(cat /sys/class/power_supply/battery/status)
 
 else
-gbstatus=`dumpsys battery | awk '/status/{print $2}'`
+gbstatus=$(dumpsys battery | awk '/status/{print $2}')
 fi
 
 if [[ $gbstatus == "1" ]]; then
@@ -457,7 +457,7 @@ stune=/dev/stune/
 
 # Latency Profile
 latency() {
-     	init=`date +%s`
+     	init=$(date +%s)
      	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
@@ -639,6 +639,36 @@ write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# Uclamp Tweaks
+if [[ -e "${cpuset}top-app/uclamp.max" ]];
+then
+sysctl -w kernel.sched_util_clamp_min_rt_default=32
+sysctl -w kernel.sched_util_clamp_min=128
+
+write "${cpuset}top-app/uclamp.max" "max"
+write "${cpuset}top-app/uclamp.min" "20"
+write "${cpuset}top-app/uclamp.boosted" "1"
+write "${cpuset}top-app/uclamp.latency_sensitive" "1"
+
+write "${cpuset}foreground/uclamp.max" "max"
+write "${cpuset}foreground/uclamp.min" "10"
+write "${cpuset}foreground/uclamp.boosted" "0"
+write "${cpuset}foreground/uclamp.latency_sensitive" "0"
+
+write "${cpuset}background/uclamp.max" "50"
+write "${cpuset}background/uclamp.min" "0"
+write "${cpuset}background/uclamp.boosted" "0"
+write "${cpuset}background/uclamp.latency_sensitive" "0"
+
+write "${cpuset}system-background/uclamp.max" "40"
+write "${cpuset}system-background/uclamp.min" "0"
+write "${cpuset}system-background/uclamp.boosted" "0"
+write "${cpuset}system-background/uclamp.latency_sensitive" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLIED UCLAMP TWEAKS.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -867,7 +897,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-exit=`date +%s`
+exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -896,7 +926,7 @@ kmsg1 "-------------------------------------------------------------------------
 }
 # Balanced Profile
 balanced() {
-         init=`date +%s`
+         init=$(date +%s)
      	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
@@ -1187,6 +1217,36 @@ write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# Uclamp Tweaks
+if [[ -e "${cpuset}top-app/uclamp.max" ]];
+then
+sysctl -w kernel.sched_util_clamp_min_rt_default=16
+sysctl -w kernel.sched_util_clamp_min=128
+
+write "${cpuset}top-app/uclamp.max" "max"
+write "${cpuset}top-app/uclamp.min" "10"
+write "${cpuset}top-app/uclamp.boosted" "1"
+write "${cpuset}top-app/uclamp.latency_sensitive" "1"
+
+write "${cpuset}foreground/uclamp.max" "max"
+write "${cpuset}foreground/uclamp.min" "5"
+write "${cpuset}foreground/uclamp.boosted" "0"
+write "${cpuset}foreground/uclamp.latency_sensitive" "0"
+
+write "${cpuset}background/uclamp.max" "50"
+write "${cpuset}background/uclamp.min" "0"
+write "${cpuset}background/uclamp.boosted" "0"
+write "${cpuset}background/uclamp.latency_sensitive" "0"
+
+write "${cpuset}system-background/uclamp.max" "40"
+write "${cpuset}system-background/uclamp.min" "0"
+write "${cpuset}system-background/uclamp.boosted" "0"
+write "${cpuset}system-background/uclamp.latency_sensitive" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLIED UCLAMP TWEAKS.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -1540,7 +1600,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-exit=`date +%s`
+exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1555,7 +1615,7 @@ kmsg1 "-------------------------------------------------------------------------
 }
 # Extreme Profile
 extreme() {
-	init=`date +%s`
+	init=$(date +%s)
      	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
@@ -1864,6 +1924,36 @@ write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# Uclamp Tweaks
+if [[ -e "${cpuset}top-app/uclamp.max" ]];
+then
+sysctl -w kernel.sched_util_clamp_min_rt_default=64
+sysctl -w kernel.sched_util_clamp_min=128
+
+write "${cpuset}top-app/uclamp.max" "max"
+write "${cpuset}top-app/uclamp.min" "max"
+write "${cpuset}top-app/uclamp.boosted" "1"
+write "${cpuset}top-app/uclamp.latency_sensitive" "1"
+
+write "${cpuset}foreground/uclamp.max" "max"
+write "${cpuset}foreground/uclamp.min" "max"
+write "${cpuset}foreground/uclamp.boosted" "1"
+write "${cpuset}foreground/uclamp.latency_sensitive" "1"
+
+write "${cpuset}background/uclamp.max" "50"
+write "${cpuset}background/uclamp.min" "0"
+write "${cpuset}background/uclamp.boosted" "0"
+write "${cpuset}background/uclamp.latency_sensitive" "0"
+
+write "${cpuset}system-background/uclamp.max" "40"
+write "${cpuset}system-background/uclamp.min" "0"
+write "${cpuset}system-background/uclamp.boosted" "0"
+write "${cpuset}system-background/uclamp.latency_sensitive" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLIED UCLAMP TWEAKS.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2234,7 +2324,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-exit=`date +%s`
+exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2249,7 +2339,7 @@ kmsg1 "-------------------------------------------------------------------------
 }
 # Battery Profile
 battery() {
-	init=`date +%s`
+	init=$(date +%s)
      	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
@@ -2568,6 +2658,36 @@ write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                           "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# Uclamp Tweaks
+if [[ -e "${cpuset}top-app/uclamp.max" ]];
+then
+sysctl -w kernel.sched_util_clamp_min_rt_default=16
+sysctl -w kernel.sched_util_clamp_min=128
+
+write "${cpuset}top-app/uclamp.max" "max"
+write "${cpuset}top-app/uclamp.min" "5"
+write "${cpuset}top-app/uclamp.boosted" "1"
+write "${cpuset}top-app/uclamp.latency_sensitive" "1"
+
+write "${cpuset}foreground/uclamp.max" "max"
+write "${cpuset}foreground/uclamp.min" "0"
+write "${cpuset}foreground/uclamp.boosted" "0"
+write "${cpuset}foreground/uclamp.latency_sensitive" "0"
+
+write "${cpuset}background/uclamp.max" "50"
+write "${cpuset}background/uclamp.min" "0"
+write "${cpuset}background/uclamp.boosted" "0"
+write "${cpuset}background/uclamp.latency_sensitive" "0"
+
+write "${cpuset}system-background/uclamp.max" "40"
+write "${cpuset}system-background/uclamp.min" "0"
+write "${cpuset}system-background/uclamp.boosted" "0"
+write "${cpuset}system-background/uclamp.latency_sensitive" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLIED UCLAMP TWEAKS.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -2938,7 +3058,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-exit=`date +%s`
+exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -2953,7 +3073,7 @@ kmsg1 "-------------------------------------------------------------------------
 }
 # Gaming Profile
 gaming() {
-	init=`date +%s`
+	init=$(date +%s)
      	
 kmsg1 "----------------------------------------------------- Info -------------------------------------------------------------------------------------------------"
 kmsg1 "                                            🕛 Date of execution: $(date)                                                                                   " 
@@ -3264,6 +3384,36 @@ write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          APPLIED SCHEDTUNE TWEAKS.                                                                        "
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+fi
+
+# Uclamp Tweaks
+if [[ -e "${cpuset}top-app/uclamp.max" ]];
+then
+sysctl -w kernel.sched_util_clamp_min_rt_default=64
+sysctl -w kernel.sched_util_clamp_min=128
+
+write "${cpuset}top-app/uclamp.max" "max"
+write "${cpuset}top-app/uclamp.min" "max"
+write "${cpuset}top-app/uclamp.boosted" "1"
+write "${cpuset}top-app/uclamp.latency_sensitive" "1"
+
+write "${cpuset}foreground/uclamp.max" "max"
+write "${cpuset}foreground/uclamp.min" "max"
+write "${cpuset}foreground/uclamp.boosted" "1"
+write "${cpuset}foreground/uclamp.latency_sensitive" "1"
+
+write "${cpuset}background/uclamp.max" "50"
+write "${cpuset}background/uclamp.min" "0"
+write "${cpuset}background/uclamp.boosted" "0"
+write "${cpuset}background/uclamp.latency_sensitive" "0"
+
+write "${cpuset}system-background/uclamp.max" "40"
+write "${cpuset}system-background/uclamp.min" "0"
+write "${cpuset}system-background/uclamp.boosted" "0"
+write "${cpuset}system-background/uclamp.latency_sensitive" "0"
+kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg1 "                                          APPLIED UCLAMP TWEAKS.                                                                           "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 fi
 
@@ -3634,7 +3784,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          END OF EXECUTION: $(date)                                                                              "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-exit=`date +%s`
+exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
