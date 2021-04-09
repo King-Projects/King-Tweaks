@@ -58,23 +58,23 @@ PS3="[*] Select the desired option: "
 select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Exit"; do
 		case ${opt} in
 			"1")
-				setprop persist.kingtweaks.mode 1; clear
+				setprop persist.kingtweaks.mode 1;
 				;;
 				
 						"2")
-						setprop persist.kingtweaks.mode 2; clear
+						setprop persist.kingtweaks.mode 2;
 						;;
 						
 						"3")
-						setprop persist.kingtweaks.mode 3; clear
+						setprop persist.kingtweaks.mode 3;
 						;;
 						
 						"4")
-						setprop persist.kingtweaks.mode 4; clear
+						setprop persist.kingtweaks.mode 4;
 						;;
 						
 						"5")
-						setprop persist.kingtweaks.mode 5; clear
+						setprop persist.kingtweaks.mode 5;
 						;;
 						
 						"Exit")
@@ -82,7 +82,7 @@ select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Exit"; do
 						;;
 						
 						*)
-						echo "[!] Unexpected response, exiting..."; sleep 1; clear; exit 1
+						echo "[!] Unexpected response, exiting..."; sleep 1.2; clear; exit 1
 						;;
 						esac
 done
