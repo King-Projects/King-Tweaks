@@ -6,7 +6,7 @@ MODPATH=/data/adb/modules/KTSR
 # Load libraries
 . $MODPATH/libs/libktsr.sh
 
-fullram=`expr $totalram * 20 / 100`
+fullram=$((totalram * 20 / 100))
 
 if [[ -e /sdcard/KTSR/battcurrent.log ]]; then
 rm /sdcard/KTSR/battcurrent.log
@@ -104,7 +104,7 @@ while true; do
  fi
 done
 
-if [[ $availram <= $fullram ]]; then
+if [[ $fullram >= $availram ]]; then
 kmsg1 "----------------------------------------------------------------------"
 kmsg  "Device ram is almost fully in use, dropping caches to free some RAM..."
 kmsg1 "----------------------------------------------------------------------"
@@ -116,7 +116,6 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg  "Device is hot and charging, reducing max constant current to avoid overheating..."
 kmsg1 "---------------------------------------------------------------------------------"
 thermal_current
-fi
 
 elif [[ $gbtemp <= "40" && $bstatus == "Charging" ]]; then
 kmsg1 "-----------------------------------------------------------------------"
