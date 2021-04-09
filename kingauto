@@ -6,6 +6,8 @@ MODPATH=/data/adb/modules/KTSR
 # Load libraries
 . $MODPATH/libs/libktsr.sh
 
+fullram=`expr $totalram * 20 / 100`
+
 if [[ -e /sdcard/KTSR/battcurrent.log ]]; then
 rm /sdcard/KTSR/battcurrent.log
 fi
@@ -48,7 +50,6 @@ write "/sys/class/qc_battery/restrict_cur" "1800000"
 
 save_current
 
-usedram=$((totalram * 20 / 100))
 (
 while true; do
   if [ $(top -n 1 -d 1 | head -n 12 | grep -o -e 'netease' -e 'linegames' -e 'kleientertainment' -e 'agaming' -e 'generagames' -e 'chucklefish' -e 'astragon' -e 't2kgames' -e 't2ksports' -e 'turner' -e 'uplayonline' -e 'pubg' -e 'dreamotion' -e 'snailgames' -e 'dexintgames' -e 'haegin' -e 'panzerdog' -e 'igg' -e 'gtarcade' -e 'nexon' -e 'mame4droid' -e 'kakaogames' -e 'telltalegames' -e 'bandainamco' -e 'seleuco' -e 'innersloth' -e 'kiloo' -e 'imaginalis' -e 'refuelgames' -e 'scottgames' -e 'clickteam' -e 'minigames' -e 'headupgames' -e 'mobigames' -e 'callofduty' -e 'ubisoft' -e 'ppsspp' -e 'cf' -e 'feralinteractive' -e 'riotgames' -e 'joymax' -e 'deadeffect' -e 'wolvesinteractive' -e 'miniclip' -e 'playgendary' -e 'mojang' -e 'miHoYo' -e 'nekki' -e 'gamedevltd' -e 'netmarble' -e 'eyougame' -e 'yoozoogames' -e 'gameloft' -e 'garena' -e 'moontoon' -e 'legends' -e 'wildrift' -e 'activision' -e 'freefireth' -e 'konami' -e 'gamevil' -e 'battle' -e 'impact' -e 'gameloft' -e 'ppsspp' -e 'madfingergames' -e 'supercell' -e 'asphalt' -e 'ngame' -e 'fifamobile' -e 'blackdesertm' -e 'rockstargames' -e 'dhlove' -e 'criticalops' -e 'standoff2' -e 'firsttouchgames' | head -n 1) ]; then
@@ -103,7 +104,7 @@ while true; do
  fi
 done
 
-if [[ $availram <= "$usedram" ]]; then
+if [[ $availram <= $fullram ]]; then
 kmsg1 "----------------------------------------------------------------------"
 kmsg  "Device ram is almost fully in use, dropping caches to free some RAM..."
 kmsg1 "----------------------------------------------------------------------"
@@ -115,6 +116,7 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg  "Device is hot and charging, reducing max constant current to avoid overheating..."
 kmsg1 "---------------------------------------------------------------------------------"
 thermal_current
+fi
 
 elif [[ $gbtemp <= "40" && $bstatus == "Charging" ]]; then
 kmsg1 "-----------------------------------------------------------------------"
