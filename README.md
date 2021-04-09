@@ -26,6 +26,10 @@ Thanks to [Dan](https://forum.xda-developers.com/m/paget96.5514152/) by his [LSp
 
 Thanks to [Matt Yang](https://github.com/yc9559)
 
+Thanks to [HafizZiq](https://github.com/HafizZiq)
+
+Thanks to [darkhz](https://github.com/darkhz)
+
 And everyone that supports my projects. ❤️
 
 # Telegram
