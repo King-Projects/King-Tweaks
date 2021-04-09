@@ -6,6 +6,12 @@ MODPATH=/data/adb/modules/KTSR
 # Load libraries
 . $MODPATH/libs/libktsr.sh
 
+# Get device total amount of memory RAM
+totalram=`busybox free -m | awk '/Mem:/{print $2}'`
+
+# Get device total amount of available RAM
+availram=`busybox free -m | grep Mem: | awk '{print $7}'`
+
 fullram=$((totalram * 20 / 100))
 
 if [[ -e /sdcard/KTSR/battcurrent.log ]]; then
