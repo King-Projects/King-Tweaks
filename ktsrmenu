@@ -54,14 +54,20 @@ sleep 2.5
 echo "[5] Gaming: Recommended to gamers who want the best performance possible while playing, with almost zero throttling, tweaks both CPU / GPU and more to achieve it, will probably drain a lot of battery life."
 echo ""
 sleep 3.5
-echo "[6] Access our telegram channel"
+echo "[6] Optimize apps package"
+echo ""
+sleep 1.5
+echo "[7] Optimize databases"
+echo ""
+sleep 1.2
+echo "[8] Access our telegram channel"
 echo ""
 sleep 1.8
-echo "[7] Access our telegram group"
+echo "[9] Access our telegram group"
 echo ""
 sleep 1.8
 PS3="[*] Select the desired option: "
-select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Telegram Channel" "Telegram Group" "Exit"; do
+select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Optimize apps" "Optimize databases" "Telegram Channel" "Telegram Group" "Exit"; do
 		case ${opt} in
 			"1")
 				setprop persist.kingtweaks.mode 1;
@@ -84,10 +90,38 @@ select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Telegram Chan
 						;;
 						
 						"6")
-						am start -a android.intent.action.VIEW -d https://t.me/kingprojectz;
+						cmd package bg-dexopt-job;
 						;;
 						
 						"7")
+						if [[ $(find /system -name "sqlite3" -type f) ]]; then
+						echo "[*] Optimizing..."
+						for i in $(find /data -iname "*.db"); do
+                        sqlite3 $i 'VACUUM;'
+                        resVac=$?
+                        if [[ $resVac == 0 ]]; then
+                        resVac="SUCCESS"
+                        else
+                        resVac="FAILED(ERRCODE)-$resVac"
+                        fi
+                        sqlite3 $i 'REINDEX;'
+                        resIndex=$?
+                        if [[ $resIndex == 0 ]]; then
+                        resIndex="SUCCESS"
+                        else
+                        resIndex="FAILED(ERRCODE)-$resIndex"
+                        fi
+                        echo -e "Database $i: VACUUM=$resVac REINDEX=$resIndex" >> /sdcard/KTSR/dbopt.log
+                        done
+						else
+						echo "[!] SQLite not found, aborting..."; exit 1
+                        fi
+                        
+						"8")
+						am start -a android.intent.action.VIEW -d https://t.me/kingprojectz;
+						;;
+						
+						"9")
 						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion;
 						;;
 						
@@ -96,7 +130,7 @@ select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Telegram Chan
 						;;
 						
 						*)
-						echo "[!] Unexpected response, exiting..."; sleep 1.2; clear; exit 1
+						echo "[!] Unexpected response, aborting..."; sleep 1.2; clear; exit 1
 						;;
 						esac
 done
