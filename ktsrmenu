@@ -117,7 +117,7 @@ read option
                         echo -e "Database $i: VACUUM=$resVac REINDEX=$resIndex" >> /sdcard/KTSR/dbopt.log
                         done
 						else
-						echo "[!] SQLite not found, aborting..."; exit 1
+						echo "[!] SQLite not found, aborting...";
                         fi
                         ;;
 						
@@ -126,10 +126,10 @@ read option
 						;;
 						
 						"0")
-						echo "[:)] See ya soon!"; break
+						echo "[:)] See ya soon!"
 						;;
 						
 						*)
-						echo "[!] Unexpected response, aborting..."; sleep 0.8; clear; break
+						echo "[!] Unexpected response, aborting...";
 						;;
 						esac
