@@ -67,44 +67,44 @@ echo "[9] Access our telegram group"
 echo ""
 sleep 1.8
 PS3="[*] Select the desired option: "
-select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Optimize apps" "Optimize databases" "Telegram Channel" "Telegram Group" "Exit"; do
-		case ${opt} in
+select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Optimize apps" "Optimize databases" "Telegram group" "Exit"; do
+		case $opt in
 			"1")
-				setprop persist.kingtweaks.mode 1;
+				setprop persist.kingtweaks.mode 1
 				;;
 				
 						"2")
-						setprop persist.kingtweaks.mode 2;
+						setprop persist.kingtweaks.mode 2
 						;;
 						
 						"3")
-						setprop persist.kingtweaks.mode 3;
+						setprop persist.kingtweaks.mode 3
 						;;
 						
 						"4")
-						setprop persist.kingtweaks.mode 4;
+						setprop persist.kingtweaks.mode 4
 						;;
 						
 						"5")
-						setprop persist.kingtweaks.mode 5;
+						setprop persist.kingtweaks.mode 5
 						;;
 						
 						"6")
-						cmd package bg-dexopt-job;
+						cmd package bg-dexopt-job
 						;;
 						
 						"7")
 						if [[ $(find /system -name "sqlite3" -type f) ]]; then
 						echo "[*] Optimizing..."
 						for i in $(find /data -iname "*.db"); do
-                        sqlite3 $i 'VACUUM;'
+                        sqlite3 "$i" 'VACUUM;'
                         resVac=$?
                         if [[ $resVac == 0 ]]; then
                         resVac="SUCCESS"
                         else
                         resVac="FAILED(ERRCODE)-$resVac"
                         fi
-                        sqlite3 $i 'REINDEX;'
+                        sqlite3 "$i" 'REINDEX;'
                         resIndex=$?
                         if [[ $resIndex == 0 ]]; then
                         resIndex="SUCCESS"
@@ -117,13 +117,9 @@ select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Optimize apps
 						echo "[!] SQLite not found, aborting..."; exit 1
                         fi
                         ;;
-                        
-						"8")
-						am start -a android.intent.action.VIEW -d https://t.me/kingprojectz;
-						;;
 						
-						"9")
-						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion;
+						"8")
+						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
 						;;
 						
 						"Exit")
