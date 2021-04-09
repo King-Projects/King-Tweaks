@@ -67,7 +67,9 @@ echo "[9] Access our telegram group"
 echo ""
 sleep 1.8
 PS3="[*] Select the desired option: "
-select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Optimize apps" "Optimize databases" "Telegram group" "Exit"; do
+options=("Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Optimize apps" "Optimize databases" "Telegram group" "Exit")
+select opt in "${options[@]}"
+do
 		case $opt in
 			"1")
 				setprop persist.kingtweaks.mode 1
@@ -123,7 +125,7 @@ select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Optimize apps
 						;;
 						
 						"Exit")
-						exit 0
+						echo "[:)] See ya soon!"; break
 						;;
 						
 						*)
