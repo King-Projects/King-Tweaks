@@ -22,6 +22,9 @@ kts_profile=Extreme
 elif [[ "$kts_mode" == "5" ]]
 then
 kts_profile=Gaming
+
+else
+kts_profile=Unknown
 fi
 
 clear
@@ -55,23 +58,23 @@ PS3="[*] Select the desired option: "
 select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Exit"; do
 		case ${opt} in
 			"1")
-				setprop persist.kingtweaks.mode 1;
+				setprop persist.kingtweaks.mode 1; clear
 				;;
 				
 						"2")
-						setprop persist.kingtweaks.mode 2;
+						setprop persist.kingtweaks.mode 2; clear
 						;;
 						
 						"3")
-						setprop persist.kingtweaks.mode 3;
+						setprop persist.kingtweaks.mode 3; clear
 						;;
 						
 						"4")
-						setprop persist.kingtweaks.mode 4;
+						setprop persist.kingtweaks.mode 4; clear
 						;;
 						
 						"5")
-						setprop persist.kingtweaks.mode 5;
+						setprop persist.kingtweaks.mode 5; clear
 						;;
 						
 						"Exit")
@@ -79,7 +82,7 @@ select opt in "Automatic" "Battery" "Balanced" "Extreme" "Gaming" "Exit"; do
 						;;
 						
 						*)
-						echo "[!] Unexpected response, exiting..."; sleep 0.8; clear; exit 1
+						echo "[!] Unexpected response, exiting..."; sleep 1; clear; exit 1
 						;;
 						esac
 done
