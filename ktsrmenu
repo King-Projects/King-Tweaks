@@ -114,10 +114,17 @@ read option
                         else
                         resIndex="FAILED(ERRCODE)-$resIndex"
                         fi
-                        echo -e "Database $i: VACUUM=$resVac REINDEX=$resIndex" >> /sdcard/KTSR/dbopt.log
+                        sqlite3 $i 'ANALYZE;'
+                        resAnlz=$?
+                        if [ $resAnlz == 0 ]; then
+                        resAnlz="SUCCESS"
+                        else
+                        resAnlz="FAILED(ERRCODE)-$resAnlz"
+                        fi
+                        echo -e "Database $i: VACUUM=$resVac REINDEX=$resIndex ANALYZE=$resAnlz" >> /sdcard/KTSR/dbopt.log
                         done
 						else
-						echo "[!] SQLite not found, aborting...";
+						echo "[!] SQLite not found, aborting..."
                         fi
                         ;;
 						
@@ -126,10 +133,10 @@ read option
 						;;
 						
 						"0")
-						echo "[:)] See ya soon!"
+						echo "[:)] Hope that see ya soon!"
 						;;
 						
 						*)
-						echo "[!] Unexpected response, aborting...";
+						echo "[!] Unexpected response, aborting..."
 						;;
 						esac
