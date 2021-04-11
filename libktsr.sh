@@ -195,32 +195,32 @@ SCHED_TASKS_THROUGHPUT="6"
 		fi
 
     if [[ -e $gpug/gpu_governor ]]; then
-    GPU_GOVERNOR=`cat $gpug/gpu_governor`
+    GPU_GOVERNOR=$(cat $gpug/gpu_governor)
     
     elif [[ -e $gpug/governor ]]; then
-    GPU_GOVERNOR=`cat $gpug/governor`
+    GPU_GOVERNOR=$(cat $gpug/governor)
     fi
 
     if [[ -e $gpu/num_pwrlevels ]]; then
-    gpunpl=`cat $gpu/num_pwrlevels`
+    gpunpl=$(cat $gpu/num_pwrlevels)
     fi
     
-    gpumx=`cat $gpug/available_frequencies | awk -v var="$gpunpl" '{print $var}'`
+    gpumx=$(cat $gpug/available_frequencies | awk -v var="$gpunpl" '{print $var}')
     
     if [[ $gpumx != $gpufreq ]]; then
-    gpumx=`cat $gpug/available_frequencies | awk '{print $1}'`
+    gpumx=$(cat $gpug/available_frequencies | awk '{print $1}')
 
     elif [[ $gpumx != $gpufreq ]]; then
     gpumx=$gpufreq
     fi
     
-    gpumx2=`cat $gpug/gpu_freq_table | awk '{print $7}'`
+    gpumx2=$(cat $gpug/gpu_freq_table | awk '{print $7}')
     
     if [[ $gpumx2 != $gpufreq ]]; then
     gpumx2=$gpufreq
     fi
     
-    gpumin=`cat $gpug/gpu_freq_table | awk '{print $1}'`
+    gpumin=$(cat $gpug/gpu_freq_table | awk '{print $1}')
     
 # Get running CPU governor    
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
@@ -263,17 +263,17 @@ mf=$(getprop ro.boot.hardware)
 # Get device SOC
 soc=$(getprop ro.board.platform)
 
-if [[ $soc == " " ]]; then
+if [[ ! $soc == "" ]]; then
 soc=$(getprop ro.product.board)
 fi
 
 # Get device SDK
 sdk=$(getprop ro.build.version.sdk)
 
-if [[ $sdk == " " ]]; then
+if [[ ! $sdk == "" ]]; then
 sdk=$(getprop ro.vendor.build.version.sdk)
 
-elif [[ $sdk == " " ]]; then
+elif [[ ! $sdk == "" ]]; then
 sdk=$(getprop ro.vndk.version)
 fi
 

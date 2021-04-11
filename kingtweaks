@@ -13,7 +13,7 @@ kmsg1 "[!] No root permissions. Exiting."
 exit 1
 fi
 
-if [[ -e $KLOG ]] 
+if [[ -e "$KLOG" ]] 
 then
 rm "$KLOG"
 fi
@@ -169,6 +169,17 @@ renice -n -3 $(pgrep thermal-engine)
 renice -n -3 $(pgrep crtc_commit)
 renice -n -3 $(pgrep crtc_event)
 renice -n 4 $(pgrep android.gms)
+
+# Remove main script log if the size is bigger than 10 MB
+ktsrmaxsize=10000000
+
+# Do the same to dbopt log (in this case, 5 MB)
+dboptmaxsize=5000000
+
+if [[ "$(stat -t "$KLOG" | awk '{print $2}')" -eq "$maxsize" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}')" -gt "$maxsize" ]] && [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}')" -eq "$dboptmaxsize" ]] || [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}')" -gt "$dboptmaxsize" ]]; then
+rm "$KLOG"
+rm "/sdcard/KTSR/dbopt.log"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                                RENICED PROCESSES.                                                                               "
