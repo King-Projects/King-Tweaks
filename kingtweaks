@@ -285,7 +285,7 @@ case "$kts_profile" in
      	fi
 
      	# Set SELinux to permissive temporally
-     	if [[ "$slstatus" == "Enforcing" ]]; then
+     	if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
          write "/sys/fs/selinux/enforce" "0"
          fi
          
@@ -293,7 +293,7 @@ case "$kts_profile" in
 	 	balanced
 
 	 	# Set it to enforcing again
-     	if [[ "$slstatus" == "Permissive" ]]; then
+     	if [[ "$(cat /sys/fs/selinux/enforce)" == "0" ]]; then
          write "/sys/fs/selinux/enforce" "1"
          fi
          
@@ -368,7 +368,7 @@ case "$kts_profile" in
      	fi
 
      	# Set SELinux to permissive temporally
-     	if [[ "$slstatus" == "Enforcing" ]]; then
+     	if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
          write "/sys/fs/selinux/enforce" "0"
          fi
          
@@ -376,7 +376,7 @@ case "$kts_profile" in
 	 		extreme
 	 		
 	 		# Set it to enforcing again
-         	if [[ "$slstatus" == "Permissive" ]]; then
+         	if [[ "$(cat /sys/fs/selinux/enforce)" == "0" ]]; then
              write "/sys/fs/selinux/enforce" "1"
              fi
          
@@ -451,7 +451,7 @@ case "$kts_profile" in
      	fi
 
      	# Set SELinux to permissive temporally
-     	if [[ "$slstatus" == "Enforcing" ]]; then
+     	if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
          write "/sys/fs/selinux/enforce" "0"
          fi
          
@@ -459,7 +459,7 @@ case "$kts_profile" in
 	 			battery
 
 	 			# Set it to enforcing again
-             	if [[ "$slstatus" == "Permissive" ]]; then
+             	if [[ "$(cat /sys/fs/selinux/enforce)" == "0" ]]; then
                  write "/sys/fs/selinux/enforce" "1"
                  fi
          
@@ -534,7 +534,7 @@ case "$kts_profile" in
      	fi
 
      	# Set SELinux to permissive temporally
-     	if [[ "$slstatus" == "Enforcing" ]]; then
+     	if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
          write "/sys/fs/selinux/enforce" "0"
          fi
          
@@ -542,7 +542,7 @@ case "$kts_profile" in
 	 				gaming
 	 				
 	 				# Set it to enforcing again
-                 	if [[ "$slstatus" == "Permissive" ]]; then
+                 	if [[ "$(cat /sys/fs/selinux/enforce)" == "0" ]]; then
                      write "/sys/fs/selinux/enforce" "1"
                      fi
 
