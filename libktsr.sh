@@ -1952,7 +1952,7 @@ fi
 # Uclamp Tweaks
 if [[ -e "${cpuset}top-app/uclamp.max" ]];
 then
-sysctl -w kernel.sched_util_clamp_min_rt_default=64
+sysctl -w kernel.sched_util_clamp_min_rt_default=96
 sysctl -w kernel.sched_util_clamp_min=192
 
 write "${cpuset}top-app/uclamp.max" "max"
@@ -3418,7 +3418,7 @@ fi
 # Uclamp Tweaks
 if [[ -e "${cpuset}top-app/uclamp.max" ]];
 then
-sysctl -w kernel.sched_util_clamp_min_rt_default=64
+sysctl -w kernel.sched_util_clamp_min_rt_default=96
 sysctl -w kernel.sched_util_clamp_min=192
 
 write "${cpuset}top-app/uclamp.max" "max"

@@ -31,7 +31,7 @@ echo ""
 
 echo "Zipping ${blink}KTSR-v$version-$build_type-$codename${default}..."
 
-zip -r "KTSR-v$version-$build_type-$codename.zip" . -x *.git* -x *.zip -x *.yml -x C1.sh -x kingauto -x ktsrmenu -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
+zip -r "KTSR-v$version-$build_type-$codename.zip" . -x *.git* -x *.zip -x *.yml -x C1.sh -x kingauto -x ktsrmenu -x update.json -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
 
 mv "KTSR-v$version-$build_type-$codename.zip" ../out
 
