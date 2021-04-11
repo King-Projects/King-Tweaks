@@ -441,6 +441,19 @@ else
 bstatus=$gbstatus
 fi
 
+# Get busybox version
+busybv=$(busybox | awk 'NR==1{print $2}')
+
+# Get device running ROM
+dvrom=$(getprop ro.build.display.id)
+
+# Get SELinux status
+if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
+slstatus=Enforcing
+else
+slstatus=Permissive
+fi
+
 ###############################
 # Abbreviations
 ###############################
@@ -473,6 +486,7 @@ kmsg1 "                                            📲 Drivers Info: $driversin
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dcdm                                                                                                "
+kmsg1 "                                            💻 ROM: $dvrom                                                                                                  "
 kmsg1 "                                            🎞️ FPS: $df                                                                                                     "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
@@ -483,9 +497,47 @@ kmsg1 "                                            🩹 Battery Health: $bhealth
 kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
-kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                                     "
+kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                           "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
+kmsg1 "                                            🔒 SELinux Status: $slstatus                                                                                    "
+kmsg1 "                                            🧰 Busybox: $busybv                                                                                             "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/data/data/com.kerneladiutor.mod" ]]; then
+kmsg1 "----------------------------------"
+kmsg1 "[!] Kernel Adiutor Mod: Installed"                                                                       "
+kmsg1 "----------------------------------"
+fi
+
+if [[ -e "/data/data/com.grarak.kerneladiutor" ]]; then
+kmsg1 "------------------------------"
+kmsg1 "[!] Kernel Adiutor: Installed"                                                                       "
+kmsg1 "------------------------------"
+fi
+
+if [[ -e "/data/data/flar2.exkernelmanager" ]]; then
+kmsg1 "---------------------------------"
+kmsg1 "[!] EX Kernel Manager: Installed"                                                                       "
+kmsg1 "---------------------------------"
+fi
+
+if [[ -e "/data/data/com.franco.kernel" ]]; then
+kmsg1 "-------------------"
+kmsg1 "[!] FKM: Installed"                                                                       "
+kmsg1 "-------------------"
+fi
+
+if [[ -e "/data/data/com.smartpack.kernel.release" ]]; then
+kmsg1 "----------------------------------------"
+kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
+kmsg1 "----------------------------------------"
+fi
+
+if [[ -e "/data/data/com.paget96.lsandroid" ]]; then
+kmsg1 "----------------------"
+kmsg1 "[!] LSpeed: Installed"                                                                       "
+kmsg1 "----------------------"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING LATENCY PROFILE.                                                                       "
@@ -645,7 +697,7 @@ fi
 # Uclamp Tweaks
 if [[ -e "${cpuset}top-app/uclamp.max" ]];
 then
-sysctl -w kernel.sched_util_clamp_min_rt_default=32
+sysctl -w kernel.sched_util_clamp_min_rt_default=16
 sysctl -w kernel.sched_util_clamp_min=128
 
 write "${cpuset}top-app/uclamp.max" "max"
@@ -942,6 +994,7 @@ kmsg1 "                                            📲 Drivers Info: $driversin
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dcdm                                                                                                "
+kmsg1 "                                            💻 ROM: $dvrom                                                                                                  "
 kmsg1 "                                            🎞️ FPS: $df                                                                                                     "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
@@ -952,9 +1005,47 @@ kmsg1 "                                            🩹 Battery Health: $bhealth
 kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
-kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                                     "
+kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                           "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
+kmsg1 "                                            🔒 SELinux Status: $slstatus                                                                                    "
+kmsg1 "                                            🧰 Busybox: $busybv                                                                                             "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/data/data/com.kerneladiutor.mod" ]]; then
+kmsg1 "----------------------------------"
+kmsg1 "[!] Kernel Adiutor Mod: Installed"                                                                       "
+kmsg1 "----------------------------------"
+fi
+
+if [[ -e "/data/data/com.grarak.kerneladiutor" ]]; then
+kmsg1 "------------------------------"
+kmsg1 "[!] Kernel Adiutor: Installed"                                                                       "
+kmsg1 "------------------------------"
+fi
+
+if [[ -e "/data/data/flar2.exkernelmanager" ]]; then
+kmsg1 "---------------------------------"
+kmsg1 "[!] EX Kernel Manager: Installed"                                                                       "
+kmsg1 "---------------------------------"
+fi
+
+if [[ -e "/data/data/com.franco.kernel" ]]; then
+kmsg1 "-------------------"
+kmsg1 "[!] FKM: Installed"                                                                       "
+kmsg1 "-------------------"
+fi
+
+if [[ -e "/data/data/com.smartpack.kernel.release" ]]; then
+kmsg1 "----------------------------------------"
+kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
+kmsg1 "----------------------------------------"
+fi
+
+if [[ -e "/data/data/com.paget96.lsandroid" ]]; then
+kmsg1 "----------------------"
+kmsg1 "[!] LSpeed: Installed"                                                                       "
+kmsg1 "----------------------"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING BALANCED PROFILE...                                                                       "
@@ -1223,7 +1314,7 @@ fi
 # Uclamp Tweaks
 if [[ -e "${cpuset}top-app/uclamp.max" ]];
 then
-sysctl -w kernel.sched_util_clamp_min_rt_default=16
+sysctl -w kernel.sched_util_clamp_min_rt_default=32
 sysctl -w kernel.sched_util_clamp_min=128
 
 write "${cpuset}top-app/uclamp.max" "max"
@@ -1631,6 +1722,7 @@ kmsg1 "                                            📲 Drivers Info: $driversin
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dcdm                                                                                                "
+kmsg1 "                                            💻 ROM: $dvrom                                                                                                  "
 kmsg1 "                                            🎞️ FPS: $df                                                                                                     "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
@@ -1641,9 +1733,47 @@ kmsg1 "                                            🩹 Battery Health: $bhealth
 kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
-kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                                     "
+kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                           "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
+kmsg1 "                                            🔒 SELinux Status: $slstatus                                                                                    "
+kmsg1 "                                            🧰 Busybox: $busybv                                                                                             "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/data/data/com.kerneladiutor.mod" ]]; then
+kmsg1 "----------------------------------"
+kmsg1 "[!] Kernel Adiutor Mod: Installed"                                                                       "
+kmsg1 "----------------------------------"
+fi
+
+if [[ -e "/data/data/com.grarak.kerneladiutor" ]]; then
+kmsg1 "------------------------------"
+kmsg1 "[!] Kernel Adiutor: Installed"                                                                       "
+kmsg1 "------------------------------"
+fi
+
+if [[ -e "/data/data/flar2.exkernelmanager" ]]; then
+kmsg1 "---------------------------------"
+kmsg1 "[!] EX Kernel Manager: Installed"                                                                       "
+kmsg1 "---------------------------------"
+fi
+
+if [[ -e "/data/data/com.franco.kernel" ]]; then
+kmsg1 "-------------------"
+kmsg1 "[!] FKM: Installed"                                                                       "
+kmsg1 "-------------------"
+fi
+
+if [[ -e "/data/data/com.smartpack.kernel.release" ]]; then
+kmsg1 "----------------------------------------"
+kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
+kmsg1 "----------------------------------------"
+fi
+
+if [[ -e "/data/data/com.paget96.lsandroid" ]]; then
+kmsg1 "----------------------"
+kmsg1 "[!] LSpeed: Installed"                                                                       "
+kmsg1 "----------------------"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING EXTREME PROFILE...                                                                       "
@@ -1931,7 +2061,7 @@ fi
 if [[ -e "${cpuset}top-app/uclamp.max" ]];
 then
 sysctl -w kernel.sched_util_clamp_min_rt_default=64
-sysctl -w kernel.sched_util_clamp_min=128
+sysctl -w kernel.sched_util_clamp_min=192
 
 write "${cpuset}top-app/uclamp.max" "max"
 write "${cpuset}top-app/uclamp.min" "max"
@@ -2355,6 +2485,7 @@ kmsg1 "                                            📲 Drivers Info: $driversin
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dcdm                                                                                                "
+kmsg1 "                                            💻 ROM: $dvrom                                                                                                  "
 kmsg1 "                                            🎞️ FPS: $df                                                                                                     "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
@@ -2365,9 +2496,47 @@ kmsg1 "                                            🩹 Battery Health: $bhealth
 kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
-kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                                     "
+kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                           "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
+kmsg1 "                                            🔒 SELinux Status: $slstatus                                                                                    "
+kmsg1 "                                            🧰 Busybox: $busybv                                                                                             "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/data/data/com.kerneladiutor.mod" ]]; then
+kmsg1 "----------------------------------"
+kmsg1 "[!] Kernel Adiutor Mod: Installed"                                                                       "
+kmsg1 "----------------------------------"
+fi
+
+if [[ -e "/data/data/com.grarak.kerneladiutor" ]]; then
+kmsg1 "------------------------------"
+kmsg1 "[!] Kernel Adiutor: Installed"                                                                       "
+kmsg1 "------------------------------"
+fi
+
+if [[ -e "/data/data/flar2.exkernelmanager" ]]; then
+kmsg1 "---------------------------------"
+kmsg1 "[!] EX Kernel Manager: Installed"                                                                       "
+kmsg1 "---------------------------------"
+fi
+
+if [[ -e "/data/data/com.franco.kernel" ]]; then
+kmsg1 "-------------------"
+kmsg1 "[!] FKM: Installed"                                                                       "
+kmsg1 "-------------------"
+fi
+
+if [[ -e "/data/data/com.smartpack.kernel.release" ]]; then
+kmsg1 "----------------------------------------"
+kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
+kmsg1 "----------------------------------------"
+fi
+
+if [[ -e "/data/data/com.paget96.lsandroid" ]]; then
+kmsg1 "----------------------"
+kmsg1 "[!] LSpeed: Installed"                                                                       "
+kmsg1 "----------------------"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING BATTERY PROFILE...                                                                       "
@@ -3089,6 +3258,7 @@ kmsg1 "                                            📲 Drivers Info: $driversin
 kmsg1 "                                            ⛏️ GPU Governor: $GPU_GOVERNOR                                                                                  "
 kmsg1 "                                            🅰️ndroid Version: $arv                                                                                          "
 kmsg1 "                                            📱 Device: $dcdm                                                                                                "
+kmsg1 "                                            💻 ROM: $dvrom                                                                                                  "
 kmsg1 "                                            🎞️ FPS: $df                                                                                                     "
 kmsg1 "                                            👑 KTSR Version: $gbversion                                                                                     "
 kmsg1 "                                            💭 KTSR Codename: $gbcodename                                                                                   "
@@ -3099,9 +3269,47 @@ kmsg1 "                                            🩹 Battery Health: $bhealth
 kmsg1 "                                            🔩 Battery Status: $bstatus                                                                                     "
 kmsg1 "                                            🌡️ Battery Temperature: $gbtemp°C                                                                               "
 kmsg1 "                                            💾 Device RAM: $totalram MB                                                                                     "
-kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                                     "
+kmsg1 "                                            📁 Device Available RAM: $availram MB                                                                           "
 kmsg1 "                                            👺 Magisk: $magisk                                                                                              "
+kmsg1 "                                            🔒 SELinux Status: $slstatus                                                                                    "
+kmsg1 "                                            🧰 Busybox: $busybv                                                                                             "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
+if [[ -e "/data/data/com.kerneladiutor.mod" ]]; then
+kmsg1 "----------------------------------"
+kmsg1 "[!] Kernel Adiutor Mod: Installed"                                                                       "
+kmsg1 "----------------------------------"
+fi
+
+if [[ -e "/data/data/com.grarak.kerneladiutor" ]]; then
+kmsg1 "------------------------------"
+kmsg1 "[!] Kernel Adiutor: Installed"                                                                       "
+kmsg1 "------------------------------"
+fi
+
+if [[ -e "/data/data/flar2.exkernelmanager" ]]; then
+kmsg1 "---------------------------------"
+kmsg1 "[!] EX Kernel Manager: Installed"                                                                       "
+kmsg1 "---------------------------------"
+fi
+
+if [[ -e "/data/data/com.franco.kernel" ]]; then
+kmsg1 "-------------------"
+kmsg1 "[!] FKM: Installed"                                                                       "
+kmsg1 "-------------------"
+fi
+
+if [[ -e "/data/data/com.smartpack.kernel.release" ]]; then
+kmsg1 "----------------------------------------"
+kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
+kmsg1 "----------------------------------------"
+fi
+
+if [[ -e "/data/data/com.paget96.lsandroid" ]]; then
+kmsg1 "----------------------"
+kmsg1 "[!] LSpeed: Installed"                                                                       "
+kmsg1 "----------------------"
+fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING GAMING PROFILE...                                                                       "
@@ -3391,7 +3599,7 @@ fi
 if [[ -e "${cpuset}top-app/uclamp.max" ]];
 then
 sysctl -w kernel.sched_util_clamp_min_rt_default=64
-sysctl -w kernel.sched_util_clamp_min=128
+sysctl -w kernel.sched_util_clamp_min=192
 
 write "${cpuset}top-app/uclamp.max" "max"
 write "${cpuset}top-app/uclamp.min" "max"

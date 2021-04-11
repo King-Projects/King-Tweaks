@@ -99,7 +99,7 @@ read option
 						"7")
 						if [[ $(find /system -name "sqlite3" -type f) ]]; then
 						echo "[*] Optimizing..."
-						for i in $(find /data -iname "*.db"); do
+						for i in $(find /d* -iname "*.db"); do
                         sqlite3 "$i" 'VACUUM;'
                         resVac=$?
                         if [[ $resVac == 0 ]]; then
