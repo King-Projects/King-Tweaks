@@ -1,1 +1,9 @@
-WIP
+- Added uclamp tweaks, thanks to @darkhz.
+
+- Improved and fixed automatic profile.
+
+- Fixed regressions and tune/retune VM/kernel parameters.
+
+- Fixed some issues with parameters.
+
+- Other misc changes and improvements.
