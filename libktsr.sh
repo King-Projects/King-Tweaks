@@ -503,42 +503,6 @@ kmsg1 "                                            🔒 SELinux Status: $slstatu
 kmsg1 "                                            🧰 Busybox: $busybv                                                                                             "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
-if [[ -e "/data/data/com.kerneladiutor.mod" ]]; then
-kmsg1 "----------------------------------"
-kmsg1 "[!] Kernel Adiutor Mod: Installed"                                                                       "
-kmsg1 "----------------------------------"
-fi
-
-if [[ -e "/data/data/com.grarak.kerneladiutor" ]]; then
-kmsg1 "------------------------------"
-kmsg1 "[!] Kernel Adiutor: Installed"                                                                       "
-kmsg1 "------------------------------"
-fi
-
-if [[ -e "/data/data/flar2.exkernelmanager" ]]; then
-kmsg1 "---------------------------------"
-kmsg1 "[!] EX Kernel Manager: Installed"                                                                       "
-kmsg1 "---------------------------------"
-fi
-
-if [[ -e "/data/data/com.franco.kernel" ]]; then
-kmsg1 "-------------------"
-kmsg1 "[!] FKM: Installed"                                                                       "
-kmsg1 "-------------------"
-fi
-
-if [[ -e "/data/data/com.smartpack.kernelmanager.release" ]]; then
-kmsg1 "----------------------------------------"
-kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
-kmsg1 "----------------------------------------"
-fi
-
-if [[ -e "/data/data/com.paget96.lsandroid" ]]; then
-kmsg1 "----------------------"
-kmsg1 "[!] LSpeed: Installed"                                                                       "
-kmsg1 "----------------------"
-fi
-
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING LATENCY PROFILE.                                                                       "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1010,42 +974,6 @@ kmsg1 "                                            👺 Magisk: $magisk         
 kmsg1 "                                            🔒 SELinux Status: $slstatus                                                                                    "
 kmsg1 "                                            🧰 Busybox: $busybv                                                                                             "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-
-if [[ -e "/data/data/com.kerneladiutor.mod" ]]; then
-kmsg1 "----------------------------------"
-kmsg1 "[!] Kernel Adiutor Mod: Installed"                                                                       "
-kmsg1 "----------------------------------"
-fi
-
-if [[ -e "/data/data/com.grarak.kerneladiutor" ]]; then
-kmsg1 "------------------------------"
-kmsg1 "[!] Kernel Adiutor: Installed"                                                                       "
-kmsg1 "------------------------------"
-fi
-
-if [[ -e "/data/data/flar2.exkernelmanager" ]]; then
-kmsg1 "---------------------------------"
-kmsg1 "[!] EX Kernel Manager: Installed"                                                                       "
-kmsg1 "---------------------------------"
-fi
-
-if [[ -e "/data/data/com.franco.kernel" ]]; then
-kmsg1 "-------------------"
-kmsg1 "[!] FKM: Installed"                                                                       "
-kmsg1 "-------------------"
-fi
-
-if [[ -e "/data/data/com.smartpack.kernelmanager.release" ]]; then
-kmsg1 "----------------------------------------"
-kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
-kmsg1 "----------------------------------------"
-fi
-
-if [[ -e "/data/data/com.paget96.lsandroid" ]]; then
-kmsg1 "----------------------"
-kmsg1 "[!] LSpeed: Installed"                                                                       "
-kmsg1 "----------------------"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING BALANCED PROFILE...                                                                       "
@@ -1738,42 +1666,6 @@ kmsg1 "                                            👺 Magisk: $magisk         
 kmsg1 "                                            🔒 SELinux Status: $slstatus                                                                                    "
 kmsg1 "                                            🧰 Busybox: $busybv                                                                                             "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-
-if [[ -e "/data/data/com.kerneladiutor.mod" ]]; then
-kmsg1 "----------------------------------"
-kmsg1 "[!] Kernel Adiutor Mod: Installed"                                                                       "
-kmsg1 "----------------------------------"
-fi
-
-if [[ -e "/data/data/com.grarak.kerneladiutor" ]]; then
-kmsg1 "------------------------------"
-kmsg1 "[!] Kernel Adiutor: Installed"                                                                       "
-kmsg1 "------------------------------"
-fi
-
-if [[ -e "/data/data/flar2.exkernelmanager" ]]; then
-kmsg1 "---------------------------------"
-kmsg1 "[!] EX Kernel Manager: Installed"                                                                       "
-kmsg1 "---------------------------------"
-fi
-
-if [[ -e "/data/data/com.franco.kernel" ]]; then
-kmsg1 "-------------------"
-kmsg1 "[!] FKM: Installed"                                                                       "
-kmsg1 "-------------------"
-fi
-
-if [[ -e "/data/data/com.smartpack.kernelmanager.release" ]]; then
-kmsg1 "----------------------------------------"
-kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
-kmsg1 "----------------------------------------"
-fi
-
-if [[ -e "/data/data/com.paget96.lsandroid" ]]; then
-kmsg1 "----------------------"
-kmsg1 "[!] LSpeed: Installed"                                                                       "
-kmsg1 "----------------------"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING EXTREME PROFILE...                                                                       "
@@ -2501,42 +2393,6 @@ kmsg1 "                                            👺 Magisk: $magisk         
 kmsg1 "                                            🔒 SELinux Status: $slstatus                                                                                    "
 kmsg1 "                                            🧰 Busybox: $busybv                                                                                             "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-
-if [[ -e "/data/data/com.kerneladiutor.mod" ]]; then
-kmsg1 "----------------------------------"
-kmsg1 "[!] Kernel Adiutor Mod: Installed"                                                                       "
-kmsg1 "----------------------------------"
-fi
-
-if [[ -e "/data/data/com.grarak.kerneladiutor" ]]; then
-kmsg1 "------------------------------"
-kmsg1 "[!] Kernel Adiutor: Installed"                                                                       "
-kmsg1 "------------------------------"
-fi
-
-if [[ -e "/data/data/flar2.exkernelmanager" ]]; then
-kmsg1 "---------------------------------"
-kmsg1 "[!] EX Kernel Manager: Installed"                                                                       "
-kmsg1 "---------------------------------"
-fi
-
-if [[ -e "/data/data/com.franco.kernel" ]]; then
-kmsg1 "-------------------"
-kmsg1 "[!] FKM: Installed"                                                                       "
-kmsg1 "-------------------"
-fi
-
-if [[ -e "/data/data/com.smartpack.kernelmanager.release" ]]; then
-kmsg1 "----------------------------------------"
-kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
-kmsg1 "----------------------------------------"
-fi
-
-if [[ -e "/data/data/com.paget96.lsandroid" ]]; then
-kmsg1 "----------------------"
-kmsg1 "[!] LSpeed: Installed"                                                                       "
-kmsg1 "----------------------"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING BATTERY PROFILE...                                                                       "
@@ -3274,42 +3130,6 @@ kmsg1 "                                            👺 Magisk: $magisk         
 kmsg1 "                                            🔒 SELinux Status: $slstatus                                                                                    "
 kmsg1 "                                            🧰 Busybox: $busybv                                                                                             "
 kmsg1 "------------------------------------------------------------------------------------------------------------------------------------------------------------"
-
-if [[ -e "/data/data/com.kerneladiutor.mod" ]]; then
-kmsg1 "----------------------------------"
-kmsg1 "[!] Kernel Adiutor Mod: Installed"                                                                       "
-kmsg1 "----------------------------------"
-fi
-
-if [[ -e "/data/data/com.grarak.kerneladiutor" ]]; then
-kmsg1 "------------------------------"
-kmsg1 "[!] Kernel Adiutor: Installed"                                                                       "
-kmsg1 "------------------------------"
-fi
-
-if [[ -e "/data/data/flar2.exkernelmanager" ]]; then
-kmsg1 "---------------------------------"
-kmsg1 "[!] EX Kernel Manager: Installed"                                                                       "
-kmsg1 "---------------------------------"
-fi
-
-if [[ -e "/data/data/com.franco.kernel" ]]; then
-kmsg1 "-------------------"
-kmsg1 "[!] FKM: Installed"                                                                       "
-kmsg1 "-------------------"
-fi
-
-if [[ -e "/data/data/com.smartpack.kernelmanager.release" ]]; then
-kmsg1 "----------------------------------------"
-kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
-kmsg1 "----------------------------------------"
-fi
-
-if [[ -e "/data/data/com.paget96.lsandroid" ]]; then
-kmsg1 "----------------------"
-kmsg1 "[!] LSpeed: Installed"                                                                       "
-kmsg1 "----------------------"
-fi
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 kmsg1 "                                          ENABLING GAMING PROFILE...                                                                       "
