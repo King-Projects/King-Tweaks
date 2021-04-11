@@ -13,8 +13,8 @@ rm /sdcard/KTSR/battcurrent.log
 fi
 
 save_current(){
-for i in /sys/class/*/*/*constant_charge*; do
-for x in /sys/class/*/*/*current_max*; do
+for i in /sys/class/*/*/constant_charge*; do
+for x in /sys/class/*/*/current_max*; do
 cat "$i" >> /sdcard/KTSR/battcurrent.log
 done
 cat "$x" >> /sdcard/KTSR/battcurrent.log
@@ -29,8 +29,8 @@ done
 }
 
 default_current(){
-for i in /sys/class/*/*/*constant_charge*; do
-for x in /sys/class/*/*/*current_max*; do
+for i in /sys/class/*/*/constant_charge*; do
+for x in /sys/class/*/*/current_max*; do
 write "$i" "$current"
 done
 write "$x" "$current"
@@ -39,8 +39,8 @@ write "/sys/class/qc_battery/restrict_cur" "$current"
 }
 
 thermal_current(){
-for i in /sys/class/power_supply/*/*constant_charge*; do
-for x in /sys/class/*/*/*current_max*; do
+for i in /sys/class/power_supply/*/constant_charge*; do
+for x in /sys/class/*/*/current_max*; do
 write "$i" "1800000"
 done
 write "$x" "1800000"
@@ -104,20 +104,20 @@ while true; do
  fi
 done
 
-if [[ $availram -lt $fullram ]]; then
+if [[ $availram -lt $fullram ]] || [[ $availram -eq $fullram ]]; then
 kmsg1 "----------------------------------------------------------------------"
 kmsg  "Device ram is almost fully in use, dropping caches to free some RAM..."
 kmsg1 "----------------------------------------------------------------------"
 write "$vm/drop_caches" "3"
 fi
 
-if [[ $gbtemp -gt "46" ]] && [[ $bstatus == "Charging" ]]; then
+if [[ $gbtemp -gt "46" ]] || [[ $gbtemp -eq "46" ]] && [[ $bstatus == "Charging" ]]; then
 kmsg1 "---------------------------------------------------------------------------------"
 kmsg  "Device is hot and charging, reducing max constant current to avoid overheating..."
 kmsg1 "---------------------------------------------------------------------------------"
 thermal_current
 
-elif [[ $gbtemp -lt "40" && $bstatus == "Charging" ]]; then
+elif [[ $gbtemp -lt "40" ]] || [[ $gbtemp -eq "40" ]] && [[ $bstatus == "Charging" ]]; then
 kmsg1 "-----------------------------------------------------------------------"
 kmsg  "Device is less hot now, changing max constant current to default now..."
 kmsg1 "-----------------------------------------------------------------------"

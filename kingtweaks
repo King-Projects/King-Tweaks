@@ -176,8 +176,7 @@ kmsg1 "-------------------------------------------------------------------------
 
 case "$kts_profile" in
  "Automatic") {
- 	sleep 5
-   
+ 
  	. $MODPATH/libs/libktsr.sh
 
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
@@ -248,7 +247,6 @@ case "$kts_profile" in
 	     };;
 	 
 	 "Balanced") {
-	 	sleep 5
          
 	 	. $MODPATH/libs/libktsr.sh
 	 	
@@ -331,7 +329,6 @@ case "$kts_profile" in
 	 	};;
 	
 	 	"Extreme") {
-	 		sleep 5
             
 	 		. $MODPATH/libs/libktsr.sh
 	 		
@@ -414,7 +411,6 @@ case "$kts_profile" in
 	 	};;
 	 		
 	 		"Battery") {
-	 			sleep 5
 
 	 			. $MODPATH/libs/libktsr.sh
 	 			
@@ -497,8 +493,7 @@ case "$kts_profile" in
 	 	};;
 
 	 			"Gaming") {
-	 				sleep 5
-
+	 			
 	 				. $MODPATH/libs/libktsr.sh
 	 				
          if [[ $(getprop persist.sys.locale) == "en-US" ]]

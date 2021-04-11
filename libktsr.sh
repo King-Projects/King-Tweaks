@@ -444,7 +444,7 @@ fi
 # Get busybox version
 busybv=$(busybox | awk 'NR==1{print $2}')
 
-# Get device running ROM
+# Get device running ROM info
 dvrom=$(getprop ro.build.display.id | awk '{print $1,$3,$4,$5}')
 
 # Get SELinux status
@@ -527,7 +527,7 @@ kmsg1 "[!] FKM: Installed"                                                      
 kmsg1 "-------------------"
 fi
 
-if [[ -e "/data/data/com.smartpack.kernel.release" ]]; then
+if [[ -e "/data/data/com.smartpack.kernelmanager.release" ]]; then
 kmsg1 "----------------------------------------"
 kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
 kmsg1 "----------------------------------------"
@@ -698,7 +698,7 @@ fi
 if [[ -e "${cpuset}top-app/uclamp.max" ]];
 then
 sysctl -w kernel.sched_util_clamp_min_rt_default=16
-sysctl -w kernel.sched_util_clamp_min=128
+sysctl -w kernel.sched_util_clamp_min=64
 
 write "${cpuset}top-app/uclamp.max" "max"
 write "${cpuset}top-app/uclamp.min" "20"
@@ -849,7 +849,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
-if [[ $exynos == "true" && $totalram -lt "4000" ]]; then
+if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "150"
 else
 write "${vm}swappiness" "100"
@@ -1035,7 +1035,7 @@ kmsg1 "[!] FKM: Installed"                                                      
 kmsg1 "-------------------"
 fi
 
-if [[ -e "/data/data/com.smartpack.kernel.release" ]]; then
+if [[ -e "/data/data/com.smartpack.kernelmanager.release" ]]; then
 kmsg1 "----------------------------------------"
 kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
 kmsg1 "----------------------------------------"
@@ -1486,7 +1486,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
-if [[ $exynos == "true" && $totalram -lt "4000" ]]; then
+if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "150"
 else
 write "${vm}swappiness" "100"
@@ -1763,7 +1763,7 @@ kmsg1 "[!] FKM: Installed"                                                      
 kmsg1 "-------------------"
 fi
 
-if [[ -e "/data/data/com.smartpack.kernel.release" ]]; then
+if [[ -e "/data/data/com.smartpack.kernelmanager.release" ]]; then
 kmsg1 "----------------------------------------"
 kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
 kmsg1 "----------------------------------------"
@@ -2232,7 +2232,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
-if [[ $exynos == "true" && $totalram -lt "4000" ]]; then
+if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "150"
 else
 write "${vm}swappiness" "100"
@@ -2526,7 +2526,7 @@ kmsg1 "[!] FKM: Installed"                                                      
 kmsg1 "-------------------"
 fi
 
-if [[ -e "/data/data/com.smartpack.kernel.release" ]]; then
+if [[ -e "/data/data/com.smartpack.kernelmanager.release" ]]; then
 kmsg1 "----------------------------------------"
 kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
 kmsg1 "----------------------------------------"
@@ -3022,7 +3022,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
-if [[ $exynos == "true" && $totalram -lt "4000" ]]; then
+if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "150"
 else
 write "${vm}swappiness" "100"
@@ -3299,7 +3299,7 @@ kmsg1 "[!] FKM: Installed"                                                      
 kmsg1 "-------------------"
 fi
 
-if [[ -e "/data/data/com.smartpack.kernel.release" ]]; then
+if [[ -e "/data/data/com.smartpack.kernelmanager.release" ]]; then
 kmsg1 "----------------------------------------"
 kmsg1 "[!] SmartPack Kernel Manager: Installed"                                                                       "
 kmsg1 "----------------------------------------"
@@ -3770,7 +3770,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
-if [[ $exynos == "true" && $totalram -lt "4000" ]]; then
+if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "150"
 else
 write "${vm}swappiness" "100"
