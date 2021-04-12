@@ -77,7 +77,7 @@ write() {
 	fi
 
 	# Make file writable in case it is not already
-	chmod +w "$1" 2> /dev/null
+	chmod 644 "$1" 2> /dev/null
 
 	# Write the new value and bail if there's an error
 	if ! echo "$2" > "$1" 2> /dev/null
@@ -547,7 +547,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq kyber bfq fiops zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1044,7 +1044,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq kyber bfq fiops zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1757,7 +1757,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq kyber bfq fiops zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -2482,7 +2482,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq kyber bfq fiops zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -2580,7 +2580,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpug/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in simple_ondemand ondemand msm-adreno-tz
+	for governor in msm-adreno-tz simple_ondemand ondemand
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -3221,7 +3221,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq kyber bfq fiops zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
