@@ -292,20 +292,10 @@ case "$kts_profile" in
      	else
      	toast
      	fi
-
-     	# Set SELinux to permissive temporally
-     	if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
-         write "/sys/fs/selinux/enforce" "0"
-         fi
-         
+     	  
          killall kingauto
 	 	balanced
-
-	 	# Set it to enforcing again
-     	if [[ "$(cat /sys/fs/selinux/enforce)" == "0" ]]; then
-         write "/sys/fs/selinux/enforce" "1"
-         fi
-         
+	 	
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast1
@@ -374,20 +364,10 @@ case "$kts_profile" in
      	else
      	toast
      	fi
-
-     	# Set SELinux to permissive temporally
-     	if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
-         write "/sys/fs/selinux/enforce" "0"
-         fi
-         
+     	   
              killall kingauto
 	 		extreme
-	 		
-	 		# Set it to enforcing again
-         	if [[ "$(cat /sys/fs/selinux/enforce)" == "0" ]]; then
-             write "/sys/fs/selinux/enforce" "1"
-             fi
-         
+	 		 
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast1
@@ -456,20 +436,10 @@ case "$kts_profile" in
      	else
      	toast
      	fi
-
-     	# Set SELinux to permissive temporally
-     	if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
-         write "/sys/fs/selinux/enforce" "0"
-         fi
-         
+     	
                  killall kingauto
 	 			battery
-
-	 			# Set it to enforcing again
-             	if [[ "$(cat /sys/fs/selinux/enforce)" == "0" ]]; then
-                 write "/sys/fs/selinux/enforce" "1"
-                 fi
-         
+	 			
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast1
@@ -538,20 +508,10 @@ case "$kts_profile" in
      	else
      	toast
      	fi
-
-     	# Set SELinux to permissive temporally
-     	if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
-         write "/sys/fs/selinux/enforce" "0"
-         fi
          
                      killall kingauto
 	 				gaming
 	 				
-	 				# Set it to enforcing again
-                 	if [[ "$(cat /sys/fs/selinux/enforce)" == "0" ]]; then
-                     write "/sys/fs/selinux/enforce" "1"
-                     fi
-
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
      	toast1
