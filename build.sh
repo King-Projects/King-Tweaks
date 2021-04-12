@@ -12,14 +12,14 @@ blue=$(tput setaf 4)
 bold=$(tput bold)
 blink=$(tput blink)
 default=$(tput sgr0)
-date=`date`
-version=`cat module.prop | grep version= | sed "s/version=//"`
+date=$(date)
+version=$(cat module.prop | grep version= | sed "s/version=//")
 
 read -p 'Build type: ' build_type
 
 read -p 'Codename: ' codename
 
-init=`date +%s`
+init=$(date +%s)
 
 echo "builddate=$date
 buildtype=$build_type
@@ -37,7 +37,7 @@ mv "KTSR-v$version-$build_type-$codename.zip" ../out
 
 rm $(pwd)/ktsr.prop
 
-exit=`date +%s`
+exit=$(date +%s)
 
 exectime=$((exit - init))
 
