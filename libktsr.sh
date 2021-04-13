@@ -149,6 +149,13 @@ SCHED_TASKS_THROUGHPUT="6"
         fi
         done
         
+        for gpul5 in /sys/devices/platform/*.mali
+        do
+        if [ -d "$gpul5" ]; then
+        gpu=$gpul5
+        fi
+        done
+
 	if [ -d "/sys/class/kgsl/kgsl-3d0" ]; then
 		gpu="/sys/class/kgsl/kgsl-3d0"
 		adreno=true
@@ -363,10 +370,20 @@ btemp=$(dumpsys battery | awk '/temperature/{print $2}')
 fi
 
 # Get GPU info
+if [[ "$adreno" == "false" ]]; then
+gpuinfo=$(cat $gpu/gpuinfo | awk '{print $2}'
+
+else
 gpuinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
+fi
 
 # Get drivers info
+if [[ "$adreno" == "false" ]]; then
+driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}'
+
+else
 driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
+fi
 
 # Ignore the decimal
 gbtemp=$((btemp / 10))
@@ -1114,7 +1131,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpug/available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in simple_ondemand ondemand msm-adreno-tz
+	for governor in msm-adreno-tz simple_ondemand ondemand
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1128,7 +1145,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpug/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
-	for governor in Interactive Static
+	for governor in Interactive Dynamic Static
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1152,6 +1169,10 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $adreno == "true" ]] && write "$gpu/idle_timer" "66"
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
+[[ $adreno == "false" ]] && write "$gpu/perf" "0"
+[[ $adreno == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
+[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "89"
+[[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1830,7 +1851,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpug/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
-	for governor in Booster Interactive Static
+	for governor in Booster Interactive Dynamic Static
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1855,6 +1876,10 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
+[[ $adreno == "false" ]] && write "$gpu/perf" "1"
+[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "76"
+[[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
+[[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2581,6 +2606,11 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $adreno == "true" ]] && write "$gpu/idle_timer" "36"
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
+[[ $adreno == "false" ]] && write "$gpu/perf" "0"
+[[ $adreno == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
+[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "99"
+[[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
+[[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "1"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -3278,7 +3308,7 @@ kmsg1 "-------------------------------------------------------------------------
 	avail_govs="$(cat "$gpug/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
-	for governor in Booster Interactive Static
+	for governor in Booster Interactive Dynamic Static
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -3303,6 +3333,10 @@ kmsg1 "-------------------------------------------------------------------------
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "0"
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumx2
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
+[[ $adreno == "false" ]] && write "$gpu/perf" "1"
+[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "70"
+[[ $adreno == "false" ]] && write "$gpu/power_policy" "always_on"
+[[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
