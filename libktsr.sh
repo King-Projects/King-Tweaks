@@ -371,7 +371,7 @@ fi
 
 # Get GPU info
 if [[ "$adreno" == "false" ]]; then
-gpuinfo=$(cat $gpu/gpuinfo | awk '{print $2}'
+gpuinfo=$(cat $gpu/gpuinfo | awk '{print $2}')
 
 else
 gpuinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
