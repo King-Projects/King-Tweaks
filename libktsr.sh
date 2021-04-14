@@ -297,14 +297,14 @@ dcdm=$(getprop ro.product.device)
 magisk=$(magisk -c)
 
 # Detect if we're running on a exynos SOC
-if [[ $(mf | grep 'samsungexynos') ]] || [[ $(soc | grep 'universal') ]]; then
+if [[ $($mf | grep 'exynos') ]] || [[ $($soc | grep 'universal') ]]; then
 exynos=true
 else
 exynos=false
 fi
 
 # Detect if we're running on a mediatek SOC
-if [[ $(soc | grep 'mt') ]]; then
+if [[ $($soc | grep 'mt') ]]; then
 mtk=true
 else
 mtk=false
@@ -370,16 +370,16 @@ btemp=$(dumpsys battery | awk '/temperature/{print $2}')
 fi
 
 # Get GPU info
-if [[ "$adreno" == "false" ]]; then
-gpuinfo=$(cat $gpu/gpuinfo | awk '{print $2}')
+if [[ $adreno == "false" ]]; then
+gpuinfo=$(cat $gpu/gpuinfo | awk '{print $1}')
 
 else
 gpuinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 fi
 
 # Get drivers info
-if [[ "$adreno" == "false" ]]; then
-driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}')
+if [[ $adreno == "false" ]]; then
+driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $5,$6,$7,$8,$9,$10,$11,$12,$13}')
 
 else
 driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
@@ -855,7 +855,7 @@ fi
 avail_con=`cat "${tcp}tcp_available_congestion_control"`
 	
     # Attempt to set the TCP congestion control in this order
-    for tcpcc in bbr2 bbr cubic westwood 
+    for tcpcc in bbr2 bbr westwood cubic  
 	do
 	    # Once a matching TCP congestion control is found, set it and break
 		if [[ "$avail_con" == *"$tcpcc"* ]]
@@ -1510,7 +1510,7 @@ fi
 avail_con=`cat "${tcp}tcp_available_congestion_control"`
 	
     # Attempt to set the TCP congestion control in this order
-    for tcpcc in bbr2 bbr cubic westwood 
+    for tcpcc in bbr2 bbr westwood cubic 
 	do
 	    # Once a matching TCP congestion control is found, set it and break
 		if [[ "$avail_con" == *"$tcpcc"* ]]
@@ -2214,7 +2214,7 @@ fi
 avail_con=`cat "${tcp}tcp_available_congestion_control"`
 	
     # Attempt to set the TCP congestion control in this order
-    for tcpcc in bbr2 bbr cubic westwood 
+    for tcpcc in bbr2 bbr westwood cubic 
 	do
 	    # Once a matching TCP congestion control is found, set it and break
 		if [[ "$avail_con" == *"$tcpcc"* ]]
@@ -2964,7 +2964,7 @@ fi
 avail_con=`cat "${tcp}tcp_available_congestion_control"`
 	
     # Attempt to set the TCP congestion control in this order
-    for tcpcc in bbr2 bbr cubic westwood 
+    for tcpcc in bbr2 bbr westwood cubic 
 	do
 	    # Once a matching TCP congestion control is found, set it and break
 		if [[ "$avail_con" == *"$tcpcc"* ]]
@@ -3585,7 +3585,7 @@ else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "500"
+write "${vm}vfs_cache_pressure" "200"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -3671,7 +3671,7 @@ fi
 avail_con=`cat "${tcp}tcp_available_congestion_control"`
 	
     # Attempt to set the TCP congestion control in this order
-    for tcpcc in bbr2 bbr cubic westwood 
+    for tcpcc in bbr2 bbr westwood cubic  
 	do
 	    # Once a matching TCP congestion control is found, set it and break
 		if [[ "$avail_con" == *"$tcpcc"* ]]
