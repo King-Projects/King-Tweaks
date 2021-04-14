@@ -77,7 +77,7 @@ sleep 1.6
 echo "[7] Optimize databases"
 echo ""
 sleep 1.4
-if [[ $low_power == "0" ]]; then
+if [[ $low_power == "Deactivated" ]]; then
 echo "[8] Enable low power mode"
 echo ""
 sleep 1.6
@@ -175,6 +175,7 @@ read option
                         
                         "9")
                         settings put global low_power 0
+                        ;;
                         
                         "10")
                         cmd netpolicy set restrict-background true
