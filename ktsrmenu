@@ -3,6 +3,20 @@
 
 kts_mode=$(getprop persist.kingtweaks.mode)
 
+if [[ $(settings get global low_power) == "1" ]]; then
+low_power=Activated
+
+else
+low_power=Deactivated
+fi
+
+if [[ $(cmd netpolicy get restrict-background | awk '{print $4}' == "disabled" ]]; then
+data_saver=Disabled
+
+else
+data_saver=Enabled
+fi
+
 if [[ "$kts_mode" == "1" ]]
 then
 kts_profile=Automatic
@@ -63,10 +77,34 @@ sleep 1.6
 echo "[7] Optimize databases"
 echo ""
 sleep 1.4
-echo "[8] Access our telegram group"
+if [[ $low_power == "0" ]]; then
+echo "[8] Enable low power mode"
+echo ""
+sleep 1.6
+else
+echo "[9] Disable low power mode"
+echo ""
+sleep 1.4
+fi
+if [[ $data_saver == "Disabled" ]]; then
+echo "[10] Enable data saver"
+echo ""
+sleep 1.4
+else
+echo "[11] Disable data saver"
+echo ""
+sleep 1.6
+fi
+echo "[12] Enable power-saving location mode"
+echo ""
+sleep 1.7
+echo "[13] Disable power-saving location mode"
+echo ""
+sleep 1.9
+echo "[14] Access our telegram group"
 echo ""
 sleep 1.3
-echo "[9] FKM updater script"
+echo "[15] FKM updater script"
 echo ""
 sleep 1
 echo "[0] Exit"
@@ -131,11 +169,35 @@ read option
                         fi
                         ;;
 						
-						"8")
+                        "8")
+                        settings put global low_power 1
+                        ;;
+                        
+                        "9")
+                        settings put global low_power 0
+                        
+                        "10")
+                        cmd netpolicy set restrict-background true
+                        ;;
+                        
+                        "11")
+                        cmd netpolicy set restrict-background false
+                        ;;
+                        
+                        "12")
+                        settings put secure location_mode "0"
+                        settings put secure location_providers_allowed ""
+                        ;;
+                        
+                        "13")
+                        settings put secure location_providers_allowed "gps,network"
+                        ;;
+                        
+						"14")
 						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
 						;;
 						
-						"9")
+						"15")
 						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released to download!"
 						echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
 						;;
