@@ -174,14 +174,16 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                                RENICED PROCESSES.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Remove main script log if the size is bigger than 10 MB
+# Remove main script log if the size is bigger than 5 MB
 ktsrmaxsize=5000000
 
-# Do the same to dbopt log (in this case, 5 MB)
+# Do the same to dbopt log (in this case, 1 MB)
 dboptmaxsize=1000000
 
-if [[ "$(stat -t "$KLOG" | awk '{print $2}')" -eq "$maxsize" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}')" -gt "$maxsize" ]] && [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}')" -eq "$dboptmaxsize" ]] || [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}')" -gt "$dboptmaxsize" ]]; then
+if [[ "$(stat -t "$KLOG" | awk '{print $2}' -eq "$ktsrmaxsize")" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}' -gt "$ktsrmaxsize")" ]]; then
 rm "$KLOG"
+
+elif [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}' -eq "$dboptmaxsize")" ]] || [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}' -gt "$dboptmaxsize")" ]]; then
 rm "/sdcard/KTSR/dbopt.log"
 fi
 
@@ -293,7 +295,7 @@ case "$kts_profile" in
      	toast
      	fi
      	  
-         killall kingauto
+         killall -9 kingauto
 	 	balanced
 	 	
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
@@ -365,7 +367,7 @@ case "$kts_profile" in
      	toast
      	fi
      	   
-             killall kingauto
+             killall -9 kingauto
 	 		extreme
 	 		 
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
@@ -437,7 +439,7 @@ case "$kts_profile" in
      	toast
      	fi
      	
-                 killall kingauto
+                 killall -9 kingauto
 	 			battery
 	 			
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
@@ -509,7 +511,7 @@ case "$kts_profile" in
      	toast
      	fi
          
-                     killall kingauto
+                     killall -9 kingauto
 	 				gaming
 	 				
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
