@@ -10,7 +10,7 @@ else
 low_power=Deactivated
 fi
 
-if [[ "$(cmd netpolicy get restrict-background | awk '{print $4}' == "disabled")" ]]; then
+if [[ "$(cmd netpolicy get restrict-background | awk '{print $4}')" == "disabled" ]]; then
 data_saver=Disabled
 
 else
