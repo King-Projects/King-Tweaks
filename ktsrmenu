@@ -17,6 +17,13 @@ else
 data_saver=Enabled
 fi
 
+if [[ "$(settings get secure location_providers_allowed)" == "" ]]; then
+loc_mode_pwr_saving=Enabled
+
+else
+loc_mode_pwr_saving=Disabled
+fi
+
 if [[ "$kts_mode" == "1" ]]
 then
 kts_profile=Automatic
@@ -95,9 +102,11 @@ echo "[11] Disable data saver"
 echo ""
 sleep 1.6
 fi
+if [[ $loc_mode_pwr_saving == "Enabled" ]]; then
 echo "[12] Enable power-saving location mode"
 echo ""
 sleep 1.7
+else
 echo "[13] Disable power-saving location mode"
 echo ""
 sleep 1.9
