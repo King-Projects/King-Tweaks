@@ -3,14 +3,14 @@
 
 kts_mode=$(getprop persist.kingtweaks.mode)
 
-if [[ $(settings get global low_power) == "1" ]]; then
+if [[ "$(settings get global low_power)" == "1" ]]; then
 low_power=Activated
 
 else
 low_power=Deactivated
 fi
 
-if [[ $(cmd netpolicy get restrict-background | awk '{print $4}' == "disabled" ]]; then
+if [[ "$(cmd netpolicy get restrict-background | awk '{print $4}' == "disabled")" ]]; then
 data_saver=Disabled
 
 else
