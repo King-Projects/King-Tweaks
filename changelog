@@ -1,9 +1,9 @@
-- Added uclamp tweaks, thanks to @darkhz.
+~ Fix some info being displayed incorrectly on mali GPUs.
 
-- Improved and fixed automatic profile.
+~ Tweak mali GPUs better.
 
-- Fixed regressions and tune/retune VM/kernel parameters.
+~ Tweak some HMP parameters.
 
-- Fixed some issues with parameters.
+~ Add some more useful parameters to the terminal menu.
 
-- Other misc changes and improvements.
+~ And other minor fixes and improvements.

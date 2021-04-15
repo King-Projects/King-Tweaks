@@ -1183,7 +1183,7 @@ fi
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
 [[ $adreno == "false" ]] && write "$gpu/perf" "0"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
-[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "89"
+[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "86"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
@@ -2644,7 +2644,7 @@ fi
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
 [[ $adreno == "false" ]] && write "$gpu/perf" "0"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
-[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "99"
+[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "95"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "1"
 
@@ -3382,7 +3382,7 @@ fi
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumx2
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
 [[ $adreno == "false" ]] && write "$gpu/perf" "1"
-[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "70"
+[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "76"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "always_on"
 [[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
 
