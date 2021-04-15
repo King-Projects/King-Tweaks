@@ -110,6 +110,7 @@ else
 echo "[13] Disable power-saving location mode"
 echo ""
 sleep 1.9
+fi
 echo "[14] Access our telegram group"
 echo ""
 sleep 1.3
