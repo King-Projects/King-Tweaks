@@ -219,21 +219,29 @@ SCHED_TASKS_THROUGHPUT="6"
     
     gpumx=$(cat $gpug/available_frequencies | awk -v var="$gpunpl" '{print $var}')
     
-    if [[ $gpumx != $gpufreq ]]; then
+    if [[ $gpumx != $gpumxfreq ]]; then
     gpumx=$(cat $gpug/available_frequencies | awk '{print $1}')
 
-    elif [[ $gpumx != $gpufreq ]]; then
-    gpumx=$gpufreq
+    elif [[ $gpumx != $gpumxfreq ]]; then
+    gpumx=$gpumxfreq
     fi
     
     gpumx2=$(cat $gpug/gpu_freq_table | awk '{print $7}')
     
-    if [[ $gpumx2 != $gpufreq ]]; then
-    gpumx2=$gpufreq
+    if [[ $gpumx2 != $gpumxfreq ]]; then
+    gpumx2=$(cat $gpug/gpu_freq_table | awk '{print $1}')
+    
+    elif [[ $gpumx2 != $gpumxfreq ]]; then
+    gpumx2=$gpumxfreq
     fi
     
     gpumin=$(cat $gpug/gpu_freq_table | awk '{print $1}')
     
+    if [[ $gpumin != $gpumnfreq ]];
+    then
+    gpumin=$(cat $gpug/gpu_freq_table | awk '{print $7}')
+    fi
+
 # Get running CPU governor    
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
@@ -263,10 +271,19 @@ done
 
 # Get max GPU frequency (gpumx does almost the same thing)
 if [[ -e "$gpu/max_gpuclk" ]]; then
-gpufreq=$(cat $gpu/max_gpuclk)
+gpumxfreq=$(cat $gpu/max_gpuclk)
 
 elif [[ -e "$gpug/gpu_max_clock" ]]; then
-gpufreq=$(cat $gpug/gpu_max_clock)
+gpumxfreq=$(cat $gpug/gpu_max_clock)
+fi
+
+# Get minimum GPU frequency (gpumin also does almost the same thing)
+if [[ -e "$gpu/min_clock_mhz" ]]; then
+gpumnfreq=$(cat $gpu/min_clock_mhz)
+gpumnfreq=$((gpumnfreq * 1000000))
+
+elif [[ -e "$gpug/gpu_min_clock" ]]; then
+gpumnfreq=$(cat $gpug/gpu_min_clock)
 fi
 
 # Get SOC manufacturer
