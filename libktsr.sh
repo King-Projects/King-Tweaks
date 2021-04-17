@@ -1979,13 +1979,15 @@ kmsg "Enabled fingerprint_boost"
 kmsg1 ""
 fi
 
-# Set max clocks in gaming / performance profile.
+# Set max clocks in gaming / extreme profile.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "$cpumxfreq"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -1995,6 +1997,8 @@ if [[ -e "${mnclk}scaling_min_freq" ]]
 then
 write "${mnclk}scaling_min_freq" "$cpumxfreq"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2488,7 +2492,6 @@ fi
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
 [[ $adreno == "false" ]] && write "$gpu/dvfs" "1"
-[[ $adreno == "false" ]] && write "$gpu/perf" "0"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "95"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
@@ -2674,6 +2677,8 @@ if [[ -e "${minclk}scaling_min_freq" && $bpercentage > "20" ]]
 then
 write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "300000"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2683,6 +2688,8 @@ if [[ -e "${mnclk}scaling_min_freq" && $bpercentage > "20" ]]
 then
 write "${mnclk}scaling_min_freq" "300000"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "300000"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2693,6 +2700,8 @@ if [[ -e "${minclk}scaling_min_freq" && $bpercentage < "20" ]]
 then
 write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "300000"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2702,6 +2711,8 @@ if [[ -e "${mnclk}scaling_min_freq" && $bpercentage < "20" ]]
 then
 write "${mnclk}scaling_min_freq" "300000"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "300000"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -3172,7 +3183,6 @@ fi
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumx2
 [[ $adreno == "false" ]] && write "$gpu/dvfs" "0"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
-[[ $adreno == "false" ]] && write "$gpu/perf" "1"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "76"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "always_on"
 [[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
@@ -3347,7 +3357,7 @@ kmsg "Enabled fingerprint boost"
 kmsg1 ""
 fi
 
-# Set max clocks in gaming / performance profile.
+# Set max clocks in gaming / extreme profile.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" ]]
