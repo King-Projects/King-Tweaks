@@ -7,6 +7,8 @@ MODPATH=/data/adb/modules/KTSR
 
 KLOG=/sdcard/KTSR/KTSR.log
 
+KDBG=/sdcard/KTSR/KTSRDBG.log
+
 # Log in white and continue (unnecessary)
 kmsg() {
 	echo -e "[*] $@" >> $KLOG
@@ -14,12 +16,12 @@ kmsg() {
 }
 
 kmsg1() {
-	echo -e "$@" >> $KLOG
+	echo -e "$@" >> $KDBG
 	echo -e "$@"
 }
 
 kmsg2() {
-	echo -e "[!] $@" >> $KLOG
+	echo -e "[!] $@" >> $KDBG
 	echo -e "[!] $@"
 }
 
@@ -75,8 +77,8 @@ write() {
 	
 	# Bail out if value is already set
 	if [[ "$curval" == "$2" ]]; then
-	kmsg2 "$1 is already set to $2, skipping..."
-	return 1
+	kmsg1 "$1 is already set to $2, skipping..."
+	return 0
 	fi
 
 	# Make file writable in case it is not already
@@ -745,9 +747,6 @@ fi
 write "${kernel}sched_child_runs_first" "1"
 write "${kernel}perf_cpu_time_max_percent" "4"
 write "${kernel}sched_autogroup_enabled" "1"
-write "${kernel}random/read_wakeup_threshold" "64"
-write "${kernel}random/write_wakeup_threshold" "512"
-write "${kernel}random/urandom_min_reseed_secs" "90"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_LATENCY"
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LATENCY))"
@@ -1154,6 +1153,7 @@ fi
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "86"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
+[[ $adreno == "false" ]] && write "$gpug/boost" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1290,8 +1290,6 @@ write "${kernel}sched_child_runs_first" "1"
 write "${kernel}sched_boost" "0"
 write "${kernel}perf_cpu_time_max_percent" "10"
 write "${kernel}sched_autogroup_enabled" "1"
-write "${kernel}random/read_wakeup_threshold" "64"
-write "${kernel}random/write_wakeup_threshold" "256"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BALANCE"
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BALANCE / SCHED_TASKS_BALANCE))"
@@ -1809,25 +1807,26 @@ fi
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
-[[ $adreno == "false" ]] && write "$gpu/dvfs" "0"
+[[ $adreno == "false" ]] && write "$gpu/dvfs" "1"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "76"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
+[[ $adreno == "false" ]] && write "$gpug/boost" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
-write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
+write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
 fi
 
-# Disable dvfs
+# Enable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
-write "/proc/mali/dvfs_enable" "0"
+write "/proc/mali/dvfs_enable" "1"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
 then
-write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "0"
+write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
@@ -1947,9 +1946,6 @@ write "${kernel}sched_child_runs_first" "0"
 write "${kernel}sched_boost" "1"
 write "${kernel}perf_cpu_time_max_percent" "25"
 write "${kernel}sched_autogroup_enabled" "0"
-write "${kernel}random/read_wakeup_threshold" "128"
-write "${kernel}random/write_wakeup_threshold" "1024"
-write "${kernel}random/urandom_min_reseed_secs" "90"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
@@ -2502,6 +2498,7 @@ fi
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "95"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "1"
+[[ $adreno == "false" ]] && write "$gpug/boost" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2639,9 +2636,6 @@ write "${kernel}sched_child_runs_first" "0"
 write "${kernel}sched_boost" "0"
 write "${kernel}perf_cpu_time_max_percent" "3"
 write "${kernel}sched_autogroup_enabled" "1"
-write "${kernel}random/read_wakeup_threshold" "64"
-write "${kernel}random/write_wakeup_threshold" "128"
-write "${kernel}random/urandom_min_reseed_secs" "90"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
@@ -3192,13 +3186,14 @@ fi
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "76"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "always_on"
 [[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
+[[ $adreno == "false" ]] && write "$gpug/boost" "1"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
 write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
 fi
 
-# Enable dvfs
+# Disable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
 write "/proc/mali/dvfs_enable" "0"
@@ -3326,9 +3321,6 @@ write "${kernel}sched_child_runs_first" "0"
 write "${kernel}sched_boost" "1"
 write "${kernel}perf_cpu_time_max_percent" "25"
 write "${kernel}sched_autogroup_enabled" "0"
-write "${kernel}random/read_wakeup_threshold" "128"
-write "${kernel}random/write_wakeup_threshold" "1024"
-write "${kernel}random/urandom_min_reseed_secs" "90"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"

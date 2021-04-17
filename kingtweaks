@@ -9,7 +9,7 @@ MODPATH=/data/adb/modules/KTSR
 # Check for root permissions and bail if not granted
 if [[ "$(id -u)" -ne 0 ]]
 then
-kmsg1 "[!] No root permissions. Exiting."
+kmsg2 "No root permissions. Exiting."
 exit 1
 fi
 
