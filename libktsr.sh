@@ -66,7 +66,7 @@ toastfr1() {
 write() {
 	# Bail out if file does not exist
 	if [[ ! -f "$1" ]]; then
-    kmsg "$1 doesn't exist, skipping..."
+    kmsg1 "$1 doesn't exist, skipping..."
     return 0
     fi
 
@@ -75,7 +75,7 @@ write() {
 	
 	# Bail out if value is already set
 	if [[ "$curval" == "$2" ]]; then
-	kmsg "$1 is already set to $2, skipping..."
+	kmsg1 "$1 is already set to $2, skipping..."
 	return 0
 	fi
 
@@ -493,8 +493,10 @@ stune=/dev/stune/
 # Latency Profile
 latency() {
      	init=$(date +%s)
-     	
+
+     	kmsg1 ""     	
 kmsg "Device info"
+kmsg1 ""
 
 kmsg1 "🕛 Date of execution: $(date)"                                                                                    
 kmsg1 "🔧 Kernel: $kname"                                                                                           
@@ -524,28 +526,32 @@ kmsg1 "📁 Device Available RAM: $availram MB"
 kmsg1 "👺 Magisk: $magisk"
 kmsg1 "🔒 SELinux Status: $slstatus"                                                                                    
 kmsg1 "🧰 Busybox: $busybv"
-
+kmsg1 ""
 kmsg1 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg1 "🔊 Telegram Channel: https://t.me/kingprojectz"
 kmsg1 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg1 ""
 
 # Enable perf and mpdecision
 start perfd  	
 start mpdecision
 
-kmsg1 "Enabled perfd and mpdecision"
+kmsg "Enabled perfd and mpdecision"
+kmsg1 ""
 
 # Do not stop thermal daemons, configure thermal config instead
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "0"
-kmsg1 "Tweaked thermal profile"
+kmsg "Tweaked thermal profile"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "20"
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
-kmsg1 "Tweaked dynamic stune boost"
+kmsg "Tweaked dynamic stune boost"
+kmsg1 ""
 fi
 
 # I/O Scheduler Tweaks
@@ -573,7 +579,8 @@ write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 16
 done
 
-kmsg1 "Tweaked I/O scheduler"
+kmsg "Tweaked I/O scheduler"
+kmsg1 ""
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq
@@ -629,7 +636,8 @@ do
 write "$cpu/online" "1"
 done
 
-kmsg1 "Tweaked CPU parameters"
+kmsg "Tweaked CPU parameters"
+kmsg1 ""
 
 # Schedtune Tweaks
 [[ $ANDROID == "true" ]] && if [[ -d "$stune" ]]; then
@@ -656,7 +664,8 @@ write "${stune}top-app/schedtune.prefer_perf" "1"
 
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
-kmsg1 "Tweaked cpuset schedtune"
+kmsg "Tweaked cpuset schedtune"
+kmsg1 ""
 fi
 
 # Uclamp Tweaks
@@ -684,7 +693,8 @@ write "${cpuset}system-background/uclamp.max" "40"
 write "${cpuset}system-background/uclamp.min" "0"
 write "${cpuset}system-background/uclamp.boosted" "0"
 write "${cpuset}system-background/uclamp.latency_sensitive" "0"
-kmsg1 "Tweaked cpuset uclamp"
+kmsg "Tweaked cpuset uclamp"
+kmsg1 ""
 fi
 
 # FS Tweaks
@@ -693,14 +703,16 @@ then
 write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
-kmsg1 "Tweaked FS"
+kmsg "Tweaked FS"
+kmsg1 ""
 fi
 
 # Enable dynamic_fsync
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
-kmsg1 "Enabled dynamic_fsync"
+kmsg "Enabled dynamic_fsync"
+kmsg1 ""
 fi
 
 # Scheduler features
@@ -710,20 +722,23 @@ write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
-kmsg1 "Tweaked scheduler features"
+kmsg "Tweaked scheduler features"
+kmsg1 ""
 fi
 
 # Same as NO_GENTLE_FAIR_SLEEPERS above
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
 write "/sys/kernel/sched/gentle_fair_sleepers" "0"
-kmsg1 "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg1
 fi
 
 if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
-kmsg1 "Disabled MMC CRC"
+kmsg "Disabled MMC CRC"
+kmsg1 ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
@@ -756,7 +771,8 @@ write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
 fi
 
-kmsg1 "Tweaked various kernel parameters"
+kmsg "Tweaked various kernel parameters"
+kmsg1 ""
 
 # Set min and max clocks.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
@@ -777,12 +793,14 @@ write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
-kmsg1 "Tweaked CPU clocks"
+kmsg "Tweaked CPU clocks"
+kmsg1 ""
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
-kmsg1 "Allowed CPUs to use it's deepest sleep state"
+kmsg "Allowed CPUs to use it's deepest sleep state"
+kmsg1 ""
 fi
 
 # always sync before dropping caches
@@ -806,24 +824,27 @@ write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
-kmsg1 "Tweaked various VM parameters for a improved user-experience"
+kmsg "Tweaked various VM parameters for a improved user-experience"
+kmsg1 ""
 
 # Enable CPU power efficient workqueue
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "Y"
-kmsg1 "Enabled CPU power efficient workqueue"
+kmsg "Enabled CPU power efficient workqueue"
+kmsg1 ""
 fi
 
 # Disable CPU scheduler multi-core power-saving
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
-kmsg1 "Disabled CPU scheduler multi-core power-saving"
+kmsg "Disabled CPU scheduler multi-core power-saving"
+kmsg1 ""
 fi
 
 # Fetch the available TCP congestion control 
-avail_con=`cat "${tcp}tcp_available_congestion_control"`
+avail_con=$(cat "${tcp}tcp_available_congestion_control")
 	
     # Attempt to set the TCP congestion control in this order
     for tcpcc in bbr2 bbr westwood cubic  
@@ -856,7 +877,8 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
-kmsg1 "Applied TCP / internet tweaks."
+kmsg "Applied TCP / internet tweaks"
+kmsg1 ""
 
 # Enable USB 3.0 fast charging
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
@@ -868,32 +890,36 @@ fi
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
 then
 write "/sys/class/sec/switch/afc_disable" "0"
-kmsg1 "Enabled fast charging on Samsung devices"
+kmsg "Enabled fast charging on Samsung devices"
+kmsg1 ""
 fi
 
-kmsg1 "Latency profile applied. Enjoy!"
+kmsg "Latency profile applied. Enjoy!"
+kmsg1 ""
 
-kmsg1 "End of execution: $(date)"
+kmsg "End of execution: $(date)"
+kmsg1 ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
-kmsg1 "Elapsed time: $exectime seconds."
+kmsg "Elapsed time: $exectime seconds."
 }
 # Automatic Profile
 automatic() {
      	
-kmsg1 "Enabling automatic profile"
+kmsg "Enabling automatic profile"
 
 	sync
 	kingauto
 	
-	kmsg1 "Enabled automatic profile"
+	kmsg "Enabled automatic profile"
 	}
 # Balanced Profile
 balanced() {
          init=$(date +%s)
-     	
+kmsg1 ""     	
 kmsg "Device info"
+kmsg1 ""
 
 kmsg1 "🕛 Date of execution: $(date)"                                                                                    
 kmsg1 "🔧 Kernel: $kname"                                                                                           
@@ -923,28 +949,32 @@ kmsg1 "📁 Device Available RAM: $availram MB"
 kmsg1 "👺 Magisk: $magisk"
 kmsg1 "🔒 SELinux Status: $slstatus"                                                                                    
 kmsg1 "🧰 Busybox: $busybv"
-
+kmsg1 ""
 kmsg1 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg1 "🔊 Telegram Channel: https://t.me/kingprojectz"
 kmsg1 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg1 ""
 
 # Enable perfd and mpdecision
 start perfd
 start mpdecision
 
-kmsg1 "Enabled perfd and mpdecision"
+kmsg "Enabled perfd and mpdecision"
+kmsg1 ""
 
 # Do not stop thermal daemons, configure thermal config instead
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "0"
-kmsg1 "Tweaked thermal profile"
+kmsg "Tweaked thermal profile"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
-kmsg1 "Tweaked dynamic stune boost"
+kmsg "Tweaked dynamic stune boost"
+kmsg1 ""
 fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
@@ -968,7 +998,8 @@ then
 write "/sys/power/cpuhotplug/enabled" "1"
 fi
 
-kmsg1 "Enabled core control & CPU hotplug"
+kmsg "Enabled core control & CPU hotplug"
+kmsg1 ""
 
 # I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
@@ -995,7 +1026,8 @@ write "${queue}rq_affinity" 1
 write "${queue}nr_requests" 64
 done
 
-kmsg1 "Tweaked I/O scheduler"
+kmsg "Tweaked I/O scheduler"
+kmsg1 ""
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq
@@ -1052,7 +1084,8 @@ do
 write "$cpu/online" "1"
 done
 
-kmsg1 "Tweaked CPU"
+kmsg "Tweaked CPU parameters"
+kmsg1 ""
 
 if [[ -e "/sys/kernel/hmp" ]]; then
 write "/sys/kernel/hmp/boost" "0"
@@ -1133,7 +1166,8 @@ then
 write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
-kmsg1 "Tweaked GPU parameters"
+kmsg "Tweaked GPU parameters"
+kmsg1 ""
 
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -1142,7 +1176,8 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "6000"
 write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
-kmsg1 "Enabled and tweaked adreno idler"
+kmsg "Enabled and tweaked adreno idler"
+kmsg1 ""
 fi
 
 # Schedtune Tweaks
@@ -1171,7 +1206,8 @@ write "${stune}top-app/schedtune.prefer_perf" "1"
 
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
-kmsg1 "Tweaked cpuset schedtune"
+kmsg "Tweaked cpuset schedtune"
+kmsg1 ""
 fi
 
 # Uclamp Tweaks
@@ -1199,7 +1235,8 @@ write "${cpuset}system-background/uclamp.max" "40"
 write "${cpuset}system-background/uclamp.min" "0"
 write "${cpuset}system-background/uclamp.boosted" "0"
 write "${cpuset}system-background/uclamp.latency_sensitive" "0"
-kmsg1 "Tweaked cpuset uclamp"
+kmsg "Tweaked cpuset uclamp"
+kmsg1 ""
 fi
 
 # FS Tweaks
@@ -1208,14 +1245,16 @@ then
 write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
-kmsg1 "Tweaked FS"
+kmsg "Tweaked FS"
+kmsg1 ""
 fi
 
 # Enable dynamic_fsync
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
-kmsg1 "Enabled dynamic fsync"
+kmsg "Enabled dynamic fsync"
+kmsg1 ""
 fi
 
 # Scheduler features
@@ -1225,13 +1264,15 @@ write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "WAKEUP_PREEMPTION"
-kmsg1 "Tweaked scheduler features"
+kmsg "Tweaked scheduler features"
+kmsg1 ""
 fi
 
 if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
-kmsg1 "Disabled MMC CRC"
+kmsg "Disabled MMC CRC"
+kmsg1 ""
 fi
 
 # Tweak some kernel settings to improve overall performance
@@ -1264,13 +1305,15 @@ write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
 fi
 
-kmsg1 "Tweaked various kernel parameters"
+kmsg "Tweaked various kernel parameters"
+kmsg1 ""
 
 # Enable fingerprint boost
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
 write "/sys/kernel/fp_boost/enabled" "1"
-kmsg1 "Enabled fingerprint boost"
+kmsg "Enabled fingerprint boost"
+kmsg1 ""
 fi
 
 # Set min and max clocks
@@ -1292,19 +1335,22 @@ write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
-kmsg1 "Tweaked CPU clocks"
+kmsg "Tweaked CPU clocks"
+kmsg1 ""
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
-kmsg1 "Allowed CPUs to use it's deepest sleep state"
+kmsg "Allowed CPUs to use it's deepest sleep state"
+kmsg1 ""
 fi
 
 # Disable krait voltage boost
 if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
 then
 write "/sys/module/acpuclock_krait/parameters/boost" "N"
-kmsg1 "Disabled krait voltage boost"
+kmsg "Disabled krait voltage boost"
+kmsg1 ""
 fi
 
 sync
@@ -1328,7 +1374,8 @@ write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
-kmsg1 "Tweaked various VM parameters for a improved user-experience"
+kmsg "Tweaked various VM parameters for a improved user-experience"
+kmsg1 ""
 
 # MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -1336,20 +1383,23 @@ then
 write "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
 write "/sys/module/msm_thermal/core_control/enabled" "1"
 write "/sys/module/msm_thermal/parameters/enabled" "Y"
-kmsg1 "Tweaked msm_thermal"
+kmsg "Tweaked msm_thermal"
+kmsg1 ""
 fi
 
 # Enable CPU power efficient workqueue
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "Y"
-kmsg1 "Enabled CPU power efficient workqueue"
+kmsg "Enabled CPU power efficient workqueue"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "1"
-kmsg1 "Enabled CPU scheduler multi-core power-saving"
+kmsg "Enabled CPU scheduler multi-core power-saving"
+kmsg1 ""
 fi
 
 # Fix DT2W.
@@ -1358,38 +1408,44 @@ then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
 write "/sys/class/sec/tsp/dt2w_enable" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 
 elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
 then
 write "/sys/class/sec/tsp/dt2w_enable" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 
 elif [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 fi
 
 # Disable touch boost on balance and battery profile
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "0"
-kmsg1 "Disabled msm_performance touch boost"
+kmsg "Disabled msm_performance touch boost"
+kmsg1 ""
 
 elif [[ -e /sys/power/pnpmgr/touch_boost ]]
 then
 write "/sys/power/pnpmgr/touch_boost" "0"
-kmsg1 "Disabled pnpmgr touch boost"
+kmsg "Disabled pnpmgr touch boost"
+kmsg1 ""
 fi
 
 # Fetch the available TCP congestion control 
-avail_con=$(cat "${tcp}tcp_available_congestion_control")
+avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 	
     # Attempt to set the TCP congestion control in this order
     for tcpcc in bbr2 bbr westwood cubic 
@@ -1422,7 +1478,8 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
-kmsg1 "Applied TCP / internet tweaks."
+kmsg "Applied TCP / internet tweaks"
+kmsg1 ""
 
 # Disable high performance audio
 for hpm in /sys/module/snd_soc_wcd*
@@ -1430,7 +1487,8 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "0"
-kmsg1 "Disabled high performance audio"
+kmsg "Disabled high performance audio"
+kmsg1 ""
 break
 fi
 done
@@ -1448,46 +1506,55 @@ write "${lpm}suspend_enabled" "Y"
 fi
 done
 
-kmsg1 "Enabled LPM"
+kmsg "Enabled LPM"
+kmsg1 ""
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
 write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
-kmsg1 "Enabled pm2 idle sleep mode"
+kmsg "Enabled pm2 idle sleep mode"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "0"
-kmsg1 "Enabled LCD power reduce"
+kmsg "Enabled LCD power reduce"
+kmsg1 ""
 fi
 
 # Enable Fast Charging Rate
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
-kmsg1 "Enabled USB 3.0 fast charging"
+kmsg "Enabled USB 3.0 fast charging"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
 then
 write "/sys/class/sec/switch/afc_disable" "0"
-kmsg1 "Enabled fast charging on Samsung devices"
+kmsg "Enabled fast charging on Samsung devices"
+kmsg1 ""
 fi
 
-kmsg1 "Balanced profile applied."
+kmsg "Balanced profile applied"
+kmsg1 ""
 
-kmsg1 "End of execution: $(date)"
+kmsg "End of execution: $(date)"
+kmsg1 ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
-kmsg1 "Execution done in $exectime seconds."
+kmsg "Execution done in $exectime seconds"
 }
 # Extreme Profile
 extreme() {
 	init=$(date +%s)
      	
+kmsg1 ""     	
 kmsg "Device info"
+kmsg1 ""
 
 kmsg1 "🕛 Date of execution: $(date)"                                                                                    
 kmsg1 "🔧 Kernel: $kname"                                                                                           
@@ -1517,27 +1584,31 @@ kmsg1 "📁 Device Available RAM: $availram MB"
 kmsg1 "👺 Magisk: $magisk"
 kmsg1 "🔒 SELinux Status: $slstatus"                                                                                    
 kmsg1 "🧰 Busybox: $busybv"
-
+kmsg1 ""
 kmsg1 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg1 "🔊 Telegram Channel: https://t.me/kingprojectz"
 kmsg1 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg1 ""
 
 # Enable perfd and disable mpdecision.
 start perfd
 stop mpdecision
 
-kmsg1 "Enabled perfd and disabled mpdecision"
+kmsg "Enabled perfd and disabled mpdecision"
+kmsg1 ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "10"
-kmsg1 "Tweaked thermal profile"
+kmsg "Tweaked thermal profile"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
-kmsg1 "Tweaked dynamic stune boost"
+kmsg "Tweaked dynamic stune boost"
+kmsg1 ""
 fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
@@ -1561,7 +1632,8 @@ then
 write "/sys/power/cpuhotplug/enabled" "0"
 fi
 
-kmsg1 "Disabled core control & CPU hotplug"
+kmsg "Disabled core control & CPU hotplug"
+kmsg1 ""
 
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
@@ -1570,7 +1642,8 @@ write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumx
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "500"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
-kmsg1 "Tweaked CAF CPU input boost"
+kmsg "Tweaked CAF CPU input boost"
+kmsg1 ""
 
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
@@ -1578,7 +1651,8 @@ then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "500"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
-kmsg1 "Tweaked CPU input boost"
+kmsg "Tweaked CPU input boost"
+kmsg1 ""
 fi
 
 # I/O Scheduler Tweaks
@@ -1606,7 +1680,8 @@ write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 128
 done
 
-kmsg1 "Tweaked I/O scheduler"
+kmsg "Tweaked I/O scheduler"
+kmsg1 ""
 
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
@@ -1661,7 +1736,8 @@ do
 write "$cpu/online" "1"
 done
 
-kmsg1 "Tweaked CPU parameters"
+kmsg "Tweaked CPU parameters"
+kmsg1 ""
 
 if [[ -e "/sys/kernel/hmp" ]]; then
 write "/sys/kernel/hmp/boost" "1"
@@ -1670,7 +1746,8 @@ write "/sys/kernel/hmp/family_boost" "1"
 write "/sys/kernel/hmp/semiboost" "1"
 write "/sys/kernel/hmp/up_threshold" "400"
 write "/sys/kernel/hmp/down_threshold" "130"
-kmsg1 "Tweaked HMP parameters"
+kmsg "Tweaked HMP parameters"
+kmsg1 ""
 fi
 
 # GPU Tweaks
@@ -1744,13 +1821,15 @@ then
 write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
-kmsg1 "Tweaked GPU parameters"
+kmsg "Tweaked GPU parameters"
+kmsg1 ""
 
 # Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
-kmsg1 "Disabled adreno idler"
+kmsg "Disabled adreno idler"
+kmsg1 ""
 fi
 
 # Schedtune Tweaks
@@ -1780,7 +1859,8 @@ write "${stune}top-app/schedtune.prefer_perf" "1"
 
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
-kmsg1 "Tweaked cpuset schedtune"
+kmsg "Tweaked cpuset schedtune"
+kmsg1 ""
 fi
 
 # Uclamp Tweaks
@@ -1808,7 +1888,8 @@ write "${cpuset}system-background/uclamp.max" "40"
 write "${cpuset}system-background/uclamp.min" "0"
 write "${cpuset}system-background/uclamp.boosted" "0"
 write "${cpuset}system-background/uclamp.latency_sensitive" "0"
-kmsg1 "Tweaked cpuset uclamp"
+kmsg "Tweaked cpuset uclamp"
+kmsg1 ""
 fi
 
 # FS Tweaks
@@ -1817,14 +1898,16 @@ then
 write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
-kmsg1 "Tweaked FS"
+kmsg "Tweaked FS"
+kmsg1 ""
 fi
 
 # Enable dynamic_fsync
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
-kmsg1 "Enabled dynamic fsync"
+kmsg "Enabled dynamic fsync"
+kmsg1 ""
 fi
 
 # Scheduler features
@@ -1834,13 +1917,15 @@ write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
-kmsg1 "Tweaked scheduler features"
+kmsg "Tweaked scheduler features"
+kmsg1 ""
 fi
 
 if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
-kmsg1 "Disabled MMC CRC"
+kmsg "Disabled MMC CRC"
+kmsg1 ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
@@ -1874,13 +1959,15 @@ write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
 fi
 
-kmsg1 "Tweaked various kernel parameters"
+kmsg "Tweaked various kernel parameters"
+kmsg1 ""
 
 # Enable fingerprint boost.
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
 write "/sys/kernel/fp_boost/enabled" "1"
-kmsg1 "Enabled fingerprint_boost"
+kmsg "Enabled fingerprint_boost"
+kmsg1 ""
 fi
 
 # Set max clocks in gaming / performance profile.
@@ -1902,19 +1989,22 @@ write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
-kmsg1 "Tweaked CPU clocks"
+kmsg "Tweaked CPU clocks"
+kmsg1 ""
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
-kmsg1 "Allowed CPUs to use it's deepest sleep state"
+kmsg "Allowed CPUs to use it's deepest sleep state"
+kmsg1 ""
 fi
 
 # Enable krait voltage boost
 if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
 then
 write "/sys/module/acpuclock_krait/parameters/boost" "Y"
-kmsg1 "Enabled krait voltage boost"
+kmsg "Enabled krait voltage boost"
+kmsg1 ""
 fi
 
 sync
@@ -1938,7 +2028,8 @@ write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "150"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
-kmsg1 "Tweaked various VM parameters for a improved user-experience"
+kmsg "Tweaked various VM parameters for a improved user-experience"
+kmsg1 ""
 
 # MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -1946,20 +2037,23 @@ then
 write "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
 write "/sys/module/msm_thermal/core_control/enabled" "0"
 write "/sys/module/msm_thermal/parameters/enabled" "N"
-kmsg1 "Tweaked msm_thermal"
+kmsg "Tweaked msm_thermal"
+kmsg1 ""
 fi
 
 # Disable CPU power efficient workqueue.
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "N" 
-kmsg1 "Disabled CPU power efficient workqueue"
+kmsg "Disabled CPU power efficient workqueue"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
-kmsg1 "Disabled CPU scheduler multi-core power-saving"
+kmsg "Disabled CPU scheduler multi-core power-saving"
+kmsg1 ""
 fi
 
 # Fix DT2W.
@@ -1967,38 +2061,44 @@ if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 
 elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
 then
 write "/sys/class/sec/tsp/dt2w_enable" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 
 elif [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 fi
 
 # Enable touch boost on gaming and performance profile.
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "1"
-kmsg1 "Enabled msm_performance touch boost"
+kmsg "Enabled msm_performance touch boost"
+kmsg1 ""
 
 elif [[ -e /sys/power/pnpmgr/touch_boost ]]
 then
 write "/sys/power/pnpmgr/touch_boost" "1"
-kmsg1 "Enabled pnpmgr touch boost"
+kmsg "Enabled pnpmgr touch boost"
+kmsg1 ""
 fi
 
 # Fetch the available TCP congestion control 
-avail_con=$(cat "${tcp}tcp_available_congestion_control")
+avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 	
     # Attempt to set the TCP congestion control in this order
     for tcpcc in bbr2 bbr westwood cubic 
@@ -2031,13 +2131,15 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
-kmsg1 "Applied TCP / internet tweaks."
+kmsg "Applied TCP / internet tweaks"
+kmsg1 ""
 
 # Disable battery saver
 if [[ -d "/sys/module/battery_saver" ]]
 then
 write "/sys/module/battery_saver/parameters/enabled" "N"
-kmsg1 "Disabled battery saver"
+kmsg "Disabled battery saver"
+kmsg1 ""
 fi
 
 # Enable high performance audio
@@ -2046,7 +2148,8 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "1"
-kmsg1 "Enabled high performance audio"
+kmsg "Enabled high performance audio"
+kmsg1 ""
 break
 fi
 done
@@ -2055,7 +2158,8 @@ done
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
 then
 write "/sys/kernel/sched/arch_power" "0"
-kmsg1 "Disabled arch power scheduler feature"
+kmsg "Disabled arch power scheduler feature"
+kmsg1 ""
 fi
 
 # Disable LPM in extreme / gaming profile
@@ -2071,52 +2175,62 @@ write "${lpm}suspend_enabled" "N"
 fi
 done
 
-kmsg1 "Disabled LPM"
+kmsg "Disabled LPM"
+kmsg1 ""
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
 write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
-kmsg1 "Disabled pm2 idle sleep mode"
+kmsg "Disabled pm2 idle sleep mode"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "0"
-kmsg1 "Disabled LCD power reduce"
+kmsg "Disabled LCD power reduce"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
 write "/sys/kernel/sched/gentle_fair_sleepers" "0"
-kmsg1 "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg1 ""
 fi
 
 # Enable Fast Charging Rate
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
-kmsg1 "Enabled USB 3.0 fast charging"
+kmsg "Enabled USB 3.0 fast charging"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
 then
 write "/sys/class/sec/switch/afc_disable" "0"
-kmsg1 "Enabled fast charging on Samsung devices"
+kmsg "Enabled fast charging on Samsung devices"
+kmsg1 ""
 fi
   
 kmsg "Extreme profile applied"
+kmsg1 ""
 
-kmsg1 "End of execution: $(date)"
+kmsg "End of execution: $(date)"
+kmsg1 ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
-kmsg1 "Elapsed time: $exectime seconds"
+kmsg "Elapsed time: $exectime seconds"
 }
 # Battery Profile
 battery() {
 	init=$(date +%s)
      	
+kmsg1 ""     	
 kmsg "Device info"
+kmsg1 ""
 
 kmsg1 "🕛 Date of execution: $(date)"                                                                                    
 kmsg1 "🔧 Kernel: $kname"                                                                                           
@@ -2146,27 +2260,31 @@ kmsg1 "📁 Device Available RAM: $availram MB"
 kmsg1 "👺 Magisk: $magisk"
 kmsg1 "🔒 SELinux Status: $slstatus"                                                                                    
 kmsg1 "🧰 Busybox: $busybv"
-
+kmsg1 ""
 kmsg1 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg1 "🔊 Telegram Channel: https://t.me/kingprojectz"
 kmsg1 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg1 ""
 
 # Enable perfd and mpdecision
 start perfd
 start mpdecision
 
-kmsg1 "Enabled perfd and mpdecision"
+kmsg "Enabled perfd and mpdecision"
+kmsg1 ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "0"
-kmsg1 "Tweaked thermal profile"
+kmsg "Tweaked thermal profile"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
-kmsg1 "Tweaked dynamic stune boost"
+kmsg "Tweaked dynamic stune boost"
+kmsg1 ""
 fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
@@ -2190,7 +2308,8 @@ then
 write "/sys/power/cpuhotplug/enabled" "1"
 fi
 
-kmsg1 "Disabled core control and CPU hotplug"
+kmsg "Disabled core control and CPU hotplug"
+kmsg1 ""
 
 # Caf CPU Boost
 if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
@@ -2205,7 +2324,8 @@ fi
 if [[ -e "/sys/module/cpu_input_boost/parameters/input_boost_duration" ]]
 then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "0"
-kmsg1 "Disabled CPU input boost"
+kmsg "Disabled CPU input boost"
+kmsg1 ""
 fi
 
 # I/O Scheduler Tweaks
@@ -2233,7 +2353,8 @@ write "${queue}rq_affinity" 0
 write "${queue}nr_requests" 512
 done
 
-kmsg1 "Tweaked I/O scheduler"
+kmsg "Tweaked I/O scheduler"
+kmsg1 ""
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq
@@ -2300,7 +2421,8 @@ write "$cpu/online" "1"
 fi
 done
 
-kmsg1 "Tweaked CPU parameters"
+kmsg "Tweaked CPU parameters"
+kmsg1 ""
 
 if [[ -e "/sys/kernel/hmp" ]]; then
 write "/sys/kernel/hmp/boost" "0"
@@ -2309,7 +2431,8 @@ write "/sys/kernel/hmp/family_boost" "0"
 write "/sys/kernel/hmp/semiboost" "0"
 write "/sys/kernel/hmp/up_threshold" "829"
 write "/sys/kernel/hmp/down_threshold" "336"
-kmsg1 "Tweaked HMP parameters"
+kmsg "Tweaked HMP parameters"
+kmsg1 ""
 fi
 
 # GPU Tweaks
@@ -2382,7 +2505,8 @@ then
 write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
-kmsg1 "Tweaked GPU parameters"
+kmsg "Tweaked GPU parameters"
+kmsg1 ""
 
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -2391,7 +2515,8 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "10000"
 write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
-kmsg1 "Enabled and tweaked adreno idler"
+kmsg "Enabled and tweaked adreno idler"
+kmsg1 ""
 fi
 
 # Schedtune tweaks
@@ -2420,7 +2545,8 @@ write "${stune}top-app/schedtune.prefer_perf" "1"
 
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
-kmsg1 "Tweaked cpuset schedtune"
+kmsg "Tweaked cpuset schedtune"
+kmsg1 ""
 fi
 
 # Uclamp Tweaks
@@ -2448,7 +2574,8 @@ write "${cpuset}system-background/uclamp.max" "40"
 write "${cpuset}system-background/uclamp.min" "0"
 write "${cpuset}system-background/uclamp.boosted" "0"
 write "${cpuset}system-background/uclamp.latency_sensitive" "0"
-kmsg1 "Tweaked cpuset uclamp"
+kmsg "Tweaked cpuset uclamp"
+kmsg1 ""
 fi
 
 # FS Tweaks
@@ -2475,13 +2602,15 @@ write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "ARCH_POWER" 
-kmsg1 "Tweaked scheduler features"
+kmsg "Tweaked scheduler features"
+kmsg1 ""
 fi
 
 if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
-kmsg1 "Disabled MMC CRC"
+kmsg "Disabled MMC CRC"
+kmsg1 ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
@@ -2515,13 +2644,15 @@ write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
 fi
 
-kmsg1 "Tweaked various kernel parameters"
+kmsg "Tweaked various kernel parameters"
+kmsg1 ""
 
 # Disable fingerprint boost.
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
 write "/sys/kernel/fp_boost/enabled" "0"
-kmsg1
+kmsg "Disabled fingerprint boost"
+kmsg1 ""
 fi
 
 # Set min and max clocks.
@@ -2562,19 +2693,22 @@ write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
-kmsg1 "Tweaked CPU clocks"
+kmsg "Tweaked CPU clocks"
+kmsg1 ""
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
-kmsg1 "Allowed CPUs to use it's deepest sleep state"
+kmsg "Allowed CPUs to use it's deepest sleep state"
+kmsg1 ""
 fi
 
 # Disable krait voltage boost
 if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
 then
 write "/sys/module/acpuclock_krait/parameters/boost" "N"
-kmsg1 "Disabled krait voltage boost"
+kmsg "Disabled krait voltage boost"
+kmsg1 ""
 fi
 
 # VM settings to improve overall user experience and performance.
@@ -2595,7 +2729,8 @@ write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "50"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
-kmsg1 "Tweaked various VM parameters for a improved user-experience"
+kmsg "Tweaked various VM parameters for a improved user-experience"
+kmsg1 ""
 
 # MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -2603,20 +2738,23 @@ then
 write /sys/module/msm_thermal/vdd_restriction/enabled "1"
 write /sys/module/msm_thermal/core_control/enabled "1"
 write /sys/module/msm_thermal/parameters/enabled "Y"
-kmsg1 "Tweaked msm_thermal"
+kmsg "Tweaked msm_thermal"
+kmsg1 ""
 fi
 
 # Enable power efficient workqueue.
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "Y"
-kmsg1 "Enabled CPU power efficient workqueue"
+kmsg "Enabled CPU power efficient workqueue"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "2"
-kmsg1 "Enabled CPU multi-core power-saving"
+kmsg "Enabled CPU multi-core power-saving"
+kmsg1 ""
 fi
 
 # Fix DT2W.
@@ -2624,12 +2762,14 @@ if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 
 elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
 then
 write "/sys/class/sec/tsp/dt2w_enable" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 
 elif [[ -e "/proc/tp_gesture" ]]
 then
@@ -2646,12 +2786,14 @@ fi
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "0"
-kmsg1 "Disable msm_performance touch boost"
+kmsg "Disabled msm_performance touch boost"
+kmsg1 ""
 
 elif [[ -e /sys/power/pnpmgr/touch_boost ]]
 then
 write "/sys/power/pnpmgr/touch_boost" "0"
-kmsg1 "Disable pnpmgr touch boost"
+kmsg "Disabled pnpmgr touch boost"
+kmsg1 ""
 fi
 
 # Fetch the available TCP congestion control 
@@ -2688,13 +2830,15 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
-kmsg1 "Applied TCP / internet tweaks."
+kmsg "Applied TCP / internet tweaks"
+kmsg1 ""
 
 # Enable battery saver
 if [[ -d "/sys/module/battery_saver" ]]
 then
 write "/sys/module/battery_saver/parameters/enabled" "Y"
-kmsg1 "Enabled battery saver"
+kmsg "Enabled battery saver"
+kmsg1 ""
 fi
 
 # Disable high performance audio
@@ -2703,7 +2847,8 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "0"
-kmsg1 "Disabled high performance audio"
+kmsg "Disabled high performance audio"
+kmsg1 ""
 break
 fi
 done
@@ -2721,46 +2866,55 @@ write "${lpm}suspend_enabled" "Y"
 fi
 done
 
-kmsg1 "Enabled LPM"
+kmsg "Enabled LPM"
+kmsg1 ""
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "1"
-kmsg1 "Enabled LCD power reduce"
+kmsg "Enabled LCD power reduce"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
 write "/sys/kernel/sched/gentle_fair_sleepers" "0"
-kmsg1 "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg1 ""
 fi
 
 # Enable Fast Charging Rate
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
-kmsg1 "Enabled USB 3.0 fast charging"
+kmsg "Enabled USB 3.0 fast charging"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
 then
 write "/sys/class/sec/switch/afc_disable" "0"
-kmsg1 "Enabled fast charging on Samsung devices"
+kmsg "Enabled fast charging on Samsung devices"
+kmsg1 ""
 fi
   
-kmsg1 "Battery profile applied"
+kmsg "Battery profile applied"
+kmsg1 ""
 
-kmsg1 "End of execution: $(date)"
+kmsg "End of execution: $(date)"
+kmsg1 ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
-kmsg1 "Execution done in $exectime seconds."
+kmsg "Execution done in $exectime seconds."
 }
 # Gaming Profile
 gaming() {
 	init=$(date +%s)
      	
+kmsg1 ""     	
 kmsg "Device info"
+kmsg1 ""
 
 kmsg1 "🕛 Date of execution: $(date)"                                                                                    
 kmsg1 "🔧 Kernel: $kname"                                                                                           
@@ -2790,27 +2944,31 @@ kmsg1 "📁 Device Available RAM: $availram MB"
 kmsg1 "👺 Magisk: $magisk"
 kmsg1 "🔒 SELinux Status: $slstatus"                                                                                    
 kmsg1 "🧰 Busybox: $busybv"
-
+kmsg1 ""
 kmsg1 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg1 "🔊 Telegram Channel: https://t.me/kingprojectz"
 kmsg1 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg1 ""
 
 # Disable perfd and mpdecision
 stop perfd
 stop mpdecision
 
-kmsg1 "Disabled perfd and mpdecision"
+kmsg "Disabled perfd and mpdecision"
+kmsg1 "*
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "10"
-kmsg1 "Tweaked thermal profile"
+kmsg "Tweaked thermal profile"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
-kmsg1 "Tweaked dynamic stune boost"
+kmsg "Tweaked dynamic stune boost"
+kmsg1 ""
 fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
@@ -2834,7 +2992,9 @@ then
 write "/sys/power/cpuhotplug/enabled" "0"
 fi
 
-kmsg1 "Disabled core control & CPU hotplug"
+kmsg "Disabled core control & CPU hotplug"
+kmsg1 ""
+
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
@@ -2842,7 +3002,8 @@ write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumx
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "500"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
-kmsg1 "Tweaked CAF CPU input boost"
+kmsg "Tweaked CAF CPU input boost"
+kmsg1 ""
 
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
@@ -2850,7 +3011,8 @@ then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "500"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
-kmsg1 "Tweaked CPU input boost"
+kmsg "Tweaked CPU input boost"
+kmsg1 ""
 fi
 
 # I/O Scheduler Tweaks
@@ -2878,7 +3040,8 @@ write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 128
 done
 
-kmsg1 "Tweaked I/O scheduler"
+kmsg "Tweaked I/O scheduler"
+kmsg1 ""
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq
@@ -2935,7 +3098,9 @@ do
 write "$cpu/online" "1"
 done
 
-kmsg1 "Tweaked CPU parameters"
+kmsg "Tweaked CPU parameters"
+kmsg1 ""
+
 if [[ -e "/sys/kernel/hmp" ]]; then
 write "/sys/kernel/hmp/boost" "1"
 write "/sys/kernel/hmp/down_compensation_enabled" "0"
@@ -2943,7 +3108,8 @@ write "/sys/kernel/hmp/family_boost" "1"
 write "/sys/kernel/hmp/semiboost" "1"
 write "/sys/kernel/hmp/up_threshold" "400"
 write "/sys/kernel/hmp/down_threshold" "125"
-kmsg1 "Tweaked HMP parameters"
+kmsg "Tweaked HMP parameters"
+kmsg1 ""
 fi
 
 # GPU Tweaks
@@ -3017,13 +3183,15 @@ then
 write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
-kmsg1 "Tweaked GPU parameters"
+kmsg "Tweaked GPU parameters"
+kmsg1 ""
 
 # Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
-kmsg1 "Disabled adreno idler"
+kmsg "Disabled adreno idler"
+kmsg1 ""
 fi
 
 # Schedtune Tweaks
@@ -3053,7 +3221,8 @@ write "${stune}top-app/schedtune.prefer_perf" "1"
 
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
-kmsg1 "Tweaked cpuset schedtune"
+kmsg "Tweaked cpuset schedtune"
+kmsg1 ""
 fi
 
 # Uclamp Tweaks
@@ -3081,7 +3250,8 @@ write "${cpuset}system-background/uclamp.max" "40"
 write "${cpuset}system-background/uclamp.min" "0"
 write "${cpuset}system-background/uclamp.boosted" "0"
 write "${cpuset}system-background/uclamp.latency_sensitive" "0"
-kmsg1 "Tweaked cpuset uclamp"
+kmsg "Tweaked cpuset uclamp"
+kmsg1 ""
 fi
 
 # FS Tweaks
@@ -3090,14 +3260,16 @@ then
 write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
-kmsg1 "Tweaked FS"
+kmsg "Tweaked FS"
+kmsg1 ""
 fi
 
 # Enable dynamic_fsync
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
-kmsg1 "Enabled dynamic fsync"
+kmsg "Enabled dynamic fsync"
+kmsg1 ""
 fi
 
 # Scheduler features
@@ -3107,13 +3279,15 @@ write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
-kmsg1 "Tweaked scheduler features"
+kmsg "Tweaked scheduler features"
+kmsg1 ""
 fi
 
 if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
-kmsg1 "Disabled MMC CRC"
+kmsg "Disabled MMC CRC"
+kmsg1 ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
@@ -3147,13 +3321,15 @@ write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
 fi
 
-kmsg1 "Tweaked various kernel parameters"
+kmsg "Tweaked various kernel parameters"
+kmsg1 ""
 
 # Enable fingerprint boost
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
 write "/sys/kernel/fp_boost/enabled" "1"
-kmsg1 "Enabled fingerprint boost"
+kmsg "Enabled fingerprint boost"
+kmsg1 ""
 fi
 
 # Set max clocks in gaming / performance profile.
@@ -3175,19 +3351,22 @@ write "${mnclk}scaling_max_freq" "$cpumxfreq"
 fi
 done
 
-kmsg1 "Tweaked CPU clocks"
+kmsg "Tweaked CPU clocks"
+kmsg1 ""
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
-kmsg1 "Not allowed CPUs to use it's deepest idle state"
+kmsg "Not allowed CPUs to use it's deepest idle state"
+kmsg1 ""
 fi
 
 # Enable krait voltage boost
 if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
 then
 write "/sys/module/acpuclock_krait/parameters/boost" "Y"
-kmsg1 "Enabled krait voltage boost"
+kmsg "Enabled krait voltage boost"
+kmsg1 ""
 fi
 
 sync
@@ -3211,7 +3390,8 @@ write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
-kmsg1 "Tweaked various VM parameters for a improved user-experience"
+kmsg "Tweaked various VM parameters for a improved user-experience"
+kmsg1 ""
 
 # MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -3219,20 +3399,23 @@ then
 write /sys/module/msm_thermal/vdd_restriction/enabled "0"
 write /sys/module/msm_thermal/core_control/enabled "0"
 write /sys/module/msm_thermal/parameters/enabled "N"
-kmsg1 "Tweaked msm_thermal"
+kmsg "Tweaked msm_thermal"
+kmsg1 ""
 fi
 
 # Disable power efficient workqueue.
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "N" 
-kmsg1 "Disabled CPU power efficient workqueue"
+kmsg "Disabled CPU power efficient workqueue"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
-kmsg1 "Disabled CPU scheduler multi-core power-saving"
+kmsg "Disabled CPU scheduler multi-core power-saving"
+kmsg1 ""
 fi
 
 # Fix DT2W.
@@ -3240,38 +3423,44 @@ if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
-kmsg1 "Fix DT2W if broken"
+kmsg "Fix DT2W if broken"
+kmsg1 ""
 
 elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
 then
 write "/sys/class/sec/tsp/dt2w_enable" "1"
-kmsg1 "Fix DT2W if broken"
+kmsg "Fix DT2W if broken"
+kmsg1 ""
 
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
-kmsg1 "Fix DT2W if broken"
+kmsg "Fix DT2W if broken"
+kmsg1 ""
 
 elif [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
-kmsg1 "Fix DT2W if broken"
+kmsg "Fix DT2W if broken"
+kmsg1 ""
 fi
 
 # Enable touch boost on gaming and performance profile.
 if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "1"
-kmsg1 "Enabled msm_performance touch boost"
+kmsg "Enabled msm_performance touch boost"
+kmsg1 ""
 
 elif [[ -e /sys/power/pnpmgr/touch_boost ]]
 then
 write "/sys/power/pnpmgr/touch_boost" "1"
-kmsg1 "Enabled pnpmgr touch boost"
+kmsg "Enabled pnpmgr touch boost"
+kmsg1 ""
 fi
 
 # Fetch the available TCP congestion control 
-avail_con=`cat "${tcp}tcp_available_congestion_control"`
+avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 	
     # Attempt to set the TCP congestion control in this order
     for tcpcc in bbr2 bbr westwood cubic  
@@ -3304,13 +3493,15 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
-kmsg1 "Applied TCP / internet tweaks"
+kmsg "Applied TCP / internet tweaks"
+kmsg1 ""
 
 # Disable battery saver
 if [[ -d "/sys/module/battery_saver" ]]
 then
 write "/sys/module/battery_saver/parameters/enabled" "N"
-kmsg1 "Disabled battery saver"
+kmsg "Disabled battery saver"
+kmsg1 ""
 fi
 
 # Enable high performance audio
@@ -3319,7 +3510,8 @@ do
 if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "1"
-kmsg1 "Enabled high performance audio"
+kmsg "Enabled high performance audio"
+kmsg1 ""
 break
 fi
 done
@@ -3328,7 +3520,8 @@ done
 if [[ -e "/sys/kernel/sched/arch_power" ]] 
 then
 write "/sys/kernel/sched/arch_power" "0"
-kmsg1 "Disabled arch power scheduler feature"
+kmsg "Disabled arch power scheduler feature"
+kmsg1 ""
 fi
 
 # Disable LPM in extreme / gaming profile
@@ -3344,44 +3537,52 @@ write "${lpm}suspend_enabled" "N"
 fi
 done
 
-kmsg1 "Disabled LPM"
+kmsg "Disabled LPM"
+kmsg1 ""
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
 write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
-kmsg1 "Disabled pm2 idle sleep mode"
+kmsg "Disabled pm2 idle sleep mode"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "0"
-kmsg1 "Disabled LCD power reduce"
+kmsg "Disabled LCD power reduce"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
 write "/sys/kernel/sched/gentle_fair_sleepers" "0"
-kmsg1 "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg1 ""
 fi
 
 # Enable Fast Charging Rate
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
-kmsg1 "Enabled USB 3.0 fast charging"
+kmsg "Enabled USB 3.0 fast charging"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
 then
 write "/sys/class/sec/switch/afc_disable" "0"
-kmsg1 "Enabled fast charging on Samsung devices"
+kmsg "Enabled fast charging on Samsung devices"
+kmsg1 ""
 fi
   
-kmsg1 "Gaming profile applied"
+kmsg "Gaming profile applied"
+kmsg1 ""
 
-kmsg1 "End of execution: $(date)"
+kmsg "End of execution: $(date)"
+kmsg1 ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
-kmsg1 "Elapsed time: $exectime seconds"
+kmsg "Elapsed time: $exectime seconds"
 }

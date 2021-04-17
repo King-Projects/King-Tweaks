@@ -190,9 +190,7 @@ renice -n -3 $(pgrep crtc_commit)
 renice -n -3 $(pgrep crtc_event)
 renice -n 4 $(pgrep android.gms)
 
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
-kmsg1 "                                                RENICED PROCESSES.                                                                               "
-kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
+kmsg "Reniced processes"
 
 # Remove main script log if the size is big
 ktsrmaxsize=1000000
@@ -533,6 +531,78 @@ case "$kts_profile" in
          
                      killall -9 kingauto
 	 				gaming
+	 				
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
+     	then
+     	toast1
+     	
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+         then
+         toast1
+         
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
+     	then
+     	toastpt1
+     	
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+     	then
+     	toastin1
+     	
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+     	then
+     	toasttr1
+     	
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+     	then
+     	toastfr1
+
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+     	then
+     	toastfr1
+
+     	else
+     	toast1
+     	fi
+	 	};;
+	 	
+	 	"Latency") {
+	 			
+	 				. $MODPATH/libs/libktsr.sh
+	 				
+         if [[ $(getprop persist.sys.locale) == "en-US" ]]
+     	then
+     	toast
+     	
+     	elif [[ $(getprop persist.sys.locale) == "en-GB" ]]
+         then
+         toast
+         
+     	elif [[ $(getprop persist.sys.locale) == "pt-BR" ]]
+     	then
+     	toastpt
+     	
+     	elif [[ $(getprop persist.sys.locale) == "id-ID" ]]
+     	then
+     	toastin
+     	
+     	elif [[ $(getprop persist.sys.locale) == "tr-TR" ]]
+     	then
+     	toasttr
+     	
+     	elif [[ $(getprop persist.sys.locale) == "fr-FR" ]]
+     	then
+     	toastfr
+
+     	elif [[ $(getprop persist.sys.locale) == "fr-CA" ]]
+     	then
+     	toastfr
+
+     	else
+     	toast
+     	fi
+         
+                     killall -9 kingauto
+	 				latency
 	 				
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
