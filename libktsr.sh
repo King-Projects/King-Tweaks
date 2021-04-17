@@ -90,7 +90,7 @@ write() {
 	fi
 
 	# Log the success
-	kmsg "$1 $curval -> $2"
+	kmsg1 "$1 $curval -> $2"
 }
 
 # Detect if we are running on a android device
@@ -844,7 +844,7 @@ kmsg1 ""
 fi
 
 # Fetch the available TCP congestion control 
-avail_con=$(cat "${tcp}tcp_available_congestion_control")
+avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 	
     # Attempt to set the TCP congestion control in this order
     for tcpcc in bbr2 bbr westwood cubic  
@@ -908,15 +908,18 @@ kmsg "Elapsed time: $exectime seconds."
 automatic() {
      	
 kmsg "Enabling automatic profile"
+kmsg1 ""
 
 	sync
 	kingauto
 	
 	kmsg "Enabled automatic profile"
+	kmsg1 ""
 	}
 # Balanced Profile
 balanced() {
          init=$(date +%s)
+         
 kmsg1 ""     	
 kmsg "Device info"
 kmsg1 ""
@@ -1094,7 +1097,8 @@ write "/sys/kernel/hmp/family_boost" "0"
 write "/sys/kernel/hmp/semiboost" "0"
 write "/sys/kernel/hmp/up_threshold" "556"
 write "/sys/kernel/hmp/down_threshold" "241"
-kmsg1 "Tweaked HMP parameters"
+kmsg "Tweaked HMP parameters"
+kmsg1 ""
 fi
 
 # GPU Tweaks
@@ -1117,7 +1121,7 @@ fi
 	avail_govs="$(cat "$gpug/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
-	for governor in Interactive Dynamic Static
+	for governor in Interactive Dynamic Static ondemand
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1141,6 +1145,7 @@ fi
 [[ $adreno == "true" ]] && write "$gpu/idle_timer" "66"
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
+[[ $adreno == "false" ]] && write "$gpu/dvfs" "1"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "86"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
@@ -1323,6 +1328,8 @@ if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "300000"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -1332,6 +1339,8 @@ if [[ -e "${mnclk}scaling_min_freq" ]]
 then
 write "${mnclk}scaling_min_freq" "300000"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "300000"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -1770,7 +1779,7 @@ fi
 	avail_govs="$(cat "$gpug/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
-	for governor in Booster Interactive Dynamic Static
+	for governor in Booster Interactive Dynamic Static ondemand
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1795,25 +1804,25 @@ fi
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
-[[ $adreno == "false" ]] && write "$gpu/perf" "1"
+[[ $adreno == "false" ]] && write "$gpu/dvfs" "0"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "76"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
-write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
 fi
 
-# Enable dvfs
+# Disable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
-write "/proc/mali/dvfs_enable" "1"
+write "/proc/mali/dvfs_enable" "0"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
 then
-write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
+write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "0"
 fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
@@ -2308,7 +2317,7 @@ then
 write "/sys/power/cpuhotplug/enabled" "1"
 fi
 
-kmsg "Disabled core control and CPU hotplug"
+kmsg "Enabled core control and CPU hotplug"
 kmsg1 ""
 
 # Caf CPU Boost
@@ -2455,7 +2464,7 @@ fi
 	avail_govs="$(cat "$gpug/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
-	for governor in Interactive Static
+	for governor in Interactive Static ondemand
 	do
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -2478,6 +2487,7 @@ fi
 [[ $adreno == "true" ]] && write "$gpu/idle_timer" "36"
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
+[[ $adreno == "false" ]] && write "$gpu/dvfs" "1"
 [[ $adreno == "false" ]] && write "$gpu/perf" "0"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "95"
@@ -2584,14 +2594,16 @@ then
 write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "45"
 write "/proc/sys/fs/leases-enable" "1"
-kmsg1 "Tweaked FS"
+kmsg "Tweaked FS"
+kmsg1 ""
 fi
     
 # Enable dynamic_fsync
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
-kmsg1 "Enabled dynamic fsync"
+kmsg "Enabled dynamic fsync"
+kmsg1 ""
 fi
 
 # Scheduler features
@@ -2774,12 +2786,14 @@ kmsg1 ""
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 
 elif [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
-kmsg1 "Fixed DT2W if broken"
+kmsg "Fixed DT2W if broken"
+kmsg1 ""
 fi
 
 # Disable touch boost on battery and balance profile.
@@ -2955,7 +2969,7 @@ stop perfd
 stop mpdecision
 
 kmsg "Disabled perfd and mpdecision"
-kmsg1 "*
+kmsg1 ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "10"
@@ -3156,6 +3170,7 @@ fi
 [[ $adreno == "true" ]] && write "$gpu/idle_timer" "1006"
 [[ $adreno == "true" ]] && write "$gpu/pwrnap" "0"
 [[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumx2
+[[ $adreno == "false" ]] && write "$gpu/dvfs" "0"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
 [[ $adreno == "false" ]] && write "$gpu/perf" "1"
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "76"
@@ -3170,12 +3185,12 @@ fi
 # Enable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
-write "/proc/mali/dvfs_enable" "1"
+write "/proc/mali/dvfs_enable" "0"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
 then
-write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
+write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "0"
 fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
@@ -3339,6 +3354,8 @@ if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "$cpumxfreq"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -3348,6 +3365,8 @@ if [[ -e "${mnclk}scaling_min_freq" ]]
 then
 write "${mnclk}scaling_min_freq" "$cpumxfreq"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
