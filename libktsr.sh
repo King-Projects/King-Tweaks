@@ -66,8 +66,8 @@ toastfr1() {
 write() {
 	# Bail out if file does not exist
 	if [[ ! -f "$1" ]]; then
-    kmsg1 "$1 doesn't exist, skipping..."
-    return 0
+	kmsg2 "$1 doesn't exist, skipping..."
+    return 1
     fi
 
 	# Fetch the current key value
@@ -75,8 +75,8 @@ write() {
 	
 	# Bail out if value is already set
 	if [[ "$curval" == "$2" ]]; then
-	kmsg1 "$1 is already set to $2, skipping..."
-	return 0
+	kmsg2 "$1 is already set to $2, skipping..."
+	return 1
 	fi
 
 	# Make file writable in case it is not already
@@ -85,10 +85,10 @@ write() {
 	# Write the new value and bail if there's an error
 	if ! echo "$2" > "$1" 2> /dev/null
 	then
-		kmsg2 "Failed: $1 -> $2"
+	kmsg2 "[!] Failed: $1 -> $2"
 		return 1
 	fi
-
+	
 	# Log the success
 	kmsg1 "$1 $curval -> $2"
 }
@@ -308,7 +308,7 @@ exynos=false
 fi
 
 # Detect if we're running on a mediatek powered device
-if [[ $($soc | grep 'mt') ]]; then
+if [[ "$($soc | grep 'mt')" ]]; then
 mtk=true
 adreno=false
 else
@@ -781,6 +781,8 @@ if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "300000"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "300000"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -790,6 +792,8 @@ if [[ -e "${mnclk}scaling_min_freq" ]]
 then
 write "${mnclk}scaling_min_freq" "300000"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "/sys/power/user_scaling_min_freq" "300000"
+write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -884,7 +888,8 @@ kmsg1 ""
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
-kmsg1 "Enabled USB 3.0 fast charging"
+kmsg "Enabled USB 3.0 fast charging"
+kmsg1 ""
 fi
 
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
@@ -2330,7 +2335,8 @@ then
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "0"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "0"
-kmsg1 "Disabled CAF CPU input boost"
+kmsg "Disabled CAF CPU input boost"
+kmsg1 ""
 fi
 
 # CPU input boost
@@ -2822,7 +2828,7 @@ kmsg1 ""
 fi
 
 # Fetch the available TCP congestion control 
-avail_con=$(cat "${tcp}tcp_available_congestion_control")
+avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 	
     # Attempt to set the TCP congestion control in this order
     for tcpcc in bbr2 bbr westwood cubic 
