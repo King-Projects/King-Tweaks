@@ -152,6 +152,7 @@ read option
 						
 						"6")
 						setprop persist.kingtweaks.mode 6
+						;;
 						
 						"7")
 						cmd package bg-dexopt-job

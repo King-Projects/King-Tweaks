@@ -83,7 +83,8 @@ elif [[ "$kts_mode" == "5" ]]
 then
 kts_profilept=Gaming
 
-elif [[ "$kts_mode" == "6" ]];
+elif [[ "$kts_mode" == "6" ]]
+then
 kts_profilept=Latência
 fi
 	 	
