@@ -57,6 +57,10 @@ kts_profilein=Ekstrim
 elif [[ "$kts_mode" == "5" ]]
 then
 kts_profilein=Gaming
+
+elif [[ "$kts_mode" == "6" ]]
+then
+kts_profilein=Latensi
 fi
 
 if [[ "$kts_mode" == "1" ]]
@@ -78,6 +82,9 @@ kts_profilept=Extremo
 elif [[ "$kts_mode" == "5" ]]
 then
 kts_profilept=Gaming
+
+elif [[ "$kts_mode" == "6" ]];
+kts_profilept=Latência
 fi
 	 	
 if [[ "$kts_mode" == "1" ]]
@@ -99,6 +106,10 @@ kts_profile=Extreme
 elif [[ "$kts_mode" == "5" ]]
 then
 kts_profile=Gaming
+
+elif [[ "$kts_mode" == "6" ]]
+then
+kts_profile=Latency
 fi
 
 if [[ "$kts_mode" == "1" ]]
@@ -120,6 +131,10 @@ kts_profiletr=Aşırı
 elif [[ "$kts_mode" == "5" ]]
 then
 kts_profiletr=Oyun
+
+elif [[ "$kts_mode" == "6" ]]
+then
+kts_profiletr=Gecikme
 fi
 
 if [[ "$kts_mode" == "1" ]]
@@ -141,6 +156,10 @@ kts_profilefr=Extrême
 elif [[ "$kts_mode" == "5" ]]
 then
 kts_profilefr=Jeu
+
+elif [[ "$kts_mode" == "6" ]]
+then
+kts_profilefr=Latence
 fi
 
 renice -n -6 $(pgrep system_server)
@@ -174,10 +193,10 @@ kmsg1 "-------------------------------------------------------------------------
 kmsg1 "                                                RENICED PROCESSES.                                                                               "
 kmsg1 "-------------------------------------------------------------------------------------------------------------------------------------------------"
 
-# Remove main script log if the size is bigger than 5 MB
-ktsrmaxsize=5000000
+# Remove main script log if the size is big
+ktsrmaxsize=1000000
 
-# Do the same to dbopt log (in this case, 1 MB)
+# Do the same to dbopt log
 dboptmaxsize=1000000
 
 if [[ "$(stat -t "$KLOG" | awk '{print $2}' -eq "$ktsrmaxsize")" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}' -gt "$ktsrmaxsize")" ]]; then

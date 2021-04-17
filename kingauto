@@ -8,8 +8,8 @@ MODPATH=/data/adb/modules/KTSR
 
 fullram=$((totalram * 20 / 100))
 
-if [[ -e /sdcard/KTSR/battcurrent.log ]]; then
-rm /sdcard/KTSR/battcurrent.log
+if [[ -e "/sdcard/KTSR/battcurrent.log" ]]; then
+rm "/sdcard/KTSR/battcurrent.log"
 fi
 
 save_current(){
@@ -19,12 +19,12 @@ cat "$i" >> /sdcard/KTSR/battcurrent.log
 done
 cat "$x" >> /sdcard/KTSR/battcurrent.log
 done
-cat "/sys/class/qc_battery/restrict_cur" >> /sdcard/KTSR/battcurrent.log
+cat "/sys/class/qc_battery/restrict_cur" >> "/sdcard/KTSR/battcurrent.log"
 }
 
 current(){
 for x in $(seq 1 10); do
-cat /sdcard/KTSR/battcurrent.log | awk -v seq="$x" '{print $seq}'
+cat "/sdcard/KTSR/battcurrent.log" | awk -v seq="$x" '{print $seq}'
 done
 }
 

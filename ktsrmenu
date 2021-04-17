@@ -44,6 +44,10 @@ elif [[ "$kts_mode" == "5" ]]
 then
 kts_profile=Gaming
 
+elif [[ "$kts_mode" == "6" ]]
+then
+kts_profile=Latency
+
 else
 kts_profile=Unknown
 fi
@@ -75,46 +79,49 @@ sleep 2.5
 echo "[5] Gaming: Recommended to gamers who want the best performance possible while playing, with almost zero throttling, tweaks both CPU / GPU and more to achieve it, will probably drain a lot of battery life."
 echo ""
 sleep 3.5
+echo "[6] Latency: Recommended to users who want really silky / smooth UI"
+echo ""
+sleep 2.0
 echo "[*] Other misc options: "
 echo ""
 sleep 1.8
-echo "[6] Optimize apps package"
+echo "[7] Optimize apps package"
 echo ""
 sleep 1.6
-echo "[7] Optimize databases"
+echo "[8] Optimize databases"
 echo ""
 sleep 1.4
 if [[ $low_power == "Deactivated" ]]; then
-echo "[8] Enable low power mode"
+echo "[9] Enable low power mode"
 echo ""
 sleep 1.6
 else
-echo "[9] Disable low power mode"
+echo "[10] Disable low power mode"
 echo ""
 sleep 1.4
 fi
 if [[ $data_saver == "Disabled" ]]; then
-echo "[10] Enable data saver"
+echo "[11] Enable data saver"
 echo ""
 sleep 1.4
 else
-echo "[11] Disable data saver"
+echo "[12] Disable data saver"
 echo ""
 sleep 1.6
 fi
 if [[ $loc_mode_pwr_saving == "Enabled" ]]; then
-echo "[12] Enable power-saving location mode"
+echo "[13] Enable power-saving location mode"
 echo ""
 sleep 1.7
 else
-echo "[13] Disable power-saving location mode"
+echo "[14] Disable power-saving location mode"
 echo ""
 sleep 1.9
 fi
-echo "[14] Access our telegram group"
+echo "[15] Access our telegram group"
 echo ""
 sleep 1.3
-echo "[15] FKM updater script"
+echo "[16] FKM updater script"
 echo ""
 sleep 1
 echo "[0] Exit"
@@ -144,10 +151,13 @@ read option
 						;;
 						
 						"6")
+						setprop persist.kingtweaks.mode 6
+						
+						"7")
 						cmd package bg-dexopt-job
 						;;
 						
-						"7")
+						"8")
 						if [[ $(find /system -name "sqlite3" -type f) ]]; then
 						echo "[*] Optimizing..."
 						for i in $(find /d* -iname "*.db"); do
@@ -179,36 +189,36 @@ read option
                         fi
                         ;;
 						
-                        "8")
+                        "9")
                         settings put global low_power 1
                         ;;
                         
-                        "9")
+                        "10")
                         settings put global low_power 0
                         ;;
                         
-                        "10")
+                        "11")
                         cmd netpolicy set restrict-background true
                         ;;
                         
-                        "11")
+                        "12")
                         cmd netpolicy set restrict-background false
                         ;;
                         
-                        "12")
+                        "13")
                         settings put secure location_mode "0"
                         settings put secure location_providers_allowed ""
                         ;;
                         
-                        "13")
+                        "14")
                         settings put secure location_providers_allowed "gps,network"
                         ;;
                         
-						"14")
+						"15")
 						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
 						;;
 						
-						"15")
+						"16")
 						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released to download!"
 						echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
 						;;
