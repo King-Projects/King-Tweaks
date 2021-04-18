@@ -23,6 +23,11 @@ then
 touch "$KLOG"
 fi
 
+if [[ -e "$KDBG" ]]
+then
+rm "$KDBG"
+fi
+
 boot_run_once=false
 kts_mode=$(getprop persist.kingtweaks.mode)
 [ -z "$kts_mode" ] && setprop persist.kingtweaks.mode "1"
@@ -193,13 +198,13 @@ renice -n 4 $(pgrep android.gms)
 kmsg "Reniced processes"
 
 # Remove main script log if the size is big
-ktsrmaxsize=1000000
+kdbgmaxsize=1000000
 
 # Do the same to dbopt log
 dboptmaxsize=1000000
 
-if [[ "$(stat -t "$KLOG" | awk '{print $2}' -eq "$ktsrmaxsize")" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}' -gt "$ktsrmaxsize")" ]]; then
-rm "$KLOG"
+if [[ "$(stat -t "$KDBG" | awk '{print $2}' -eq "$kdbgmaxsize")" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}' -gt "$kdbgmaxsize")" ]]; then
+rm "$KDBG"
 
 elif [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}' -eq "$dboptmaxsize")" ]] || [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}' -gt "$dboptmaxsize")" ]]; then
 rm "/sdcard/KTSR/dbopt.log"
