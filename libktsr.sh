@@ -513,56 +513,56 @@ stune=/dev/stune/
 latency() {
      	init=$(date +%s)
 
-     	kmsg1 ""     	
+     	kmsg ""     	
 kmsg "Device info"
-kmsg1 ""
+kmsg ""
 
-kmsg1 "🕛 Date of execution: $(date)"                                                                                    
-kmsg1 "🔧 Kernel: $kname"                                                                                           
-kmsg1 "🗓️ Kernel Build Date: $kbdd"
-kmsg1 "🛠️ SOC: $mf, $soc"                                                                                               
-kmsg1 "⚙️ SDK: $sdk"
-kmsg1 "🅰️ndroid Version: $arv"    
-kmsg1 "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
-kmsg1 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg1 "⛓️ AArch: $aarch"                                                                                            
-kmsg1 "🖼️ GPU Model: $gpuinfo"                                                                                         
-kmsg1 "🔨 GPU Drivers Info: $driversinfo"                                                                                  
-kmsg1 "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg1 "📱 Device: $dcdm"                                                                                                
-kmsg1 "📲 ROM: $dvrom"                                                                                                  
-kmsg1 "🎞️ Display FPS: $df"                                                                                                    
-kmsg1 "👑 KTSR Version: $gbversion"                                                                                     
-kmsg1 "💭 KTSR Codename: $gbcodename"                                                                                   
-kmsg1 "📀 Build Type: $gbtype"                                                                                         
-kmsg1 "⏰ Build Date: $gbdate"                                                                                          
-kmsg1 "🔋 Battery Charge Level: $gbpercentage%"                                                                         
-kmsg1 "🩹 Battery Health: $bhealth"                                                                                     
-kmsg1 "⚡ Battery Status: $bstatus"                                                                                     
-kmsg1 "🌡️ Battery Temperature: $gbtemp°C"                                                                               
-kmsg1 "💾 Device RAM: $totalram MB"                                                                                     
-kmsg1 "📁 Device Available RAM: $availram MB"
-kmsg1 "👺 Magisk: $magisk"
-kmsg1 "🔒 SELinux Status: $slstatus"                                                                                    
-kmsg1 "🧰 Busybox: $busybv"
-kmsg1 ""
-kmsg1 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg1 "🔊 Telegram Channel: https://t.me/kingprojectz"
-kmsg1 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
-kmsg1 ""
+kmsg "🕛 Date of execution: $(date)"                                                                                    
+kmsg "🔧 Kernel: $kname"                                                                                           
+kmsg "🗓️ Kernel Build Date: $kbdd"
+kmsg "🛠️ SOC: $mf, $soc"                                                                                               
+kmsg "⚙️ SDK: $sdk"
+kmsg "🅰️ndroid Version: $arv"    
+kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
+kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
+kmsg "⛓️ AArch: $aarch"                                                                                            
+kmsg "🖼️ GPU Model: $gpuinfo"                                                                                         
+kmsg "🔨 GPU Drivers Info: $driversinfo"                                                                                  
+kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
+kmsg "📱 Device: $dcdm"                                                                                                
+kmsg "📲 ROM: $dvrom"                                                                                                  
+kmsg "🎞️ Display FPS: $df"                                                                                                    
+kmsg "👑 KTSR Version: $gbversion"                                                                                     
+kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
+kmsg "📀 Build Type: $gbtype"                                                                                         
+kmsg "⏰ Build Date: $gbdate"                                                                                          
+kmsg "🔋 Battery Charge Level: $gbpercentage%"                                                                         
+kmsg "🩹 Battery Health: $bhealth"                                                                                     
+kmsg "⚡ Battery Status: $bstatus"                                                                                     
+kmsg "🌡️ Battery Temperature: $gbtemp°C"                                                                               
+kmsg "💾 Device RAM: $totalram MB"                                                                                     
+kmsg "📁 Device Available RAM: $availram MB"
+kmsg "👺 Magisk: $magisk"
+kmsg "🔒 SELinux Status: $slstatus"                                                                                    
+kmsg "🧰 Busybox: $busybv"
+kmsg ""
+kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg "🔊 Telegram Channel: https://t.me/kingprojectz"
+kmsg "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg ""
 
 # Enable perf and mpdecision
 start perfd  	
 start mpdecision
 
 kmsg "Enabled perfd and mpdecision"
-kmsg1 ""
+kmsg ""
 
 # Do not stop thermal daemons, configure thermal config instead
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "0"
 kmsg "Tweaked thermal profile"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -570,7 +570,7 @@ then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "20"
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg "Tweaked dynamic stune boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # I/O Scheduler Tweaks
@@ -599,7 +599,7 @@ write "${queue}nr_requests" 16
 done
 
 kmsg "Tweaked I/O scheduler"
-kmsg1 ""
+kmsg ""
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq
@@ -656,7 +656,7 @@ write "$cpu/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
-kmsg1 ""
+kmsg ""
 
 # Schedtune Tweaks
 [[ $ANDROID == "true" ]] && if [[ -d "$stune" ]]; then
@@ -684,7 +684,7 @@ write "${stune}top-app/schedtune.prefer_perf" "1"
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg "Tweaked cpuset schedtune"
-kmsg1 ""
+kmsg ""
 fi
 
 # Uclamp Tweaks
@@ -713,7 +713,7 @@ write "${cpuset}system-background/uclamp.min" "0"
 write "${cpuset}system-background/uclamp.boosted" "0"
 write "${cpuset}system-background/uclamp.latency_sensitive" "0"
 kmsg "Tweaked cpuset uclamp"
-kmsg1 ""
+kmsg ""
 fi
 
 # FS Tweaks
@@ -723,7 +723,7 @@ write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg "Tweaked FS"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable dynamic_fsync
@@ -731,7 +731,7 @@ if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 kmsg "Enabled dynamic_fsync"
-kmsg1 ""
+kmsg ""
 fi
 
 # Scheduler features
@@ -742,7 +742,7 @@ write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
 kmsg "Tweaked scheduler features"
-kmsg1 ""
+kmsg ""
 fi
 
 # Same as NO_GENTLE_FAIR_SLEEPERS above
@@ -750,14 +750,14 @@ if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
 write "/sys/kernel/sched/gentle_fair_sleepers" "0"
 kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
-kmsg1
+kmsg ""
 fi
 
 if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
 kmsg "Disabled MMC CRC"
-kmsg1 ""
+kmsg ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
@@ -788,7 +788,7 @@ write "/sys/kernel/rcu_normal" 1
 fi
 
 kmsg "Tweaked various kernel parameters"
-kmsg1 ""
+kmsg ""
 
 # Set min and max clocks.
 for minclk in /sys/devices/system/cpu/cpufreq/policy*/
@@ -814,13 +814,13 @@ fi
 done
 
 kmsg "Tweaked CPU clocks"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 kmsg "Allowed CPUs to use it's deepest sleep state"
-kmsg1 ""
+kmsg ""
 fi
 
 # always sync before dropping caches
@@ -845,14 +845,14 @@ write "${vm}vfs_cache_pressure" "200"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg "Tweaked various VM parameters for a improved user-experience"
-kmsg1 ""
+kmsg ""
 
 # Enable CPU power efficient workqueue
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "Y"
 kmsg "Enabled CPU power efficient workqueue"
-kmsg1 ""
+kmsg ""
 fi
 
 # Disable CPU scheduler multi-core power-saving
@@ -860,7 +860,7 @@ if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
 kmsg "Disabled CPU scheduler multi-core power-saving"
-kmsg1 ""
+kmsg ""
 fi
 
 # Fetch the available TCP congestion control 
@@ -898,28 +898,28 @@ write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg "Applied TCP / internet tweaks"
-kmsg1 ""
+kmsg ""
 
 # Enable USB 3.0 fast charging
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
 kmsg "Enabled USB 3.0 fast charging"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
 then
 write "/sys/class/sec/switch/afc_disable" "0"
 kmsg "Enabled fast charging on Samsung devices"
-kmsg1 ""
+kmsg ""
 fi
 
 kmsg "Latency profile applied. Enjoy!"
-kmsg1 ""
+kmsg ""
 
 kmsg "End of execution: $(date)"
-kmsg1 ""
+kmsg ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
@@ -929,68 +929,68 @@ kmsg "Elapsed time: $exectime seconds."
 automatic() {
      	
 kmsg "Enabling automatic profile"
-kmsg1 ""
+kmsg ""
 
 	sync
 	kingauto
 	
 	kmsg "Enabled automatic profile"
-	kmsg1 ""
+	kmsg ""
 	}
 # Balanced Profile
 balanced() {
          init=$(date +%s)
          
-kmsg1 ""     	
+kmsg ""     	
 kmsg "Device info"
-kmsg1 ""
+kmsg ""
 
-kmsg1 "🕛 Date of execution: $(date)"                                                                                    
-kmsg1 "🔧 Kernel: $kname"                                                                                           
-kmsg1 "🗓️ Kernel Build Date: $kbdd"
-kmsg1 "🛠️ SOC: $mf, $soc"                                                                                               
-kmsg1 "⚙️ SDK: $sdk"
-kmsg1 "🅰️ndroid Version: $arv"    
-kmsg1 "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
-kmsg1 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg1 "⛓️ AArch: $aarch"                                                                                            
-kmsg1 "🖼️ GPU Model: $gpuinfo"                                                                                         
-kmsg1 "🔨 GPU Drivers Info: $driversinfo"                                                                                  
-kmsg1 "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg1 "📱 Device: $dcdm"                                                                                                
-kmsg1 "📲 ROM: $dvrom"                                                                                                  
-kmsg1 "🎞️ Display FPS: $df"                                                                                                    
-kmsg1 "👑 KTSR Version: $gbversion"                                                                                     
-kmsg1 "💭 KTSR Codename: $gbcodename"                                                                                   
-kmsg1 "📀 Build Type: $gbtype"                                                                                         
-kmsg1 "⏰ Build Date: $gbdate"                                                                                          
-kmsg1 "🔋 Battery Charge Level: $gbpercentage%"                                                                         
-kmsg1 "🩹 Battery Health: $bhealth"                                                                                     
-kmsg1 "⚡ Battery Status: $bstatus"                                                                                     
-kmsg1 "🌡️ Battery Temperature: $gbtemp°C"                                                                               
-kmsg1 "💾 Device RAM: $totalram MB"                                                                                     
-kmsg1 "📁 Device Available RAM: $availram MB"
-kmsg1 "👺 Magisk: $magisk"
-kmsg1 "🔒 SELinux Status: $slstatus"                                                                                    
-kmsg1 "🧰 Busybox: $busybv"
-kmsg1 ""
-kmsg1 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg1 "🔊 Telegram Channel: https://t.me/kingprojectz"
-kmsg1 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
-kmsg1 ""
+kmsg "🕛 Date of execution: $(date)"                                                                                    
+kmsg "🔧 Kernel: $kname"                                                                                           
+kmsg "🗓️ Kernel Build Date: $kbdd"
+kmsg "🛠️ SOC: $mf, $soc"                                                                                               
+kmsg "⚙️ SDK: $sdk"
+kmsg "🅰️ndroid Version: $arv"    
+kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
+kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
+kmsg "⛓️ AArch: $aarch"                                                                                            
+kmsg "🖼️ GPU Model: $gpuinfo"                                                                                         
+kmsg "🔨 GPU Drivers Info: $driversinfo"                                                                                  
+kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
+kmsg "📱 Device: $dcdm"                                                                                                
+kmsg "📲 ROM: $dvrom"                                                                                                  
+kmsg "🎞️ Display FPS: $df"                                                                                                    
+kmsg "👑 KTSR Version: $gbversion"                                                                                     
+kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
+kmsg "📀 Build Type: $gbtype"                                                                                         
+kmsg "⏰ Build Date: $gbdate"                                                                                          
+kmsg "🔋 Battery Charge Level: $gbpercentage%"                                                                         
+kmsg "🩹 Battery Health: $bhealth"                                                                                     
+kmsg "⚡ Battery Status: $bstatus"                                                                                     
+kmsg "🌡️ Battery Temperature: $gbtemp°C"                                                                               
+kmsg "💾 Device RAM: $totalram MB"                                                                                     
+kmsg "📁 Device Available RAM: $availram MB"
+kmsg "👺 Magisk: $magisk"
+kmsg "🔒 SELinux Status: $slstatus"                                                                                    
+kmsg "🧰 Busybox: $busybv"
+kmsg ""
+kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg "🔊 Telegram Channel: https://t.me/kingprojectz"
+kmsg "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg ""
 
 # Enable perfd and mpdecision
 start perfd
 start mpdecision
 
 kmsg "Enabled perfd and mpdecision"
-kmsg1 ""
+kmsg ""
 
 # Do not stop thermal daemons, configure thermal config instead
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "0"
 kmsg "Tweaked thermal profile"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -998,7 +998,7 @@ then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg "Tweaked dynamic stune boost"
-kmsg1 ""
+kmsg ""
 fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
@@ -1023,7 +1023,7 @@ write "/sys/power/cpuhotplug/enabled" "1"
 fi
 
 kmsg "Enabled core control & CPU hotplug"
-kmsg1 ""
+kmsg ""
 
 # I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
@@ -1051,7 +1051,7 @@ write "${queue}nr_requests" 64
 done
 
 kmsg "Tweaked I/O scheduler"
-kmsg1 ""
+kmsg ""
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq
@@ -1109,7 +1109,7 @@ write "$cpu/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/kernel/hmp" ]]; then
 write "/sys/kernel/hmp/boost" "0"
@@ -1119,7 +1119,7 @@ write "/sys/kernel/hmp/semiboost" "0"
 write "/sys/kernel/hmp/up_threshold" "556"
 write "/sys/kernel/hmp/down_threshold" "241"
 kmsg "Tweaked HMP parameters"
-kmsg1 ""
+kmsg ""
 fi
 
 # GPU Tweaks
@@ -1194,7 +1194,7 @@ write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
 kmsg "Tweaked GPU parameters"
-kmsg1 ""
+kmsg ""
 
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -1204,7 +1204,7 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "6000"
 write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
 kmsg "Enabled and tweaked adreno idler"
-kmsg1 ""
+kmsg ""
 fi
 
 # Schedtune Tweaks
@@ -1234,7 +1234,7 @@ write "${stune}top-app/schedtune.prefer_perf" "1"
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg "Tweaked cpuset schedtune"
-kmsg1 ""
+kmsg ""
 fi
 
 # Uclamp Tweaks
@@ -1263,7 +1263,7 @@ write "${cpuset}system-background/uclamp.min" "0"
 write "${cpuset}system-background/uclamp.boosted" "0"
 write "${cpuset}system-background/uclamp.latency_sensitive" "0"
 kmsg "Tweaked cpuset uclamp"
-kmsg1 ""
+kmsg ""
 fi
 
 # FS Tweaks
@@ -1273,7 +1273,7 @@ write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg "Tweaked FS"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable dynamic_fsync
@@ -1281,7 +1281,7 @@ if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 kmsg "Enabled dynamic fsync"
-kmsg1 ""
+kmsg ""
 fi
 
 # Scheduler features
@@ -1292,14 +1292,14 @@ write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "WAKEUP_PREEMPTION"
 kmsg "Tweaked scheduler features"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
 kmsg "Disabled MMC CRC"
-kmsg1 ""
+kmsg ""
 fi
 
 # Tweak some kernel settings to improve overall performance
@@ -1331,14 +1331,14 @@ write "/sys/kernel/rcu_normal" 1
 fi
 
 kmsg "Tweaked various kernel parameters"
-kmsg1 ""
+kmsg ""
 
 # Enable fingerprint boost
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
 write "/sys/kernel/fp_boost/enabled" "1"
 kmsg "Enabled fingerprint boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # Set min and max clocks
@@ -1371,7 +1371,7 @@ if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]]
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 kmsg "Allowed CPUs to use it's deepest sleep state"
-kmsg1 ""
+kmsg ""
 fi
 
 # Disable krait voltage boost
@@ -1379,7 +1379,7 @@ if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]]
 then
 write "/sys/module/acpuclock_krait/parameters/boost" "N"
 kmsg "Disabled krait voltage boost"
-kmsg1 ""
+kmsg ""
 fi
 
 sync
@@ -1404,7 +1404,7 @@ write "${vm}vfs_cache_pressure" "100"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg "Tweaked various VM parameters for a improved user-experience"
-kmsg1 ""
+kmsg ""
 
 # MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -1413,7 +1413,7 @@ write "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
 write "/sys/module/msm_thermal/core_control/enabled" "1"
 write "/sys/module/msm_thermal/parameters/enabled" "Y"
 kmsg "Tweaked msm_thermal"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable CPU power efficient workqueue
@@ -1421,14 +1421,14 @@ if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "Y"
 kmsg "Enabled CPU power efficient workqueue"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "1"
 kmsg "Enabled CPU scheduler multi-core power-saving"
-kmsg1 ""
+kmsg ""
 fi
 
 # Fix DT2W.
@@ -1438,25 +1438,25 @@ write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
 write "/sys/class/sec/tsp/dt2w_enable" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
 then
 write "/sys/class/sec/tsp/dt2w_enable" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 fi
 
 # Disable touch boost on balance and battery profile
@@ -1464,13 +1464,13 @@ if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "0"
 kmsg "Disabled msm_performance touch boost"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e /sys/power/pnpmgr/touch_boost ]]
 then
 write "/sys/power/pnpmgr/touch_boost" "0"
 kmsg "Disabled pnpmgr touch boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # Fetch the available TCP congestion control 
@@ -1508,7 +1508,7 @@ write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg "Applied TCP / internet tweaks"
-kmsg1 ""
+kmsg ""
 
 # Disable high performance audio
 for hpm in /sys/module/snd_soc_wcd*
@@ -1517,7 +1517,7 @@ if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "0"
 kmsg "Disabled high performance audio"
-kmsg1 ""
+kmsg ""
 break
 fi
 done
@@ -1536,20 +1536,20 @@ fi
 done
 
 kmsg "Enabled LPM"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
 write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
 kmsg "Enabled pm2 idle sleep mode"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "0"
 kmsg "Enabled LCD power reduce"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable Fast Charging Rate
@@ -1557,21 +1557,21 @@ if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
 kmsg "Enabled USB 3.0 fast charging"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
 then
 write "/sys/class/sec/switch/afc_disable" "0"
 kmsg "Enabled fast charging on Samsung devices"
-kmsg1 ""
+kmsg ""
 fi
 
 kmsg "Balanced profile applied"
-kmsg1 ""
+kmsg ""
 
 kmsg "End of execution: $(date)"
-kmsg1 ""
+kmsg ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
@@ -1581,55 +1581,55 @@ kmsg "Execution done in $exectime seconds"
 extreme() {
 	init=$(date +%s)
      	
-kmsg1 ""     	
+kmsg ""     	
 kmsg "Device info"
-kmsg1 ""
+kmsg ""
 
-kmsg1 "🕛 Date of execution: $(date)"                                                                                    
-kmsg1 "🔧 Kernel: $kname"                                                                                           
-kmsg1 "🗓️ Kernel Build Date: $kbdd"
-kmsg1 "🛠️ SOC: $mf, $soc"                                                                                               
-kmsg1 "⚙️ SDK: $sdk"
-kmsg1 "🅰️ndroid Version: $arv"    
-kmsg1 "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
-kmsg1 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg1 "⛓️ AArch: $aarch"                                                                                            
-kmsg1 "🖼️ GPU Model: $gpuinfo"                                                                                         
-kmsg1 "🔨 GPU Drivers Info: $driversinfo"                                                                                  
-kmsg1 "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg1 "📱 Device: $dcdm"                                                                                                
-kmsg1 "📲 ROM: $dvrom"                                                                                                  
-kmsg1 "🎞️ Display FPS: $df"                                                                                                    
-kmsg1 "👑 KTSR Version: $gbversion"                                                                                     
-kmsg1 "💭 KTSR Codename: $gbcodename"                                                                                   
-kmsg1 "📀 Build Type: $gbtype"                                                                                         
-kmsg1 "⏰ Build Date: $gbdate"                                                                                          
-kmsg1 "🔋 Battery Charge Level: $gbpercentage%"                                                                         
-kmsg1 "🩹 Battery Health: $bhealth"                                                                                     
-kmsg1 "⚡ Battery Status: $bstatus"                                                                                     
-kmsg1 "🌡️ Battery Temperature: $gbtemp°C"                                                                               
-kmsg1 "💾 Device RAM: $totalram MB"                                                                                     
-kmsg1 "📁 Device Available RAM: $availram MB"
-kmsg1 "👺 Magisk: $magisk"
-kmsg1 "🔒 SELinux Status: $slstatus"                                                                                    
-kmsg1 "🧰 Busybox: $busybv"
-kmsg1 ""
-kmsg1 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg1 "🔊 Telegram Channel: https://t.me/kingprojectz"
-kmsg1 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
-kmsg1 ""
+kmsg "🕛 Date of execution: $(date)"                                                                                    
+kmsg "🔧 Kernel: $kname"                                                                                           
+kmsg "🗓️ Kernel Build Date: $kbdd"
+kmsg "🛠️ SOC: $mf, $soc"                                                                                               
+kmsg "⚙️ SDK: $sdk"
+kmsg "🅰️ndroid Version: $arv"    
+kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
+kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
+kmsg "⛓️ AArch: $aarch"                                                                                            
+kmsg "🖼️ GPU Model: $gpuinfo"                                                                                         
+kmsg "🔨 GPU Drivers Info: $driversinfo"                                                                                  
+kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
+kmsg "📱 Device: $dcdm"                                                                                                
+kmsg "📲 ROM: $dvrom"                                                                                                  
+kmsg "🎞️ Display FPS: $df"                                                                                                    
+kmsg "👑 KTSR Version: $gbversion"                                                                                     
+kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
+kmsg "📀 Build Type: $gbtype"                                                                                         
+kmsg "⏰ Build Date: $gbdate"                                                                                          
+kmsg "🔋 Battery Charge Level: $gbpercentage%"                                                                         
+kmsg "🩹 Battery Health: $bhealth"                                                                                     
+kmsg "⚡ Battery Status: $bstatus"                                                                                     
+kmsg "🌡️ Battery Temperature: $gbtemp°C"                                                                               
+kmsg "💾 Device RAM: $totalram MB"                                                                                     
+kmsg "📁 Device Available RAM: $availram MB"
+kmsg "👺 Magisk: $magisk"
+kmsg "🔒 SELinux Status: $slstatus"                                                                                    
+kmsg "🧰 Busybox: $busybv"
+kmsg ""
+kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg "🔊 Telegram Channel: https://t.me/kingprojectz"
+kmsg "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg ""
 
 # Enable perfd and disable mpdecision.
-start perfd
+stop perfd
 stop mpdecision
 
-kmsg "Enabled perfd and disabled mpdecision"
-kmsg1 ""
+kmsg "Disabled perfd and disabled mpdecision"
+kmsg ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "10"
 kmsg "Tweaked thermal profile"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -1637,7 +1637,7 @@ then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg "Tweaked dynamic stune boost"
-kmsg1 ""
+kmsg ""
 fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
@@ -1662,7 +1662,7 @@ write "/sys/power/cpuhotplug/enabled" "0"
 fi
 
 kmsg "Disabled core control & CPU hotplug"
-kmsg1 ""
+kmsg ""
 
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
@@ -1672,7 +1672,7 @@ write "/sys/module/cpu_boost/parameters/input_boost_ms" "500"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 kmsg "Tweaked CAF CPU input boost"
-kmsg1 ""
+kmsg ""
 
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
@@ -1681,7 +1681,7 @@ write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "500"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
 kmsg "Tweaked CPU input boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # I/O Scheduler Tweaks
@@ -1710,7 +1710,7 @@ write "${queue}nr_requests" 128
 done
 
 kmsg "Tweaked I/O scheduler"
-kmsg1 ""
+kmsg ""
 
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq
 do
@@ -1766,7 +1766,7 @@ write "$cpu/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
-kmsg1 ""
+kmsg.""
 
 if [[ -e "/sys/kernel/hmp" ]]; then
 write "/sys/kernel/hmp/boost" "1"
@@ -1776,7 +1776,7 @@ write "/sys/kernel/hmp/semiboost" "1"
 write "/sys/kernel/hmp/up_threshold" "400"
 write "/sys/kernel/hmp/down_threshold" "130"
 kmsg "Tweaked HMP parameters"
-kmsg1 ""
+kmsg ""
 fi
 
 # GPU Tweaks
@@ -1852,14 +1852,14 @@ write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
 kmsg "Tweaked GPU parameters"
-kmsg1 ""
+kmsg ""
 
 # Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
 kmsg "Disabled adreno idler"
-kmsg1 ""
+kmsg ""
 fi
 
 # Schedtune Tweaks
@@ -1890,7 +1890,7 @@ write "${stune}top-app/schedtune.prefer_perf" "1"
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg "Tweaked cpuset schedtune"
-kmsg1 ""
+kmsg ""
 fi
 
 # Uclamp Tweaks
@@ -1919,7 +1919,7 @@ write "${cpuset}system-background/uclamp.min" "0"
 write "${cpuset}system-background/uclamp.boosted" "0"
 write "${cpuset}system-background/uclamp.latency_sensitive" "0"
 kmsg "Tweaked cpuset uclamp"
-kmsg1 ""
+kmsg ""
 fi
 
 # FS Tweaks
@@ -1929,7 +1929,7 @@ write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg "Tweaked FS"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable dynamic_fsync
@@ -1937,7 +1937,7 @@ if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 kmsg "Enabled dynamic fsync"
-kmsg1 ""
+kmsg ""
 fi
 
 # Scheduler features
@@ -1948,14 +1948,14 @@ write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
 kmsg "Tweaked scheduler features"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
 kmsg "Disabled MMC CRC"
-kmsg1 ""
+kmsg ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
@@ -1987,14 +1987,14 @@ write "/sys/kernel/rcu_normal" 1
 fi
 
 kmsg "Tweaked various kernel parameters"
-kmsg1 ""
+kmsg ""
 
 # Enable fingerprint boost.
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
 write "/sys/kernel/fp_boost/enabled" "1"
 kmsg "Enabled fingerprint_boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # Set max clocks in gaming / extreme profile.
@@ -2021,13 +2021,13 @@ fi
 done
 
 kmsg "Tweaked CPU clocks"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
 kmsg "Allowed CPUs to use it's deepest sleep state"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable krait voltage boost
@@ -2035,7 +2035,7 @@ if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]]
 then
 write "/sys/module/acpuclock_krait/parameters/boost" "Y"
 kmsg "Enabled krait voltage boost"
-kmsg1 ""
+kmsg ""
 fi
 
 sync
@@ -2060,7 +2060,7 @@ write "${vm}vfs_cache_pressure" "150"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg "Tweaked various VM parameters for a improved user-experience"
-kmsg1 ""
+kmsg ""
 
 # MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -2069,7 +2069,7 @@ write "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
 write "/sys/module/msm_thermal/core_control/enabled" "0"
 write "/sys/module/msm_thermal/parameters/enabled" "N"
 kmsg "Tweaked msm_thermal"
-kmsg1 ""
+kmsg ""
 fi
 
 # Disable CPU power efficient workqueue.
@@ -2077,14 +2077,14 @@ if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "N" 
 kmsg "Disabled CPU power efficient workqueue"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
 kmsg "Disabled CPU scheduler multi-core power-saving"
-kmsg1 ""
+kmsg ""
 fi
 
 # Fix DT2W.
@@ -2093,25 +2093,25 @@ then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
 then
 write "/sys/class/sec/tsp/dt2w_enable" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable touch boost on gaming and performance profile.
@@ -2119,13 +2119,13 @@ if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "1"
 kmsg "Enabled msm_performance touch boost"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e /sys/power/pnpmgr/touch_boost ]]
 then
 write "/sys/power/pnpmgr/touch_boost" "1"
 kmsg "Enabled pnpmgr touch boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # Fetch the available TCP congestion control 
@@ -2163,14 +2163,14 @@ write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg "Applied TCP / internet tweaks"
-kmsg1 ""
+kmsg ""
 
 # Disable battery saver
 if [[ -d "/sys/module/battery_saver" ]]
 then
 write "/sys/module/battery_saver/parameters/enabled" "N"
 kmsg "Disabled battery saver"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable high performance audio
@@ -2180,7 +2180,7 @@ if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "1"
 kmsg "Enabled high performance audio"
-kmsg1 ""
+kmsg ""
 break
 fi
 done
@@ -2190,7 +2190,7 @@ if [[ -e "/sys/kernel/sched/arch_power" ]]
 then
 write "/sys/kernel/sched/arch_power" "0"
 kmsg "Disabled arch power scheduler feature"
-kmsg1 ""
+kmsg ""
 fi
 
 # Disable LPM in extreme / gaming profile
@@ -2207,27 +2207,27 @@ fi
 done
 
 kmsg "Disabled LPM"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
 write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
 kmsg "Disabled pm2 idle sleep mode"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "0"
 kmsg "Disabled LCD power reduce"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
 write "/sys/kernel/sched/gentle_fair_sleepers" "0"
 kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable Fast Charging Rate
@@ -2235,21 +2235,21 @@ if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
 kmsg "Enabled USB 3.0 fast charging"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
 then
 write "/sys/class/sec/switch/afc_disable" "0"
 kmsg "Enabled fast charging on Samsung devices"
-kmsg1 ""
+kmsg ""
 fi
   
 kmsg "Extreme profile applied"
-kmsg1 ""
+kmsg ""
 
 kmsg "End of execution: $(date)"
-kmsg1 ""
+kmsg ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
@@ -2259,55 +2259,55 @@ kmsg "Elapsed time: $exectime seconds"
 battery() {
 	init=$(date +%s)
      	
-kmsg1 ""     	
+kmsg ""     	
 kmsg "Device info"
-kmsg1 ""
+kmsg ""
 
-kmsg1 "🕛 Date of execution: $(date)"                                                                                    
-kmsg1 "🔧 Kernel: $kname"                                                                                           
-kmsg1 "🗓️ Kernel Build Date: $kbdd"
-kmsg1 "🛠️ SOC: $mf, $soc"                                                                                               
-kmsg1 "⚙️ SDK: $sdk"
-kmsg1 "🅰️ndroid Version: $arv"    
-kmsg1 "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
-kmsg1 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg1 "⛓️ AArch: $aarch"                                                                                            
-kmsg1 "🖼️ GPU Model: $gpuinfo"                                                                                         
-kmsg1 "🔨 GPU Drivers Info: $driversinfo"                                                                                  
-kmsg1 "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg1 "📱 Device: $dcdm"                                                                                                
-kmsg1 "📲 ROM: $dvrom"                                                                                                  
-kmsg1 "🎞️ Display FPS: $df"                                                                                                    
-kmsg1 "👑 KTSR Version: $gbversion"                                                                                     
-kmsg1 "💭 KTSR Codename: $gbcodename"                                                                                   
-kmsg1 "📀 Build Type: $gbtype"                                                                                         
-kmsg1 "⏰ Build Date: $gbdate"                                                                                          
-kmsg1 "🔋 Battery Charge Level: $gbpercentage%"                                                                         
-kmsg1 "🩹 Battery Health: $bhealth"                                                                                     
-kmsg1 "⚡ Battery Status: $bstatus"                                                                                     
-kmsg1 "🌡️ Battery Temperature: $gbtemp°C"                                                                               
-kmsg1 "💾 Device RAM: $totalram MB"                                                                                     
-kmsg1 "📁 Device Available RAM: $availram MB"
-kmsg1 "👺 Magisk: $magisk"
-kmsg1 "🔒 SELinux Status: $slstatus"                                                                                    
-kmsg1 "🧰 Busybox: $busybv"
-kmsg1 ""
-kmsg1 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg1 "🔊 Telegram Channel: https://t.me/kingprojectz"
-kmsg1 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
-kmsg1 ""
+kmsg "🕛 Date of execution: $(date)"                                                                                    
+kmsg "🔧 Kernel: $kname"                                                                                           
+kmsg "🗓️ Kernel Build Date: $kbdd"
+kmsg "🛠️ SOC: $mf, $soc"                                                                                               
+kmsg "⚙️ SDK: $sdk"
+kmsg "🅰️ndroid Version: $arv"    
+kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
+kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
+kmsg "⛓️ AArch: $aarch"                                                                                            
+kmsg "🖼️ GPU Model: $gpuinfo"                                                                                         
+kmsg "🔨 GPU Drivers Info: $driversinfo"                                                                                  
+kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
+kmsg "📱 Device: $dcdm"                                                                                                
+kmsg "📲 ROM: $dvrom"                                                                                                  
+kmsg "🎞️ Display FPS: $df"                                                                                                    
+kmsg "👑 KTSR Version: $gbversion"                                                                                     
+kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
+kmsg "📀 Build Type: $gbtype"                                                                                         
+kmsg "⏰ Build Date: $gbdate"                                                                                          
+kmsg "🔋 Battery Charge Level: $gbpercentage%"                                                                         
+kmsg "🩹 Battery Health: $bhealth"                                                                                     
+kmsg "⚡ Battery Status: $bstatus"                                                                                     
+kmsg "🌡️ Battery Temperature: $gbtemp°C"                                                                               
+kmsg "💾 Device RAM: $totalram MB"                                                                                     
+kmsg "📁 Device Available RAM: $availram MB"
+kmsg "👺 Magisk: $magisk"
+kmsg "🔒 SELinux Status: $slstatus"                                                                                    
+kmsg "🧰 Busybox: $busybv"
+kmsg ""
+kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg "🔊 Telegram Channel: https://t.me/kingprojectz"
+kmsg "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg ""
 
 # Enable perfd and mpdecision
 start perfd
 start mpdecision
 
 kmsg "Enabled perfd and mpdecision"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "0"
 kmsg "Tweaked thermal profile"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -2315,7 +2315,7 @@ then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg "Tweaked dynamic stune boost"
-kmsg1 ""
+kmsg ""
 fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
@@ -2340,7 +2340,7 @@ write "/sys/power/cpuhotplug/enabled" "1"
 fi
 
 kmsg "Enabled core control and CPU hotplug"
-kmsg1 ""
+kmsg ""
 
 # Caf CPU Boost
 if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
@@ -2349,7 +2349,7 @@ write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "0"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "0"
 kmsg "Disabled CAF CPU input boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # CPU input boost
@@ -2357,7 +2357,7 @@ if [[ -e "/sys/module/cpu_input_boost/parameters/input_boost_duration" ]]
 then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "0"
 kmsg "Disabled CPU input boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # I/O Scheduler Tweaks
@@ -2386,7 +2386,7 @@ write "${queue}nr_requests" 512
 done
 
 kmsg "Tweaked I/O scheduler"
-kmsg1 ""
+kmsg ""
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq
@@ -2464,7 +2464,7 @@ write "/sys/kernel/hmp/semiboost" "0"
 write "/sys/kernel/hmp/up_threshold" "829"
 write "/sys/kernel/hmp/down_threshold" "336"
 kmsg "Tweaked HMP parameters"
-kmsg1 ""
+kmsg ""
 fi
 
 # GPU Tweaks
@@ -2539,7 +2539,7 @@ write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
 kmsg "Tweaked GPU parameters"
-kmsg1 ""
+kmsg ""
 
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -2549,7 +2549,7 @@ write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "10000"
 write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
 write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
 kmsg "Enabled and tweaked adreno idler"
-kmsg1 ""
+kmsg ""
 fi
 
 # Schedtune tweaks
@@ -2579,7 +2579,7 @@ write "${stune}top-app/schedtune.prefer_perf" "1"
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg "Tweaked cpuset schedtune"
-kmsg1 ""
+kmsg ""
 fi
 
 # Uclamp Tweaks
@@ -2608,7 +2608,7 @@ write "${cpuset}system-background/uclamp.min" "0"
 write "${cpuset}system-background/uclamp.boosted" "0"
 write "${cpuset}system-background/uclamp.latency_sensitive" "0"
 kmsg "Tweaked cpuset uclamp"
-kmsg1 ""
+kmsg ""
 fi
 
 # FS Tweaks
@@ -2618,7 +2618,7 @@ write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "45"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg "Tweaked FS"
-kmsg1 ""
+kmsg ""
 fi
     
 # Enable dynamic_fsync
@@ -2626,7 +2626,7 @@ if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 kmsg "Enabled dynamic fsync"
-kmsg1 ""
+kmsg ""
 fi
 
 # Scheduler features
@@ -2638,14 +2638,14 @@ write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "ARCH_POWER" 
 kmsg "Tweaked scheduler features"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
 kmsg "Disabled MMC CRC"
-kmsg1 ""
+kmsg ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
@@ -2677,14 +2677,14 @@ write "/sys/kernel/rcu_normal" 1
 fi
 
 kmsg "Tweaked various kernel parameters"
-kmsg1 ""
+kmsg ""
 
 # Disable fingerprint boost.
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
 write "/sys/kernel/fp_boost/enabled" "0"
 kmsg "Disabled fingerprint boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # Set min and max clocks.
@@ -2734,13 +2734,13 @@ fi
 done
 
 kmsg "Tweaked CPU clocks"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 kmsg "Allowed CPUs to use it's deepest sleep state"
-kmsg1 ""
+kmsg ""
 fi
 
 # Disable krait voltage boost
@@ -2748,7 +2748,7 @@ if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]]
 then
 write "/sys/module/acpuclock_krait/parameters/boost" "N"
 kmsg "Disabled krait voltage boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # VM settings to improve overall user experience and performance.
@@ -2770,7 +2770,7 @@ write "${vm}vfs_cache_pressure" "50"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg "Tweaked various VM parameters for a improved user-experience"
-kmsg1 ""
+kmsg ""
 
 # MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -2779,7 +2779,7 @@ write /sys/module/msm_thermal/vdd_restriction/enabled "1"
 write /sys/module/msm_thermal/core_control/enabled "1"
 write /sys/module/msm_thermal/parameters/enabled "Y"
 kmsg "Tweaked msm_thermal"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable power efficient workqueue.
@@ -2787,14 +2787,14 @@ if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "Y"
 kmsg "Enabled CPU power efficient workqueue"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "2"
 kmsg "Enabled CPU multi-core power-saving"
-kmsg1 ""
+kmsg ""
 fi
 
 # Fix DT2W.
@@ -2803,25 +2803,25 @@ then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
 then
 write "/sys/class/sec/tsp/dt2w_enable" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 kmsg "Fixed DT2W if broken"
-kmsg1 ""
+kmsg ""
 fi
 
 # Disable touch boost on battery and balance profile.
@@ -2829,13 +2829,13 @@ if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "0"
 kmsg "Disabled msm_performance touch boost"
-kmsg1 ""
+kmsg.""
 
 elif [[ -e /sys/power/pnpmgr/touch_boost ]]
 then
 write "/sys/power/pnpmgr/touch_boost" "0"
 kmsg "Disabled pnpmgr touch boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # Fetch the available TCP congestion control 
@@ -2873,14 +2873,14 @@ write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg "Applied TCP / internet tweaks"
-kmsg1 ""
+kmsg ""
 
 # Enable battery saver
 if [[ -d "/sys/module/battery_saver" ]]
 then
 write "/sys/module/battery_saver/parameters/enabled" "Y"
 kmsg "Enabled battery saver"
-kmsg1 ""
+kmsg ""
 fi
 
 # Disable high performance audio
@@ -2890,7 +2890,7 @@ if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "0"
 kmsg "Disabled high performance audio"
-kmsg1 ""
+kmsg ""
 break
 fi
 done
@@ -2909,20 +2909,20 @@ fi
 done
 
 kmsg "Enabled LPM"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "1"
 kmsg "Enabled LCD power reduce"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
 write "/sys/kernel/sched/gentle_fair_sleepers" "0"
 kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable Fast Charging Rate
@@ -2930,21 +2930,21 @@ if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
 kmsg "Enabled USB 3.0 fast charging"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
 then
 write "/sys/class/sec/switch/afc_disable" "0"
 kmsg "Enabled fast charging on Samsung devices"
-kmsg1 ""
+kmsg ""
 fi
   
 kmsg "Battery profile applied"
-kmsg1 ""
+kmsg ""
 
 kmsg "End of execution: $(date)"
-kmsg1 ""
+kmsg ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
@@ -2954,55 +2954,55 @@ kmsg "Execution done in $exectime seconds."
 gaming() {
 	init=$(date +%s)
      	
-kmsg1 ""     	
+kmsg ""     	
 kmsg "Device info"
-kmsg1 ""
+kmsg ""
 
-kmsg1 "🕛 Date of execution: $(date)"                                                                                    
-kmsg1 "🔧 Kernel: $kname"                                                                                           
-kmsg1 "🗓️ Kernel Build Date: $kbdd"
-kmsg1 "🛠️ SOC: $mf, $soc"                                                                                               
-kmsg1 "⚙️ SDK: $sdk"
-kmsg1 "🅰️ndroid Version: $arv"    
-kmsg1 "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
-kmsg1 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg1 "⛓️ AArch: $aarch"                                                                                            
-kmsg1 "🖼️ GPU Model: $gpuinfo"                                                                                         
-kmsg1 "🔨 GPU Drivers Info: $driversinfo"                                                                                  
-kmsg1 "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg1 "📱 Device: $dcdm"                                                                                                
-kmsg1 "📲 ROM: $dvrom"                                                                                                  
-kmsg1 "🎞️ Display FPS: $df"                                                                                                    
-kmsg1 "👑 KTSR Version: $gbversion"                                                                                     
-kmsg1 "💭 KTSR Codename: $gbcodename"                                                                                   
-kmsg1 "📀 Build Type: $gbtype"                                                                                         
-kmsg1 "⏰ Build Date: $gbdate"                                                                                          
-kmsg1 "🔋 Battery Charge Level: $gbpercentage%"                                                                         
-kmsg1 "🩹 Battery Health: $bhealth"                                                                                     
-kmsg1 "⚡ Battery Status: $bstatus"                                                                                     
-kmsg1 "🌡️ Battery Temperature: $gbtemp°C"                                                                               
-kmsg1 "💾 Device RAM: $totalram MB"                                                                                     
-kmsg1 "📁 Device Available RAM: $availram MB"
-kmsg1 "👺 Magisk: $magisk"
-kmsg1 "🔒 SELinux Status: $slstatus"                                                                                    
-kmsg1 "🧰 Busybox: $busybv"
-kmsg1 ""
-kmsg1 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg1 "🔊 Telegram Channel: https://t.me/kingprojectz"
-kmsg1 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
-kmsg1 ""
+kmsg "🕛 Date of execution: $(date)"                                                                                    
+kmsg "🔧 Kernel: $kname"                                                                                           
+kmsg "🗓️ Kernel Build Date: $kbdd"
+kmsg "🛠️ SOC: $mf, $soc"                                                                                               
+kmsg "⚙️ SDK: $sdk"
+kmsg "🅰️ndroid Version: $arv"    
+kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
+kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
+kmsg "⛓️ AArch: $aarch"                                                                                            
+kmsg "🖼️ GPU Model: $gpuinfo"                                                                                         
+kmsg "🔨 GPU Drivers Info: $driversinfo"                                                                                  
+kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
+kmsg "📱 Device: $dcdm"                                                                                                
+kmsg "📲 ROM: $dvrom"                                                                                                  
+kmsg "🎞️ Display FPS: $df"                                                                                                    
+kmsg "👑 KTSR Version: $gbversion"                                                                                     
+kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
+kmsg "📀 Build Type: $gbtype"                                                                                         
+kmsg "⏰ Build Date: $gbdate"                                                                                          
+kmsg "🔋 Battery Charge Level: $gbpercentage%"                                                                         
+kmsg "🩹 Battery Health: $bhealth"                                                                                     
+kmsg "⚡ Battery Status: $bstatus"                                                                                     
+kmsg "🌡️ Battery Temperature: $gbtemp°C"                                                                               
+kmsg "💾 Device RAM: $totalram MB"                                                                                     
+kmsg "📁 Device Available RAM: $availram MB"
+kmsg "👺 Magisk: $magisk"
+kmsg "🔒 SELinux Status: $slstatus"                                                                                    
+kmsg "🧰 Busybox: $busybv"
+kmsg ""
+kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg "🔊 Telegram Channel: https://t.me/kingprojectz"
+kmsg "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg ""
 
 # Disable perfd and mpdecision
 stop perfd
 stop mpdecision
 
 kmsg "Disabled perfd and mpdecision"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "10"
 kmsg "Tweaked thermal profile"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -3010,7 +3010,7 @@ then
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
 write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 kmsg "Tweaked dynamic stune boost"
-kmsg1 ""
+kmsg ""
 fi
 
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
@@ -3035,7 +3035,7 @@ write "/sys/power/cpuhotplug/enabled" "0"
 fi
 
 kmsg "Disabled core control & CPU hotplug"
-kmsg1 ""
+kmsg ""
 
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
@@ -3045,7 +3045,7 @@ write "/sys/module/cpu_boost/parameters/input_boost_ms" "500"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 kmsg "Tweaked CAF CPU input boost"
-kmsg1 ""
+kmsg ""
 
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
@@ -3054,7 +3054,7 @@ write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "500"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
 kmsg "Tweaked CPU input boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # I/O Scheduler Tweaks
@@ -3083,7 +3083,7 @@ write "${queue}nr_requests" 128
 done
 
 kmsg "Tweaked I/O scheduler"
-kmsg1 ""
+kmsg ""
 
 # CPU Tweaks
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq
@@ -3141,7 +3141,7 @@ write "$cpu/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/kernel/hmp" ]]; then
 write "/sys/kernel/hmp/boost" "1"
@@ -3151,7 +3151,7 @@ write "/sys/kernel/hmp/semiboost" "1"
 write "/sys/kernel/hmp/up_threshold" "400"
 write "/sys/kernel/hmp/down_threshold" "125"
 kmsg "Tweaked HMP parameters"
-kmsg1 ""
+kmsg ""
 fi
 
 # GPU Tweaks
@@ -3227,14 +3227,14 @@ write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
 kmsg "Tweaked GPU parameters"
-kmsg1 ""
+kmsg ""
 
 # Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
 write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
 kmsg "Disabled adreno idler"
-kmsg1 ""
+kmsg ""
 fi
 
 # Schedtune Tweaks
@@ -3265,7 +3265,7 @@ write "${stune}top-app/schedtune.prefer_perf" "1"
 write "${stune}schedtune.boost" "0"
 write "${stune}schedtune.prefer_idle" "0"
 kmsg "Tweaked cpuset schedtune"
-kmsg1 ""
+kmsg ""
 fi
 
 # Uclamp Tweaks
@@ -3294,7 +3294,7 @@ write "${cpuset}system-background/uclamp.min" "0"
 write "${cpuset}system-background/uclamp.boosted" "0"
 write "${cpuset}system-background/uclamp.latency_sensitive" "0"
 kmsg "Tweaked cpuset uclamp"
-kmsg1 ""
+kmsg ""
 fi
 
 # FS Tweaks
@@ -3304,7 +3304,7 @@ write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "15"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg "Tweaked FS"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable dynamic_fsync
@@ -3323,14 +3323,14 @@ write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
 kmsg "Tweaked scheduler features"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -d "/sys/module/mmc_core" ]];
 then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
 kmsg "Disabled MMC CRC"
-kmsg1 ""
+kmsg ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
@@ -3362,14 +3362,14 @@ write "/sys/kernel/rcu_normal" 1
 fi
 
 kmsg "Tweaked various kernel parameters"
-kmsg1 ""
+kmsg ""
 
 # Enable fingerprint boost
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
 write "/sys/kernel/fp_boost/enabled" "1"
 kmsg "Enabled fingerprint boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # Set max clocks in gaming / extreme profile.
@@ -3396,13 +3396,13 @@ fi
 done
 
 kmsg "Tweaked CPU clocks"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] 
 then
 write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
 kmsg "Not allowed CPUs to use it's deepest idle state"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable krait voltage boost
@@ -3410,7 +3410,7 @@ if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]]
 then
 write "/sys/module/acpuclock_krait/parameters/boost" "Y"
 kmsg "Enabled krait voltage boost"
-kmsg1 ""
+kmsg ""
 fi
 
 sync
@@ -3435,7 +3435,7 @@ write "${vm}vfs_cache_pressure" "200"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg "Tweaked various VM parameters for a improved user-experience"
-kmsg1 ""
+kmsg ""
 
 # MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
@@ -3444,7 +3444,7 @@ write /sys/module/msm_thermal/vdd_restriction/enabled "0"
 write /sys/module/msm_thermal/core_control/enabled "0"
 write /sys/module/msm_thermal/parameters/enabled "N"
 kmsg "Tweaked msm_thermal"
-kmsg1 ""
+kmsg ""
 fi
 
 # Disable power efficient workqueue.
@@ -3452,14 +3452,14 @@ if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "N" 
 kmsg "Disabled CPU power efficient workqueue"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
 write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
 kmsg "Disabled CPU scheduler multi-core power-saving"
-kmsg1 ""
+kmsg ""
 fi
 
 # Fix DT2W.
@@ -3468,25 +3468,25 @@ then
 write "/sys/touchpanel/double_tap" "1"
 write "/proc/tp_gesture" "1"
 kmsg "Fix DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
 then
 write "/sys/class/sec/tsp/dt2w_enable" "1"
 kmsg "Fix DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e "/proc/tp_gesture" ]]
 then
 write "/proc/tp_gesture" "1"
 kmsg "Fix DT2W if broken"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e "/sys/touchpanel/double_tap" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
 kmsg "Fix DT2W if broken"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable touch boost on gaming and performance profile.
@@ -3494,13 +3494,13 @@ if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
 then
 write "/sys/module/msm_performance/parameters/touchboost" "1"
 kmsg "Enabled msm_performance touch boost"
-kmsg1 ""
+kmsg ""
 
 elif [[ -e /sys/power/pnpmgr/touch_boost ]]
 then
 write "/sys/power/pnpmgr/touch_boost" "1"
 kmsg "Enabled pnpmgr touch boost"
-kmsg1 ""
+kmsg ""
 fi
 
 # Fetch the available TCP congestion control 
@@ -3538,14 +3538,14 @@ write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg "Applied TCP / internet tweaks"
-kmsg1 ""
+kmsg ""
 
 # Disable battery saver
 if [[ -d "/sys/module/battery_saver" ]]
 then
 write "/sys/module/battery_saver/parameters/enabled" "N"
 kmsg "Disabled battery saver"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable high performance audio
@@ -3555,7 +3555,7 @@ if [[ -e "$hpm" ]]
 then
 write "${hpm}/parameters/high_perf_mode" "1"
 kmsg "Enabled high performance audio"
-kmsg1 ""
+kmsg ""
 break
 fi
 done
@@ -3565,7 +3565,7 @@ if [[ -e "/sys/kernel/sched/arch_power" ]]
 then
 write "/sys/kernel/sched/arch_power" "0"
 kmsg "Disabled arch power scheduler feature"
-kmsg1 ""
+kmsg ""
 fi
 
 # Disable LPM in extreme / gaming profile
@@ -3582,27 +3582,27 @@ fi
 done
 
 kmsg "Disabled LPM"
-kmsg1 ""
+kmsg ""
 
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
 write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
 kmsg "Disabled pm2 idle sleep mode"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
 write "/sys/class/lcd/panel/power_reduce" "0"
 kmsg "Disabled LCD power reduce"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
 write "/sys/kernel/sched/gentle_fair_sleepers" "0"
 kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
-kmsg1 ""
+kmsg ""
 fi
 
 # Enable Fast Charging Rate
@@ -3610,21 +3610,21 @@ if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
 write "/sys/kernel/fast_charge/force_fast_charge" "1"
 kmsg "Enabled USB 3.0 fast charging"
-kmsg1 ""
+kmsg ""
 fi
 
 if [[ -e "/sys/class/sec/switch/afc_disable" ]];
 then
 write "/sys/class/sec/switch/afc_disable" "0"
 kmsg "Enabled fast charging on Samsung devices"
-kmsg1 ""
+kmsg ""
 fi
   
 kmsg "Gaming profile applied"
-kmsg1 ""
+kmsg ""
 
 kmsg "End of execution: $(date)"
-kmsg1 ""
+kmsg ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
