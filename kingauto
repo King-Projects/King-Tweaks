@@ -23,7 +23,7 @@ cat "/sys/class/qc_battery/restrict_cur" >> "/sdcard/KTSR/battcurrent.log"
 }
 
 current(){
-for x in $(seq 1 10); do
+for x in $(seq 1 15); do
 cat "/sdcard/KTSR/battcurrent.log" | awk -v seq="$x" '{print $seq}'
 done
 }

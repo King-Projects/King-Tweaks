@@ -118,15 +118,18 @@ echo "[14] Disable power-saving location mode"
 echo ""
 sleep 1.9
 fi
-echo "[15] Access our telegram group"
+echo "[15] Clean trash files, E.G: System logs, debug logs, etc."
+echo ""
+sleep 2.3
+echo "[16] Access our telegram group"
 echo ""
 sleep 1.3
-echo "[16] FKM updater script"
+echo "[17] FKM updater script"
 echo ""
-sleep 1
+sleep 1.2
 echo "[0] Exit"
 echo ""
-sleep 0.9
+sleep 0.8
 echo -n "[*] Select the desired option: "
 read option
 		case $option in
@@ -215,11 +218,15 @@ read option
                         settings put secure location_providers_allowed "gps,network"
                         ;;
                         
-						"15")
+                        "15")
+                        cleantrash
+                        ;;
+                        
+						"16")
 						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
 						;;
 						
-						"16")
+						"17")
 						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released to download!"
 						echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
 						;;
