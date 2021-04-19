@@ -225,13 +225,16 @@ SCHED_TASKS_THROUGHPUT="6"
     gpumx=$(cat $gpug/available_frequencies | awk -v var="$gpunpl" '{print $var}')
     
     if [[ $gpumx != $gpumxfreq ]]; then
+    gpumx=$(cat $gpug/available_frequencies | awk 'NF>1{print $NF}')
+    
+    elif [[ $gpumx != $gpumxfreq ]]; then
     gpumx=$(cat $gpug/available_frequencies | awk '{print $1}')
 
     elif [[ $gpumx != $gpumxfreq ]]; then
     gpumx=$gpumxfreq
     fi
     
-    gpumx2=$(cat $gpug/gpu_freq_table | awk '{print $7}')
+    gpumx2=$(cat $gpug/gpu_freq_table | awk 'NF>1{print $NF}')
     
     if [[ $gpumx2 != $gpumxfreq ]]; then
     gpumx2=$(cat $gpug/gpu_freq_table | awk '{print $1}')
@@ -244,7 +247,7 @@ SCHED_TASKS_THROUGHPUT="6"
     
     if [[ $gpumin != $gpumnfreq ]];
     then
-    gpumin=$(cat $gpug/gpu_freq_table | awk '{print $7}')
+    gpumin=$(cat $gpug/gpu_freq_table | awk 'NF>1{print $NF}')
     fi
 
 # Get running CPU governor    
@@ -498,6 +501,13 @@ if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
 slstatus=Enforcing
 else
 slstatus=Permissive
+fi
+
+[[ $adreno == "true" ]] && gputhrlvl=$(cat $gpu/thermal_pwrlevel)
+
+# Disable the thermal throttling clock reduction
+if [[ "$gputhrlvl" -eq "1" || "$gputhrlvl" -ge "1" ]]; then
+gpucalc=$((gputhrlvl - gputhrlvl))
 fi
 
 ###############################
@@ -1159,7 +1169,7 @@ fi
 	done
 	
 [[ $adreno == "true" ]] && write "$gpu/throttling" "1"
-[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
 [[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
 [[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
 [[ $adreno == "true" ]] && write "$gpu/bus_split" "1"
@@ -1826,7 +1836,7 @@ fi
 	done
 
 [[ $adreno == "true" ]] && write "$gpu/throttling" "0"
-[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
 [[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "2"
 [[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
 [[ $adreno == "true" ]] && write "$gpu/bus_split" "0"
@@ -2524,7 +2534,7 @@ fi
 	done
 
 [[ $adreno == "true" ]] && write "$gpu/throttling" "1"
-[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
 [[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
 [[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
 [[ $adreno == "true" ]] && write "$gpu/bus_split" "1"
@@ -3221,7 +3231,7 @@ fi
 	done
 
 [[ $adreno == "true" ]] && write "$gpu/throttling" "0"
-[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "0"
+[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
 [[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "3"
 [[ $adreno == "true" ]] && write "$gpu/force_no_nap" "1"
 [[ $adreno == "true" ]] && write "$gpu/bus_split" "0"
