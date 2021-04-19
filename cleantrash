@@ -1,5 +1,6 @@
 rm -f /data/*.log
 rm -f /data/*.txt
+rm -f /cache/*.apk
 rm -f /data/anr/*
 rm -f /data/backup/pending/*.tmp
 rm -f /data/cache/*.*

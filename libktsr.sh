@@ -725,7 +725,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "15"
+write "/proc/sys/fs/lease-break-time" "10"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg "Tweaked FS"
 kmsg3 ""
@@ -929,6 +929,7 @@ exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
+kmsg3 ""
 }
 # Automatic Profile
 automatic() {
@@ -1284,7 +1285,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "15"
+write "/proc/sys/fs/lease-break-time" "10"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg "Tweaked FS"
 kmsg3 ""
@@ -1581,7 +1582,7 @@ kmsg "Enabled fast charging on Samsung devices"
 kmsg3 ""
 fi
 
-kmsg "Balanced profile applied"
+kmsg "Balanced profile applied. Enjoy!"
 kmsg3 ""
 
 kmsg "End of execution: $(date)"
@@ -1589,7 +1590,8 @@ kmsg3 ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
-kmsg "Execution done in $exectime seconds"
+kmsg "Elapsed time: $exectime seconds."
+kmsg3 ""
 }
 # Extreme Profile
 extreme() {
@@ -1949,7 +1951,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "15"
+write "/proc/sys/fs/lease-break-time" "10"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg "Tweaked FS"
 kmsg3 ""
@@ -2268,7 +2270,7 @@ kmsg "Enabled fast charging on Samsung devices"
 kmsg3 ""
 fi
   
-kmsg "Extreme profile applied"
+kmsg "Extreme profile applied. Enjoy!"
 kmsg3 ""
 
 kmsg "End of execution: $(date)"
@@ -2276,7 +2278,8 @@ kmsg3 ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
-kmsg "Elapsed time: $exectime seconds"
+kmsg "Elapsed time: $exectime seconds."
+kmsg3 ""
 }
 # Battery Profile
 battery() {
@@ -2647,7 +2650,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "45"
+write "/proc/sys/fs/lease-break-time" "10"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg "Tweaked FS"
 kmsg3 ""
@@ -2972,7 +2975,7 @@ kmsg "Enabled fast charging on Samsung devices"
 kmsg3 ""
 fi
   
-kmsg "Battery profile applied"
+kmsg "Battery profile applied. Enjoy!"
 kmsg3 ""
 
 kmsg "End of execution: $(date)"
@@ -2980,7 +2983,8 @@ kmsg3 ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
-kmsg "Execution done in $exectime seconds."
+kmsg "Elapsed time: $exectime seconds."
+kmsg3 ""
 }
 # Gaming Profile
 gaming() {
@@ -3342,7 +3346,7 @@ fi
 if [[ -d "/proc/sys/fs" ]]
 then
 write "/proc/sys/fs/dir-notify-enable" "0"
-write "/proc/sys/fs/lease-break-time" "15"
+write "/proc/sys/fs/lease-break-time" "10"
 write "/proc/sys/fs/leases-enable" "1"
 kmsg "Tweaked FS"
 kmsg3 ""
@@ -3661,7 +3665,7 @@ kmsg "Enabled fast charging on Samsung devices"
 kmsg3 ""
 fi
   
-kmsg "Gaming profile applied"
+kmsg "Gaming profile applied. Enjoy!"
 kmsg3 ""
 
 kmsg "End of execution: $(date)"
@@ -3669,5 +3673,6 @@ kmsg3 ""
 exit=$(date +%s)
 
 exectime=$((exit - init))
-kmsg "Elapsed time: $exectime seconds"
+kmsg "Elapsed time: $exectime seconds."
+kmsg3 ""
 }
