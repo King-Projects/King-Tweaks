@@ -1176,6 +1176,8 @@ fi
 [[ $adreno == "false" ]] && write "$gpu/highspeed_load" "86"
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $adreno == "false" ]] && write "$gpug/boost" "0"
+[[ $adreno == "false" ]] && write "/sys/module/mali/parameters/mali_touch_boost_level" "0"
+[[ $adreno == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1200,6 +1202,12 @@ fi
 
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
+
+if [[ -e "/sys/module/cryptomgr/parameters/notests" ]];
+write "/sys/module/cryptomgr/parameters/notests" "Y"
+kmsg "Disabled forced cryptography tests"
+kmsg3 ""
+fi
 
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -1834,6 +1842,8 @@ fi
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
 [[ $adreno == "false" ]] && write "$gpug/boost" "0"
+[[ $adreno == "false" ]] && write "/sys/module/mali/parameters/mali_touch_boost_level" "1"
+[[ $adreno == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "1"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1858,6 +1868,12 @@ fi
 
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
+
+if [[ -e "/sys/module/cryptomgr/parameters/notests" ]];
+write "/sys/module/cryptomgr/parameters/notests" "Y"
+kmsg "Disabled forced cryptography tests"
+kmsg3 ""
+fi
 
 # Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -2521,6 +2537,8 @@ fi
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "1"
 [[ $adreno == "false" ]] && write "$gpug/boost" "0"
+[[ $adreno == "false" ]] && write "/sys/module/mali/parameters/mali_touch_boost_level" "0"
+[[ $adreno == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2545,6 +2563,12 @@ fi
 
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
+
+if [[ -e "/sys/module/cryptomgr/parameters/notests" ]];
+write "/sys/module/cryptomgr/parameters/notests" "Y"
+kmsg "Disabled forced cryptography tests"
+kmsg3 ""
+fi
 
 # Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
@@ -3209,6 +3233,8 @@ fi
 [[ $adreno == "false" ]] && write "$gpu/power_policy" "always_on"
 [[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
 [[ $adreno == "false" ]] && write "$gpug/boost" "1"
+[[ $adreno == "false" ]] && write "/sys/module/mali/parameters/mali_touch_boost_level" "1"
+[[ $adreno == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "1"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
@@ -3233,6 +3259,12 @@ fi
 
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
+
+if [[ -e "/sys/module/cryptomgr/parameters/notests" ]];
+write "/sys/module/cryptomgr/parameters/notests" "Y"
+kmsg "Disabled forced cryptography tests"
+kmsg3 ""
+fi
 
 # Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]

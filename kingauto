@@ -50,6 +50,15 @@ write "/sys/class/qc_battery/restrict_cur" "1800000"
 
 save_current
 
+scrnstate(){
+	getscrnstate=$(dumpsys power | grep state=O | cut -d "=" -f 2)
+	if [[ "$getscrnstate" == "ON" ]]; then 
+	isscrnon=1
+	else 
+	isscrnon=0
+	fi
+	}
+	
 (
 while true; do
   if [[ "$(top -n 1 -d 1 | head -n 12 | grep -o -e 'netease' -e 'noodlecake' -e 'linegames' -e 'kleientertainment' -e 'agaming' -e 'generagames' -e 'chucklefish' -e 'astragon' -e 't2kgames' -e 't2ksports' -e 'turner' -e 'uplayonline' -e 'pubg' -e 'dreamotion' -e 'snailgames' -e 'dexintgames' -e 'haegin' -e 'panzerdog' -e 'igg' -e 'gtarcade' -e 'nexon' -e 'mame4droid' -e 'kakaogames' -e 'telltalegames' -e 'bandainamco' -e 'seleuco' -e 'innersloth' -e 'kiloo' -e 'imaginalis' -e 'refuelgames' -e 'scottgames' -e 'clickteam' -e 'minigames' -e 'headupgames' -e 'mobigames' -e 'callofduty' -e 'ubisoft' -e 'ppsspp' -e 'cf' -e 'feralinteractive' -e 'riotgames' -e 'joymax' -e 'deadeffect' -e 'wolvesinteractive' -e 'miniclip' -e 'playgendary' -e 'mojang' -e 'miHoYo' -e 'nekki' -e 'gamedevltd' -e 'netmarble' -e 'eyougame' -e 'yoozoogames' -e 'gameloft' -e 'garena' -e 'moontoon' -e 'legends' -e 'wildrift' -e 'activision' -e 'freefireth' -e 'konami' -e 'gamevil' -e 'battle' -e 'impact' -e 'gameloft' -e 'ppsspp' -e 'madfingergames' -e 'supercell' -e 'asphalt' -e 'ngame' -e 'fifamobile' -e 'blackdesertm' -e 'rockstargames' -e 'dhlove' -e 'criticalops' -e 'standoff2' -e 'firsttouchgames' | head -n 1)" ]]; then
@@ -67,7 +76,7 @@ while true; do
   kmsg "User is running benchmark / heavy apps. Applied extreme profile"
   extreme
   sleep 40
-  elif [[ "$(cat /sys/class/leds/lcd-backlight/brightness)" ]] || [[ "$(cat /sys/class/backlight/panel*-backlight/brightness)" == "0" ]]; then
+  elif [[ "$(cat /sys/class/leds/lcd-backlight/brightness)" ]] || [[ "$(cat /sys/class/backlight/panel*-backlight/brightness)" == "0" || scrnstate && $isscrnon == "0" ]]; then
   . $MODPATH/libs/libktsr.sh
   kmsg "Device screen is turned off. Applied battery profile, extended check time"
   battery
