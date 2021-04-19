@@ -1203,7 +1203,8 @@ fi
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
 
-if [[ -e "/sys/module/cryptomgr/parameters/notests" ]];
+if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]
+then
 write "/sys/module/cryptomgr/parameters/notests" "Y"
 kmsg "Disabled forced cryptography tests"
 kmsg3 ""
@@ -1869,7 +1870,8 @@ fi
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
 
-if [[ -e "/sys/module/cryptomgr/parameters/notests" ]];
+if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]
+then
 write "/sys/module/cryptomgr/parameters/notests" "Y"
 kmsg "Disabled forced cryptography tests"
 kmsg3 ""
@@ -2564,7 +2566,8 @@ fi
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
 
-if [[ -e "/sys/module/cryptomgr/parameters/notests" ]];
+if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]
+then
 write "/sys/module/cryptomgr/parameters/notests" "Y"
 kmsg "Disabled forced cryptography tests"
 kmsg3 ""
@@ -3260,7 +3263,8 @@ fi
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
 
-if [[ -e "/sys/module/cryptomgr/parameters/notests" ]];
+if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]
+then
 write "/sys/module/cryptomgr/parameters/notests" "Y"
 kmsg "Disabled forced cryptography tests"
 kmsg3 ""
