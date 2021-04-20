@@ -300,17 +300,17 @@ mf=$(getprop ro.boot.hardware)
 # Get device SOC
 soc=$(getprop ro.board.platform)
 
-if [[ ! $soc == "" ]]; then
+if [ ! $soc == "" ]; then
 soc=$(getprop ro.product.board)
 fi
 
 # Get device SDK
 sdk=$(getprop ro.build.version.sdk)
 
-if [[ ! $sdk == "" ]]; then
+if [ ! $sdk == "" ]; then
 sdk=$(getprop ro.vendor.build.version.sdk)
 
-elif [[ ! $sdk == "" ]]; then
+elif [ ! $sdk == "" ]; then
 sdk=$(getprop ro.vndk.version)
 fi
 
@@ -402,16 +402,22 @@ btemp=$(dumpsys battery | awk '/temperature/{print $2}')
 fi
 
 # Get GPU model
-if [[ $adreno == "false" ]]; then
+if [[ $exynos == "true" ]]; then
 gpumdl=$(cat $gpu/gpuinfo | awk '{print $1}')
+
+elif [[ $mtk == "true" ]]; then
+gpumdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $4,$5,$6}' | tr -d ,)
 
 else
 gpumdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 fi
 
 # Get drivers info
-if [[ $adreno == "false" ]]; then
+if [[ $exynos == "true" ]]; then
 driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $4,$5,$6,$7,$8,$9,$10,$11,$12,$13}')
+
+elif [[ $mtk == "true" ]]; then
+driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $7,$8,$9,$10,$11,$12,$13}')
 
 else
 driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
