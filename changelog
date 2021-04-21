@@ -1,9 +1,9 @@
-~ Fix some info being displayed incorrectly on mali GPUs.
+~ Fix installer not working properly.
 
-~ Tweak mali GPUs better.
+~ Add cleantrash.
 
-~ Tweak some HMP parameters.
+~ Improve the terminal menu (su -c ktsrmenu).
 
-~ Add some more useful parameters to the terminal menu.
+~ Fix info not being displayed properly for some SOCS.
 
 ~ And other minor fixes and improvements.
