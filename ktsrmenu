@@ -131,7 +131,7 @@ echo "[0] Exit"
 echo ""
 sleep 0.8
 echo -n "[*] Select the desired option: "
-read option
+read -r option
 		case $option in
 			"1")
 				setprop persist.kingtweaks.mode 1

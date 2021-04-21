@@ -15,9 +15,9 @@ default=$(tput sgr0)
 date=$(date)
 version=$(cat module.prop | grep version= | sed "s/version=//")
 
-read -p 'Build type: ' build_type
+read -r -p 'Build type: ' build_type
 
-read -p 'Codename: ' codename
+read -r -p 'Codename: ' codename
 
 init=$(date +%s)
 
@@ -31,11 +31,11 @@ echo ""
 
 echo "Zipping ${blink}KTSR-v$version-$build_type-$codename${default}..."
 
-zip -r "KTSR-v$version-$build_type-$codename.zip" . -x *.git* -x *.zip -x *.yml -x C1.sh -x kingauto -x ktsrmenu -x update.json -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
+zip -r "KTSR-v$version-$build_type-$codename.zip" . -x *.git* -x cleantrash -x *.zip -x *.yml -x C1.sh -x kingauto -x ktsrmenu -x update.json -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
 
 mv "KTSR-v$version-$build_type-$codename.zip" ../out
 
-rm $(pwd)/ktsr.prop
+rm "$(pwd)"/ktsr.prop
 
 exit=$(date +%s)
 
