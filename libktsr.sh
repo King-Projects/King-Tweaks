@@ -613,7 +613,7 @@ write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
 write "${queue}read_ahead_kb" 64
-write "${queue}nomerges" 2
+write "${queue}nomerges" 0
 write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 32
 done
@@ -685,9 +685,10 @@ write "${stune}background/schedtune.prefer_idle" "0"
 write "${stune}background/schedtune.sched_boost" "0"
 write "${stune}background/schedtune.prefer_perf" "0"
 
-write "${stune}foreground/schedtune.boost" "10"
+write "${stune}foreground/schedtune.boost" "5"
 write "${stune}foreground/schedtune.prefer_idle" "1"
 write "${stune}foreground/schedtune.sched_boost" "0"
+write "${stune}top-app/schedtune.sched_boost_no_override" "1"
 write "${stune}foreground/schedtune.prefer_perf" "0"
 
 write "${stune}rt/schedtune.boost" "0"
@@ -697,7 +698,7 @@ write "${stune}rt/schedtune.prefer_perf" "0"
 
 write "${stune}top-app/schedtune.boost" "10"
 write "${stune}top-app/schedtune.prefer_idle" "1"
-write "${stune}top-app/schedtune.sched_boost" "15"
+write "${stune}top-app/schedtune.sched_boost" "0"
 write "${stune}top-app/schedtune.sched_boost_no_override" "1"
 write "${stune}top-app/schedtune.prefer_perf" "1"
 
@@ -782,7 +783,9 @@ fi
 
 # Tweak some kernel settings to improve overall performance.
 write "${kernel}sched_child_runs_first" "1"
+write "${kernel}sched_boost" "0"
 write "${kernel}perf_cpu_time_max_percent" "4"
+write "${kernel}nmi_watchdog" "0"
 write "${kernel}sched_autogroup_enabled" "1"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_LATENCY"
@@ -1065,7 +1068,7 @@ write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
 write "${queue}read_ahead_kb" 128
-write "${queue}nomerges" 2
+write "${queue}nomerges" 1
 write "${queue}rq_affinity" 1
 write "${queue}nr_requests" 64
 done
@@ -1244,9 +1247,10 @@ write "${stune}background/schedtune.prefer_idle" "0"
 write "${stune}background/schedtune.sched_boost" "0"
 write "${stune}background/schedtune.prefer_perf" "0"
 
-write "${stune}foreground/schedtune.boost" "5"
+write "${stune}foreground/schedtune.boost" "0"
 write "${stune}foreground/schedtune.prefer_idle" "1"
 write "${stune}foreground/schedtune.sched_boost" "0"
+write "${stune}top-app/schedtune.sched_boost_no_override" "1"
 write "${stune}foreground/schedtune.prefer_perf" "0"
 
 write "${stune}rt/schedtune.boost" "0"
@@ -1256,7 +1260,7 @@ write "${stune}rt/schedtune.prefer_perf" "0"
 
 write "${stune}top-app/schedtune.boost" "10"
 write "${stune}top-app/schedtune.prefer_idle" "1"
-write "${stune}top-app/schedtune.sched_boost" "15"
+write "${stune}top-app/schedtune.sched_boost" "0"
 write "${stune}top-app/schedtune.sched_boost_no_override" "1"
 write "${stune}top-app/schedtune.prefer_perf" "1"
 
@@ -1335,6 +1339,7 @@ fi
 write "${kernel}sched_child_runs_first" "1"
 write "${kernel}sched_boost" "0"
 write "${kernel}perf_cpu_time_max_percent" "10"
+write "${kernel}nmi_watchdog" "0"
 write "${kernel}sched_autogroup_enabled" "1"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BALANCE"
@@ -1911,7 +1916,7 @@ write "${stune}background/schedtune.prefer_perf" "0"
 write "${stune}foreground/schedtune.boost" "50"
 write "${stune}foreground/schedtune.prefer_idle" "0"
 write "${stune}foreground/schedtune.sched_boost" "15"
-write "${stune}top-app/schedtune.sched_boost_no_override" "0"
+write "${stune}top-app/schedtune.sched_boost_no_override" "1"
 write "${stune}foreground/schedtune.prefer_perf" "1"
 
 write "${stune}rt/schedtune.boost" "0"
@@ -2000,6 +2005,7 @@ fi
 write "${kernel}sched_child_runs_first" "0"
 write "${kernel}sched_boost" "1"
 write "${kernel}perf_cpu_time_max_percent" "25"
+write "${kernel}nmi_watchdog" "0"
 write "${kernel}sched_autogroup_enabled" "0"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
@@ -2418,8 +2424,8 @@ write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
 write "${queue}read_ahead_kb" 128
-write "${queue}nomerges" 1
-write "${queue}rq_affinity" 1
+write "${queue}nomerges" 0
+write "${queue}rq_affinity" 0
 write "${queue}nr_requests" 512
 done
 
@@ -2617,9 +2623,9 @@ write "${stune}rt/schedtune.prefer_idle" "0"
 write "${stune}rt/schedtune.sched_boost" "0"
 write "${stune}rt/schedtune.prefer_perf" "0"
 
-write "${stune}top-app/schedtune.boost" "0"
+write "${stune}top-app/schedtune.boost" "5"
 write "${stune}top-app/schedtune.prefer_idle" "1"
-write "${stune}top-app/schedtune.sched_boost" "15"
+write "${stune}top-app/schedtune.sched_boost" "0"
 write "${stune}top-app/schedtune.sched_boost_no_override" "1"
 write "${stune}top-app/schedtune.prefer_perf" "1"
 
@@ -2699,6 +2705,7 @@ fi
 write "${kernel}sched_child_runs_first" "0"
 write "${kernel}sched_boost" "0"
 write "${kernel}perf_cpu_time_max_percent" "3"
+write "${kernel}nmi_watchdog" "0"
 write "${kernel}sched_autogroup_enabled" "1"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
@@ -3304,7 +3311,7 @@ write "${stune}background/schedtune.prefer_perf" "0"
 write "${stune}foreground/schedtune.boost" "50"
 write "${stune}foreground/schedtune.prefer_idle" "0"
 write "${stune}foreground/schedtune.sched_boost" "15"
-write "${stune}foreground/schedtune.sched_boost_no_override" "0"
+write "${stune}foreground/schedtune.sched_boost_no_override" "1"
 write "${stune}foreground/schedtune.prefer_perf" "0"
 
 write "${stune}rt/schedtune.boost" "0"
@@ -3393,6 +3400,7 @@ fi
 write "${kernel}sched_child_runs_first" "0"
 write "${kernel}sched_boost" "1"
 write "${kernel}perf_cpu_time_max_percent" "25"
+write "${kernel}nmi_watchdog" "0"
 write "${kernel}sched_autogroup_enabled" "0"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
