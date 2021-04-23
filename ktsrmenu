@@ -3,6 +3,8 @@
 
 kts_mode=$(getprop persist.kingtweaks.mode)
 
+kts_pf=$2
+
 if [[ "$(settings get global low_power)" == "1" ]]; then
 low_power=Activated
 
@@ -52,6 +54,7 @@ else
 kts_profile=Unknown
 fi
 
+menu() {
 clear
 echo ""
 echo "**********************************"
@@ -239,3 +242,29 @@ read -r option
 						echo "[!] Unexpected response, aborting..."
 						;;
 						esac
+						}
+						
+						if [[ -z "$1" ]]; then
+						menu
+						fi
+
+						usage() { echo "Usage: $0 [-p <value (0-5)>] [-h <this dialog>]"; exit 1; }
+
+						while getopts ":p:h" opt; do
+						[[ $# -eq 0 ]] && usage
+						case "${opt}" in
+						
+						p) setprop persist.kingtweaks.mode $kts_pf
+						;;
+						
+						h | *) usage
+						;;
+						esac
+                        done
+
+                        shift $((OPTIND - 1))
+                        
+						if [[ -z $kts_pf ]] || [[ $kts_pf -gt "5" ]];
+						then
+						usage
+                        fi
