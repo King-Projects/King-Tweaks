@@ -248,23 +248,23 @@ read -r option
 						menu
 						fi
 
-						usage() { echo "Usage: $0 [-p <value (0-5)>] [-h <this dialog>]"; exit 1; }
+						usage() { echo "Usage: $0 [-p <value (0-6)>] [-h <this dialog>]"; exit 1; }
 
 						while getopts ":p:h" opt; do
 						[[ $# -eq 0 ]] && usage
 						case "${opt}" in
 						
-						p) setprop persist.kingtweaks.mode $kts_pf
+						p | -profile) setprop persist.kingtweaks.mode $kts_pf
 						;;
 						
-						h | *) usage
+						h | -help | *) usage
 						;;
 						esac
                         done
 
                         shift $((OPTIND - 1))
                         
-						if [[ -z $kts_pf ]] || [[ $kts_pf -gt "5" ]];
+						if [[ -z $kts_pf ]] || [[ $kts_pf -gt "6" ]];
 						then
 						usage
                         fi
