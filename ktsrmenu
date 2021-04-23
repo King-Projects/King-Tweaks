@@ -246,18 +246,21 @@ read -r option
 						
 						if [[ -z "$1" ]]; then
 						menu
+						else
+						args
 						fi
 
 						usage() { echo "Usage: $0 [-p <value (0-6)>] [-h <this dialog>]"; exit 1; }
 
+						args() {
 						while getopts ":p:h" opt; do
 						[[ $# -eq 0 ]] && usage
 						case "${opt}" in
 						
-						p | -profile) setprop persist.kingtweaks.mode $kts_pf
+						p) setprop persist.kingtweaks.mode $kts_pf
 						;;
 						
-						h | -help | *) usage
+						h | *) usage
 						;;
 						esac
                         done
@@ -268,3 +271,4 @@ read -r option
 						then
 						usage
                         fi
+                        }
