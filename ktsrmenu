@@ -246,14 +246,31 @@ read -r option
 						
 						if [[ -z "$1" ]]; then
 						menu
-						else
-						args
 						fi
 
-						usage() { echo "Usage: $0 [-p <value (0-6)>] [-h <this dialog>]"; exit 1; }
-
-						args() {
-						while getopts ":p:h" opt; do
+						usage() {
+							echo "Usage: ktsrmenu [-p <value corresponding to the profile (0-6)>] [-o <value corresponding to it's function (7-17)>] [-h <trigger this dialog>]" 
+							echo "[1] Automatic"
+                            echo "[2] Battery"
+                            echo "[3] Balanced"
+                            echo "[4] Extreme"
+                            echo "[5] Gaming"
+                            echo "[6] Latency"
+                            echo "[7] Optimize apps package"
+                            echo "[8] Optimize databases"
+                            echo "[9] Enable low power mode"
+                            echo "[10] Disable low power mode"
+                            echo "[11] Enable data saver"
+                            echo "[12] Disable data saver"
+                            echo "[13] Enable power-saving location mode"
+                            echo "[14] Disable power-saving location mode"
+                            echo "[15] Clean useless files"
+                            echo "[16] Access our telegram group"
+                            echo "[17] FKM updater script"
+							exit 1
+							}
+						
+						while getopts ":p:h:o:" opt; do
 						[[ $# -eq 0 ]] && usage
 						case "${opt}" in
 						
@@ -262,13 +279,17 @@ read -r option
 						
 						h | *) usage
 						;;
+						
+						o) optslct="$OPTARG"
+						if [[ "$optslct" -eq "7" ]]; then 
+						cmd package bg-dexopt-job
+                        fi
+						;;
 						esac
                         done
-
+                        
                         shift $((OPTIND - 1))
                         
-						if [[ -z $kts_pf ]] || [[ $kts_pf -gt "6" ]];
-						then
+						if [[ -z $kts_pf ]]; then
 						usage
                         fi
-                        }
