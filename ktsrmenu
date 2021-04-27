@@ -5,6 +5,9 @@ kts_mode=$(getprop persist.kingtweaks.mode)
 
 kts_pf=$2
 
+unset optslct
+unset verbose
+
 if [[ "$(settings get global low_power)" == "1" ]]; then
 low_power=Activated
 
@@ -249,7 +252,7 @@ read -r option
 						fi
 
 						usage() {
-							echo "Usage: ktsrmenu [-p <value corresponding to the profile (0-6)>] [-o <value corresponding to it's function (7-17)>] [-h <trigger this dialog>]" 
+							echo "Usage: ktsrmenu [-p <value corresponding to the profile (0-6)>] [-o <value corresponding to it's function (7-17)>] [-h <trigger this dialog>] [-v <enable verbose info>]" 
 							echo "[1] Automatic"
                             echo "[2] Battery"
                             echo "[3] Balanced"
@@ -278,6 +281,9 @@ read -r option
 						;;
 						
 						h | *) usage
+						;;
+						
+						v) verbose=true 
 						;;
 						
 						o) optslct="$OPTARG"
@@ -354,6 +360,10 @@ read -r option
 
                         shift $((OPTIND - 1))
                         
-						if [[ -z $kts_pf ]]; then
+                        if [[ "$verbose" ]]; then
+                        set -x
+                        fi
+
+						if [[ -z "$kts_pf" ]]; then
 						usage
                         fi
