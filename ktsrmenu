@@ -273,14 +273,14 @@ read -r option
 							exit 1
 							}
 						
-						while getopts ":p:h:o:" opt; do
+						while getopts ":p:h:vo:" opt; do
 						[[ $# -eq 0 ]] && usage
 						case "${opt}" in
 						
 						p) setprop persist.kingtweaks.mode $kts_pf
 						;;
 						
-						h | *) usage
+						h) usage
 						;;
 						
 						v) verbose=true 
