@@ -87,12 +87,12 @@ write() {
 	fi
 
 	# Make file writable in case it is not already
-	chmod 644 "$1" 2> /dev/null
+	chmod +w "$1" 2> /dev/null
 
 	# Write the new value and bail if there's an error
 	if ! echo "$2" > "$1" 2> /dev/null
 	then
-	kmsg2 "[!] Failed: $1 -> $2"
+	kmsg2 "Failed: $1 -> $2"
 		return 1
 	fi
 	
@@ -514,6 +514,9 @@ fi
 # Disable the thermal throttling clock reduction
 if [[ "$gputhrlvl" -eq "1" || "$gputhrlvl" -ge "1" ]]; then
 gpucalc=$((gputhrlvl - gputhrlvl))
+
+else
+gpucalc=0
 fi
 
 ###############################
@@ -576,7 +579,10 @@ kmsg3 ""
 start perfd  	
 start mpdecision
 
-kmsg "Enabled perfd and mpdecision"
+# Disable trace
+stop traced
+
+kmsg "Enabled perfd and mpdecision & disabled traced"
 kmsg3 ""
 
 # Do not stop thermal daemons, configure thermal config instead
@@ -709,7 +715,7 @@ kmsg3 ""
 fi
 
 # Uclamp Tweaks
-if [[ -e "${cpuset}top-app/uclamp.max" ]];
+if [[ -e "${cpuset}top-app/uclamp.max" ]]
 then
 sysctl -w kernel.sched_util_clamp_min_rt_default=16
 sysctl -w kernel.sched_util_clamp_min=64
@@ -1007,7 +1013,10 @@ kmsg3 ""
 start perfd
 start mpdecision
 
-kmsg "Enabled perfd and mpdecision"
+# Disable trace
+stop traced
+
+kmsg "Enabled perfd and mpdecision & disabled traced"
 kmsg3 ""
 
 # Do not stop thermal daemons, configure thermal config instead
@@ -1271,7 +1280,7 @@ kmsg3 ""
 fi
 
 # Uclamp Tweaks
-if [[ -e "${cpuset}top-app/uclamp.max" ]];
+if [[ -e "${cpuset}top-app/uclamp.max" ]]
 then
 sysctl -w kernel.sched_util_clamp_min_rt_default=32
 sysctl -w kernel.sched_util_clamp_min=128
@@ -1658,7 +1667,10 @@ kmsg3 ""
 stop perfd
 stop mpdecision
 
-kmsg "Disabled perfd and disabled mpdecision"
+# Disable trace
+stop traced
+
+kmsg "Enabled perfd and mpdecision & disabled traced"
 kmsg3 ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
@@ -1937,7 +1949,7 @@ kmsg3 ""
 fi
 
 # Uclamp Tweaks
-if [[ -e "${cpuset}top-app/uclamp.max" ]];
+if [[ -e "${cpuset}top-app/uclamp.max" ]]
 then
 sysctl -w kernel.sched_util_clamp_min_rt_default=96
 sysctl -w kernel.sched_util_clamp_min=192
@@ -2346,7 +2358,10 @@ kmsg3 ""
 start perfd
 start mpdecision
 
-kmsg "Enabled perfd and mpdecision"
+# Disable trace
+stop traced
+
+kmsg "Enabled perfd and mpdecision & disabled traced"
 kmsg3 ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
@@ -2636,7 +2651,7 @@ kmsg3 ""
 fi
 
 # Uclamp Tweaks
-if [[ -e "${cpuset}top-app/uclamp.max" ]];
+if [[ -e "${cpuset}top-app/uclamp.max" ]]
 then
 sysctl -w kernel.sched_util_clamp_min_rt_default=16
 sysctl -w kernel.sched_util_clamp_min=128
@@ -3051,7 +3066,10 @@ kmsg3 ""
 stop perfd
 stop mpdecision
 
-kmsg "Disabled perfd and mpdecision"
+# Disable trace
+stop traced
+
+kmsg "Enabled perfd and mpdecision & disabled traced"
 kmsg3 ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
@@ -3332,7 +3350,7 @@ kmsg3 ""
 fi
 
 # Uclamp Tweaks
-if [[ -e "${cpuset}top-app/uclamp.max" ]];
+if [[ -e "${cpuset}top-app/uclamp.max" ]]
 then
 sysctl -w kernel.sched_util_clamp_min_rt_default=96
 sysctl -w kernel.sched_util_clamp_min=192
