@@ -1189,7 +1189,7 @@ fi
 [[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
 [[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
 [[ $adreno == "true" ]] && write "$gpu/bus_split" "1"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" "$gpufreq"
+[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" "$gpumxfreq"
 [[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
 [[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
 [[ $adreno == "true" ]] && write "$gpu/force_bus_on" "0"
@@ -1715,7 +1715,7 @@ kmsg3 ""
 if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
-write "/sys/module/cpu_boost/parameters/input_boost_ms" "500"
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 kmsg "Tweaked CAF CPU input boost"
@@ -1724,7 +1724,7 @@ kmsg3 ""
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "500"
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
 kmsg "Tweaked CPU input boost"
@@ -1860,7 +1860,7 @@ fi
 [[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "2"
 [[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
 [[ $adreno == "true" ]] && write "$gpu/bus_split" "0"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" $gpufreq
+[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" $gpumxfreq
 [[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
 [[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" "3"
 [[ $adreno == "true" ]] && write "$gpu/force_bus_on" "0"
@@ -3114,7 +3114,7 @@ kmsg3 ""
 if [[ -d "/sys/module/cpu_boost" ]]
 then
 write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
-write "/sys/module/cpu_boost/parameters/input_boost_ms" "500"
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 kmsg "Tweaked CAF CPU input boost"
@@ -3261,7 +3261,7 @@ fi
 [[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "3"
 [[ $adreno == "true" ]] && write "$gpu/force_no_nap" "1"
 [[ $adreno == "true" ]] && write "$gpu/bus_split" "0"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" $gpufreq
+[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" $gpumxfreq
 [[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" $gpumx
 [[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" $gpumaxpl
 [[ $adreno == "true" ]] && write "$gpu/force_bus_on" "1"

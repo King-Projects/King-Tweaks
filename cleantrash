@@ -1,4 +1,5 @@
 rm -f /data/*.log
+rm -rf /data/vendor/wlan_logs
 rm -f /data/*.txt
 rm -f /cache/*.apk
 rm -f /data/anr/*
@@ -32,7 +33,6 @@ rm -rf /sdcard/.bstats
 rm -rf /sdcard/.taobao 
 rm -rf /sdcard/Backucup 
 rm -rf /sdcard/MIUI/debug_log
-rm -rf /sdcard/wlan_logs
 rm -rf /sdcard/ramdump
 rm -rf /sdcard/UnityAdsVideoCache
 rm -f /sdcard/*.log
