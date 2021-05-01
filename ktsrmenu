@@ -3,11 +3,6 @@
 
 kts_mode=$(getprop persist.kingtweaks.mode)
 
-kts_pf=$2
-
-unset optslct
-unset verbose
-
 if [[ "$(settings get global low_power)" == "1" ]]; then
 low_power=Activated
 
@@ -252,118 +247,30 @@ read -r option
 						fi
 
 						usage() {
-							echo "Usage: ktsrmenu [-p <value corresponding to the profile (0-6)>] [-o <value corresponding to it's function (7-17)>] [-h <trigger this dialog>] [-v <enable verbose info>]" 
+							echo "Usage: ktsrmenu [-p <value corresponding to the profile (0-6)>] [-h <trigger this dialog>]"
 							echo "[1] Automatic"
                             echo "[2] Battery"
                             echo "[3] Balanced"
                             echo "[4] Extreme"
                             echo "[5] Gaming"
                             echo "[6] Latency"
-                            echo "[7] Optimize apps package"
-                            echo "[8] Optimize databases"
-                            echo "[9] Enable low power mode"
-                            echo "[10] Disable low power mode"
-                            echo "[11] Enable data saver"
-                            echo "[12] Disable data saver"
-                            echo "[13] Enable power-saving location mode"
-                            echo "[14] Disable power-saving location mode"
-                            echo "[15] Clean useless files"
-                            echo "[16] Access our telegram group"
-                            echo "[17] FKM updater script"
 							exit 1
 							}
 						
-						while getopts ":p:h:vo:" opt; do
-						[[ $# -eq 0 ]] && usage
+						while getopts ":p:h:" opt; do
 						case "${opt}" in
 						
-						p) setprop persist.kingtweaks.mode $kts_pf
+						p) setprop persist.kingtweaks.mode "$2"
 						;;
 						
-						h) usage
-						;;
-						
-						v) verbose=true 
-						;;
-						
-						o) optslct="$OPTARG"
+						h | *) usage
 						;;
 						esac
                         done
-                        
-                        if [[ "$optslct" -eq "7" ]]; then 
-						cmd package bg-dexopt-job
-                        
-                        elif [[ "$optslct" -eq "8" ]]; then
-                        if [[ $(find /system -name "sqlite3" -type f) ]]; then
-						echo "[*] Optimizing..."
-						for i in $(find /d* -iname "*.db"); do
-                        sqlite3 "$i" 'VACUUM;'
-                        resVac=$?
-                        if [[ $resVac == 0 ]]; then
-                        resVac="SUCCESS"
-                        else
-                        resVac="FAILED(ERRCODE)-$resVac"
-                        fi
-                        sqlite3 "$i" 'REINDEX;'
-                        resIndex=$?
-                        if [[ $resIndex == 0 ]]; then
-                        resIndex="SUCCESS"
-                        else
-                        resIndex="FAILED(ERRCODE)-$resIndex"
-                        fi
-                        sqlite3 $i 'ANALYZE;'
-                        resAnlz=$?
-                        if [ $resAnlz == 0 ]; then
-                        resAnlz="SUCCESS"
-                        else
-                        resAnlz="FAILED(ERRCODE)-$resAnlz"
-                        fi
-                        echo -e "Database $i: VACUUM=$resVac REINDEX=$resIndex ANALYZE=$resAnlz" >> /sdcard/KTSR/dbopt.log
-                        done
-						else
-						echo "[!] SQLite not found, aborting..."
-                        fi
-                        
-                        elif [[ "$optslct" -eq "9" ]]; then
-                        settings put global low_power 1
-                        
-                        elif [[ "$optslct" -eq "10" ]]; then
-                        settings put global low_power 0
-                        
-                        elif [[ "$optslct" -eq "11" ]]; then
-                        cmd netpolicy set restrict-background true
-                        
-                        elif [[ "$optslct" -eq "12" ]]; then
-                        cmd netpolicy set restrict-background false
-                        
-                        elif [[ "$optslct" -eq "13" ]]; then
-                        settings put secure location_mode "0"
-                        settings put secure location_providers_allowed ""
-                        
-                        elif [[ "$optslct" -eq "14" ]]; then
-                        settings put secure location_providers_allowed "gps,network"
-                        
-                        elif [[ "$optslct" -eq "15" ]]; then
-                        cleantrash
-
-                        elif [[ "$optslct" -eq "16" ]]; then
-                        am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
-                        
-                        elif [[ "$optslct" -eq "17" ]]; then
-                        echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released to download!"
-						echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
-
-						else
-                        usage
-                        fi
 
                         shift $((OPTIND - 1))
                         
-                        if [[ "$verbose" ]]; then
-                        set -x
+                        if [[ "$2" -gt 6 ]]; then
+                        usage
                         fi
-
-						if [[ -z "$kts_pf" ]]; then
-						usage
-                        fi
+                        
