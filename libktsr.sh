@@ -841,6 +841,7 @@ write "${kernel}sched_child_runs_first" "1"
 write "${kernel}sched_boost" "0"
 write "${kernel}perf_cpu_time_max_percent" "4"
 write "${kernel}nmi_watchdog" "0"
+write "${kernel}watchdog" "0"
 write "${kernel}sched_autogroup_enabled" "1"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_LATENCY"
@@ -863,6 +864,11 @@ write "${kernel}timer_migration" "0"
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
+fi
+
+# Disable kernel tracing
+if [[ -e "/sys/kernel/debug/tracing" ]]; then
+write "/sys/kernel/debug/tracing/tracing_on" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -1408,6 +1414,7 @@ write "${kernel}sched_child_runs_first" "1"
 write "${kernel}sched_boost" "0"
 write "${kernel}perf_cpu_time_max_percent" "10"
 write "${kernel}nmi_watchdog" "0"
+write "${kernel}watchdog" "0"
 write "${kernel}sched_autogroup_enabled" "1"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BALANCE"
@@ -1430,6 +1437,11 @@ write "${kernel}timer_migration" "0"
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
+fi
+
+# Disable kernel tracing
+if [[ -e "/sys/kernel/debug/tracing" ]]; then
+write "/sys/kernel/debug/tracing/tracing_on" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -1997,7 +2009,7 @@ write "${stune}background/schedtune.prefer_perf" "0"
 write "${stune}foreground/schedtune.boost" "50"
 write "${stune}foreground/schedtune.prefer_idle" "0"
 write "${stune}foreground/schedtune.sched_boost" "15"
-write "${stune}top-app/schedtune.sched_boost_no_override" "1"
+write "${stune}foreground/schedtune.sched_boost_no_override" "1"
 write "${stune}foreground/schedtune.prefer_perf" "1"
 
 write "${stune}rt/schedtune.boost" "0"
@@ -2087,6 +2099,7 @@ write "${kernel}sched_child_runs_first" "0"
 write "${kernel}sched_boost" "1"
 write "${kernel}perf_cpu_time_max_percent" "25"
 write "${kernel}nmi_watchdog" "0"
+write "${kernel}watchdog" "0"
 write "${kernel}sched_autogroup_enabled" "0"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
@@ -2109,6 +2122,11 @@ write "${kernel}timer_migration" "0"
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
+fi
+
+# Disable kernel tracing
+if [[ -e "/sys/kernel/debug/tracing" ]]; then
+write "/sys/kernel/debug/tracing/tracing_on" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -2165,8 +2183,8 @@ sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "500"
-write "${vm}dirty_writeback_centisecs" "200"
+write "${vm}dirty_expire_centisecs" "1000"
+write "${vm}dirty_writeback_centisecs" "1000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
@@ -2540,10 +2558,10 @@ done
 find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
 write "$governor/up_rate_limit_us" "50000"
-write "$governor/down_rate_limit_us" "24000"
+write "$governor/down_rate_limit_us" "27000"
 write "$governor/pl" "0"
 write "$governor/iowait_boost_enable" "0"
-write "$governor/rate_limit_us" "50000"
+write "$governor/rate_limit_us" "70000"
 write "$governor/hispeed_load" "99"
 write "$governor/hispeed_freq" "$cpumxfreq"
 done
@@ -2591,8 +2609,8 @@ write "/sys/kernel/hmp/boost" "0"
 write "/sys/kernel/hmp/down_compensation_enabled" "1"
 write "/sys/kernel/hmp/family_boost" "0"
 write "/sys/kernel/hmp/semiboost" "0"
-write "/sys/kernel/hmp/up_threshold" "829"
-write "/sys/kernel/hmp/down_threshold" "336"
+write "/sys/kernel/hmp/up_threshold" "789"
+write "/sys/kernel/hmp/down_threshold" "303"
 kmsg "Tweaked HMP parameters"
 kmsg3 ""
 fi
@@ -2792,6 +2810,7 @@ write "${kernel}sched_child_runs_first" "0"
 write "${kernel}sched_boost" "0"
 write "${kernel}perf_cpu_time_max_percent" "3"
 write "${kernel}nmi_watchdog" "0"
+write "${kernel}watchdog" "0"
 write "${kernel}sched_autogroup_enabled" "1"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
@@ -2816,10 +2835,15 @@ write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
 fi
 
+# Disable kernel tracing
+if [[ -e "/sys/kernel/debug/tracing" ]]; then
+write "/sys/kernel/debug/tracing/tracing_on" "0"
+fi
+
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
 
-# Disable fingerprint boost.
+# Disable fingerprint boost
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
 write "/sys/kernel/fp_boost/enabled" "0"
@@ -2884,6 +2908,7 @@ kmsg3 ""
 fi
 
 # VM settings to improve overall user experience and performance.
+write "${vm}drop_caches" "1"
 write "${vm}dirty_background_ratio" "15"
 write "${vm}dirty_ratio" "50"
 write "${vm}dirty_expire_centisecs" "200"
@@ -2897,8 +2922,8 @@ write "${vm}swappiness" "145"
 else
 write "${vm}swappiness" "100"
 fi
-write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "50"
+write "${vm}laptop_mode" "1"
+write "${vm}vfs_cache_pressure" "60"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 
 kmsg "Tweaked various VM parameters for a improved user-experience"
@@ -3192,7 +3217,7 @@ kmsg3 ""
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "500"
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
 kmsg "Tweaked CPU input boost"
@@ -3488,6 +3513,7 @@ write "${kernel}sched_child_runs_first" "0"
 write "${kernel}sched_boost" "1"
 write "${kernel}perf_cpu_time_max_percent" "25"
 write "${kernel}nmi_watchdog" "0"
+write "${kernel}watchdog" "0"
 write "${kernel}sched_autogroup_enabled" "0"
 write "${kernel}sched_tunable_scaling" "0"
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
@@ -3510,6 +3536,11 @@ write "${kernel}timer_migration" "0"
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" 0
 write "/sys/kernel/rcu_normal" 1
+fi
+
+# Disable kernel tracing
+if [[ -e "/sys/kernel/debug/tracing" ]]; then
+write "/sys/kernel/debug/tracing/tracing_on" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
