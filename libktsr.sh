@@ -165,6 +165,13 @@ SCHED_TASKS_THROUGHPUT="6"
         gpu=$gpul5
         fi
         done
+        
+        for gpul6 in /sys/class/misc/mali*/device/devfreq/gpufreq
+        do
+        if [ -d "$gpul6" ]; then
+        gpu=$gpul6
+        fi
+        done
 
 	if [ -d "/sys/class/kgsl/kgsl-3d0" ]; then
 		gpu="/sys/class/kgsl/kgsl-3d0"
@@ -266,7 +273,7 @@ gpuminpl=$(cat $gpu/min_pwrlevel)
 # Get GPU maximum power level
 gpumaxpl=$(cat $gpu/max_pwrlevel)
 
-# Get max CPU frequency
+# Get max CPU clock
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 cpumxfreq=$(cat $cpu/scaling_max_freq)
@@ -275,7 +282,21 @@ cpumxfreq2=$(cat $cpu/cpuinfo_max_freq)
 if [[ $cpumxfreq2 > $cpumxfreq ]]; then
 cpumxfreq=$cpumxfreq2
 fi
+
+# Get min CPU clock
+cpumnfreq=$(cat $cpu/scaling_min_freq)
+cpumnfreq2=$(cat $cpu/cpuinfo_min_freq)
+
+if [[ "$cpumnfreq" > "$cpumnfreq2" ]]; then
+cpumnfreq=$cpumnfreq2
+fi
 done
+
+# CPU max clock in MHz
+cpumaxclkmhz=$((cpumxfreq / 1000))
+
+# CPU min clock in MHz
+cpuminclkmhz=$((cpumnfreq / 1000))
 
 # Get max GPU frequency (gpumx does almost the same thing)
 if [[ -e "$gpu/max_gpuclk" ]]; then
@@ -294,23 +315,32 @@ elif [[ -e "$gpug/gpu_min_clock" ]]; then
 gpumnfreq=$(cat $gpug/gpu_min_clock)
 fi
 
+# Max & min GPU clock in MHz
+if [[ "$gpumxfreq" -gt "100000" ]]; then
+gpumaxclkmhz=$((gpumxfreq / 1000)); gpuminclkmhz=$((gpumnfreq / 1000))
+fi
+
+elif [[ "$gpumxfreq" -gt "100000000" ]]; then
+gpumaxclkmhz=$((gpumxfreq / 1000000)); gpuminclkmhz=$((gpumnfreq / 1000000))
+fi
+
 # Get SOC manufacturer
 mf=$(getprop ro.boot.hardware)
 
 # Get device SOC
 soc=$(getprop ro.board.platform)
 
-if [ ! $soc == "" ]; then
+if [[ $soc == "" ]]; then
 soc=$(getprop ro.product.board)
 fi
 
 # Get device SDK
 sdk=$(getprop ro.build.version.sdk)
 
-if [ ! $sdk == "" ]; then
+if [[ $sdk == "" ]]; then
 sdk=$(getprop ro.vendor.build.version.sdk)
 
-elif [ ! $sdk == "" ]; then
+elif [[ $sdk == "" ]]; then
 sdk=$(getprop ro.vndk.version)
 fi
 
@@ -323,11 +353,11 @@ arv=$(getprop ro.build.version.release)
 # Get device codename
 dcdm=$(getprop ro.product.device)
 
-# Get magisk version
-magisk=$(magisk -c)
+# Get root version
+root=$(su -v)
 
 # Detect if we're running on a exynos powered device
-if [[ "$($mf | grep 'exynos')" ]] || [[ "$($soc | grep 'universal')" ]]; then
+if [[ "$(mf | grep exynos)" ]] || [[ "$(soc | grep universal)" ]]; then
 exynos=true
 adreno=false
 else
@@ -496,6 +526,12 @@ else
 bstatus=$gbstatus
 fi
 
+gbcapacity=$(cat /sys/class/power_supply/battery/charge_full_design)
+
+if [[ "$gbcapacity" == "" ]]; then
+gbcapacity=$(dumpsys batterystats | grep Capacity: | awk '{print $2}' | cut -d "," -f 1)
+fi
+
 # Get busybox version
 busybv=$(busybox | awk 'NR==1{print $2}')
 
@@ -509,15 +545,22 @@ else
 slstatus=Permissive
 fi
 
+# Check if GPU is adreno then define var
 [[ $adreno == "true" ]] && gputhrlvl=$(cat $gpu/thermal_pwrlevel)
 
-# Disable the thermal throttling clock reduction
+# Disable the GPU thermal throttling clock reduction
 if [[ "$gputhrlvl" -eq "1" || "$gputhrlvl" -ge "1" ]]; then
 gpucalc=$((gputhrlvl - gputhrlvl))
 
 else
 gpucalc=0
 fi
+
+# Get device brand
+dvb=$(getprop ro.product.brand)
+
+# Get OS running time
+osruntime=$(uptime | awk '{print $3}' | cut -d "," -f 1)
 
 ###############################
 # Abbreviations
@@ -547,27 +590,33 @@ kmsg "🗓️ Kernel Build Date: $kbdd"
 kmsg "🛠️ SOC: $mf, $soc"                                                                                               
 kmsg "⚙️ SDK: $sdk"
 kmsg "🅰️ndroid Version: $arv"    
-kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
+kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"           
+kmsg "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
 kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg "⛓️ AArch: $aarch"                                                                                            
-kmsg "🖼️ GPU Model: $gpuinfo"                                                                                         
-kmsg "🔨 GPU Drivers Info: $driversinfo"                                                                                  
+kmsg "⛓️ AArch: $aarch"          
+kmsg "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
+kmsg " GPU Model: $gpuinfo"                                                                                         
+kmsg "GPU Drivers Info: $driversinfo"                                                                                  
 kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg "📱 Device: $dcdm"                                                                                                
-kmsg "📲 ROM: $dvrom"                                                                                                  
+kmsg "📱 Device: $dvb, $dcdm"                                                                                                
+kmsg "🤖 ROM: $dvrom"                 
+kmsg "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
+kmsg "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
 kmsg "🎞️ Display FPS: $df"                                                                                                    
 kmsg "👑 KTSR Version: $gbversion"                                                                                     
 kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
 kmsg "📀 Build Type: $gbtype"                                                                                         
 kmsg "⏰ Build Date: $gbdate"                                                                                          
-kmsg "🔋 Battery Charge Level: $gbpercentage%"                                                                         
+kmsg "🔋 Battery Charge Level: $gbpercentage%"  
+kmsg "Battery Capacity: $gbcapacity MAh"
 kmsg "🩹 Battery Health: $bhealth"                                                                                     
 kmsg "⚡ Battery Status: $bstatus"                                                                                     
-kmsg "🌡️ Battery Temperature: $gbtemp°C"                                                                               
+kmsg "🌡️ Battery Temperature: $gbtemp °C"                                                                               
 kmsg "💾 Device RAM: $totalram MB"                                                                                     
 kmsg "📁 Device Available RAM: $availram MB"
-kmsg "👺 Magisk: $magisk"
-kmsg "🔒 SELinux Status: $slstatus"                                                                                    
+kmsg "🔓 Root: $root"
+kmsg "📳 System Uptime: $osruntime"
+kmsg "🔒 SELinux: $slstatus"                                                                                    
 kmsg "🧰 Busybox: $busybv"
 kmsg3 ""
 kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
@@ -606,7 +655,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq kyber bfq fiops zen sio anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety kyber mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -824,10 +873,8 @@ for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "300000"
+write "${minclk}scaling_min_freq" "$cpumnfreq"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "300000"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -835,10 +882,8 @@ for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ -e "${mnclk}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "300000"
+write "${mnclk}scaling_min_freq" "$cpumnfreq"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "300000"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -929,6 +974,14 @@ write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 kmsg "Applied TCP / internet tweaks"
 kmsg3 ""
 
+# Disable kernel battery saver
+if [[ -d "/sys/module/battery_saver" ]]
+then
+write "/sys/module/battery_saver/parameters/enabled" "N"
+kmsg "Disabled kernel battery saver"
+kmsg3 ""
+fi
+
 # Enable USB 3.0 fast charging
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
@@ -981,27 +1034,33 @@ kmsg "🗓️ Kernel Build Date: $kbdd"
 kmsg "🛠️ SOC: $mf, $soc"                                                                                               
 kmsg "⚙️ SDK: $sdk"
 kmsg "🅰️ndroid Version: $arv"    
-kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
+kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"           
+kmsg "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
 kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg "⛓️ AArch: $aarch"                                                                                            
-kmsg "🖼️ GPU Model: $gpuinfo"                                                                                         
-kmsg "🔨 GPU Drivers Info: $driversinfo"                                                                                  
+kmsg "⛓️ AArch: $aarch"          
+kmsg "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
+kmsg " GPU Model: $gpuinfo"                                                                                         
+kmsg "GPU Drivers Info: $driversinfo"                                                                                  
 kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg "📱 Device: $dcdm"                                                                                                
-kmsg "📲 ROM: $dvrom"                                                                                                  
+kmsg "📱 Device: $dvb, $dcdm"                                                                                                
+kmsg "🤖 ROM: $dvrom"                 
+kmsg "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
+kmsg "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
 kmsg "🎞️ Display FPS: $df"                                                                                                    
 kmsg "👑 KTSR Version: $gbversion"                                                                                     
 kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
 kmsg "📀 Build Type: $gbtype"                                                                                         
 kmsg "⏰ Build Date: $gbdate"                                                                                          
-kmsg "🔋 Battery Charge Level: $gbpercentage%"                                                                         
+kmsg "🔋 Battery Charge Level: $gbpercentage%"  
+kmsg "Battery Capacity: $gbcapacity MAh"
 kmsg "🩹 Battery Health: $bhealth"                                                                                     
 kmsg "⚡ Battery Status: $bstatus"                                                                                     
-kmsg "🌡️ Battery Temperature: $gbtemp°C"                                                                               
+kmsg "🌡️ Battery Temperature: $gbtemp °C"                                                                               
 kmsg "💾 Device RAM: $totalram MB"                                                                                     
 kmsg "📁 Device Available RAM: $availram MB"
-kmsg "👺 Magisk: $magisk"
-kmsg "🔒 SELinux Status: $slstatus"                                                                                    
+kmsg "🔓 Root: $root"
+kmsg "📳 System Uptime: $osruntime"
+kmsg "🔒 SELinux: $slstatus"                                                                                    
 kmsg "🧰 Busybox: $busybv"
 kmsg3 ""
 kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
@@ -1148,8 +1207,8 @@ write "/sys/kernel/hmp/boost" "0"
 write "/sys/kernel/hmp/down_compensation_enabled" "1"
 write "/sys/kernel/hmp/family_boost" "0"
 write "/sys/kernel/hmp/semiboost" "0"
-write "/sys/kernel/hmp/up_threshold" "556"
-write "/sys/kernel/hmp/down_threshold" "241"
+write "/sys/kernel/hmp/up_threshold" "575"
+write "/sys/kernel/hmp/down_threshold" "256"
 kmsg "Tweaked HMP parameters"
 kmsg3 ""
 fi
@@ -1389,10 +1448,8 @@ for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "300000"
+write "${minclk}scaling_min_freq" "$cpumnfreq"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "300000"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -1400,10 +1457,8 @@ for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ -e "${mnclk}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "300000"
+write "${mnclk}scaling_min_freq" "$cpumnfreq"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "300000"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -1553,6 +1608,14 @@ write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 kmsg "Applied TCP / internet tweaks"
 kmsg3 ""
 
+# Enable kernel battery saver
+if [[ -d "/sys/module/battery_saver" ]]
+then
+write "/sys/module/battery_saver/parameters/enabled" "Y"
+kmsg "Enabled kernel battery saver"
+kmsg3 ""
+fi
+
 # Disable high performance audio
 for hpm in /sys/module/snd_soc_wcd*
 do
@@ -1635,27 +1698,33 @@ kmsg "🗓️ Kernel Build Date: $kbdd"
 kmsg "🛠️ SOC: $mf, $soc"                                                                                               
 kmsg "⚙️ SDK: $sdk"
 kmsg "🅰️ndroid Version: $arv"    
-kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
+kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"           
+kmsg "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
 kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg "⛓️ AArch: $aarch"                                                                                            
-kmsg "🖼️ GPU Model: $gpuinfo"                                                                                         
-kmsg "🔨 GPU Drivers Info: $driversinfo"                                                                                  
+kmsg "⛓️ AArch: $aarch"          
+kmsg "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
+kmsg " GPU Model: $gpuinfo"                                                                                         
+kmsg "GPU Drivers Info: $driversinfo"                                                                                  
 kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg "📱 Device: $dcdm"                                                                                                
-kmsg "📲 ROM: $dvrom"                                                                                                  
+kmsg "📱 Device: $dvb, $dcdm"                                                                                                
+kmsg "🤖 ROM: $dvrom"                 
+kmsg "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
+kmsg "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
 kmsg "🎞️ Display FPS: $df"                                                                                                    
 kmsg "👑 KTSR Version: $gbversion"                                                                                     
 kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
 kmsg "📀 Build Type: $gbtype"                                                                                         
 kmsg "⏰ Build Date: $gbdate"                                                                                          
-kmsg "🔋 Battery Charge Level: $gbpercentage%"                                                                         
+kmsg "🔋 Battery Charge Level: $gbpercentage%"  
+kmsg "Battery Capacity: $gbcapacity MAh"
 kmsg "🩹 Battery Health: $bhealth"                                                                                     
 kmsg "⚡ Battery Status: $bstatus"                                                                                     
-kmsg "🌡️ Battery Temperature: $gbtemp°C"                                                                               
+kmsg "🌡️ Battery Temperature: $gbtemp °C"                                                                               
 kmsg "💾 Device RAM: $totalram MB"                                                                                     
 kmsg "📁 Device Available RAM: $availram MB"
-kmsg "👺 Magisk: $magisk"
-kmsg "🔒 SELinux Status: $slstatus"                                                                                    
+kmsg "🔓 Root: $root"
+kmsg "📳 System Uptime: $osruntime"
+kmsg "🔒 SELinux: $slstatus"                                                                                    
 kmsg "🧰 Busybox: $busybv"
 kmsg3 ""
 kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
@@ -1737,7 +1806,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq kyber bfq fiops zen sio anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety kyber mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1819,8 +1888,8 @@ write "/sys/kernel/hmp/boost" "1"
 write "/sys/kernel/hmp/down_compensation_enabled" "0"
 write "/sys/kernel/hmp/family_boost" "1"
 write "/sys/kernel/hmp/semiboost" "1"
-write "/sys/kernel/hmp/up_threshold" "400"
-write "/sys/kernel/hmp/down_threshold" "130"
+write "/sys/kernel/hmp/up_threshold" "500"
+write "/sys/kernel/hmp/down_threshold" "180"
 kmsg "Tweaked HMP parameters"
 kmsg3 ""
 fi
@@ -2060,8 +2129,6 @@ if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "$cpumxfreq"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2071,8 +2138,6 @@ if [[ -e "${mnclk}scaling_min_freq" ]]
 then
 write "${mnclk}scaling_min_freq" "$cpumxfreq"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2221,11 +2286,11 @@ write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 kmsg "Applied TCP / internet tweaks"
 kmsg3 ""
 
-# Disable battery saver
+# Disable kernel battery saver
 if [[ -d "/sys/module/battery_saver" ]]
 then
 write "/sys/module/battery_saver/parameters/enabled" "N"
-kmsg "Disabled battery saver"
+kmsg "Disabled kernel battery saver"
 kmsg3 ""
 fi
 
@@ -2326,27 +2391,33 @@ kmsg "🗓️ Kernel Build Date: $kbdd"
 kmsg "🛠️ SOC: $mf, $soc"                                                                                               
 kmsg "⚙️ SDK: $sdk"
 kmsg "🅰️ndroid Version: $arv"    
-kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
+kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"           
+kmsg "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
 kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg "⛓️ AArch: $aarch"                                                                                            
-kmsg "🖼️ GPU Model: $gpuinfo"                                                                                         
-kmsg "🔨 GPU Drivers Info: $driversinfo"                                                                                  
+kmsg "⛓️ AArch: $aarch"          
+kmsg "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
+kmsg " GPU Model: $gpuinfo"                                                                                         
+kmsg "GPU Drivers Info: $driversinfo"                                                                                  
 kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg "📱 Device: $dcdm"                                                                                                
-kmsg "📲 ROM: $dvrom"                                                                                                  
+kmsg "📱 Device: $dvb, $dcdm"                                                                                                
+kmsg "🤖 ROM: $dvrom"                 
+kmsg "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
+kmsg "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
 kmsg "🎞️ Display FPS: $df"                                                                                                    
 kmsg "👑 KTSR Version: $gbversion"                                                                                     
 kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
 kmsg "📀 Build Type: $gbtype"                                                                                         
 kmsg "⏰ Build Date: $gbdate"                                                                                          
-kmsg "🔋 Battery Charge Level: $gbpercentage%"                                                                         
+kmsg "🔋 Battery Charge Level: $gbpercentage%"  
+kmsg "Battery Capacity: $gbcapacity MAh"
 kmsg "🩹 Battery Health: $bhealth"                                                                                     
 kmsg "⚡ Battery Status: $bstatus"                                                                                     
-kmsg "🌡️ Battery Temperature: $gbtemp°C"                                                                               
+kmsg "🌡️ Battery Temperature: $gbtemp °C"                                                                               
 kmsg "💾 Device RAM: $totalram MB"                                                                                     
 kmsg "📁 Device Available RAM: $availram MB"
-kmsg "👺 Magisk: $magisk"
-kmsg "🔒 SELinux Status: $slstatus"                                                                                    
+kmsg "🔓 Root: $root"
+kmsg "📳 System Uptime: $osruntime"
+kmsg "🔒 SELinux: $slstatus"                                                                                    
 kmsg "🧰 Busybox: $busybv"
 kmsg3 ""
 kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
@@ -2426,7 +2497,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq kyber bfq fiops zen sio anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety kyber mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -2468,11 +2539,11 @@ done
 # Apply governor specific tunables for schedutil
 find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
-write "$governor/up_rate_limit_us" "46000"
+write "$governor/up_rate_limit_us" "50000"
 write "$governor/down_rate_limit_us" "24000"
 write "$governor/pl" "0"
 write "$governor/iowait_boost_enable" "0"
-write "$governor/rate_limit_us" "46000"
+write "$governor/rate_limit_us" "50000"
 write "$governor/hispeed_load" "99"
 write "$governor/hispeed_freq" "$cpumxfreq"
 done
@@ -2761,10 +2832,8 @@ for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" && $bpercentage > "20" ]]
 then
-write "${minclk}scaling_min_freq" "300000"
+write "${minclk}scaling_min_freq" "$cpumnfreq"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "300000"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2772,10 +2841,8 @@ for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ -e "${mnclk}scaling_min_freq" && $bpercentage > "20" ]]
 then
-write "${mnclk}scaling_min_freq" "300000"
+write "${mnclk}scaling_min_freq" "$cpumnfreq"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "300000"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2784,10 +2851,8 @@ for minclk in /sys/devices/system/cpu/cpufreq/policy*/
 do
 if [[ -e "${minclk}scaling_min_freq" && $bpercentage < "20" ]]
 then
-write "${minclk}scaling_min_freq" "300000"
+write "${minclk}scaling_min_freq" "$cpumnfreq"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "300000"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2795,10 +2860,8 @@ for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ -e "${mnclk}scaling_min_freq" && $bpercentage < "20" ]]
 then
-write "${mnclk}scaling_min_freq" "300000"
+write "${mnclk}scaling_min_freq" "$cpumnfreq"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "300000"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -2823,8 +2886,8 @@ fi
 # VM settings to improve overall user experience and performance.
 write "${vm}dirty_background_ratio" "15"
 write "${vm}dirty_ratio" "50"
-write "${vm}dirty_expire_centisecs" "500"
-write "${vm}dirty_writeback_centisecs" "200"
+write "${vm}dirty_expire_centisecs" "200"
+write "${vm}dirty_writeback_centisecs" "500"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
@@ -2944,11 +3007,11 @@ write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 kmsg "Applied TCP / internet tweaks"
 kmsg3 ""
 
-# Enable battery saver
+# Enable kernel battery saver
 if [[ -d "/sys/module/battery_saver" ]]
 then
 write "/sys/module/battery_saver/parameters/enabled" "Y"
-kmsg "Enabled battery saver"
+kmsg "Enabled kernel battery saver"
 kmsg3 ""
 fi
 
@@ -3034,27 +3097,33 @@ kmsg "🗓️ Kernel Build Date: $kbdd"
 kmsg "🛠️ SOC: $mf, $soc"                                                                                               
 kmsg "⚙️ SDK: $sdk"
 kmsg "🅰️ndroid Version: $arv"    
-kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"                                                                                  
+kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"           
+kmsg "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
 kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg "⛓️ AArch: $aarch"                                                                                            
-kmsg "🖼️ GPU Model: $gpuinfo"                                                                                         
-kmsg "🔨 GPU Drivers Info: $driversinfo"                                                                                  
+kmsg "⛓️ AArch: $aarch"          
+kmsg "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
+kmsg " GPU Model: $gpuinfo"                                                                                         
+kmsg "GPU Drivers Info: $driversinfo"                                                                                  
 kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg "📱 Device: $dcdm"                                                                                                
-kmsg "📲 ROM: $dvrom"                                                                                                  
+kmsg "📱 Device: $dvb, $dcdm"                                                                                                
+kmsg "🤖 ROM: $dvrom"                 
+kmsg "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
+kmsg "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
 kmsg "🎞️ Display FPS: $df"                                                                                                    
 kmsg "👑 KTSR Version: $gbversion"                                                                                     
 kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
 kmsg "📀 Build Type: $gbtype"                                                                                         
 kmsg "⏰ Build Date: $gbdate"                                                                                          
-kmsg "🔋 Battery Charge Level: $gbpercentage%"                                                                         
+kmsg "🔋 Battery Charge Level: $gbpercentage%"  
+kmsg "Battery Capacity: $gbcapacity MAh"
 kmsg "🩹 Battery Health: $bhealth"                                                                                     
 kmsg "⚡ Battery Status: $bstatus"                                                                                     
-kmsg "🌡️ Battery Temperature: $gbtemp°C"                                                                               
+kmsg "🌡️ Battery Temperature: $gbtemp °C"                                                                               
 kmsg "💾 Device RAM: $totalram MB"                                                                                     
 kmsg "📁 Device Available RAM: $availram MB"
-kmsg "👺 Magisk: $magisk"
-kmsg "🔒 SELinux Status: $slstatus"                                                                                    
+kmsg "🔓 Root: $root"
+kmsg "📳 System Uptime: $osruntime"
+kmsg "🔒 SELinux: $slstatus"                                                                                    
 kmsg "🧰 Busybox: $busybv"
 kmsg3 ""
 kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
@@ -3136,7 +3205,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq kyber bfq fiops zen sio anxiety mq-deadline cfq noop none
+	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio kyber anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -3461,8 +3530,6 @@ if [[ -e "${minclk}scaling_min_freq" ]]
 then
 write "${minclk}scaling_min_freq" "$cpumxfreq"
 write "${minclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -3472,8 +3539,6 @@ if [[ -e "${mnclk}scaling_min_freq" ]]
 then
 write "${mnclk}scaling_min_freq" "$cpumxfreq"
 write "${mnclk}scaling_max_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_min_freq" "$cpumxfreq"
-write "/sys/power/user_scaling_max_freq" "$cpumxfreq"
 fi
 done
 
@@ -3622,11 +3687,11 @@ write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 kmsg "Applied TCP / internet tweaks"
 kmsg3 ""
 
-# Disable battery saver
+# Disable kernel battery saver
 if [[ -d "/sys/module/battery_saver" ]]
 then
 write "/sys/module/battery_saver/parameters/enabled" "N"
-kmsg "Disabled battery saver"
+kmsg "Disabled kernel battery saver"
 kmsg3 ""
 fi
 

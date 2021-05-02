@@ -55,9 +55,9 @@ fi
 menu() {
 clear
 echo ""
-echo "**********************************"
-echo "* KTSR (Alt.) Profile Controller *"
-echo "**********************************"
+echo "******************************************"
+echo "* KTSR (Alt.) Profile Controller & Misc. *"
+echo "******************************************"
 echo ""
 echo "[*] Profile active: $kts_profile"
 echo ""
@@ -258,9 +258,10 @@ read -r option
 							}
 						
 						while getopts ":p:h:" opt; do
+						[[ $# -gt 2 ]] && usage
 						case "${opt}" in
 						
-						p) setprop persist.kingtweaks.mode "$2"
+						p) setprop persist.kingtweaks.mode "$2" && echo "Applying $kts_profile profile..."
 						;;
 						
 						h | *) usage
@@ -269,8 +270,3 @@ read -r option
                         done
 
                         shift $((OPTIND - 1))
-                        
-                        if [[ "$2" -gt 6 ]]; then
-                        usage
-                        fi
-                        
