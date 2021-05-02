@@ -1125,18 +1125,23 @@ fi
 
 if [[ -e "/sys/kernel/intelli_plug" ]]; then
 write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+fi
 
 if [[ -e "/sys/module/blu_plug" ]]; then
 write "/sys/module/blu_plug/parameters/enabled" "0"
+fi
 
 if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
 write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+fi
 
 if [[ -e "/sys/module/autosmp" ]]; then
 write "/sys/module/autosmp/parameters/enabled" "0"
+fi
 
 if [[ -e "/sys/kernel/zen_decision" ]]; then
 write "/sys/kernel/zen_decision/enabled" "0"
+fi
 
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
@@ -1812,18 +1817,23 @@ fi
 
 if [[ -e "/sys/kernel/intelli_plug" ]]; then
 write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+fi
 
 if [[ -e "/sys/module/blu_plug" ]]; then
 write "/sys/module/blu_plug/parameters/enabled" "0"
+fi
 
 if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
 write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+fi
 
 if [[ -e "/sys/module/autosmp" ]]; then
 write "/sys/module/autosmp/parameters/enabled" "0"
+fi
 
 if [[ -e "/sys/kernel/zen_decision" ]]; then
 write "/sys/kernel/zen_decision/enabled" "0"
+fi
 
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
@@ -2530,18 +2540,23 @@ fi
 
 if [[ -e "/sys/kernel/intelli_plug" ]]; then
 write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+fi
 
 if [[ -e "/sys/module/blu_plug" ]]; then
 write "/sys/module/blu_plug/parameters/enabled" "0"
+fi
 
 if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
 write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+fi
 
 if [[ -e "/sys/module/autosmp" ]]; then
 write "/sys/module/autosmp/parameters/enabled" "0"
+fi
 
 if [[ -e "/sys/kernel/zen_decision" ]]; then
 write "/sys/kernel/zen_decision/enabled" "0"
+fi
 
 kmsg "Disabled core control and CPU hotplug"
 kmsg3 ""
@@ -3261,18 +3276,23 @@ fi
 
 if [[ -e "/sys/kernel/intelli_plug" ]]; then
 write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+fi
 
 if [[ -e "/sys/module/blu_plug" ]]; then
 write "/sys/module/blu_plug/parameters/enabled" "0"
+fi
 
 if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
 write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+fi
 
 if [[ -e "/sys/module/autosmp" ]]; then
 write "/sys/module/autosmp/parameters/enabled" "0"
+fi
 
 if [[ -e "/sys/kernel/zen_decision" ]]; then
 write "/sys/kernel/zen_decision/enabled" "0"
+fi
 
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
