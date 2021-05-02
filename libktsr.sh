@@ -560,7 +560,7 @@ fi
 dvb=$(getprop ro.product.brand)
 
 # Get OS running time
-osruntime=$(uptime | awk '{print $3}' | cut -d "," -f 1)
+osruntime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
 ###############################
 # Abbreviations
@@ -584,44 +584,44 @@ latency() {
 kmsg "Device info"
 kmsg3 ""
 
-kmsg "🕛 Date of execution: $(date)"                                                                                    
-kmsg "🔧 Kernel: $kname"                                                                                           
-kmsg "🗓️ Kernel Build Date: $kbdd"
-kmsg "🛠️ SOC: $mf, $soc"                                                                                               
-kmsg "⚙️ SDK: $sdk"
-kmsg "🅰️ndroid Version: $arv"    
-kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"           
-kmsg "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
-kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg "⛓️ AArch: $aarch"          
-kmsg "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
-kmsg " GPU Model: $gpumdl"                                                                                         
-kmsg "GPU Drivers Info: $driversinfo"                                                                                  
-kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg "📱 Device: $dvb, $dcdm"                                                                                                
-kmsg "🤖 ROM: $dvrom"                 
-kmsg "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
-kmsg "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
-kmsg "🎞️ Display FPS: $df"                                                                                                    
-kmsg "👑 KTSR Version: $gbversion"                                                                                     
-kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
-kmsg "📀 Build Type: $gbtype"                                                                                         
-kmsg "⏰ Build Date: $gbdate"                                                                                          
+kmsg3 "🕛 Date of execution: $(date)"                                                                                    
+kmsg3 "🔧 Kernel: $kname"                                                                                           
+kmsg3 "🗓️ Kernel Build Date: $kbdd"
+kmsg3 "🛠️ SOC: $mf, $soc"                                                                                               
+kmsg3 "⚙️ SDK: $sdk"
+kmsg3 "🅰️ndroid Version: $arv"    
+kmsg3 "⚒️ CPU Governor: $CPU_GOVERNOR"           
+kmsg3 "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
+kmsg3 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
+kmsg3 "⛓️ AArch: $aarch"          
+kmsg3 "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
+kmsg3 "GPU Model: $gpumdl"                                                                                         
+kmsg3 "GPU Drivers Info: $driversinfo"                                                                                  
+kmsg3 "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
+kmsg3 "📱 Device: $dvb, $dcdm"                                                                                                
+kmsg3 "🤖 ROM: $dvrom"                 
+kmsg3 "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
+kmsg3 "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
+kmsg3 "🎞️ Display FPS: $df"                                                                                                    
+kmsg3 "👑 KTSR Version: $gbversion"                                                                                     
+kmsg3 "💭 KTSR Codename: $gbcodename"                                                                                   
+kmsg3 "📀 Build Type: $gbtype"                                                                                         
+kmsg3 "⏰ Build Date: $gbdate"                                                                                          
 kmsg "🔋 Battery Charge Level: $gbpercentage%"  
-kmsg "Battery Capacity: $gbcapacity MAh"
-kmsg "🩹 Battery Health: $bhealth"                                                                                     
-kmsg "⚡ Battery Status: $bstatus"                                                                                     
-kmsg "🌡️ Battery Temperature: $gbtemp °C"                                                                               
-kmsg "💾 Device RAM: $totalram MB"                                                                                     
-kmsg "📁 Device Available RAM: $availram MB"
-kmsg "🔓 Root: $root"
-kmsg "📳 System Uptime: $osruntime"
-kmsg "🔒 SELinux: $slstatus"                                                                                    
-kmsg "🧰 Busybox: $busybv"
+kmsg3 "Battery Capacity: $gbcapacity mAh"
+kmsg3 "🩹 Battery Health: $bhealth"                                                                                     
+kmsg3 "⚡ Battery Status: $bstatus"                                                                                     
+kmsg3 "🌡️ Battery Temperature: $gbtemp °C"                                                                               
+kmsg3 "💾 Device RAM: $totalram MB"                                                                                     
+kmsg3 "📁 Device Available RAM: $availram MB"
+kmsg3 "🔓 Root: $root"
+kmsg3 "📳 System Uptime: $osruntime"
+kmsg3 "🔒 SELinux: $slstatus"                                                                                    
+kmsg3 "🧰 Busybox: $busybv"
 kmsg3 ""
-kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg "🔊 Telegram Channel: https://t.me/kingprojectz"
-kmsg "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg3 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg3 "🔊 Telegram Channel: https://t.me/kingprojectz"
+kmsg3 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
 # Enable perf and mpdecision
@@ -751,7 +751,7 @@ write "${stune}rt/schedtune.prefer_idle" "0"
 write "${stune}rt/schedtune.sched_boost" "0"
 write "${stune}rt/schedtune.prefer_perf" "0"
 
-write "${stune}top-app/schedtune.boost" "10"
+write "${stune}top-app/schedtune.boost" "15"
 write "${stune}top-app/schedtune.prefer_idle" "1"
 write "${stune}top-app/schedtune.sched_boost" "0"
 write "${stune}top-app/schedtune.sched_boost_no_override" "1"
@@ -798,6 +798,9 @@ then
 write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "10"
 write "/proc/sys/fs/leases-enable" "1"
+write "/proc/sys/fs/inotify/max_queued_events" "131072"
+write "/proc/sys/fs/inotify/max_user_watches" "131072"
+write "/proc/sys/fs/inotify/max_user_instances" "1024"
 kmsg "Tweaked FS"
 kmsg3 ""
 fi
@@ -1034,54 +1037,54 @@ kmsg3 ""
 kmsg "Device info"
 kmsg3 ""
 
-kmsg "🕛 Date of execution: $(date)"                                                                                    
-kmsg "🔧 Kernel: $kname"                                                                                           
-kmsg "🗓️ Kernel Build Date: $kbdd"
-kmsg "🛠️ SOC: $mf, $soc"                                                                                               
-kmsg "⚙️ SDK: $sdk"
-kmsg "🅰️ndroid Version: $arv"    
-kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"           
-kmsg "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
-kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg "⛓️ AArch: $aarch"          
-kmsg "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
-kmsg " GPU Model: $gpumdl"                                                                                  
-kmsg "GPU Drivers Info: $driversinfo"                                                                                  
-kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg "📱 Device: $dvb, $dcdm"                                                                                                
-kmsg "🤖 ROM: $dvrom"                 
-kmsg "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
-kmsg "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
-kmsg "🎞️ Display FPS: $df"                                                                                                    
-kmsg "👑 KTSR Version: $gbversion"                                                                                     
-kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
-kmsg "📀 Build Type: $gbtype"                                                                                         
-kmsg "⏰ Build Date: $gbdate"                                                                                          
+kmsg3 "🕛 Date of execution: $(date)"                                                                                    
+kmsg3 "🔧 Kernel: $kname"                                                                                           
+kmsg3 "🗓️ Kernel Build Date: $kbdd"
+kmsg3 "🛠️ SOC: $mf, $soc"                                                                                               
+kmsg3 "⚙️ SDK: $sdk"
+kmsg3 "🅰️ndroid Version: $arv"    
+kmsg3 "⚒️ CPU Governor: $CPU_GOVERNOR"           
+kmsg3 "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
+kmsg3 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
+kmsg3 "⛓️ AArch: $aarch"          
+kmsg3 "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
+kmsg3 "GPU Model: $gpumdl"                                                                                         
+kmsg3 "GPU Drivers Info: $driversinfo"                                                                                  
+kmsg3 "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
+kmsg3 "📱 Device: $dvb, $dcdm"                                                                                                
+kmsg3 "🤖 ROM: $dvrom"                 
+kmsg3 "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
+kmsg3 "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
+kmsg3 "🎞️ Display FPS: $df"                                                                                                    
+kmsg3 "👑 KTSR Version: $gbversion"                                                                                     
+kmsg3 "💭 KTSR Codename: $gbcodename"                                                                                   
+kmsg3 "📀 Build Type: $gbtype"                                                                                         
+kmsg3 "⏰ Build Date: $gbdate"                                                                                          
 kmsg "🔋 Battery Charge Level: $gbpercentage%"  
-kmsg "Battery Capacity: $gbcapacity MAh"
-kmsg "🩹 Battery Health: $bhealth"                                                                                     
-kmsg "⚡ Battery Status: $bstatus"                                                                                     
-kmsg "🌡️ Battery Temperature: $gbtemp °C"                                                                               
-kmsg "💾 Device RAM: $totalram MB"                                                                                     
-kmsg "📁 Device Available RAM: $availram MB"
-kmsg "🔓 Root: $root"
-kmsg "📳 System Uptime: $osruntime"
-kmsg "🔒 SELinux: $slstatus"                                                                                    
-kmsg "🧰 Busybox: $busybv"
+kmsg3 "Battery Capacity: $gbcapacity mAh"
+kmsg3 "🩹 Battery Health: $bhealth"                                                                                     
+kmsg3 "⚡ Battery Status: $bstatus"                                                                                     
+kmsg3 "🌡️ Battery Temperature: $gbtemp °C"                                                                               
+kmsg3 "💾 Device RAM: $totalram MB"                                                                                     
+kmsg3 "📁 Device Available RAM: $availram MB"
+kmsg3 "🔓 Root: $root"
+kmsg3 "📳 System Uptime: $osruntime"
+kmsg3 "🔒 SELinux: $slstatus"                                                                                    
+kmsg3 "🧰 Busybox: $busybv"
 kmsg3 ""
-kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg "🔊 Telegram Channel: https://t.me/kingprojectz"
-kmsg "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg3 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg3 "🔊 Telegram Channel: https://t.me/kingprojectz"
+kmsg3 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Enable perfd and mpdecision
-start perfd
-start mpdecision
+# Stop perfd and mpdecision
+stop perfd
+stop mpdecision
 
 # Disable trace
 stop traced
 
-kmsg "Enabled perfd and mpdecision & disabled traced"
+kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
 # Do not stop thermal daemons, configure thermal config instead
@@ -1103,24 +1106,39 @@ for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
 if [[ -e "${corectl}/enable" ]]
 then
-write "${corectl}/enable" "1"
+write "${corectl}/enable" "0"
 
 elif [[ -e "${corectl}/disable" ]]
 then
-write "${corectl}/disable" "0"
+write "${corectl}/disable" "1"
 fi
 done
 
 if [[ -e "/sys/power/cpuhotplug/enable" ]]
 then
-write "/sys/power/cpuhotplug/enable" "1"
+write "/sys/power/cpuhotplug/enable" "0"
 
 elif [[ -e "/sys/power/cpuhotplug/enabled" ]]
 then
-write "/sys/power/cpuhotplug/enabled" "1"
+write "/sys/power/cpuhotplug/enabled" "0"
 fi
 
-kmsg "Enabled core control & CPU hotplug"
+if [[ -e "/sys/kernel/intelli_plug" ]]; then
+write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+
+if [[ -e "/sys/module/blu_plug" ]]; then
+write "/sys/module/blu_plug/parameters/enabled" "0"
+
+if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
+write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+
+if [[ -e "/sys/module/autosmp" ]]; then
+write "/sys/module/autosmp/parameters/enabled" "0"
+
+if [[ -e "/sys/kernel/zen_decision" ]]; then
+write "/sys/kernel/zen_decision/enabled" "0"
+
+kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
 
 # I/O Scheduler Tweaks
@@ -1379,6 +1397,9 @@ then
 write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "10"
 write "/proc/sys/fs/leases-enable" "1"
+write "/proc/sys/fs/inotify/max_queued_events" "131072"
+write "/proc/sys/fs/inotify/max_user_watches" "131072"
+write "/proc/sys/fs/inotify/max_user_instances" "1024"
 kmsg "Tweaked FS"
 kmsg3 ""
 fi
@@ -1704,54 +1725,54 @@ kmsg3 ""
 kmsg "Device info"
 kmsg3 ""
 
-kmsg "🕛 Date of execution: $(date)"                                                                                    
-kmsg "🔧 Kernel: $kname"                                                                                           
-kmsg "🗓️ Kernel Build Date: $kbdd"
-kmsg "🛠️ SOC: $mf, $soc"                                                                                               
-kmsg "⚙️ SDK: $sdk"
-kmsg "🅰️ndroid Version: $arv"    
-kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"           
-kmsg "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
-kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg "⛓️ AArch: $aarch"          
-kmsg "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
-kmsg " GPU Model: $gpumdl"                                                                                     
-kmsg "GPU Drivers Info: $driversinfo"                                                                                  
-kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg "📱 Device: $dvb, $dcdm"                                                                                                
-kmsg "🤖 ROM: $dvrom"                 
-kmsg "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
-kmsg "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
-kmsg "🎞️ Display FPS: $df"                                                                                                    
-kmsg "👑 KTSR Version: $gbversion"                                                                                     
-kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
-kmsg "📀 Build Type: $gbtype"                                                                                         
-kmsg "⏰ Build Date: $gbdate"                                                                                          
+kmsg3 "🕛 Date of execution: $(date)"                                                                                    
+kmsg3 "🔧 Kernel: $kname"                                                                                           
+kmsg3 "🗓️ Kernel Build Date: $kbdd"
+kmsg3 "🛠️ SOC: $mf, $soc"                                                                                               
+kmsg3 "⚙️ SDK: $sdk"
+kmsg3 "🅰️ndroid Version: $arv"    
+kmsg3 "⚒️ CPU Governor: $CPU_GOVERNOR"           
+kmsg3 "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
+kmsg3 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
+kmsg3 "⛓️ AArch: $aarch"          
+kmsg3 "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
+kmsg3 "GPU Model: $gpumdl"                                                                                         
+kmsg3 "GPU Drivers Info: $driversinfo"                                                                                  
+kmsg3 "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
+kmsg3 "📱 Device: $dvb, $dcdm"                                                                                                
+kmsg3 "🤖 ROM: $dvrom"                 
+kmsg3 "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
+kmsg3 "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
+kmsg3 "🎞️ Display FPS: $df"                                                                                                    
+kmsg3 "👑 KTSR Version: $gbversion"                                                                                     
+kmsg3 "💭 KTSR Codename: $gbcodename"                                                                                   
+kmsg3 "📀 Build Type: $gbtype"                                                                                         
+kmsg3 "⏰ Build Date: $gbdate"                                                                                          
 kmsg "🔋 Battery Charge Level: $gbpercentage%"  
-kmsg "Battery Capacity: $gbcapacity MAh"
-kmsg "🩹 Battery Health: $bhealth"                                                                                     
-kmsg "⚡ Battery Status: $bstatus"                                                                                     
-kmsg "🌡️ Battery Temperature: $gbtemp °C"                                                                               
-kmsg "💾 Device RAM: $totalram MB"                                                                                     
-kmsg "📁 Device Available RAM: $availram MB"
-kmsg "🔓 Root: $root"
-kmsg "📳 System Uptime: $osruntime"
-kmsg "🔒 SELinux: $slstatus"                                                                                    
-kmsg "🧰 Busybox: $busybv"
+kmsg3 "Battery Capacity: $gbcapacity mAh"
+kmsg3 "🩹 Battery Health: $bhealth"                                                                                     
+kmsg3 "⚡ Battery Status: $bstatus"                                                                                     
+kmsg3 "🌡️ Battery Temperature: $gbtemp °C"                                                                               
+kmsg3 "💾 Device RAM: $totalram MB"                                                                                     
+kmsg3 "📁 Device Available RAM: $availram MB"
+kmsg3 "🔓 Root: $root"
+kmsg3 "📳 System Uptime: $osruntime"
+kmsg3 "🔒 SELinux: $slstatus"                                                                                    
+kmsg3 "🧰 Busybox: $busybv"
 kmsg3 ""
-kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg "🔊 Telegram Channel: https://t.me/kingprojectz"
-kmsg "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg3 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg3 "🔊 Telegram Channel: https://t.me/kingprojectz"
+kmsg3 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Enable perfd and disable mpdecision.
+# Disable perfd and mpdecision
 stop perfd
 stop mpdecision
 
 # Disable trace
 stop traced
 
-kmsg "Enabled perfd and mpdecision & disabled traced"
+kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
@@ -1789,6 +1810,21 @@ then
 write "/sys/power/cpuhotplug/enabled" "0"
 fi
 
+if [[ -e "/sys/kernel/intelli_plug" ]]; then
+write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+
+if [[ -e "/sys/module/blu_plug" ]]; then
+write "/sys/module/blu_plug/parameters/enabled" "0"
+
+if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
+write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+
+if [[ -e "/sys/module/autosmp" ]]; then
+write "/sys/module/autosmp/parameters/enabled" "0"
+
+if [[ -e "/sys/kernel/zen_decision" ]]; then
+write "/sys/kernel/zen_decision/enabled" "0"
+
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
 
@@ -1808,6 +1844,7 @@ then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_gold" "$cpumxfreq"
 kmsg "Tweaked CPU input boost"
 kmsg3 ""
 fi
@@ -2064,6 +2101,9 @@ then
 write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "10"
 write "/proc/sys/fs/leases-enable" "1"
+write "/proc/sys/fs/inotify/max_queued_events" "131072"
+write "/proc/sys/fs/inotify/max_user_watches" "131072"
+write "/proc/sys/fs/inotify/max_user_instances" "1024"
 kmsg "Tweaked FS"
 kmsg3 ""
 fi
@@ -2403,54 +2443,54 @@ kmsg3 ""
 kmsg "Device info"
 kmsg3 ""
 
-kmsg "🕛 Date of execution: $(date)"                                                                                    
-kmsg "🔧 Kernel: $kname"                                                                                           
-kmsg "🗓️ Kernel Build Date: $kbdd"
-kmsg "🛠️ SOC: $mf, $soc"                                                                                               
-kmsg "⚙️ SDK: $sdk"
-kmsg "🅰️ndroid Version: $arv"    
-kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"           
-kmsg "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
-kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg "⛓️ AArch: $aarch"          
-kmsg "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
-kmsg " GPU Model: $gpumdl"                                                                                   
-kmsg "GPU Drivers Info: $driversinfo"                                                                                  
-kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg "📱 Device: $dvb, $dcdm"                                                                                                
-kmsg "🤖 ROM: $dvrom"                 
-kmsg "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
-kmsg "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
-kmsg "🎞️ Display FPS: $df"                                                                                                    
-kmsg "👑 KTSR Version: $gbversion"                                                                                     
-kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
-kmsg "📀 Build Type: $gbtype"                                                                                         
-kmsg "⏰ Build Date: $gbdate"                                                                                          
+kmsg3 "🕛 Date of execution: $(date)"                                                                                    
+kmsg3 "🔧 Kernel: $kname"                                                                                           
+kmsg3 "🗓️ Kernel Build Date: $kbdd"
+kmsg3 "🛠️ SOC: $mf, $soc"                                                                                               
+kmsg3 "⚙️ SDK: $sdk"
+kmsg3 "🅰️ndroid Version: $arv"    
+kmsg3 "⚒️ CPU Governor: $CPU_GOVERNOR"           
+kmsg3 "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
+kmsg3 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
+kmsg3 "⛓️ AArch: $aarch"          
+kmsg3 "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
+kmsg3 "GPU Model: $gpumdl"                                                                                         
+kmsg3 "GPU Drivers Info: $driversinfo"                                                                                  
+kmsg3 "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
+kmsg3 "📱 Device: $dvb, $dcdm"                                                                                                
+kmsg3 "🤖 ROM: $dvrom"                 
+kmsg3 "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
+kmsg3 "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
+kmsg3 "🎞️ Display FPS: $df"                                                                                                    
+kmsg3 "👑 KTSR Version: $gbversion"                                                                                     
+kmsg3 "💭 KTSR Codename: $gbcodename"                                                                                   
+kmsg3 "📀 Build Type: $gbtype"                                                                                         
+kmsg3 "⏰ Build Date: $gbdate"                                                                                          
 kmsg "🔋 Battery Charge Level: $gbpercentage%"  
-kmsg "Battery Capacity: $gbcapacity MAh"
-kmsg "🩹 Battery Health: $bhealth"                                                                                     
-kmsg "⚡ Battery Status: $bstatus"                                                                                     
-kmsg "🌡️ Battery Temperature: $gbtemp °C"                                                                               
-kmsg "💾 Device RAM: $totalram MB"                                                                                     
-kmsg "📁 Device Available RAM: $availram MB"
-kmsg "🔓 Root: $root"
-kmsg "📳 System Uptime: $osruntime"
-kmsg "🔒 SELinux: $slstatus"                                                                                    
-kmsg "🧰 Busybox: $busybv"
+kmsg3 "Battery Capacity: $gbcapacity mAh"
+kmsg3 "🩹 Battery Health: $bhealth"                                                                                     
+kmsg3 "⚡ Battery Status: $bstatus"                                                                                     
+kmsg3 "🌡️ Battery Temperature: $gbtemp °C"                                                                               
+kmsg3 "💾 Device RAM: $totalram MB"                                                                                     
+kmsg3 "📁 Device Available RAM: $availram MB"
+kmsg3 "🔓 Root: $root"
+kmsg3 "📳 System Uptime: $osruntime"
+kmsg3 "🔒 SELinux: $slstatus"                                                                                    
+kmsg3 "🧰 Busybox: $busybv"
 kmsg3 ""
-kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg "🔊 Telegram Channel: https://t.me/kingprojectz"
-kmsg "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg3 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg3 "🔊 Telegram Channel: https://t.me/kingprojectz"
+kmsg3 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Enable perfd and mpdecision
-start perfd
-start mpdecision
+# Disable perfd and mpdecision
+stop perfd
+stop mpdecision
 
 # Disable trace
 stop traced
 
-kmsg "Enabled perfd and mpdecision & disabled traced"
+kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
@@ -2471,24 +2511,39 @@ for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
 if [[ -e "${corectl}/enable" ]]
 then
-write "${corectl}/enable" "1"
+write "${corectl}/enable" "0"
 
 elif [[ -e "${corectl}/disable" ]]
 then
-write "${corectl}/disable" "0"
+write "${corectl}/disable" "1"
 fi
 done
 
 if [[ -e "/sys/power/cpuhotplug/enable" ]]
 then
-write "/sys/power/cpuhotplug/enable" "1"
+write "/sys/power/cpuhotplug/enable" "0"
 
 elif [[ -e "/sys/power/cpuhotplug/enabled" ]]
 then
-write "/sys/power/cpuhotplug/enabled" "1"
+write "/sys/power/cpuhotplug/enabled" "0"
 fi
 
-kmsg "Enabled core control and CPU hotplug"
+if [[ -e "/sys/kernel/intelli_plug" ]]; then
+write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+
+if [[ -e "/sys/module/blu_plug" ]]; then
+write "/sys/module/blu_plug/parameters/enabled" "0"
+
+if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
+write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+
+if [[ -e "/sys/module/autosmp" ]]; then
+write "/sys/module/autosmp/parameters/enabled" "0"
+
+if [[ -e "/sys/kernel/zen_decision" ]]; then
+write "/sys/kernel/zen_decision/enabled" "0"
+
+kmsg "Disabled core control and CPU hotplug"
 kmsg3 ""
 
 # Caf CPU Boost
@@ -2774,6 +2829,9 @@ then
 write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "10"
 write "/proc/sys/fs/leases-enable" "1"
+write "/proc/sys/fs/inotify/max_queued_events" "131072"
+write "/proc/sys/fs/inotify/max_user_watches" "131072"
+write "/proc/sys/fs/inotify/max_user_instances" "1024"
 kmsg "Tweaked FS"
 kmsg3 ""
 fi
@@ -3116,44 +3174,44 @@ kmsg3 ""
 kmsg "Device info"
 kmsg3 ""
 
-kmsg "🕛 Date of execution: $(date)"                                                                                    
-kmsg "🔧 Kernel: $kname"                                                                                           
-kmsg "🗓️ Kernel Build Date: $kbdd"
-kmsg "🛠️ SOC: $mf, $soc"                                                                                               
-kmsg "⚙️ SDK: $sdk"
-kmsg "🅰️ndroid Version: $arv"    
-kmsg "⚒️ CPU Governor: $CPU_GOVERNOR"           
-kmsg "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
-kmsg "⚖️ CPU Scheduling Type: $cpusched"                                                                               
-kmsg "⛓️ AArch: $aarch"          
-kmsg "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
-kmsg " GPU Model: $gpumdl"                                                                                    
-kmsg "GPU Drivers Info: $driversinfo"                                                                                  
-kmsg "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg "📱 Device: $dvb, $dcdm"                                                                                                
-kmsg "🤖 ROM: $dvrom"                 
-kmsg "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
-kmsg "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
-kmsg "🎞️ Display FPS: $df"                                                                                                    
-kmsg "👑 KTSR Version: $gbversion"                                                                                     
-kmsg "💭 KTSR Codename: $gbcodename"                                                                                   
-kmsg "📀 Build Type: $gbtype"                                                                                         
-kmsg "⏰ Build Date: $gbdate"                                                                                          
+kmsg3 "🕛 Date of execution: $(date)"                                                                                    
+kmsg3 "🔧 Kernel: $kname"                                                                                           
+kmsg3 "🗓️ Kernel Build Date: $kbdd"
+kmsg3 "🛠️ SOC: $mf, $soc"                                                                                               
+kmsg3 "⚙️ SDK: $sdk"
+kmsg3 "🅰️ndroid Version: $arv"    
+kmsg3 "⚒️ CPU Governor: $CPU_GOVERNOR"           
+kmsg3 "CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
+kmsg3 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
+kmsg3 "⛓️ AArch: $aarch"          
+kmsg3 "GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
+kmsg3 "GPU Model: $gpumdl"                                                                                         
+kmsg3 "GPU Drivers Info: $driversinfo"                                                                                  
+kmsg3 "⛏️ GPU Governor: $GPU_GOVERNOR"                                                                                  
+kmsg3 "📱 Device: $dvb, $dcdm"                                                                                                
+kmsg3 "🤖 ROM: $dvrom"                 
+kmsg3 "🖼️ Screen Size / Resolution: $(wm size | awk '{print $3}')"
+kmsg3 "📲 Screen Density: $(wm density | awk '{print $3}') PPI"
+kmsg3 "🎞️ Display FPS: $df"                                                                                                    
+kmsg3 "👑 KTSR Version: $gbversion"                                                                                     
+kmsg3 "💭 KTSR Codename: $gbcodename"                                                                                   
+kmsg3 "📀 Build Type: $gbtype"                                                                                         
+kmsg3 "⏰ Build Date: $gbdate"                                                                                          
 kmsg "🔋 Battery Charge Level: $gbpercentage%"  
-kmsg "Battery Capacity: $gbcapacity MAh"
-kmsg "🩹 Battery Health: $bhealth"                                                                                     
-kmsg "⚡ Battery Status: $bstatus"                                                                                     
-kmsg "🌡️ Battery Temperature: $gbtemp °C"                                                                               
-kmsg "💾 Device RAM: $totalram MB"                                                                                     
-kmsg "📁 Device Available RAM: $availram MB"
-kmsg "🔓 Root: $root"
-kmsg "📳 System Uptime: $osruntime"
-kmsg "🔒 SELinux: $slstatus"                                                                                    
-kmsg "🧰 Busybox: $busybv"
+kmsg3 "Battery Capacity: $gbcapacity mAh"
+kmsg3 "🩹 Battery Health: $bhealth"                                                                                     
+kmsg3 "⚡ Battery Status: $bstatus"                                                                                     
+kmsg3 "🌡️ Battery Temperature: $gbtemp °C"                                                                               
+kmsg3 "💾 Device RAM: $totalram MB"                                                                                     
+kmsg3 "📁 Device Available RAM: $availram MB"
+kmsg3 "🔓 Root: $root"
+kmsg3 "📳 System Uptime: $osruntime"
+kmsg3 "🔒 SELinux: $slstatus"                                                                                    
+kmsg3 "🧰 Busybox: $busybv"
 kmsg3 ""
-kmsg "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-kmsg "🔊 Telegram Channel: https://t.me/kingprojectz"
-kmsg "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
+kmsg3 "Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
+kmsg3 "🔊 Telegram Channel: https://t.me/kingprojectz"
+kmsg3 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
 # Disable perfd and mpdecision
@@ -3163,7 +3221,7 @@ stop mpdecision
 # Disable trace
 stop traced
 
-kmsg "Enabled perfd and mpdecision & disabled traced"
+kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
@@ -3201,6 +3259,21 @@ then
 write "/sys/power/cpuhotplug/enabled" "0"
 fi
 
+if [[ -e "/sys/kernel/intelli_plug" ]]; then
+write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+
+if [[ -e "/sys/module/blu_plug" ]]; then
+write "/sys/module/blu_plug/parameters/enabled" "0"
+
+if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
+write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+
+if [[ -e "/sys/module/autosmp" ]]; then
+write "/sys/module/autosmp/parameters/enabled" "0"
+
+if [[ -e "/sys/kernel/zen_decision" ]]; then
+write "/sys/kernel/zen_decision/enabled" "0"
+
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
 
@@ -3220,6 +3293,7 @@ then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
 write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_gold" "$cpumxfreq"
 kmsg "Tweaked CPU input boost"
 kmsg3 ""
 fi
@@ -3478,6 +3552,9 @@ then
 write "/proc/sys/fs/dir-notify-enable" "0"
 write "/proc/sys/fs/lease-break-time" "10"
 write "/proc/sys/fs/leases-enable" "1"
+write "/proc/sys/fs/inotify/max_queued_events" "131072"
+write "/proc/sys/fs/inotify/max_user_watches" "131072"
+write "/proc/sys/fs/inotify/max_user_instances" "1024"
 kmsg "Tweaked FS"
 kmsg3 ""
 fi
