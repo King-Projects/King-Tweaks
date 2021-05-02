@@ -121,7 +121,7 @@ SCHED_TASKS_BALANCE="8"
 
 SCHED_TASKS_THROUGHPUT="6"
 
-    # Variable to GPU directories
+    # Get GPU directories
     for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
     do
     if [ -d "$gpul" ]; then
@@ -318,8 +318,9 @@ fi
 # Max & min GPU clock in MHz
 if [[ "$gpumxfreq" -gt "100000" ]]; then
 gpumaxclkmhz=$((gpumxfreq / 1000)); gpuminclkmhz=$((gpumnfreq / 1000))
+fi
 
-elif [[ "$gpumxfreq" -gt "100000000" ]]; then
+if [[ "$gpumxfreq" -gt "100000000" ]]; then
 gpumaxclkmhz=$((gpumxfreq / 1000000)); gpuminclkmhz=$((gpumnfreq / 1000000))
 fi
 
