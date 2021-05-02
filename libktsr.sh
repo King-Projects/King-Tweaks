@@ -318,7 +318,6 @@ fi
 # Max & min GPU clock in MHz
 if [[ "$gpumxfreq" -gt "100000" ]]; then
 gpumaxclkmhz=$((gpumxfreq / 1000)); gpuminclkmhz=$((gpumnfreq / 1000))
-fi
 
 elif [[ "$gpumxfreq" -gt "100000000" ]]; then
 gpumaxclkmhz=$((gpumxfreq / 1000000)); gpuminclkmhz=$((gpumnfreq / 1000000))
@@ -743,7 +742,7 @@ write "${stune}background/schedtune.prefer_perf" "0"
 write "${stune}foreground/schedtune.boost" "5"
 write "${stune}foreground/schedtune.prefer_idle" "1"
 write "${stune}foreground/schedtune.sched_boost" "0"
-write "${stune}top-app/schedtune.sched_boost_no_override" "1"
+write "${stune}foreground/schedtune.sched_boost_no_override" "1"
 write "${stune}foreground/schedtune.prefer_perf" "0"
 
 write "${stune}rt/schedtune.boost" "0"
@@ -1324,7 +1323,7 @@ write "${stune}background/schedtune.prefer_perf" "0"
 write "${stune}foreground/schedtune.boost" "0"
 write "${stune}foreground/schedtune.prefer_idle" "1"
 write "${stune}foreground/schedtune.sched_boost" "0"
-write "${stune}top-app/schedtune.sched_boost_no_override" "1"
+write "${stune}foreground/schedtune.sched_boost_no_override" "1"
 write "${stune}foreground/schedtune.prefer_perf" "0"
 
 write "${stune}rt/schedtune.boost" "0"
