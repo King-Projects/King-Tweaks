@@ -279,7 +279,7 @@ do
 cpumxfreq=$(cat $cpu/scaling_max_freq)
 cpumxfreq2=$(cat $cpu/cpuinfo_max_freq)
 
-if [[ "$cpumxfreq2" > "$cpumxfreq" ]]; then
+if [[ "$cpumxfreq2" -gt "$cpumxfreq" ]]; then
 cpumxfreq=$cpumxfreq2
 fi
 done
@@ -549,7 +549,7 @@ fi
 [[ $adreno == "true" ]] && gputhrlvl=$(cat $gpu/thermal_pwrlevel)
 
 # Disable the GPU thermal throttling clock restriction
-if [[ "$gputhrlvl" -eq "1" || "$gputhrlvl" -ge "1" ]]; then
+if [[ "$gputhrlvl" -eq "1" || "$gputhrlvl" -gt "1" ]]; then
 gpucalc=$((gputhrlvl - gputhrlvl))
 
 else
@@ -575,6 +575,8 @@ vm=/proc/sys/vm/
 cpuset=/dev/cpuset/
 
 stune=/dev/stune/
+
+lmk=/sys/module/lowmemorykiller/
 
 # Latency Profile
 latency() {
@@ -914,6 +916,25 @@ fi
 # always sync before dropping caches
 sync
 
+fr=$(((totalram * 2 / 100) * 1024 / 4))
+bg=$(((totalram * 3 / 100) * 1024 / 4))
+et=$(((totalram * 4 / 100) * 1024 / 4))
+mr=$(((totalram * 6 / 100) * 1024 / 4))
+cd=$(((totalram * 9 / 100) * 1024 / 4))
+ab=$(((totalram * 12 / 100) * 1024 / 4))
+
+efr=$((mfr * 16 / 5))
+
+if [[ "$efr" -le "18432" ]]; then
+  efr=18432
+fi
+
+mfr=$((totalram * 9 / 5))
+
+if [[ "$mfr" -le "3072" ]]; then
+mfr=3072
+fi
+
 # VM tweaks to improve overall user experience and smoothness.
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "25"
@@ -931,8 +952,44 @@ fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+write "${vm}reap_mem_on_sigkill" "1"
 
-kmsg "Tweaked various VM parameters for a improved user-experience"
+# Tune lmk_minfree
+if [[ -e "${lmk}/parameters/minfree" ]]; then
+write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+fi
+
+# Enable oom_reaper
+if [[ -e "${lmk}parameters/oom_reaper" ]]; then
+write "${lmk}parameters/oom_reaper" "1"
+fi
+	
+# Disable lmk_fast_run
+if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
+write "${lmk}parameters/lmk_fast_run" "0"
+fi
+
+# Disable adaptive_lmk
+if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+write "${lmk}parameters/enable_adaptive_lmk" "0"
+fi
+
+# Tune lmk_cost
+if [[ -e "${lmk}parameters/cost" ]]; then
+write "${lmk}parameters/cost" "16"
+fi
+
+# Tune vm_min_free_kbytes
+if [[ -e "${vm}min_free_kbytes" ]]; then
+write "${vm}min_free_kbytes" "$mfr"
+fi
+  
+# Tune vm_extra_free_kbytes
+if [[ -e "${vm}extra_free_kbytes" ]]; then
+write "${vm}extra_free_kbytes" "$efr"
+fi
+
+kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 kmsg3 ""
 
 # MSM thermal tweaks
@@ -1538,7 +1595,28 @@ kmsg "Disabled krait voltage boost"
 kmsg3 ""
 fi
 
+# always sync before dropping caches
 sync
+
+fr=$(((totalram * 5 / 2 / 100) * 1024 / 4))
+bg=$(((totalram * 3 / 100) * 1024 / 4))
+et=$(((totalram * 5 / 100) * 1024 / 4))
+mr=$(((totalram * 7 / 100) * 1024 / 4))
+cd=$(((totalram * 9 / 100) * 1024 / 4))
+ab=$(((totalram * 11 / 100) * 1024 / 4))
+
+mfr=$((totalram * 8 / 5))
+
+if [[ "$mfr" -le "3072" ]]; then
+  mfr=3072
+fi
+
+# Extra free kbytes calculated based on min_free_kbytes
+efr=$((mfr * 16 / 5))
+
+if [[ "$efr" -le "18432" ]]; then
+  efr=18432
+fi
 
 # VM settings to improve overall user experience and smoothness.
 write "${vm}drop_caches" "3"
@@ -1558,8 +1636,44 @@ fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+write "${vm}reap_mem_on_sigkill" "1"
 
-kmsg "Tweaked various VM parameters for a improved user-experience"
+# Tune lmk_minfree
+if [[ -e "${lmk}/parameters/minfree" ]]; then
+write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+fi
+
+# Enable oom_reaper
+if [[ -e "${lmk}parameters/oom_reaper" ]]; then
+write "${lmk}parameters/oom_reaper" "1"
+fi
+	
+# Enable lmk_fast_run
+if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
+write "${lmk}parameters/lmk_fast_run" "1"
+fi
+
+# Disable adaptive_lmk
+if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+write "${lmk}parameters/enable_adaptive_lmk" "0"
+fi
+
+# Tune lmk_cost
+if [[ -e "${lmk}parameters/cost" ]]; then
+write "${lmk}parameters/cost" "32"
+fi
+
+# Tune vm_min_free_kbytes
+if [[ -e "${vm}min_free_kbytes" ]]; then
+write "${vm}min_free_kbytes" "$mfr"
+fi
+  
+# Tune vm_extra_free_kbytes
+if [[ -e "${vm}extra_free_kbytes" ]]; then
+write "${vm}extra_free_kbytes" "$efr"
+fi
+
+kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 kmsg3 ""
 
 # MSM thermal tweaks
@@ -2257,7 +2371,27 @@ kmsg "Enabled krait voltage boost"
 kmsg3 ""
 fi
 
+# always sync before dropping caches
 sync
+
+fr=$(((totalram * 3 / 2 / 100) * 1024 / 4))
+bg=$(((totalram * 3 / 100) * 1024 / 4))
+et=$(((totalram * 5 / 100) * 1024 / 4))
+mr=$(((totalram * 7 / 100) * 1024 / 4))
+cd=$(((totalram * 11 / 100) * 1024 / 4))
+ab=$(((totalram * 14 / 100) * 1024 / 4))
+
+efr=$((mfr * 16 / 5))
+
+if [[ "$efr" -le "18432" ]]; then
+  efr=18432
+fi
+
+mfr=$((totalram * 6 / 5))
+
+if [[ "$mfr" -le "3072" ]]; then
+mfr=3072
+fi
 
 # VM settings to improve overall user experience and performance.
 write "${vm}drop_caches" "3"
@@ -2277,8 +2411,44 @@ fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "150"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+write "${vm}reap_mem_on_sigkill" "1"
 
-kmsg "Tweaked various VM parameters for a improved user-experience"
+# Tune lmk_minfree
+if [[ -e "${lmk}/parameters/minfree" ]]; then
+write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+fi
+
+# Enable oom_reaper
+if [[ -e "${lmk}parameters/oom_reaper" ]]; then
+write "${lmk}parameters/oom_reaper" "1"
+fi
+	
+# Enable lmk_fast_run
+if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
+write "${lmk}parameters/lmk_fast_run" "1"
+fi
+
+# Disable adaptive_lmk
+if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+write "${lmk}parameters/enable_adaptive_lmk" "0"
+fi
+
+# Tune lmk_cost
+if [[ -e "${lmk}parameters/cost" ]]; then
+write "${lmk}parameters/cost" "32"
+fi
+
+# Tune vm_min_free_kbytes
+if [[ -e "${vm}min_free_kbytes" ]]; then
+write "${vm}min_free_kbytes" "$mfr"
+fi
+  
+# Tune vm_extra_free_kbytes
+if [[ -e "${vm}extra_free_kbytes" ]]; then
+write "${vm}extra_free_kbytes" "$efr"
+fi
+
+kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 kmsg3 ""
 
 # MSM thermal tweaks
@@ -3016,6 +3186,28 @@ kmsg "Disabled krait voltage boost"
 kmsg3 ""
 fi
 
+# always sync before dropping caches
+sync
+
+fr=$(((totalram * 2 / 100) * 1024 / 4))
+bg=$(((totalram * 3 / 100) * 1024 / 4))
+et=$(((totalram * 4 / 100) * 1024 / 4))
+mr=$(((totalram * 8 / 100) * 1024 / 4))
+cd=$(((totalram * 12 / 100) * 1024 / 4))
+ab=$(((totalram * 14 / 100) * 1024 / 4))
+
+efr=$((mfr * 16 / 5))
+
+if [[ "$efr" -le "18432" ]]; then
+  efr=18432
+fi
+
+mfr=$((totalram * 7 / 5))
+
+if [[ "$mfr" -le "3072" ]]; then
+mfr=3072
+fi
+
 # VM settings to improve overall user experience and performance.
 write "${vm}drop_caches" "1"
 write "${vm}dirty_background_ratio" "5"
@@ -3034,8 +3226,44 @@ fi
 write "${vm}laptop_mode" "1"
 write "${vm}vfs_cache_pressure" "60"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+write "${vm}reap_mem_on_sigkill" "1"
 
-kmsg "Tweaked various VM parameters for a improved user-experience"
+# Tune lmk_minfree
+if [[ -e "${lmk}/parameters/minfree" ]]; then
+write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+fi
+
+# Enable oom_reaper
+if [[ -e "${lmk}parameters/oom_reaper" ]]; then
+write "${lmk}parameters/oom_reaper" "1"
+fi
+	
+# Enable lmk_fast_run
+if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
+write "${lmk}parameters/lmk_fast_run" "1"
+fi
+
+# Disable adaptive_lmk
+if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+write "${lmk}parameters/enable_adaptive_lmk" "0"
+fi
+
+# Tune lmk_cost
+if [[ -e "${lmk}parameters/cost" ]]; then
+write "${lmk}parameters/cost" "32"
+fi
+
+# Tune vm_min_free_kbytes
+if [[ -e "${vm}min_free_kbytes" ]]; then
+write "${vm}min_free_kbytes" "$mfr"
+fi
+  
+# Tune vm_extra_free_kbytes
+if [[ -e "${vm}extra_free_kbytes" ]]; then
+write "${vm}extra_free_kbytes" "$efr"
+fi
+
+kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 kmsg3 ""
 
 # MSM thermal tweaks
@@ -3734,7 +3962,27 @@ kmsg "Enabled krait voltage boost"
 kmsg3 ""
 fi
 
+# always sync before dropping caches
 sync
+
+fr=$(((totalram * 3 / 2 / 100) * 1024 / 4))
+bg=$(((totalram * 2 / 100) * 1024 / 4))
+et=$(((totalram * 4 / 100) * 1024 / 4))
+mr=$(((totalram * 7 / 100) * 1024 / 4))
+cd=$(((totalram * 11 / 100) * 1024 / 4))
+ab=$(((totalram * 13 / 100) * 1024 / 4))
+
+efr=$((mfr * 16 / 5))
+
+if [[ "$efr" -le "18432" ]]; then
+  efr=18432
+fi
+
+mfr=$((totalram * 6 / 5))
+
+if [[ "$mfr" -le "3072" ]]; then
+mfr=3072
+fi
 
 # VM settings to improve overall user experience and performance.
 write "${vm}drop_caches" "3"
@@ -3754,8 +4002,44 @@ fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
 [[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+write "${vm}reap_mem_on_sigkill" "1"
 
-kmsg "Tweaked various VM parameters for a improved user-experience"
+# Tune lmk_minfree
+if [[ -e "${lmk}/parameters/minfree" ]]; then
+write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+fi
+
+# Enable oom_reaper
+if [[ -e "${lmk}parameters/oom_reaper" ]]; then
+write "${lmk}parameters/oom_reaper" "1"
+fi
+	
+# Enable lmk_fast_run
+if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
+write "${lmk}parameters/lmk_fast_run" "1"
+fi
+
+# Enable adaptive_lmk
+if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+write "${lmk}parameters/enable_adaptive_lmk" "1"
+fi
+
+# Tune lmk_cost
+if [[ -e "${lmk}parameters/cost" ]]; then
+write "${lmk}parameters/cost" "32"
+fi
+
+# Tune vm_min_free_kbytes
+if [[ -e "${vm}min_free_kbytes" ]]; then
+write "${vm}min_free_kbytes" "$mfr"
+fi
+  
+# Tune vm_extra_free_kbytes
+if [[ -e "${vm}extra_free_kbytes" ]]; then
+write "${vm}extra_free_kbytes" "$efr"
+fi
+
+kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 kmsg3 ""
 
 # MSM thermal tweaks
