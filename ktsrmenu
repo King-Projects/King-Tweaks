@@ -261,7 +261,7 @@ read -r option
 						[[ $# -gt 2 ]] && usage
 						case "${opt}" in
 						
-						p) setprop persist.kingtweaks.mode "$2" && echo "Applying $kts_profile profile..."
+						p) setprop persist.kingtweaks.mode "$2" && echo "Applying profile..."
 						;;
 						
 						h | *) usage

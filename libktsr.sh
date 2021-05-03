@@ -365,7 +365,7 @@ exynos=false
 fi
 
 # Detect if we're running on a mediatek powered device
-if [[ "$(soc | grep 'mt')" ]]; then
+if [[ "$(soc | grep mt)" ]]; then
 mtk=true
 adreno=false
 else
