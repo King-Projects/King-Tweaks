@@ -291,7 +291,6 @@ cpumnfreq2=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
 if [[ "$cpumnfreq" > "$cpumnfreq2" ]]; then
 cpumnfreq=$cpumnfreq2
 fi
-done
 
 # CPU max clock in MHz
 cpumaxclkmhz=$((cpumxfreq / 1000))
