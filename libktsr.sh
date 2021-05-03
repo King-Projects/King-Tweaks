@@ -279,13 +279,14 @@ do
 cpumxfreq=$(cat $cpu/scaling_max_freq)
 cpumxfreq2=$(cat $cpu/cpuinfo_max_freq)
 
-if [[ $cpumxfreq2 > $cpumxfreq ]]; then
+if [[ "$cpumxfreq2" > "$cpumxfreq" ]]; then
 cpumxfreq=$cpumxfreq2
 fi
+done
 
 # Get min CPU clock
-cpumnfreq=$(cat $cpu/scaling_min_freq)
-cpumnfreq2=$(cat $cpu/cpuinfo_min_freq)
+cpumnfreq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
+cpumnfreq2=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
 
 if [[ "$cpumnfreq" > "$cpumnfreq2" ]]; then
 cpumnfreq=$cpumnfreq2
@@ -365,7 +366,7 @@ exynos=false
 fi
 
 # Detect if we're running on a mediatek powered device
-if [[ "$($soc | grep 'mt')" ]]; then
+if [[ "$(soc | grep 'mt')" ]]; then
 mtk=true
 adreno=false
 else
@@ -500,7 +501,7 @@ bhealth=$gbhealth
 fi
 
 # Get battery status
-if [[ -e /sys/class/power_supply/battery/status ]]; then
+if [[ -e "/sys/class/power_supply/battery/status" ]]; then
 gbstatus=$(cat /sys/class/power_supply/battery/status)
 
 else
@@ -535,7 +536,7 @@ fi
 # Get busybox version
 busybv=$(busybox | awk 'NR==1{print $2}')
 
-# Get device running ROM info
+# Get device ROM info
 dvrom=$(getprop ro.build.display.id | awk '{print $1,$3,$4,$5}')
 
 # Get SELinux status
@@ -548,7 +549,7 @@ fi
 # Check if GPU is adreno then define var
 [[ $adreno == "true" ]] && gputhrlvl=$(cat $gpu/thermal_pwrlevel)
 
-# Disable the GPU thermal throttling clock reduction
+# Disable the GPU thermal throttling clock restriction
 if [[ "$gputhrlvl" -eq "1" || "$gputhrlvl" -ge "1" ]]; then
 gpucalc=$((gputhrlvl - gputhrlvl))
 
@@ -559,7 +560,7 @@ fi
 # Get device brand
 dvb=$(getprop ro.product.brand)
 
-# Get OS running time
+# Get the amount of time that OS is running
 osruntime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
 ###############################
@@ -607,7 +608,7 @@ kmsg3 "👑 KTSR Version: $gbversion"
 kmsg3 "💭 KTSR Codename: $gbcodename"                                                                                   
 kmsg3 "📀 Build Type: $gbtype"                                                                                         
 kmsg3 "⏰ Build Date: $gbdate"                                                                                          
-kmsg "🔋 Battery Charge Level: $gbpercentage%"  
+kmsg3 "🔋 Battery Charge Level: $gbpercentage%"  
 kmsg3 "Battery Capacity: $gbcapacity mAh"
 kmsg3 "🩹 Battery Health: $bhealth"                                                                                     
 kmsg3 "⚡ Battery Status: $bstatus"                                                                                     
@@ -624,14 +625,14 @@ kmsg3 "🔊 Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Enable perf and mpdecision
-start perfd  	
-start mpdecision
+# Disable perfd and mpdecision
+stop perfd  	
+stop mpdecision
 
 # Disable trace
 stop traced
 
-kmsg "Enabled perfd and mpdecision & disabled traced"
+kmsg "Disabled perfd, mpdecision and disabled traced"
 kmsg3 ""
 
 # Do not stop thermal daemons, configure thermal config instead
@@ -725,9 +726,8 @@ write "$governor/go_hispeed_load" "89"
 write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
-for cpu in /sys/devices/system/cpu/cpu*
-do
-write "$cpu/online" "1"
+for i in 0 1 2 3 4 5 6 7 8 9; do
+write "/sys/devices/system/cpu/cpu$i/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
@@ -917,7 +917,7 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
+# Use SSWAP defaults if device haven't more than 4 GB RAM on exynos SOC's
 if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "145"
 else
@@ -930,11 +930,21 @@ write "${vm}vfs_cache_pressure" "200"
 kmsg "Tweaked various VM parameters for a improved user-experience"
 kmsg3 ""
 
-# Enable CPU power efficient workqueue
+# MSM thermal tweaks
+if [[ -d "/sys/module/msm_thermal" ]]
+then
+write "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
+write "/sys/module/msm_thermal/core_control/enabled" "0"
+write "/sys/module/msm_thermal/parameters/enabled" "N"
+kmsg "Tweaked msm_thermal"
+kmsg3 ""
+fi
+
+# Disable CPU power efficient workqueue
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
-write "/sys/module/workqueue/parameters/power_efficient" "Y"
-kmsg "Enabled CPU power efficient workqueue"
+write "/sys/module/workqueue/parameters/power_efficient" "N"
+kmsg "Disabled CPU power efficient workqueue"
 kmsg3 ""
 fi
 
@@ -1060,7 +1070,7 @@ kmsg3 "👑 KTSR Version: $gbversion"
 kmsg3 "💭 KTSR Codename: $gbcodename"                                                                                   
 kmsg3 "📀 Build Type: $gbtype"                                                                                         
 kmsg3 "⏰ Build Date: $gbdate"                                                                                          
-kmsg "🔋 Battery Charge Level: $gbpercentage%"  
+kmsg3 "🔋 Battery Charge Level: $gbpercentage%"  
 kmsg3 "Battery Capacity: $gbcapacity mAh"
 kmsg3 "🩹 Battery Health: $bhealth"                                                                                     
 kmsg3 "⚡ Battery Status: $bstatus"                                                                                     
@@ -1077,7 +1087,7 @@ kmsg3 "🔊 Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "⁉️ Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Stop perfd and mpdecision
+# Disable perfd and mpdecision
 stop perfd
 stop mpdecision
 
@@ -1223,9 +1233,8 @@ write "$governor/go_hispeed_load" "89"
 write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
-for cpu in /sys/devices/system/cpu/cpu*
-do
-write "$cpu/online" "1"
+for i in 0 1 2 3 4 5 6 7 8 9; do
+write "/sys/devices/system/cpu/cpu$i/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
@@ -1523,13 +1532,13 @@ sync
 # VM settings to improve overall user experience and smoothness.
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
-write "${vm}dirty_ratio" "30"
+write "${vm}dirty_ratio" "25"
 write "${vm}dirty_expire_centisecs" "1000"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
+# Use SSWAP defaults if device haven't more than 4 GB RAM on exynos SOC's
 if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "145"
 else
@@ -1546,8 +1555,8 @@ kmsg3 ""
 if [[ -d "/sys/module/msm_thermal" ]]
 then
 write "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
-write "/sys/module/msm_thermal/core_control/enabled" "1"
-write "/sys/module/msm_thermal/parameters/enabled" "Y"
+write "/sys/module/msm_thermal/core_control/enabled" "0"
+write "/sys/module/msm_thermal/parameters/enabled" "N"
 kmsg "Tweaked msm_thermal"
 kmsg3 ""
 fi
@@ -1753,7 +1762,7 @@ kmsg3 "👑 KTSR Version: $gbversion"
 kmsg3 "💭 KTSR Codename: $gbcodename"                                                                                   
 kmsg3 "📀 Build Type: $gbtype"                                                                                         
 kmsg3 "⏰ Build Date: $gbdate"                                                                                          
-kmsg "🔋 Battery Charge Level: $gbpercentage%"  
+kmsg3 "🔋 Battery Charge Level: $gbpercentage%"  
 kmsg3 "Battery Capacity: $gbcapacity mAh"
 kmsg3 "🩹 Battery Health: $bhealth"                                                                                     
 kmsg3 "⚡ Battery Status: $bstatus"                                                                                     
@@ -1934,9 +1943,8 @@ write "$governor/go_hispeed_load" "80"
 write "$governor/hispeed_freq" "$cpumxfreq"
 done
 	
-for cpu in /sys/devices/system/cpu/cpu*
-do
-write "$cpu/online" "1"
+for i in 0 1 2 3 4 5 6 7 8 9; do
+write "/sys/devices/system/cpu/cpu$i/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
@@ -2182,7 +2190,7 @@ fi
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
 
-# Enable fingerprint boost.
+# Enable fingerprint boost
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
 then
 write "/sys/kernel/fp_boost/enabled" "1"
@@ -2231,14 +2239,14 @@ sync
 
 # VM settings to improve overall user experience and performance.
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "1000"
 write "${vm}dirty_writeback_centisecs" "1000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
+# Use SSWAP defaults if device haven't more than 4 GB RAM on exynos SOC's
 if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "145"
 else
@@ -2476,7 +2484,7 @@ kmsg3 "👑 KTSR Version: $gbversion"
 kmsg3 "💭 KTSR Codename: $gbcodename"                                                                                   
 kmsg3 "📀 Build Type: $gbtype"                                                                                         
 kmsg3 "⏰ Build Date: $gbdate"                                                                                          
-kmsg "🔋 Battery Charge Level: $gbpercentage%"  
+kmsg3 "🔋 Battery Charge Level: $gbpercentage%"  
 kmsg3 "Battery Capacity: $gbcapacity mAh"
 kmsg3 "🩹 Battery Health: $bhealth"                                                                                     
 kmsg3 "⚡ Battery Status: $bstatus"                                                                                     
@@ -2656,18 +2664,17 @@ write "$governor/go_hispeed_load" "99"
 write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
-for cpu in /sys/devices/system/cpu/cpu*
-do
-if [[ $gbpercentage < "20" ]]
+for i in 0 1 2 3 4 5 6 7 8 9; do
+if [[ $gbpercentage -lt "20" ]]
 then
 write "/sys/devices/system/cpu/cpu1/online" "0"
 write "/sys/devices/system/cpu/cpu2/online" "0"
 write "/sys/devices/system/cpu/cpu5/online" "0"
 write "/sys/devices/system/cpu/cpu6/online" "0"
 
-elif [[ $gbpercentage > "20" ]]
+elif [[ $gbpercentage -gt "20" ]]
 then
-write "$cpu/online" "1"
+write "/sys/devices/system/cpu/cpu$i/online" "1"
 fi
 done
 
@@ -2982,14 +2989,14 @@ fi
 
 # VM settings to improve overall user experience and performance.
 write "${vm}drop_caches" "1"
-write "${vm}dirty_background_ratio" "15"
-write "${vm}dirty_ratio" "50"
+write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_ratio" "20"
 write "${vm}dirty_expire_centisecs" "200"
 write "${vm}dirty_writeback_centisecs" "500"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
+# Use SSWAP defaults if device haven't more than 4 GB RAM on exynos SOC's
 if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "145"
 else
@@ -3005,9 +3012,9 @@ kmsg3 ""
 # MSM thermal tweaks
 if [[ -d "/sys/module/msm_thermal" ]]
 then
-write /sys/module/msm_thermal/vdd_restriction/enabled "1"
-write /sys/module/msm_thermal/core_control/enabled "1"
-write /sys/module/msm_thermal/parameters/enabled "Y"
+write /sys/module/msm_thermal/vdd_restriction/enabled "0"
+write /sys/module/msm_thermal/core_control/enabled "0"
+write /sys/module/msm_thermal/parameters/enabled "N"
 kmsg "Tweaked msm_thermal"
 kmsg3 ""
 fi
@@ -3212,7 +3219,7 @@ kmsg3 "👑 KTSR Version: $gbversion"
 kmsg3 "💭 KTSR Codename: $gbcodename"                                                                                   
 kmsg3 "📀 Build Type: $gbtype"                                                                                         
 kmsg3 "⏰ Build Date: $gbdate"                                                                                          
-kmsg "🔋 Battery Charge Level: $gbpercentage%"  
+kmsg3 "🔋 Battery Charge Level: $gbpercentage%"  
 kmsg3 "Battery Capacity: $gbcapacity mAh"
 kmsg3 "🩹 Battery Health: $bhealth"                                                                                     
 kmsg3 "⚡ Battery Status: $bstatus"                                                                                     
@@ -3395,9 +3402,8 @@ write "$governor/go_hispeed_load" "80"
 write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
-for cpu in /sys/devices/system/cpu/cpu*
-do
-write "$cpu/online" "1"
+for i in 0 1 2 3 4 5 6 7 8 9; do
+write "/sys/devices/system/cpu/cpu$i/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
@@ -3692,14 +3698,14 @@ sync
 
 # VM settings to improve overall user experience and performance.
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "5"
-write "${vm}dirty_ratio" "20"
+write "${vm}dirty_background_ratio" "15"
+write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "3000"
 write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Follow SSWAP if device haven't more than 4 GB ram on exynos SOC's
+# Use SSWAP defaults if device haven't more than 4 GB RAM on exynos SOC's
 if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
 write "${vm}swappiness" "145"
 else
