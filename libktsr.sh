@@ -288,7 +288,7 @@ done
 cpumnfreq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
 cpumnfreq2=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
 
-if [[ "$cpumnfreq" > "$cpumnfreq2" ]]; then
+if [[ "$cpumnfreq" -gt "$cpumnfreq2" ]]; then
 cpumnfreq=$cpumnfreq2
 fi
 
@@ -467,7 +467,7 @@ df=$(dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tr
 fi
 
 # Get battery health
-if [[ -e /sys/class/power_supply/battery/health ]]; then
+if [[ -e "/sys/class/power_supply/battery/health" ]]; then
 gbhealth=$(cat /sys/class/power_supply/battery/health)
 
 else
@@ -631,10 +631,16 @@ stop mpdecision
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, mpdecision and disabled traced"
+# Enable thermal services
+start thermald
+start thermalserviced
+start mi_thermald
+start thermal-engine
+
+kmsg "Disabled perfd, mpdecision and traced & enabled thermal services"
 kmsg3 ""
 
-# Do not stop thermal daemons, configure thermal config instead
+# Configure thermal profile
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "0"
 kmsg "Tweaked thermal profile"
@@ -1093,10 +1099,16 @@ stop mpdecision
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, mpdecision and traced"
+# Enable thermal services
+start thermald
+start thermalserviced
+start mi_thermald
+start thermal-engine
+
+kmsg "Disabled perfd, mpdecision and traced & enabled thermal services"
 kmsg3 ""
 
-# Do not stop thermal daemons, configure thermal config instead
+# Configure thermal profile
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "0"
 kmsg "Tweaked thermal profile"
@@ -1788,10 +1800,21 @@ stop traced
 kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
+# Configure thermal profile
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "10"
+if [[ $? -eq 1 ]]; then
+# Disable thermal services if we can't configure it's profile
+stop thermald
+stop thermalserviced
+stop mi_thermald
+stop thermal-engine
+kmsg "Disabled thermal services"
+kmsg3 ""
+else
 kmsg "Tweaked thermal profile"
 kmsg3 ""
+fi
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -2507,9 +2530,16 @@ stop mpdecision
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, mpdecision and traced"
+# Enable thermal services
+start thermald
+start thermalserviced
+start mi_thermald
+start thermal-engine
+
+kmsg "Disabled perfd, mpdecision and traced & enabled thermal services"
 kmsg3 ""
 
+# Configure thermal profile
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "0"
 kmsg "Tweaked thermal profile"
@@ -3245,10 +3275,21 @@ stop traced
 kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
+# Configure thermal profile
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "10"
+if [[ $? -eq 1 ]]; then
+# Disable thermal services if we can't configure it's profile
+stop thermald
+stop thermalserviced
+stop mi_thermald
+stop thermal-engine
+kmsg "Disabled thermal services"
+kmsg3 ""
+else
 kmsg "Tweaked thermal profile"
 kmsg3 ""
+fi
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
