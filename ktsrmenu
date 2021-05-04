@@ -124,10 +124,13 @@ echo ""
 sleep 2.3
 echo "[16] Access our telegram group"
 echo ""
-sleep 1.3
+sleep 1.6
 echo "[17] FKM updater script"
 echo ""
-sleep 1.2
+sleep 1.4
+echo "[18] Kill background apps"
+echo ""
+sleep 1.3
 echo "[0] Exit"
 echo ""
 sleep 0.8
@@ -211,8 +214,7 @@ read -r option
                         ;;
                         
                         "13")
-                        settings put secure location_mode "0"
-                        settings put secure location_providers_allowed ""
+                        settings put secure location_mode "0" && settings put secure location_providers_allowed ""
                         ;;
                         
                         "14")
@@ -220,7 +222,7 @@ read -r option
                         ;;
                         
                         "15")
-                        cleantrash
+                        echo "Cleaning debug logs & system trash..." && cleantrash && echo "Done!"
                         ;;
                         
 						"16")
@@ -228,8 +230,11 @@ read -r option
 						;;
 						
 						"17")
-						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released to download!"
-						echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
+						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released to download!" && echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
+						;;
+						
+						"18")
+						echo "Killing all background apps..." && am kill-all && echo "Done!"
 						;;
 						
 						"0")
