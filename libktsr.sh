@@ -124,61 +124,61 @@ SCHED_TASKS_THROUGHPUT="6"
     # Get GPU directories
     for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
     do
-    if [ -d "$gpul" ]; then
+    if [[ -d "$gpul" ]]; then
         gpu=$gpul
-        adreno=true
+        qcom=true
         fi
         done
         
     for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
     do
-    if [ -d "$gpul1" ]; then
+    if [[ -d "$gpul1" ]]; then
         gpu=$gpul1
-        adreno=true
+        qcom=true
         fi
         done
         
     for gpul2 in /sys/devices/*.mali
     do
-    if [ -d "$gpul2" ]; then
+    if [[ -d "$gpul2" ]]; then
         gpu=$gpul2
         fi
         done
         
     for gpul3 in /sys/devices/platform/*.gpu
     do
-    if [ -d "$gpul3" ]; then
+    if [[ -d "$gpul3" ]]; then
         gpu=$gpul3
         fi
         done
         
     for gpul4 in /sys/devices/platform/mali-*.0
     do
-    if [ -d "$gpul4" ]; then
+    if [[ -d "$gpul4" ]]; then
         gpu=$gpul4
         fi
         done
         
         for gpul5 in /sys/devices/platform/*.mali
         do
-        if [ -d "$gpul5" ]; then
+        if [[ -d "$gpul5" ]]; then
         gpu=$gpul5
         fi
         done
         
         for gpul6 in /sys/class/misc/mali*/device/devfreq/gpufreq
         do
-        if [ -d "$gpul6" ]; then
+        if [[ -d "$gpul6" ]]; then
         gpu=$gpul6
         fi
         done
 
-	if [ -d "/sys/class/kgsl/kgsl-3d0" ]; then
+	if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]; then
 		gpu="/sys/class/kgsl/kgsl-3d0"
-		adreno=true
-	elif [ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0" ]; then
+		qcom=true
+	elif [[ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0" ]]; then
 		gpu="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0"
-		adreno=true
+		qcom=true
 	elif [ -d "/sys/devices/platform/gpusysfs" ]; then
 		gpu="/sys/devices/platform/gpusysfs"
 	elif [ -d "/sys/devices/platform/mali.0" ]; then
@@ -187,74 +187,72 @@ SCHED_TASKS_THROUGHPUT="6"
 		
 		for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq
         do
-        if [ -d "$gpul" ]; then
+        if [[ -d "$gpul" ]]; then
          gpug=$gpul
          fi
          done  
          
        for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq
        do
-       if [ -d "$gpul1" ]; then
+       if [[ -d "$gpul1" ]]; then
         gpug=$gpul1
         fi
         done
         
       for gpul2 in /sys/devices/platform/*.gpu
       do
-      if [ -d "$gpul2" ]; then
+      if [[ -d "$gpul2" ]]; then
         gpug=$gpul2
         fi
         done
         
-	if [ -d "/sys/class/kgsl/kgsl-3d0/devfreq" ]; then
-		gpug="/sys/class/kgsl/kgsl-3d0/devfreq"
-	elif [ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/devfreq" ]; then
-		gpug="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/devfreq"
-	elif [ -d "/sys/devices/platform/gpusysfs" ]; then
+        if [[ -d "/sys/devices/platform/gpusysfs" ]]; then
 		gpug="/sys/devices/platform/gpusysfs"
-	elif [ -d "/sys/module/mali/parameters" ]; then
-		gpug="/sys/module/mali/parameters"		
-	elif [ -d "/sys/kernel/gpu" ]; then
-		gpug="/sys/kernel/gpu"
+	    elif [[ -d "/sys/module/mali/parameters" ]]; then
+		gpug="/sys/module/mali/parameters/"
+		fi
+		
+        if [[ -d "/sys/kernel/gpu" ]]; then
+		gpui="/sys/kernel/gpu"
 		fi
 
-    if [[ -e $gpug/gpu_governor ]]; then
-    GPU_GOVERNOR=$(cat $gpug/gpu_governor)
+    if [[ -e "$gpui/gpu_governor" ]]; then
+    GPU_GOVERNOR=$(cat $gpui/gpu_governor)
     
-    elif [[ -e $gpug/governor ]]; then
-    GPU_GOVERNOR=$(cat $gpug/governor)
+    elif [[ -e "$gpu/devfreq/governor" ]]; then
+    GPU_GOVERNOR=$(cat $gpu/devfreq/governor)
     fi
 
     if [[ -e $gpu/num_pwrlevels ]]; then
     gpunpl=$(cat $gpu/num_pwrlevels)
     fi
     
-    gpumx=$(cat $gpug/available_frequencies | awk -v var="$gpunpl" '{print $var}')
+    gpumx=$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpunpl" '{print $var}')
     
     if [[ $gpumx != $gpumxfreq ]]; then
-    gpumx=$(cat $gpug/available_frequencies | awk 'NF>1{print $NF}')
+    gpumx=$(cat $gpu/devfreq/available_frequencies | awk 'NF>1{print $NF}')
     
     elif [[ $gpumx != $gpumxfreq ]]; then
-    gpumx=$(cat $gpug/available_frequencies | awk '{print $1}')
+    gpumx=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
 
     elif [[ $gpumx != $gpumxfreq ]]; then
     gpumx=$gpumxfreq
     fi
     
-    gpumx2=$(cat $gpug/gpu_freq_table | awk 'NF>1{print $NF}')
+    gpumx2=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
     
     if [[ $gpumx2 != $gpumxfreq ]]; then
-    gpumx2=$(cat $gpug/gpu_freq_table | awk '{print $1}')
+    gpumx2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
     
     elif [[ $gpumx2 != $gpumxfreq ]]; then
     gpumx2=$gpumxfreq
     fi
     
-    gpumin=$(cat $gpug/gpu_freq_table | awk '{print $1}')
+    gpumin=$(cat $gpui/gpu_freq_table | awk '{print $1}')
     
     if [[ $gpumin != $gpumnfreq ]];
     then
-    gpumin=$(cat $gpug/gpu_freq_table | awk 'NF>1{print $NF}')
+    gpumin=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
     fi
 
 # Get running CPU governor    
@@ -263,8 +261,8 @@ do
 CPU_GOVERNOR=$(cat $cpu/scaling_governor)
 done
 
-if [[ -z "$adreno" ]]; then
-adreno=false
+if [[ -z "$qcom" ]]; then
+qcom=false
 fi
 
 # Get GPU minimum power level
@@ -302,8 +300,8 @@ cpuminclkmhz=$((cpumnfreq / 1000))
 if [[ -e "$gpu/max_gpuclk" ]]; then
 gpumxfreq=$(cat $gpu/max_gpuclk)
 
-elif [[ -e "$gpug/gpu_max_clock" ]]; then
-gpumxfreq=$(cat $gpug/gpu_max_clock)
+elif [[ -e "$gpui/gpu_max_clock" ]]; then
+gpumxfreq=$(cat $gpui/gpu_max_clock)
 fi
 
 # Get minimum GPU frequency (gpumin also does almost the same thing)
@@ -311,8 +309,8 @@ if [[ -e "$gpu/min_clock_mhz" ]]; then
 gpumnfreq=$(cat $gpu/min_clock_mhz)
 gpumnfreq=$((gpumnfreq * 1000000))
 
-elif [[ -e "$gpug/gpu_min_clock" ]]; then
-gpumnfreq=$(cat $gpug/gpu_min_clock)
+elif [[ -e "$gpui/gpu_min_clock" ]]; then
+gpumnfreq=$(cat $gpui/gpu_min_clock)
 fi
 
 # Max & min GPU clock in MHz
@@ -359,7 +357,7 @@ root=$(su -v)
 # Detect if we're running on a exynos powered device
 if [[ "$(mf | grep exynos)" ]] || [[ "$(soc | grep universal)" ]]; then
 exynos=true
-adreno=false
+qcom=false
 else
 exynos=false
 fi
@@ -367,7 +365,7 @@ fi
 # Detect if we're running on a mediatek powered device
 if [[ "$(soc | grep mt)" ]]; then
 mtk=true
-adreno=false
+qcom=false
 else
 mtk=false
 fi
@@ -438,7 +436,10 @@ gpumdl=$(cat $gpu/gpuinfo | awk '{print $1}')
 elif [[ $mtk == "true" ]]; then
 gpumdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $4,$5,$6}' | tr -d ,)
 
-else
+elif [[ $qcom == "true" ]]; then
+gpumdl=$(cat $gpui/gpu_model)
+
+elif [[ $gpumdl == "" ]]; then
 gpumdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 fi
 
@@ -545,8 +546,8 @@ else
 slstatus=Permissive
 fi
 
-# Check if GPU is adreno then define var
-[[ $adreno == "true" ]] && gputhrlvl=$(cat $gpu/thermal_pwrlevel)
+# Check if CPU is qcom then define var
+[[ $qcom == "true" ]] && gputhrlvl=$(cat $gpu/thermal_pwrlevel)
 
 # Disable the GPU thermal throttling clock restriction
 if [[ "$gputhrlvl" -eq "1" || "$gputhrlvl" -gt "1" ]]; then
@@ -600,7 +601,7 @@ kmsg3 "🛠️ SOC: $mf, $soc"
 kmsg3 "⚙️ SDK: $sdk"
 kmsg3 "🅰️ndroid Version: $arv"    
 kmsg3 "⚒️ CPU Governor: $CPU_GOVERNOR"         
-kmsg3 "** Amount of cores: $CA"
+kmsg3 "** Number of cores: $CA"
 kmsg3 "** CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
 kmsg3 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
 kmsg3 "⛓️ AArch: $aarch"          
@@ -855,28 +856,58 @@ kmsg3 ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
+if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "1"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
 write "${kernel}sched_boost" "0"
+fi
+if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
 write "${kernel}perf_cpu_time_max_percent" "4"
+fi
+if [[ -e "${kernel}nmi_watchdog" ]]; then
 write "${kernel}nmi_watchdog" "0"
+fi
+if [[ -e "${kernel}watchdog" ]]; then
 write "${kernel}watchdog" "0"
+fi
+if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "1"
+fi
 write "${kernel}sched_tunable_scaling" "0"
+if [[ -e "${kernel}sched_latency_ns" ]]; then
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_LATENCY"
+fi
+if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LATENCY))"
+fi
+if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
 write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_LATENCY / 2))"
+fi
+if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
+fi
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "2"
 write "${kernel}sched_schedstats" "0"
+if [[ -e "${kernel}sched_enable_thread_grouping" ]]; then
 write "${kernel}sched_enable_thread_grouping" "1"
+fi
 write "${kernel}sched_rr_timeslice_ms" "1"
+if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
+fi
+if [[ -e "${kernel}sched_sync_hint_enable" ]]; then
 write "${kernel}sched_sync_hint_enable" "0"
+fi
+if [[ -e "${kernel}sched_user_hint" ]]; then
 write "${kernel}sched_user_hint" "0"
+fi
 write "${kernel}printk_devkmsg" "off"
+if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "0"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
@@ -1124,7 +1155,7 @@ kmsg3 "🛠️ SOC: $mf, $soc"
 kmsg3 "⚙️ SDK: $sdk"
 kmsg3 "🅰️ndroid Version: $arv"    
 kmsg3 "⚒️ CPU Governor: $CPU_GOVERNOR"         
-kmsg3 "** Amount of cores: $CA"
+kmsg3 "** Number of cores: $CA"
 kmsg3 "** CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
 kmsg3 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
 kmsg3 "⛓️ AArch: $aarch"          
@@ -1331,7 +1362,7 @@ fi
 # GPU Tweaks
 
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpug/available_governors")"
+	avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
 	# Attempt to set the governor in this order
 	for governor in msm-adreno-tz simple_ondemand ondemand
@@ -1339,13 +1370,13 @@ fi
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpug/governor" "$governor"
+			write "$gpu/devfreq/governor" "$governor"
 			break
 		fi
 	done
 	
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpug/gpu_available_governor")"
+	avail_govs="$(cat "$gpui/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
 	for governor in Interactive Dynamic Static ondemand
@@ -1353,32 +1384,32 @@ fi
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpug/gpu_governor" "$governor"
+			write "$gpui/gpu_governor" "$governor"
 			break
 		fi
 	done
 	
-[[ $adreno == "true" ]] && write "$gpu/throttling" "1"
-[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
-[[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
-[[ $adreno == "true" ]] && write "$gpu/bus_split" "1"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" "$gpumxfreq"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
-[[ $adreno == "true" ]] && write "$gpu/force_bus_on" "0"
-[[ $adreno == "true" ]] && write "$gpu/force_clk_on" "0"
-[[ $adreno == "true" ]] && write "$gpu/force_rail_on" "0"
-[[ $adreno == "true" ]] && write "$gpu/idle_timer" "66"
-[[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
-[[ $adreno == "false" ]] && write "$gpu/dvfs" "1"
-[[ $adreno == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
-[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "86"
-[[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
-[[ $adreno == "false" ]] && write "$gpug/boost" "0"
-[[ $adreno == "false" ]] && write "/sys/module/mali/parameters/mali_touch_boost_level" "0"
-[[ $adreno == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
+[[ $qcom == "true" ]] && write "$gpu/throttling" "1"
+[[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_no_nap" "0"
+[[ $qcom == "true" ]] && write "$gpu/bus_split" "1"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" "$gpumxfreq"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
+[[ $qcom == "true" ]] && write "$gpu/force_bus_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_clk_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/idle_timer" "66"
+[[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
+[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumin
+[[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_load" "86"
+[[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
+[[ $qcom == "false" ]] && write "$gpui/boost" "0"
+[[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "0"
+[[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1522,28 +1553,58 @@ kmsg3 ""
 fi
 
 # Tweak some kernel settings to improve overall performance
+if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "1"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
 write "${kernel}sched_boost" "0"
+fi
+if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
 write "${kernel}perf_cpu_time_max_percent" "10"
+fi
+if [[ -e "${kernel}nmi_watchdog" ]]; then
 write "${kernel}nmi_watchdog" "0"
+fi
+if [[ -e "${kernel}watchdog" ]]; then
 write "${kernel}watchdog" "0"
+fi
+if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "1"
+fi
 write "${kernel}sched_tunable_scaling" "0"
+if [[ -e "${kernel}sched_latency_ns" ]]; then
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BALANCE"
+fi
+if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BALANCE / SCHED_TASKS_BALANCE))"
+fi
+if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
 write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BALANCE / 2))"
+fi
+if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
+fi
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "32"
 write "${kernel}sched_schedstats" "0"
+if [[ -e "${kernel}sched_enable_thread_grouping" ]]; then
 write "${kernel}sched_enable_thread_grouping" "1"
+fi
 write "${kernel}sched_rr_timeslice_ms" "1"
+if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
+fi
+if [[ -e "${kernel}sched_sync_hint_enable" ]]; then
 write "${kernel}sched_sync_hint_enable" "0"
+fi
+if [[ -e "${kernel}sched_user_hint" ]]; then
 write "${kernel}sched_user_hint" "0"
+fi
 write "${kernel}printk_devkmsg" "off"
+if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "0"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
@@ -1710,7 +1771,7 @@ kmsg "Enabled CPU scheduler multi-core power-saving"
 kmsg3 ""
 fi
 
-# Fix DT2W.
+# Fix DT2W
 if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" && -e "/sys/class/sec/tsp/dt2w_enable" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
@@ -1880,7 +1941,7 @@ kmsg3 "🛠️ SOC: $mf, $soc"
 kmsg3 "⚙️ SDK: $sdk"
 kmsg3 "🅰️ndroid Version: $arv"    
 kmsg3 "⚒️ CPU Governor: $CPU_GOVERNOR"         
-kmsg3 "** Amount of cores: $CA"
+kmsg3 "** Number of cores: $CA"
 kmsg3 "** CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
 kmsg3 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
 kmsg3 "⛓️ AArch: $aarch"          
@@ -2110,7 +2171,7 @@ fi
 # GPU Tweaks
 
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpug/available_governors")"
+	avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
 	# Attempt to set the governor in this order
 	for governor in msm-adreno-tz simple_ondemand ondemand
@@ -2118,13 +2179,13 @@ fi
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpug/governor" "$governor"
+			write "$gpu/devfreq/governor" "$governor"
 			break
 		fi
 	done
 	
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpug/gpu_available_governor")"
+	avail_govs="$(cat "$gpui/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
 	for governor in Booster Interactive Dynamic Static ondemand
@@ -2132,33 +2193,33 @@ fi
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpug/gpu_governor" "$governor"
+			write "$gpui/gpu_governor" "$governor"
 			break
 		fi
 	done
 
-[[ $adreno == "true" ]] && write "$gpu/throttling" "0"
-[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "2"
-[[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
-[[ $adreno == "true" ]] && write "$gpu/bus_split" "0"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" $gpumxfreq
-[[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" "3"
-[[ $adreno == "true" ]] && write "$gpu/force_bus_on" "0"
-[[ $adreno == "true" ]] && write "$gpu/force_clk_on" "0"
-[[ $adreno == "true" ]] && write "$gpu/force_rail_on" "0"
-[[ $adreno == "true" ]] && write "$gpu/idle_timer" "156"
-[[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
-[[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
-[[ $adreno == "false" ]] && write "$gpu/dvfs" "1"
-[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "76"
-[[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
-[[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
-[[ $adreno == "false" ]] && write "$gpug/boost" "0"
-[[ $adreno == "false" ]] && write "/sys/module/mali/parameters/mali_touch_boost_level" "1"
-[[ $adreno == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "1"
+[[ $qcom == "true" ]] && write "$gpu/throttling" "0"
+[[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "2"
+[[ $qcom == "true" ]] && write "$gpu/force_no_nap" "0"
+[[ $qcom == "true" ]] && write "$gpu/bus_split" "0"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" $gpumxfreq
+[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "3"
+[[ $qcom == "true" ]] && write "$gpu/force_bus_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_clk_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/idle_timer" "156"
+[[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
+[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumin
+[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
+[[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_load" "76"
+[[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
+[[ $qcom == "false" ]] && write "$gpu/cl_boost_disable" "0"
+[[ $qcom == "false" ]] && write "$gpui/boost" "0"
+[[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "1"
+[[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "1"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2299,28 +2360,58 @@ kmsg3 ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
+if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "0"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
 write "${kernel}sched_boost" "1"
+fi
+if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
 write "${kernel}perf_cpu_time_max_percent" "25"
+fi
+if [[ -e "${kernel}nmi_watchdog" ]]; then
 write "${kernel}nmi_watchdog" "0"
+fi
+if [[ -e "${kernel}watchdog" ]]; then
 write "${kernel}watchdog" "0"
+fi
+if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "0"
+fi
 write "${kernel}sched_tunable_scaling" "0"
+if [[ -e "${kernel}sched_latency_ns" ]]; then
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
+fi
+if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
+fi
+if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
 write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
+fi
+if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
+fi
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "128"
 write "${kernel}sched_schedstats" "0"
+if [[ -e "${kernel}sched_enable_thread_grouping" ]]; then
 write "${kernel}sched_enable_thread_grouping" "0"
+fi
 write "${kernel}sched_rr_timeslice_ms" "1"
+if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
+fi
+if [[ -e "${kernel}sched_sync_hint_enable" ]]; then
 write "${kernel}sched_sync_hint_enable" "0"
+fi
+if [[ -e "${kernel}sched_user_hint" ]]; then
 write "${kernel}sched_user_hint" "0"
+fi
 write "${kernel}printk_devkmsg" "off"
+if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "0"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
@@ -2670,7 +2761,7 @@ kmsg3 "🛠️ SOC: $mf, $soc"
 kmsg3 "⚙️ SDK: $sdk"
 kmsg3 "🅰️ndroid Version: $arv"    
 kmsg3 "⚒️ CPU Governor: $CPU_GOVERNOR"         
-kmsg3 "** Amount of cores: $CA"
+kmsg3 "** Number of cores: $CA"
 kmsg3 "** CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
 kmsg3 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
 kmsg3 "⛓️ AArch: $aarch"          
@@ -2875,17 +2966,7 @@ write "$governor/hispeed_freq" "$cpumxfreq"
 done
 
 for i in 0 1 2 3 4 5 6 7 8 9; do
-if [[ $gbpercentage -lt "20" ]]
-then
-write "/sys/devices/system/cpu/cpu1/online" "0"
-write "/sys/devices/system/cpu/cpu2/online" "0"
-write "/sys/devices/system/cpu/cpu5/online" "0"
-write "/sys/devices/system/cpu/cpu6/online" "0"
-
-elif [[ $gbpercentage -gt "20" ]]
-then
 write "/sys/devices/system/cpu/cpu$i/online" "1"
-fi
 done
 
 kmsg "Tweaked CPU parameters"
@@ -2905,7 +2986,7 @@ fi
 # GPU Tweaks
 
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpug/available_governors")"
+	avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
 	# Attempt to set the governor in this order
 	for governor in msm-adreno-tz simple_ondemand ondemand
@@ -2913,13 +2994,13 @@ fi
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpug/governor" "$governor"
+			write "$gpu/devfreq/governor" "$governor"
 			break
 		fi
 	done
 	
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpug/gpu_available_governor")"
+	avail_govs="$(cat "$gpui/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
 	for governor in Interactive Static ondemand
@@ -2927,32 +3008,32 @@ fi
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpug/gpu_governor" "$governor"
+			write "$gpui/gpu_governor" "$governor"
 			break
 		fi
 	done
 
-[[ $adreno == "true" ]] && write "$gpu/throttling" "1"
-[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
-[[ $adreno == "true" ]] && write "$gpu/force_no_nap" "0"
-[[ $adreno == "true" ]] && write "$gpu/bus_split" "1"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
-[[ $adreno == "true" ]] && write "$gpu/force_bus_on" "0"
-[[ $adreno == "true" ]] && write "$gpu/force_clk_on" "0"
-[[ $adreno == "true" ]] && write "$gpu/force_rail_on" "0"
-[[ $adreno == "true" ]] && write "$gpu/idle_timer" "36"
-[[ $adreno == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumin
-[[ $adreno == "false" ]] && write "$gpu/dvfs" "1"
-[[ $adreno == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
-[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "95"
-[[ $adreno == "false" ]] && write "$gpu/power_policy" "coarse_demand"
-[[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "1"
-[[ $adreno == "false" ]] && write "$gpug/boost" "0"
-[[ $adreno == "false" ]] && write "/sys/module/mali/parameters/mali_touch_boost_level" "0"
-[[ $adreno == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
+[[ $qcom == "true" ]] && write "$gpu/throttling" "1"
+[[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_no_nap" "0"
+[[ $qcom == "true" ]] && write "$gpu/bus_split" "1"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
+[[ $qcom == "true" ]] && write "$gpu/force_bus_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_clk_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/idle_timer" "36"
+[[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
+[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumin
+[[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_load" "95"
+[[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
+[[ $qcom == "false" ]] && write "$gpu/cl_boost_disable" "1"
+[[ $qcom == "false" ]] && write "$gpui/boost" "0"
+[[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "0"
+[[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -3096,28 +3177,58 @@ kmsg3 ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
+if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "0"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
 write "${kernel}sched_boost" "0"
+fi
+if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
 write "${kernel}perf_cpu_time_max_percent" "3"
+fi
+if [[ -e "${kernel}nmi_watchdog" ]]; then
 write "${kernel}nmi_watchdog" "0"
+fi
+if [[ -e "${kernel}watchdog" ]]; then
 write "${kernel}watchdog" "0"
+fi
+if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "1"
+fi
 write "${kernel}sched_tunable_scaling" "0"
+if [[ -e "${kernel}sched_latency_ns" ]]; then
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
+fi
+if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
+fi
+if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
 write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
+fi
+if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
+fi
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "192"
 write "${kernel}sched_schedstats" "0"
+if [[ -e "${kernel}sched_enable_thread_grouping" ]]; then
 write "${kernel}sched_enable_thread_grouping" "1"
+fi
 write "${kernel}sched_rr_timeslice_ms" "1"
+if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
+fi
+if [[ -e "${kernel}sched_user_hint" ]]; then
 write "${kernel}sched_sync_hint_enable" "0"
+fi
+if [[ -e "${kernel}sched_user_hint" ]]; then
 write "${kernel}sched_user_hint" "0"
+fi
 write "${kernel}printk_devkmsg" "off"
+if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "1"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
@@ -3471,7 +3582,7 @@ kmsg3 "🛠️ SOC: $mf, $soc"
 kmsg3 "⚙️ SDK: $sdk"
 kmsg3 "🅰️ndroid Version: $arv"    
 kmsg3 "⚒️ CPU Governor: $CPU_GOVERNOR"         
-kmsg3 "** Amount of cores: $CA"
+kmsg3 "** Number of cores: $CA"
 kmsg3 "** CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
 kmsg3 "⚖️ CPU Scheduling Type: $cpusched"                                                                               
 kmsg3 "⛓️ AArch: $aarch"          
@@ -3703,7 +3814,7 @@ fi
 # GPU Tweaks
 
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpug/available_governors")"
+	avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
 	# Attempt to set the governor in this order
 	for governor in msm-adreno-tz simple_ondemand ondemand
@@ -3711,13 +3822,13 @@ fi
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpug/governor" "$governor"
+			write "$gpu/devfreq/governor" "$governor"
 			break
 		fi
 	done
 	
 	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpug/gpu_available_governor")"
+	avail_govs="$(cat "$gpui/gpu_available_governor")"
 
 	# Attempt to set the governor in this order
 	for governor in Booster Interactive Dynamic Static
@@ -3725,33 +3836,33 @@ fi
 		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
-			write "$gpug/gpu_governor" "$governor"
+			write "$gpui/gpu_governor" "$governor"
 			break
 		fi
 	done
 
-[[ $adreno == "true" ]] && write "$gpu/throttling" "0"
-[[ $adreno == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/adrenoboost" "3"
-[[ $adreno == "true" ]] && write "$gpu/force_no_nap" "1"
-[[ $adreno == "true" ]] && write "$gpu/bus_split" "0"
-[[ $adreno == "true" ]] && write "$gpu/devfreq/max_freq" $gpumxfreq
-[[ $adreno == "true" ]] && write "$gpu/devfreq/min_freq" $gpumx
-[[ $adreno == "true" ]] && write "$gpu/default_pwrlevel" $gpumaxpl
-[[ $adreno == "true" ]] && write "$gpu/force_bus_on" "1"
-[[ $adreno == "true" ]] && write "$gpu/force_clk_on" "1"
-[[ $adreno == "true" ]] && write "$gpu/force_rail_on" "1"
-[[ $adreno == "true" ]] && write "$gpu/idle_timer" "1006"
-[[ $adreno == "true" ]] && write "$gpu/pwrnap" "0"
-[[ $adreno == "false" ]] && write "$gpug/gpu_min_clock" $gpumx2
-[[ $adreno == "false" ]] && write "$gpu/dvfs" "0"
-[[ $adreno == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
-[[ $adreno == "false" ]] && write "$gpu/highspeed_load" "76"
-[[ $adreno == "false" ]] && write "$gpu/power_policy" "always_on"
-[[ $adreno == "false" ]] && write "$gpu/cl_boost_disable" "0"
-[[ $adreno == "false" ]] && write "$gpug/boost" "1"
-[[ $adreno == "false" ]] && write "/sys/module/mali/parameters/mali_touch_boost_level" "1"
-[[ $adreno == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "1"
+[[ $qcom == "true" ]] && write "$gpu/throttling" "0"
+[[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "3"
+[[ $qcom == "true" ]] && write "$gpu/force_no_nap" "1"
+[[ $qcom == "true" ]] && write "$gpu/bus_split" "0"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" $gpumxfreq
+[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" $gpumx
+[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" $gpumaxpl
+[[ $qcom == "true" ]] && write "$gpu/force_bus_on" "1"
+[[ $qcom == "true" ]] && write "$gpu/force_clk_on" "1"
+[[ $qcom == "true" ]] && write "$gpu/force_rail_on" "1"
+[[ $qcom == "true" ]] && write "$gpu/idle_timer" "1006"
+[[ $qcom == "true" ]] && write "$gpu/pwrnap" "0"
+[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumx2
+[[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
+[[ $qcom == "false" ]] && write "$gpu/highspeed_load" "76"
+[[ $qcom == "false" ]] && write "$gpu/power_policy" "always_on"
+[[ $qcom == "false" ]] && write "$gpu/cl_boost_disable" "0"
+[[ $qcom == "false" ]] && write "$gpui/boost" "1"
+[[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "1"
+[[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "1"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
@@ -3892,28 +4003,58 @@ kmsg3 ""
 fi
 
 # Tweak some kernel settings to improve overall performance.
+if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "0"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
 write "${kernel}sched_boost" "1"
+fi
+if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
 write "${kernel}perf_cpu_time_max_percent" "25"
+fi
+if [[ -e "${kernel}nmi_watchdog" ]]; then
 write "${kernel}nmi_watchdog" "0"
+fi
+if [[ -e "${kernel}watchdog" ]]; then
 write "${kernel}watchdog" "0"
+fi
+if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "0"
+fi
 write "${kernel}sched_tunable_scaling" "0"
+if [[ -e "${kernel}sched_latency_ns" ]]; then
 write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
+fi
+if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
 write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
+fi
+if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
 write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
+fi
+if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
+fi
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "128"
 write "${kernel}sched_schedstats" "0"
+if [[ -e "${kernel}sched_enable_thread_grouping" ]]; then
 write "${kernel}sched_enable_thread_grouping" "0"
+fi
 write "${kernel}sched_rr_timeslice_ms" "1"
+if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
+fi
+if [[ -e "${kernel}sched_user_hint_enable" ]]; then
 write "${kernel}sched_sync_hint_enable" "0"
+fi
+if [[ -e "${kernel}sched_user_hint" ]]; then
 write "${kernel}sched_user_hint" "0"
+fi
 write "${kernel}printk_devkmsg" "off"
+if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "0"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then

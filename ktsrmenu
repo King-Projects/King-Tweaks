@@ -1,7 +1,10 @@
 #!/system/bin/sh
-# KTSR by pedrozzz0 @ GitHub
+# KTSR by Pedro (pedrozzz0 @ GitHub)
 
-kts_mode=$(getprop persist.kingtweaks.mode)
+MODPATH=/data/adb/modules/KTSR
+
+# Load libraries
+. "$MODPATH"/libs/libktsr.sh
 
 if [[ "$(settings get global low_power)" == "1" ]]; then
 low_power=Activated
@@ -22,34 +25,6 @@ loc_mode_pwr_saving=Enabled
 
 else
 loc_mode_pwr_saving=Disabled
-fi
-
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profile=Automatic
-
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profile=Battery
-        	
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profile=Balanced
-        	
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profile=Extreme
-
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profile=Gaming
-
-elif [[ "$kts_mode" == "6" ]]
-then
-kts_profile=Latency
-
-else
-kts_profile=Unknown
 fi
 
 menu() {
@@ -138,31 +113,31 @@ echo -n "[*] Select the desired option: "
 read -r option
 		case $option in
 			"1")
-				setprop persist.kingtweaks.mode 1
+				echo "Applying profile..."; setprop persist.kingtweaks.mode 1
 				;;
 				
 						"2")
-						setprop persist.kingtweaks.mode 2
+						echo "Applying profile..."; setprop persist.kingtweaks.mode 2
 						;;
 						
 						"3")
-						setprop persist.kingtweaks.mode 3
+						echo "Applying profile..."; setprop persist.kingtweaks.mode 3
 						;;
 						
 						"4")
-						setprop persist.kingtweaks.mode 4
+						echo "Applying profile..."; setprop persist.kingtweaks.mode 4
 						;;
 						
 						"5")
-						setprop persist.kingtweaks.mode 5
+						echo "Applying profile..."; setprop persist.kingtweaks.mode 5
 						;;
 						
 						"6")
-						setprop persist.kingtweaks.mode 6
+						echo "Applying profile..."; setprop persist.kingtweaks.mode 6
 						;;
 						
 						"7")
-						cmd package bg-dexopt-job
+						echo "Optimizing..."; cmd package bg-dexopt-job; echo "Done!"
 						;;
 						
 						"8")
@@ -198,31 +173,31 @@ read -r option
                         ;;
 						
                         "9")
-                        settings put global low_power 1
+                        settings put global low_power 1; echo "Done!"
                         ;;
                         
                         "10")
-                        settings put global low_power 0
+                        settings put global low_power 0; echo "Done!"
                         ;;
                         
                         "11")
-                        cmd netpolicy set restrict-background true
+                        cmd netpolicy set restrict-background true; echo "Done!"
                         ;;
                         
                         "12")
-                        cmd netpolicy set restrict-background false
+                        cmd netpolicy set restrict-background false; echo "Done!"
                         ;;
                         
                         "13")
-                        settings put secure location_mode "0" && settings put secure location_providers_allowed ""
+                        echo "Applying settings..."; settings put secure location_mode "0"; settings put secure location_providers_allowed ""; write "/sys/module/service_locator/parameters/enable" "0"; echo "Done!"
                         ;;
                         
                         "14")
-                        settings put secure location_providers_allowed "gps,network"
+                        settings put secure location_providers_allowed "gps,network"; write "/sys/module/service_locator/parameters/enable" "1"; echo "Done!"
                         ;;
                         
                         "15")
-                        echo "Cleaning debug logs & system trash..." && cleantrash && echo "Done!"
+                        echo "Cleaning debug logs & system trash..."; cleantrash; echo "Done!"
                         ;;
                         
 						"16")
@@ -230,11 +205,11 @@ read -r option
 						;;
 						
 						"17")
-						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released to download!" && echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
+						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released!"; echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
 						;;
 						
 						"18")
-						echo "Killing all background apps..." && am kill-all && echo "Done!"
+						echo "Killing all background apps..."; am kill-all; sleep 1.8; echo "Done!"
 						;;
 						
 						"0")
