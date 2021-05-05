@@ -55,8 +55,12 @@ fi
 if [[ "$(getprop init.svc.thermal-engine)" == "running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "running" ]] || [[ "$(getprop init.svc.thermald)" == "running" ]] || [[ "$(getprop init.svc.thermalserviced)" == "running" ]]; then
 thermal=On
 
-else
+elif [[ "$(getprop init.svc.thermal-engine)" == "stopped" ]] || [[ "$(getprop init.svc.mi_thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermalserviced)" == "stopped" ]]; then
 thermal=Off
+fi
+
+if [[ -z "$thermal" ]]; then
+thermal=Unknown
 fi
 
 menu() {
@@ -148,7 +152,7 @@ if [[ "$thermal" == "On" ]]; then
 echo "[20] Disable thermal"
 echo ""
 sleep 1
-else
+elif [[ "$thermal" == "Off" ]]; then
 echo "[21] Enable thermal"
 echo "" 
 sleep 1
@@ -160,31 +164,38 @@ echo -n "[*] Select the desired option: "
 read -r option
 		case $option in
 			"1")
-				echo "Applying profile..."; setprop persist.kingtweaks.mode 1
+				echo "Applying profile..."
+				setprop persist.kingtweaks.mode 1
 				;;
 				
 						"2")
-						echo "Applying profile..."; setprop persist.kingtweaks.mode 2
+						echo "Applying profile..."
+						setprop persist.kingtweaks.mode 2
 						;;
 						
 						"3")
-						echo "Applying profile..."; setprop persist.kingtweaks.mode 3
+						echo "Applying profile..."
+						setprop persist.kingtweaks.mode 3
 						;;
 						
 						"4")
-						echo "Applying profile..."; setprop persist.kingtweaks.mode 4
+						echo "Applying profile..."
+						setprop persist.kingtweaks.mode 4
 						;;
 						
 						"5")
-						echo "Applying profile..."; setprop persist.kingtweaks.mode 5
+						echo "Applying profile..."
+						setprop persist.kingtweaks.mode 5
 						;;
 						
 						"6")
-						echo "Applying profile..."; setprop persist.kingtweaks.mode 6
+						echo "Applying profile..."
+						setprop persist.kingtweaks.mode 6
 						;;
 						
 						"7")
-						echo "Optimizing..."; cmd package bg-dexopt-job; echo "Done!"
+						echo "Optimizing..."
+						cmd package bg-dexopt-job; echo "Done!"
 						;;
 						
 						"8")
@@ -220,31 +231,43 @@ read -r option
                         ;;
 						
                         "9")
-                        settings put global low_power 1; echo "Done!"
+                        settings put global low_power 1
+                        echo "Done!"
                         ;;
                         
                         "10")
-                        settings put global low_power 0; echo "Done!"
+                        settings put global low_power 0
+                        echo "Done!"
                         ;;
                         
                         "11")
-                        cmd netpolicy set restrict-background true; echo "Done!"
+                        cmd netpolicy set restrict-background true
+                        echo "Done!"
                         ;;
                         
                         "12")
-                        cmd netpolicy set restrict-background false; echo "Done!"
+                        cmd netpolicy set restrict-background false
+                        echo "Done!"
                         ;;
                         
                         "13")
-                        echo "Applying settings..."; settings put secure location_mode "0"; settings put secure location_providers_allowed ""; echo "0" > "/sys/module/service_locator/parameters/enable"; echo "Done!"
+                        echo "Applying settings..."
+                        settings put secure location_mode "0"
+                        settings put secure location_providers_allowed ""
+                        echo "0" > "/sys/module/service_locator/parameters/enable"
+                        echo "Done!"
                         ;;
                         
                         "14")
-                        settings put secure location_providers_allowed "gps,network"; write "/sys/module/service_locator/parameters/enable" "1"; echo "Done!"
+                        settings put secure location_providers_allowed "gps,network"
+                        echo "1" > "/sys/module/service_locator/parameters/enable"
+                        echo "Done!"
                         ;;
                         
                         "15")
-                        echo "Cleaning debug logs & system trash..."; cleantrash; echo "Done!"
+                        echo "Cleaning debug logs & system trash..."
+                        cleantrash
+                        echo "Done!"
                         ;;
                         
 						"16")
@@ -252,23 +275,43 @@ read -r option
 						;;
 						
 						"17")
-						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released!"; echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
+						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released!"
+						echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
 						;;
 						
 						"18")
-						echo "Killing all background apps..."; am kill-all; sleep 1.8; echo "Done!"
+						echo "Killing all background apps..."
+						am kill-all
+						sleep 1.8
+						echo "Done!"
 						;;
 						
 						"19")
-						echo "Updating scripts..."; wget -O "$MODPATH"/system/bin/kingtweaks "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/kingtweaks"; wget -O "$MODPATH"/system/bin/kingauto "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/kingauto"; wget -O "$MODPATH"/libs/libktsr.sh "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/libktsr.sh"; wget -O "$MODPATH"/system/bin/ktsrmenu "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/ktsrmenu"; wget -O "$MODPATH"/system/bin/cleantrash "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/cleantrash"; echo "Done! Reboot to the effects be applied."
+						echo "Updating scripts..."
+						wget -O "$MODPATH"/system/bin/kingtweaks "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/kingtweaks"
+						wget -O "$MODPATH"/system/bin/kingauto "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/kingauto"
+						wget -O "$MODPATH"/libs/libktsr.sh "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/libktsr.sh"
+						wget -O "$MODPATH"/system/bin/ktsrmenu "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/ktsrmenu"
+						wget -O "$MODPATH"/system/bin/cleantrash "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/cleantrash"
+						echo "Done! Reboot to the effects be applied."
 						;;
                         
 						"20")
-						echo "Disabling thermal..."; stop thermald; stop thermalserviced; stop mi_thermald; stop thermal-engine; echo "Done!"
+						echo "Disabling thermal..."
+						stop thermald
+						stop thermalserviced
+						stop mi_thermald
+						stop thermal-engine
+						echo "Done!"
 						;;
 
 						"21")
-						echo "Enabling thermal..."; start thermald; start thermalserviced; start mi_thermald; start thermal-engine; echo "Done!"
+						echo "Enabling thermal..."
+						start thermald
+						start thermalserviced
+						start mi_thermald
+						start thermal-engine
+						echo "Done!"
 						;;
 						
 						"0")
@@ -300,10 +343,28 @@ read -r option
 						[[ $# -gt 2 ]] && usage
 						case "${opt}" in
 						
-						p) echo "Applying profile..."; setprop persist.kingtweaks.mode "$2"
+						p) echo "Applying profile..."
+						setprop persist.kingtweaks.mode "$2"
 						;;
 						
-						t) if [[ $thermal == "Off" ]]; then echo "Enabling thermal..."; start thermald; start thermalserviced; start mi_thermald; start thermal-engine; echo "Done!"; else echo "Disabling thermal..."; stop thermald; stop thermalserviced; stop mi_thermald; stop thermal-engine; echo "Done!"; fi
+						t) if [[ $thermal == "On" ]]; then 
+						echo "Disabling thermal..."
+						stop thermald
+						stop thermalserviced
+						stop mi_thermald
+						stop thermal-engine
+						echo "Done!"
+						elif [[ $thermal == "Off" ]]; then
+						echo "Enabling thermal..."
+						start thermald
+						start thermalserviced
+						start mi_thermald
+						start thermal-engine
+						echo "Done!"
+						else
+                        echo "[!] No valid thermal controllers found / Unknown thermal state. Aborting..."
+                        exit 1
+						fi
 						;;
 						
 						h | *) usage
