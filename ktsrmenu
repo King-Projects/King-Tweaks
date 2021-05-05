@@ -152,11 +152,11 @@ else
 loc_mode_pwr_saving=Disabled
 fi
 
-if [[ "$(getprop init.svc.thermal-engine)" == "Running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "Running" ]] || [[ "$(getprop init.svc.thermald)" == "Running" ]] || [[ "$(getprop init.svc.thermalserviced)" == "Running" ]]; then
-thermal=Running
+if [[ "$(getprop init.svc.thermal-engine)" == "running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "running" ]] || [[ "$(getprop init.svc.thermald)" == "running" ]] || [[ "$(getprop init.svc.thermalserviced)" == "running" ]]; then
+thermal=On
 
 else
-thermal=Stopped
+thermal=Off
 fi
 
 menu() {
@@ -244,7 +244,7 @@ sleep 1.3
 echo "[19] Update scripts"
 echo ""
 sleep 1.1
-if [[ "$thermal" == "1" ]]; then
+if [[ "$thermal" == "On" ]]; then
 echo "[20] Disable thermal"
 echo ""
 sleep 1
@@ -396,7 +396,7 @@ read -r option
 							exit 1
 							}
 						
-						while getopts ":p:h:t:" opt; do
+						while getopts ":p:ht:" opt; do
 						[[ $# -gt 2 ]] && usage
 						case "${opt}" in
 						
@@ -406,7 +406,7 @@ read -r option
 						h | *) usage
 						;;
 						
-						t) if [[ $thermal == "Stopped" ]]; then echo "Enabling thermal..."; start thermald; start thermalserviced; start mi_thermald; start thermal-engine; echo "Done!"; else echo "Disabling thermal..."; stop thermald; stop thermalserviced; stop mi_thermald; stop thermal-engine; echo "Done!"; fi
+						t) if [[ $thermal == "On" ]]; then echo "Enabling thermal..."; start thermald; start thermalserviced; start mi_thermald; start thermal-engine; echo "Done!"; else echo "Disabling thermal..."; stop thermald; stop thermalserviced; stop mi_thermald; stop thermal-engine; echo "Done!"; fi
 						;;
 						esac
                         done
