@@ -5,57 +5,7 @@
 MODPATH=/data/adb/modules/KTSR
 
 kts_mode=$(getprop persist.kingtweaks.mode)
-
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profilein=Otomatis
-
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profilein=Baterai
-
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profilein=Seimbang
-
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profilein=Ekstrim
-
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profilein=Gaming
-
-elif [[ "$kts_mode" == "6" ]]
-then
-kts_profilein=Latensi
-fi
-
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profilept=Automático
-
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profilept=Bateria
-        	
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profilept=Balanceado
-        	
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profilept=Extremo
-        	
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profilept=Gaming
-
-elif [[ "$kts_mode" == "6" ]]
-then
-kts_profilept=Latência
-fi
-	 	
+ 	
 if [[ "$kts_mode" == "1" ]]
 then
 kts_profile=Automatic
@@ -79,56 +29,6 @@ kts_profile=Gaming
 elif [[ "$kts_mode" == "6" ]]
 then
 kts_profile=Latency
-fi
-
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profiletr=Gecikme
-
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profiletr=Batarya
-        	
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profiletr=Dengeli
-        	
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profiletr=Aşırı
-
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profiletr=Oyun
-
-elif [[ "$kts_mode" == "6" ]]
-then
-kts_profiletr=Gecikme
-fi
-
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profilefr=Automatique
-
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profilefr=Batterie
-        	
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profilefr=Modéré
-        	
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profilefr=Extrême
-
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profilefr=Jeu
-
-elif [[ "$kts_mode" == "6" ]]
-then
-kts_profilefr=Latence
 fi
 
 if [[ "$(settings get global low_power)" == "1" ]]; then
@@ -305,7 +205,7 @@ read -r option
                         else
                         resIndex="FAILED(ERRCODE)-$resIndex"
                         fi
-                        sqlite3 $i 'ANALYZE;'
+                        sqlite3 "$i" 'ANALYZE;'
                         resAnlz=$?
                         if [ $resAnlz == 0 ]; then
                         resAnlz="SUCCESS"
@@ -372,7 +272,7 @@ read -r option
 						;;
 						
 						"0")
-						echo "[:)] Hope that see ya soon!"
+						echo "Hope that see ya soon! ;)"
 						;;
 						
 						*)
@@ -396,17 +296,17 @@ read -r option
 							exit 1
 							}
 						
-						while getopts ":p:ht:" opt; do
+						while getopts ":p:th:" opt; do
 						[[ $# -gt 2 ]] && usage
 						case "${opt}" in
 						
 						p) echo "Applying profile..."; setprop persist.kingtweaks.mode "$2"
 						;;
 						
-						h | *) usage
+						t) if [[ $thermal == "On" ]]; then echo "Enabling thermal..."; start thermald; start thermalserviced; start mi_thermald; start thermal-engine; echo "Done!"; else echo "Disabling thermal..."; stop thermald; stop thermalserviced; stop mi_thermald; stop thermal-engine; echo "Done!"; fi
 						;;
 						
-						t) if [[ $thermal == "On" ]]; then echo "Enabling thermal..."; start thermald; start thermalserviced; start mi_thermald; start thermal-engine; echo "Done!"; else echo "Disabling thermal..."; stop thermald; stop thermalserviced; stop mi_thermald; stop thermal-engine; echo "Done!"; fi
+						h | *) usage
 						;;
 						esac
                         done
