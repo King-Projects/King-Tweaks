@@ -185,27 +185,6 @@ SCHED_TASKS_THROUGHPUT="6"
 		gpu="/sys/devices/platform/mali.0"
 		fi
 		
-		for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq
-        do
-        if [[ -d "$gpul" ]]; then
-         gpug=$gpul
-         fi
-         done  
-         
-       for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/devfreq
-       do
-       if [[ -d "$gpul1" ]]; then
-        gpug=$gpul1
-        fi
-        done
-        
-      for gpul2 in /sys/devices/platform/*.gpu
-      do
-      if [[ -d "$gpul2" ]]; then
-        gpug=$gpul2
-        fi
-        done
-        
         if [[ -d "/sys/devices/platform/gpusysfs" ]]; then
 		gpug="/sys/devices/platform/gpusysfs"
 	    elif [[ -d "/sys/module/mali/parameters" ]]; then
@@ -213,7 +192,7 @@ SCHED_TASKS_THROUGHPUT="6"
 		fi
 		
         if [[ -d "/sys/kernel/gpu" ]]; then
-		gpui="/sys/kernel/gpu"
+		gpui="/sys/kernel/gpu/"
 		fi
 
     if [[ -e "$gpui/gpu_governor" ]]; then
@@ -223,34 +202,34 @@ SCHED_TASKS_THROUGHPUT="6"
     GPU_GOVERNOR=$(cat $gpu/devfreq/governor)
     fi
 
-    if [[ -e $gpu/num_pwrlevels ]]; then
+    if [[ -e "$gpu/num_pwrlevels" ]]; then
     gpunpl=$(cat $gpu/num_pwrlevels)
     fi
     
     gpumx=$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpunpl" '{print $var}')
     
-    if [[ $gpumx != $gpumxfreq ]]; then
+    if [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$(cat $gpu/devfreq/available_frequencies | awk 'NF>1{print $NF}')
     
-    elif [[ $gpumx != $gpumxfreq ]]; then
+    elif [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
 
-    elif [[ $gpumx != $gpumxfreq ]]; then
+    elif [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$gpumxfreq
     fi
     
     gpumx2=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
     
-    if [[ $gpumx2 != $gpumxfreq ]]; then
+    if [[ $gpumx2 -ne $gpumxfreq ]]; then
     gpumx2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
     
-    elif [[ $gpumx2 != $gpumxfreq ]]; then
+    elif [[ $gpumx2 -ne $gpumxfreq ]]; then
     gpumx2=$gpumxfreq
     fi
     
     gpumin=$(cat $gpui/gpu_freq_table | awk '{print $1}')
     
-    if [[ $gpumin != $gpumnfreq ]];
+    if [[ $gpumin -ne $gpumnfreq ]];
     then
     gpumin=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
     fi
@@ -355,7 +334,7 @@ dcdm=$(getprop ro.product.device)
 root=$(su -v)
 
 # Detect if we're running on a exynos powered device
-if [[ "$(mf | grep exynos)" ]] || [[ "$(soc | grep universal)" ]]; then
+if [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" || [[ "$(getprop ro.product.board | grep universal)" ]]; then
 exynos=true
 qcom=false
 else
@@ -363,7 +342,7 @@ exynos=false
 fi
 
 # Detect if we're running on a mediatek powered device
-if [[ "$(soc | grep mt)" ]]; then
+if [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]]; then
 mtk=true
 qcom=false
 else
