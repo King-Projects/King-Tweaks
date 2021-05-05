@@ -303,7 +303,7 @@ read -r option
 						p) echo "Applying profile..."; setprop persist.kingtweaks.mode "$2"
 						;;
 						
-						t) if [[ $thermal == "On" ]]; then echo "Enabling thermal..."; start thermald; start thermalserviced; start mi_thermald; start thermal-engine; echo "Done!"; else echo "Disabling thermal..."; stop thermald; stop thermalserviced; stop mi_thermald; stop thermal-engine; echo "Done!"; fi
+						t) if [[ $thermal == "Off" ]]; then echo "Enabling thermal..."; start thermald; start thermalserviced; start mi_thermald; start thermal-engine; echo "Done!"; else echo "Disabling thermal..."; stop thermald; stop thermalserviced; stop mi_thermald; stop thermal-engine; echo "Done!"; fi
 						;;
 						
 						h | *) usage
