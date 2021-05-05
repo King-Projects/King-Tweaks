@@ -2,6 +2,8 @@
 # KTSR by Pedro (pedrozzz0 @ GitHub)
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
+MODPATH=/data/adb/modules/KTSR
+
 kts_mode=$(getprop persist.kingtweaks.mode)
 
 if [[ "$kts_mode" == "1" ]]
@@ -150,6 +152,13 @@ else
 loc_mode_pwr_saving=Disabled
 fi
 
+if [[ "$(getprop init.svc.thermal-engine)" == "Running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "Running" ]] || [[ "$(getprop init.svc.thermald)" == "Running" ]] || [[ "$(getprop init.svc.thermalserviced)" == "Running" ]]; then
+thermal=Running
+
+else
+thermal=Stopped
+fi
+
 menu() {
 clear
 echo ""
@@ -159,7 +168,10 @@ echo "******************************************"
 echo ""
 echo "[*] Profile active: $kts_profile"
 echo ""
-sleep 1.4
+sleep 1.5
+echo "[*] Thermal state: $thermal"
+echo ""
+sleep 1.3
 echo "[*] Available profiles: "
 echo ""
 sleep 1.2
@@ -190,7 +202,7 @@ sleep 1.6
 echo "[8] Optimize databases"
 echo ""
 sleep 1.4
-if [[ $low_power == "Deactivated" ]]; then
+if [[ "$low_power" == "Deactivated" ]]; then
 echo "[9] Enable low power mode"
 echo ""
 sleep 1.6
@@ -199,7 +211,7 @@ echo "[10] Disable low power mode"
 echo ""
 sleep 1.4
 fi
-if [[ $data_saver == "Disabled" ]]; then
+if [[ "$data_saver" == "Disabled" ]]; then
 echo "[11] Enable data saver"
 echo ""
 sleep 1.4
@@ -208,7 +220,7 @@ echo "[12] Disable data saver"
 echo ""
 sleep 1.6
 fi
-if [[ $loc_mode_pwr_saving == "Enabled" ]]; then
+if [[ "$loc_mode_pwr_saving" == "Enabled" ]]; then
 echo "[13] Enable power-saving location mode"
 echo ""
 sleep 1.7
@@ -229,9 +241,21 @@ sleep 1.4
 echo "[18] Kill background apps"
 echo ""
 sleep 1.3
+echo "[19] Update scripts"
+echo ""
+sleep 1.1
+if [[ "$thermal" == "1" ]]; then
+echo "[20] Disable thermal"
+echo ""
+sleep 1
+else
+echo "[21] Enable thermal"
+echo "" 
+sleep 1
+fi
 echo "[0] Exit"
 echo ""
-sleep 0.8
+sleep 0.9
 echo -n "[*] Select the desired option: "
 read -r option
 		case $option in
@@ -335,6 +359,18 @@ read -r option
 						echo "Killing all background apps..."; am kill-all; sleep 1.8; echo "Done!"
 						;;
 						
+						"19")
+						echo "Updating scripts..."; wget -O "$MODPATH"/system/bin/kingtweaks "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/kingtweaks"; wget -O "$MODPATH"/system/bin/kingauto "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/kingauto"; wget -O "$MODPATH"/libs/libktsr.sh "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/libktsr.sh"; wget -O "$MODPATH"/system/bin/ktsrmenu "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/ktsrmenu"; wget -O "$MODPATH"/system/bin/cleantrash "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/cleantrash"; echo "Done! Reboot to the effects be applied."
+						;;
+                        
+						"20")
+						echo "Disabling thermal..."; stop thermald; stop thermalserviced; stop mi_thermald; stop thermal-engine; echo "Done!"
+						;;
+
+						"21")
+						echo "Enabling thermal..."; start thermald; start thermalserviced; start mi_thermald; start thermal-engine; echo "Done!"
+						;;
+						
 						"0")
 						echo "[:)] Hope that see ya soon!"
 						;;
@@ -350,7 +386,7 @@ read -r option
 						fi
 
 						usage() {
-							echo "Usage: ktsrmenu [-p <value corresponding to the profile (0-6)>] [-h <trigger this dialog>]"
+							echo "Usage: ktsrmenu [-p <value corresponding to the profile (0-6)>] [-h <trigger this dialog>] [ -t <Disable thermal if enabled and vice-versa>"
 							echo "[1] Automatic"
                             echo "[2] Battery"
                             echo "[3] Balanced"
@@ -360,7 +396,7 @@ read -r option
 							exit 1
 							}
 						
-						while getopts ":p:h:" opt; do
+						while getopts ":p:h:t:" opt; do
 						[[ $# -gt 2 ]] && usage
 						case "${opt}" in
 						
@@ -368,6 +404,9 @@ read -r option
 						;;
 						
 						h | *) usage
+						;;
+						
+						t) if [[ $thermal == "Stopped" ]]; then echo "Enabling thermal..."; start thermald; start thermalserviced; start mi_thermald; start thermal-engine; echo "Done!"; else echo "Disabling thermal..."; stop thermald; stop thermalserviced; stop mi_thermald; stop thermal-engine; echo "Done!"; fi
 						;;
 						esac
                         done
