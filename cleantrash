@@ -1,3 +1,7 @@
+#!/system/bin/sh
+# KTSR by pedro (pedrozzz0 @ GitHub)
+# If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
+
 rm -f /data/*.log
 rm -rf /data/vendor/wlan_logs
 rm -f /data/*.txt
@@ -37,3 +41,6 @@ rm -rf /sdcard/ramdump
 rm -rf /sdcard/UnityAdsVideoCache
 rm -f /sdcard/*.log
 rm -f /sdcard/*.CHK
+
+# always return success, even if any command fail
+exit 0

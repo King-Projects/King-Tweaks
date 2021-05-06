@@ -214,7 +214,7 @@ SCHED_TASKS_THROUGHPUT="6"
     elif [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
 
-    elif [[ $gpumx -ne $gpumxfreq ]]; then
+    else
     gpumx=$gpumxfreq
     fi
     
@@ -223,7 +223,7 @@ SCHED_TASKS_THROUGHPUT="6"
     if [[ $gpumx2 -ne $gpumxfreq ]]; then
     gpumx2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
     
-    elif [[ $gpumx2 -ne $gpumxfreq ]]; then
+    else
     gpumx2=$gpumxfreq
     fi
     
@@ -309,6 +309,9 @@ soc=$(getprop ro.board.platform)
 
 if [[ $soc == "" ]]; then
 soc=$(getprop ro.product.board)
+
+elif [[ $soc == "" ]]; then
+soc=$(getprop ro.product.platform)
 fi
 
 # Get device SDK
@@ -557,7 +560,7 @@ dvb=$(getprop ro.product.brand)
 # Get the amount of time that OS is running
 osruntime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
-# Calculate CPU load
+# Calculate CPU load (50 ms)
 read cpu user nice system idle iowait irq softirq steal guest< /proc/stat
 
 cpu_active_prev=$((user+system+nice+softirq+steal))
@@ -752,6 +755,82 @@ done
 kmsg "Tweaked CPU parameters"
 kmsg3 ""
 
+# GPU Tweaks
+
+	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in msm-adreno-tz simple_ondemand ondemand
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/devfreq/governor" "$governor"
+			break
+		fi
+	done
+	
+	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpui/gpu_available_governor")"
+
+	# Attempt to set the governor in this order
+	for governor in Interactive Dynamic Static ondemand
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpui/gpu_governor" "$governor"
+			break
+		fi
+	done
+	
+[[ $qcom == "true" ]] && write "$gpu/throttling" "1"
+[[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_no_nap" "0"
+[[ $qcom == "true" ]] && write "$gpu/bus_split" "1"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" "$gpumxfreq"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
+[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "$((gpuminpl - 1))"
+[[ $qcom == "true" ]] && write "$gpu/force_bus_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_clk_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
+[[ $qcom == "true" ]] && write "$gpu/idle_timer" "89"
+[[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
+[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumin
+[[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_load" "80"
+[[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
+[[ $qcom == "false" ]] && write "$gpui/boost" "0"
+[[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "0"
+[[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
+
+if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
+then
+write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+fi
+
+# Enable dvfs
+if [[ -e "/proc/mali/dvfs_enable" ]] 
+then
+write "/proc/mali/dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
+then
+write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
+then
+write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
+fi
+
+kmsg "Tweaked GPU parameters"
+kmsg3 ""
+
 # Schedtune Tweaks
 [[ $ANDROID == "true" ]] && if [[ -d "$stune" ]]; then
 write "${stune}background/schedtune.boost" "0"
@@ -851,9 +930,18 @@ kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
 kmsg3 ""
 fi
 
-if [[ -d "/sys/module/mmc_core" ]];
-then
+if [[ -e "/sys/module/mmc_core/parameters/use_spi_crc" ]]; then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
+kmsg "Disabled MMC CRC"
+kmsg3 ""
+
+elif [[ -e "/sys/module/mmc_core/parameters/removable" ]]; then
+write "/sys/module/mmc_core/parameters/removable" "N"
+kmsg "Disabled MMC CRC"
+kmsg3 ""
+
+elif [[ -e "/sys/module/mmc_core/parameters/crc" ]]; then
+write "/sys/module/mmc_core/parameters/crc" "N"
 kmsg "Disabled MMC CRC"
 kmsg3 ""
 fi
@@ -1433,7 +1521,7 @@ fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
-write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
 fi
 
 kmsg "Tweaked GPU parameters"
@@ -1549,9 +1637,18 @@ kmsg "Tweaked scheduler features"
 kmsg3 ""
 fi
 
-if [[ -d "/sys/module/mmc_core" ]];
-then
+if [[ -e "/sys/module/mmc_core/parameters/use_spi_crc" ]]; then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
+kmsg "Disabled MMC CRC"
+kmsg3 ""
+
+elif [[ -e "/sys/module/mmc_core/parameters/removable" ]]; then
+write "/sys/module/mmc_core/parameters/removable" "N"
+kmsg "Disabled MMC CRC"
+kmsg3 ""
+
+elif [[ -e "/sys/module/mmc_core/parameters/crc" ]]; then
+write "/sys/module/mmc_core/parameters/crc" "N"
 kmsg "Disabled MMC CRC"
 kmsg3 ""
 fi
@@ -2218,7 +2315,12 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
 [[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumin
 [[ $qcom == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
-[[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
+[[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
+if [[ $? -eq 1 ]]; then
+chmod 0000 "$gpu/dvfs"
+chmod 0000 "$gpu/dvfs_min_lock"
+chmod 0000 "$gpu/dvfs_max_lock"
+fi
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "76"
 [[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $qcom == "false" ]] && write "$gpu/cl_boost_disable" "0"
@@ -2228,23 +2330,23 @@ fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
-write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
 fi
 
-# Enable dvfs
+# Disable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
-write "/proc/mali/dvfs_enable" "1"
+write "/proc/mali/dvfs_enable" "0"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
 then
-write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
+write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "0"
 fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
-write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
 fi
 
 kmsg "Tweaked GPU parameters"
@@ -2357,9 +2459,18 @@ kmsg "Tweaked scheduler features"
 kmsg3 ""
 fi
 
-if [[ -d "/sys/module/mmc_core" ]];
-then
+if [[ -e "/sys/module/mmc_core/parameters/use_spi_crc" ]]; then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
+kmsg "Disabled MMC CRC"
+kmsg3 ""
+
+elif [[ -e "/sys/module/mmc_core/parameters/removable" ]]; then
+write "/sys/module/mmc_core/parameters/removable" "N"
+kmsg "Disabled MMC CRC"
+kmsg3 ""
+
+elif [[ -e "/sys/module/mmc_core/parameters/crc" ]]; then
+write "/sys/module/mmc_core/parameters/crc" "N"
 kmsg "Disabled MMC CRC"
 kmsg3 ""
 fi
@@ -3059,7 +3170,7 @@ fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
-write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
 fi
 
 kmsg "Tweaked GPU parameters"
@@ -3175,9 +3286,18 @@ kmsg "Tweaked scheduler features"
 kmsg3 ""
 fi
 
-if [[ -d "/sys/module/mmc_core" ]];
-then
+if [[ -e "/sys/module/mmc_core/parameters/use_spi_crc" ]]; then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
+kmsg "Disabled MMC CRC"
+kmsg3 ""
+
+elif [[ -e "/sys/module/mmc_core/parameters/removable" ]]; then
+write "/sys/module/mmc_core/parameters/removable" "N"
+kmsg "Disabled MMC CRC"
+kmsg3 ""
+
+elif [[ -e "/sys/module/mmc_core/parameters/crc" ]]; then
+write "/sys/module/mmc_core/parameters/crc" "N"
 kmsg "Disabled MMC CRC"
 kmsg3 ""
 fi
@@ -3859,10 +3979,15 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/force_bus_on" "1"
 [[ $qcom == "true" ]] && write "$gpu/force_clk_on" "1"
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "1"
-[[ $qcom == "true" ]] && write "$gpu/idle_timer" "1006"
+[[ $qcom == "true" ]] && write "$gpu/idle_timer" "1009"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "0"
 [[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumx2
 [[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
+if [[ $? -eq 1 ]]; then
+chmod 0000 "$gpu/dvfs"
+chmod 0000 "$gpu/dvfs_min_lock"
+chmod 0000 "$gpu/dvfs_max_lock"
+fi
 [[ $qcom == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "76"
 [[ $qcom == "false" ]] && write "$gpu/power_policy" "always_on"
@@ -3889,7 +4014,7 @@ fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
-write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
 fi
 
 kmsg "Tweaked GPU parameters"
@@ -4002,9 +4127,18 @@ kmsg "Tweaked scheduler features"
 kmsg3 ""
 fi
 
-if [[ -d "/sys/module/mmc_core" ]];
-then
+if [[ -e "/sys/module/mmc_core/parameters/use_spi_crc" ]]; then
 write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
+kmsg "Disabled MMC CRC"
+kmsg3 ""
+
+elif [[ -e "/sys/module/mmc_core/parameters/removable" ]]; then
+write "/sys/module/mmc_core/parameters/removable" "N"
+kmsg "Disabled MMC CRC"
+kmsg3 ""
+
+elif [[ -e "/sys/module/mmc_core/parameters/crc" ]]; then
+write "/sys/module/mmc_core/parameters/crc" "N"
 kmsg "Disabled MMC CRC"
 kmsg3 ""
 fi

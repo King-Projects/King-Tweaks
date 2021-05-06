@@ -5,7 +5,7 @@
 MODPATH=/data/adb/modules/KTSR
 
 # Load libraries
-. $MODPATH/libs/libktsr.sh
+. "$MODPATH"/libs/libktsr.sh
 
 fullram=$((totalram * 20 / 100))
 
@@ -62,7 +62,7 @@ scrnstate(){
 	
 (
 while true; do
-  if [[ "$(top -n 1 -d 1 | head -n 12 | grep -o -e 'netease' -e 'noodlecake' -e 'linegames' -e 'kleientertainment' -e 'agaming' -e 'generagames' -e 'chucklefish' -e 'astragon' -e 't2kgames' -e 't2ksports' -e 'turner' -e 'uplayonline' -e 'pubg' -e 'dreamotion' -e 'snailgames' -e 'dexintgames' -e 'haegin' -e 'panzerdog' -e 'igg' -e 'gtarcade' -e 'nexon' -e 'mame4droid' -e 'kakaogames' -e 'telltalegames' -e 'bandainamco' -e 'seleuco' -e 'innersloth' -e 'kiloo' -e 'imaginalis' -e 'refuelgames' -e 'scottgames' -e 'clickteam' -e 'minigames' -e 'headupgames' -e 'mobigames' -e 'callofduty' -e 'ubisoft' -e 'ppsspp' -e 'cf' -e 'feralinteractive' -e 'riotgames' -e 'joymax' -e 'deadeffect' -e 'wolvesinteractive' -e 'miniclip' -e 'playgendary' -e 'mojang' -e 'miHoYo' -e 'nekki' -e 'gamedevltd' -e 'netmarble' -e 'eyougame' -e 'yoozoogames' -e 'gameloft' -e 'garena' -e 'moontoon' -e 'legends' -e 'wildrift' -e 'activision' -e 'freefireth' -e 'konami' -e 'gamevil' -e 'battle' -e 'impact' -e 'gameloft' -e 'ppsspp' -e 'madfingergames' -e 'supercell' -e 'asphalt' -e 'ngame' -e 'fifamobile' -e 'blackdesertm' -e 'rockstargames' -e 'dhlove' -e 'criticalops' -e 'standoff2' -e 'firsttouchgames' | head -n 1)" ]]; then
+  if [[ "$(top -n 1 -d 1 | head -n 12 | grep -o -e 'netease' -e 'com2us' -e 'zuuks' -e 'junegaming' -e 'junesoftware' -e 'sozap' -e 'dotemu' -e 'playrisedigital' -e 'playables' -e 'rockstar' -e 'blackpanther' -e 'noodlecake' -e 'linegames' -e 'kleientertainment' -e 'agaming' -e 'generagames' -e 'chucklefish' -e 'astragon' -e 't2kgames' -e 't2ksports' -e 'turner' -e 'uplayonline' -e 'pubg' -e 'dreamotion' -e 'snailgames' -e 'dexintgames' -e 'haegin' -e 'panzerdog' -e 'igg' -e 'gtarcade' -e 'nexon' -e 'mame4droid' -e 'kakaogames' -e 'telltalegames' -e 'bandainamco' -e 'seleuco' -e 'innersloth' -e 'kiloo' -e 'imaginalis' -e 'refuelgames' -e 'scottgames' -e 'clickteam' -e 'minigames' -e 'headupgames' -e 'mobigames' -e 'callofduty' -e 'ubisoft' -e 'ppsspp' -e 'cf' -e 'feralinteractive' -e 'riotgames' -e 'joymax' -e 'deadeffect' -e 'wolvesinteractive' -e 'miniclip' -e 'playgendary' -e 'mojang' -e 'miHoYo' -e 'nekki' -e 'gamedevltd' -e 'netmarble' -e 'eyougame' -e 'yoozoogames' -e 'gameloft' -e 'garena' -e 'moontoon' -e 'legends' -e 'wildrift' -e 'activision' -e 'freefireth' -e 'konami' -e 'gamevil' -e 'battle' -e 'impact' -e 'gameloft' -e 'ppsspp' -e 'madfingergames' -e 'supercell' -e 'asphalt' -e 'ngame' -e 'fifamobile' -e 'blackdesertm' -e 'rockstargames' -e 'dhlove' -e 'criticalops' -e 'standoff2' -e 'firsttouchgames' | head -n 1)" ]]; then
   . "$MODPATH"/libs/libktsr.sh
   kmsg "User is playing, applied gaming profile"
   kmsg3 ""
