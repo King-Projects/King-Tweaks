@@ -1,10 +1,11 @@
 #!/system/bin/sh
 # KTSR by pedro (pedrozzz0 @ GitHub)
+# If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 MODPATH=/data/adb/modules/KTSR
 
 # Load libraries
-. $MODPATH/libs/libktsr.sh
+. "$MODPATH"/libs/libktsr.sh
 
 # Check for root permissions and bail if not granted
 if [[ "$(id -u)" -ne 0 ]]
@@ -195,7 +196,9 @@ renice -n -3 -p "$(pgrep crtc_commit)"
 renice -n -3 -p "$(pgrep crtc_event)"
 renice -n 4 -p "$(pgrep android.gms)"
 
+kmsg3 ""
 kmsg "Reniced processes"
+kmsg3 ""
 
 # Remove main script log if the size is big
 kdbgmaxsize=1000000
@@ -203,17 +206,17 @@ kdbgmaxsize=1000000
 # Do the same to dbopt log
 dboptmaxsize=1000000
 
-if [[ "$(stat -t "$KDBG" | awk '{print $2}' -eq "$kdbgmaxsize")" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}' -gt "$kdbgmaxsize")" ]]; then
+if [[ "$(stat -t "$KDBG" | awk '{print $2}')" -eq "$kdbgmaxsize" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}')" -gt "$kdbgmaxsize" ]]; then
 rm "$KDBG"
 
-elif [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}' -eq "$dboptmaxsize")" ]] || [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}' -gt "$dboptmaxsize")" ]]; then
+elif [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}')" -eq "$dboptmaxsize" ]] || [[ "$(stat -t /sdcard/KTSR/dbopt.log | awk '{print $2}')" -gt "$dboptmaxsize" ]]; then
 rm "/sdcard/KTSR/dbopt.log"
 fi
 
 case "$kts_profile" in
  "Automatic") {
  
- 	. $MODPATH/libs/libktsr.sh
+ 	. "$MODPATH"/libs/libktsr.sh
 
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
@@ -284,7 +287,7 @@ case "$kts_profile" in
 	 
 	 "Balanced") {
          
-	 	. $MODPATH/libs/libktsr.sh
+	 	. "$MODPATH"/libs/libktsr.sh
 	 	
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
@@ -356,7 +359,7 @@ case "$kts_profile" in
 	
 	 	"Extreme") {
             
-	 		. $MODPATH/libs/libktsr.sh
+	 		. "$MODPATH"/libs/libktsr.sh
 	 		
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
@@ -428,7 +431,7 @@ case "$kts_profile" in
 	 		
 	 		"Battery") {
 
-	 			. $MODPATH/libs/libktsr.sh
+	 			. "$MODPATH"/libs/libktsr.sh
 	 			
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
@@ -500,7 +503,7 @@ case "$kts_profile" in
 
 	 			"Gaming") {
 	 			
-	 				. $MODPATH/libs/libktsr.sh
+	 				. "$MODPATH"/libs/libktsr.sh
 	 				
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then
@@ -572,7 +575,7 @@ case "$kts_profile" in
 	 	
 	 	"Latency") {
 	 			
-	 				. $MODPATH/libs/libktsr.sh
+	 				. "$MODPATH"/libs/libktsr.sh
 	 				
          if [[ $(getprop persist.sys.locale) == "en-US" ]]
      	then

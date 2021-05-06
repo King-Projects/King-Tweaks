@@ -179,9 +179,9 @@ SCHED_TASKS_THROUGHPUT="6"
 	elif [[ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0" ]]; then
 		gpu="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0"
 		qcom=true
-	elif [ -d "/sys/devices/platform/gpusysfs" ]; then
+	elif [[ -d "/sys/devices/platform/gpusysfs" ]]; then
 		gpu="/sys/devices/platform/gpusysfs"
-	elif [ -d "/sys/devices/platform/mali.0" ]; then
+	elif [[ -d "/sys/devices/platform/mali.0" ]]; then
 		gpu="/sys/devices/platform/mali.0"
 		fi
 		
@@ -334,7 +334,7 @@ dcdm=$(getprop ro.product.device)
 root=$(su -v)
 
 # Detect if we're running on a exynos powered device
-if [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" || [[ "$(getprop ro.product.board | grep universal)" ]]; then
+if [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]]; then
 exynos=true
 qcom=false
 else
