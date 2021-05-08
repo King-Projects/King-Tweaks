@@ -229,8 +229,7 @@ SCHED_TASKS_THROUGHPUT="6"
     
     gpumin=$(cat $gpui/gpu_freq_table | awk '{print $1}')
     
-    if [[ $gpumin -ne $gpumnfreq ]];
-    then
+    if [[ $gpumin -ne $gpumnfreq ]]; then
     gpumin=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
     fi
 
@@ -982,10 +981,6 @@ fi
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "2"
 write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_enable_thread_grouping" ]]; then
-write "${kernel}sched_enable_thread_grouping" "1"
-fi
-write "${kernel}sched_rr_timeslice_ms" "1"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
 fi
@@ -1217,7 +1212,6 @@ exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
-kmsg3 ""
 }
 # Automatic Profile
 automatic() {
@@ -1689,10 +1683,6 @@ fi
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "32"
 write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_enable_thread_grouping" ]]; then
-write "${kernel}sched_enable_thread_grouping" "1"
-fi
-write "${kernel}sched_rr_timeslice_ms" "1"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
 fi
@@ -2025,7 +2015,6 @@ exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
-kmsg3 ""
 }
 # Extreme Profile
 extreme() {
@@ -2511,10 +2500,6 @@ fi
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "128"
 write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_enable_thread_grouping" ]]; then
-write "${kernel}sched_enable_thread_grouping" "0"
-fi
-write "${kernel}sched_rr_timeslice_ms" "1"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
 fi
@@ -2860,7 +2845,6 @@ exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
-kmsg3 ""
 }
 # Battery Profile
 battery() {
@@ -3338,10 +3322,6 @@ fi
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "192"
 write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_enable_thread_grouping" ]]; then
-write "${kernel}sched_enable_thread_grouping" "1"
-fi
-write "${kernel}sched_rr_timeslice_ms" "1"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
 fi
@@ -3691,7 +3671,6 @@ exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
-kmsg3 ""
 }
 # Gaming Profile
 gaming() {
@@ -4179,10 +4158,6 @@ fi
 [[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "128"
 write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_enable_thread_grouping" ]]; then
-write "${kernel}sched_enable_thread_grouping" "0"
-fi
-write "${kernel}sched_rr_timeslice_ms" "1"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
 fi
@@ -4528,5 +4503,4 @@ exit=$(date +%s)
 
 exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
-kmsg3 ""
 }
