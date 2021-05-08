@@ -651,15 +651,14 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd, watchdogd and mpdecision
+# Disable perfd and mpdecision
 stop perfd  	
 stop mpdecision
-stop watchdogd
 
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, watchdogd, mpdecision and traced & enabled thermal services"
+kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
 # Configure thermal profile
@@ -1281,15 +1280,14 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd, watchdogd and mpdecision
+# Disable perfd and mpdecision
 stop perfd
 stop mpdecision
-stop watchdogd
 
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, watchdogd, mpdecision and traced & enabled thermal services"
+kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
 # Configure thermal profile
@@ -2067,15 +2065,14 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd, watchdogd and mpdecision
+# Disable perfd and mpdecision
 stop perfd
 stop mpdecision
-stop watchdogd
 
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, watchdogd, mpdecision and traced"
+kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
 # Configure thermal profile
@@ -2883,15 +2880,14 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd, watchdogd and mpdecision
+# Disable perfd and mpdecision
 stop perfd
 stop mpdecision
-stop watchdogd
 
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, watchdogd, mpdecision and traced & enabled thermal services"
+kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
 # Configure thermal profile
@@ -3704,15 +3700,14 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd, watchdogd and mpdecision
+# Disable perfd and mpdecision
 stop perfd
 stop mpdecision
-stop watchdogd
 
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, watchdogd, mpdecision and traced"
+kmsg "Disabled perfd, mpdecision and traced"
 kmsg3 ""
 
 # Configure thermal profile
