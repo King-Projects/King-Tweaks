@@ -311,6 +311,9 @@ soc=$(getprop ro.product.board)
 
 elif [[ $soc == "" ]]; then
 soc=$(getprop ro.product.platform)
+
+elif [[ $soc == "" ]]; then
+soc=$(getprop ro.arch)
 fi
 
 # Get device SDK
@@ -556,6 +559,14 @@ fi
 # Get device brand
 dvb=$(getprop ro.product.brand)
 
+# Check if we're running on OneUI
+if [[ $(getprop net.knoxscep.version) ]] || [[ $(getprop ro.boot.em.model) ]] || [[ $(getprop net.knoxvpn.version) ]] || [[ $(getprop ro.build.PDA) ]]; then
+isosoneui=true
+
+else
+isosoneui=false
+fi
+
 # Get the amount of time that OS is running
 osruntime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
@@ -640,20 +651,15 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd and mpdecision
+# Disable perfd, watchdogd and mpdecision
 stop perfd  	
 stop mpdecision
+stop watchdogd
 
 # Disable trace
 stop traced
 
-# Enable thermal services
-start thermald
-start thermalserviced
-start mi_thermald
-start thermal-engine
-
-kmsg "Disabled perfd, mpdecision and traced & enabled thermal services"
+kmsg "Disabled perfd, watchdogd, mpdecision and traced & enabled thermal services"
 kmsg3 ""
 
 # Configure thermal profile
@@ -797,7 +803,7 @@ kmsg3 ""
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
 [[ $qcom == "true" ]] && write "$gpu/idle_timer" "89"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
+[[ $isosoneui == "false" ]] && [[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
 [[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "80"
@@ -1275,20 +1281,15 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd and mpdecision
+# Disable perfd, watchdogd and mpdecision
 stop perfd
 stop mpdecision
+stop watchdogd
 
 # Disable trace
 stop traced
 
-# Enable thermal services
-start thermald
-start thermalserviced
-start mi_thermald
-start thermal-engine
-
-kmsg "Disabled perfd, mpdecision and traced & enabled thermal services"
+kmsg "Disabled perfd, watchdogd, mpdecision and traced & enabled thermal services"
 kmsg3 ""
 
 # Configure thermal profile
@@ -1488,7 +1489,7 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
 [[ $qcom == "true" ]] && write "$gpu/idle_timer" "66"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
+[[ $isosoneui == "false" ]] && [[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
 [[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "86"
@@ -2066,31 +2067,22 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd and mpdecision
+# Disable perfd, watchdogd and mpdecision
 stop perfd
 stop mpdecision
+stop watchdogd
 
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, mpdecision and traced"
+kmsg "Disabled perfd, watchdogd, mpdecision and traced"
 kmsg3 ""
 
 # Configure thermal profile
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "10"
-if [[ $? -eq 1 ]]; then
-# Disable thermal services if we can't configure it's profile
-stop thermald
-stop thermalserviced
-stop mi_thermald
-stop thermal-engine
-kmsg "Disabled thermal services"
-kmsg3 ""
-else
 kmsg "Tweaked thermal profile"
 kmsg3 ""
-fi
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -2302,12 +2294,7 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
 [[ $qcom == "true" ]] && write "$gpu/idle_timer" "156"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
-if [[ $? -eq 1 ]]; then
-chmod 0000 "$gpu/dvfs"
-chmod 0000 "$gpu/dvfs_min_lock"
-chmod 0000 "$gpu/dvfs_max_lock"
-fi
+[[ $isosoneui == "false" ]] && [[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
 [[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "76"
@@ -2896,20 +2883,15 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd and mpdecision
+# Disable perfd, watchdogd and mpdecision
 stop perfd
 stop mpdecision
+stop watchdogd
 
 # Disable trace
 stop traced
 
-# Enable thermal services
-start thermald
-start thermalserviced
-start mi_thermald
-start thermal-engine
-
-kmsg "Disabled perfd, mpdecision and traced & enabled thermal services"
+kmsg "Disabled perfd, watchdogd, mpdecision and traced & enabled thermal services"
 kmsg3 ""
 
 # Configure thermal profile
@@ -3126,7 +3108,7 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
 [[ $qcom == "true" ]] && write "$gpu/idle_timer" "36"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
+[[ $isosoneui == "false" ]] && [[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
 [[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "95"
@@ -3722,31 +3704,22 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd and mpdecision
+# Disable perfd, watchdogd and mpdecision
 stop perfd
 stop mpdecision
+stop watchdogd
 
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, mpdecision and traced"
+kmsg "Disabled perfd, watchdogd, mpdecision and traced"
 kmsg3 ""
 
 # Configure thermal profile
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "10"
-if [[ $? -eq 1 ]]; then
-# Disable thermal services if we can't configure it's profile
-stop thermald
-stop thermalserviced
-stop mi_thermald
-stop thermal-engine
-kmsg "Disabled thermal services"
-kmsg3 ""
-else
 kmsg "Tweaked thermal profile"
 kmsg3 ""
-fi
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
@@ -3960,12 +3933,7 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "1"
 [[ $qcom == "true" ]] && write "$gpu/idle_timer" "1009"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "0"
-[[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
-if [[ $? -eq 1 ]]; then
-chmod 0000 "$gpu/dvfs"
-chmod 0000 "$gpu/dvfs_min_lock"
-chmod 0000 "$gpu/dvfs_max_lock"
-fi
+[[ $isosoneui == "false" ]] && [[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
 [[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumx2"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "76"
