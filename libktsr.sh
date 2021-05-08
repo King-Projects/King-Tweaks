@@ -214,7 +214,7 @@ SCHED_TASKS_THROUGHPUT="6"
     elif [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
 
-    else
+    elif [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$gpumxfreq
     fi
     
@@ -223,7 +223,7 @@ SCHED_TASKS_THROUGHPUT="6"
     if [[ $gpumx2 -ne $gpumxfreq ]]; then
     gpumx2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
     
-    else
+    elif [[ $gpumx2 -ne $gpumxfreq ]]; then
     gpumx2=$gpumxfreq
     fi
     
@@ -797,9 +797,9 @@ kmsg3 ""
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
 [[ $qcom == "true" ]] && write "$gpu/idle_timer" "89"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumin
 [[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
+[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "80"
 [[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $qcom == "false" ]] && write "$gpui/boost" "0"
@@ -1488,9 +1488,9 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
 [[ $qcom == "true" ]] && write "$gpu/idle_timer" "66"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumin
 [[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
+[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "86"
 [[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $qcom == "false" ]] && write "$gpui/boost" "0"
@@ -2302,14 +2302,14 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
 [[ $qcom == "true" ]] && write "$gpu/idle_timer" "156"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumin
-[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
 [[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
 if [[ $? -eq 1 ]]; then
 chmod 0000 "$gpu/dvfs"
 chmod 0000 "$gpu/dvfs_min_lock"
 chmod 0000 "$gpu/dvfs_max_lock"
 fi
+[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "76"
 [[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $qcom == "false" ]] && write "$gpu/cl_boost_disable" "0"
@@ -3126,9 +3126,9 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
 [[ $qcom == "true" ]] && write "$gpu/idle_timer" "36"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumin
 [[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumx2"
+[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "95"
 [[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
 [[ $qcom == "false" ]] && write "$gpu/cl_boost_disable" "1"
@@ -3952,22 +3952,22 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "3"
 [[ $qcom == "true" ]] && write "$gpu/force_no_nap" "1"
 [[ $qcom == "true" ]] && write "$gpu/bus_split" "0"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" $gpumxfreq
-[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" $gpumx
-[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" $gpumaxpl
+[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" "$gpumxfreq"
+[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "$gpumx"
+[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "$gpumaxpl"
 [[ $qcom == "true" ]] && write "$gpu/force_bus_on" "1"
 [[ $qcom == "true" ]] && write "$gpu/force_clk_on" "1"
 [[ $qcom == "true" ]] && write "$gpu/force_rail_on" "1"
 [[ $qcom == "true" ]] && write "$gpu/idle_timer" "1009"
 [[ $qcom == "true" ]] && write "$gpu/pwrnap" "0"
-[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" $gpumx2
 [[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
 if [[ $? -eq 1 ]]; then
 chmod 0000 "$gpu/dvfs"
 chmod 0000 "$gpu/dvfs_min_lock"
 chmod 0000 "$gpu/dvfs_max_lock"
 fi
-[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" $gpumx2
+[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumx2"
+[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
 [[ $qcom == "false" ]] && write "$gpu/highspeed_load" "76"
 [[ $qcom == "false" ]] && write "$gpu/power_policy" "always_on"
 [[ $qcom == "false" ]] && write "$gpu/cl_boost_disable" "0"
