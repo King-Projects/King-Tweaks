@@ -221,9 +221,6 @@ SCHED_TASKS_THROUGHPUT="6"
     gpumx2=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
     
     if [[ $gpumx2 -ne $gpumxfreq ]]; then
-    gpumx2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
-    
-    elif [[ $gpumx2 -ne $gpumxfreq ]]; then
     gpumx2=$gpumxfreq
     fi
     
@@ -278,8 +275,8 @@ cpuminclkmhz=$((cpumnfreq / 1000))
 if [[ -e "$gpu/max_gpuclk" ]]; then
 gpumxfreq=$(cat $gpu/max_gpuclk)
 
-elif [[ -e "$gpui/gpu_max_clock" ]]; then
-gpumxfreq=$(cat $gpui/gpu_max_clock)
+elif [[ -e "$gpu/max_clock" ]]; then
+gpumxfreq=$(cat $gpu/max_clock)
 fi
 
 # Get minimum GPU frequency (gpumin also does almost the same thing)
@@ -287,8 +284,8 @@ if [[ -e "$gpu/min_clock_mhz" ]]; then
 gpumnfreq=$(cat $gpu/min_clock_mhz)
 gpumnfreq=$((gpumnfreq * 1000000))
 
-elif [[ -e "$gpui/gpu_min_clock" ]]; then
-gpumnfreq=$(cat $gpui/gpu_min_clock)
+elif [[ -e "$gpu/min_clock" ]]; then
+gpumnfreq=$(cat $gpu/min_clock)
 fi
 
 # Max & min GPU clock in MHz
@@ -560,7 +557,7 @@ fi
 dvb=$(getprop ro.product.brand)
 
 # Check if we're running on OneUI
-if [[ $(getprop net.knoxscep.version) ]] || [[ $(getprop ro.boot.em.model) ]] || [[ $(getprop net.knoxvpn.version) ]] || [[ $(getprop ro.build.PDA) ]]; then
+if [[ $(getprop net.knoxscep.version) ]] || [[ $(getprop ril.product_code) ]] || [[ $(getprop ro.boot.em.model) ]] || [[ $(getprop net.knoxvpn.version) ]] || [[ $(getprop ro.securestorage.knox) ]] || [[ $(getprop gsm.version.ril-impl | grep Samsung) ]] || [[ $(getprop ro.build.PDA) ]]; then
 isosoneui=true
 
 else
