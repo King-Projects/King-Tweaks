@@ -567,6 +567,8 @@ else
 isosoneui=false
 fi
 
+dv=$(getprop ro.boot.bootdevice)
+
 # Get the amount of time that OS is running
 osruntime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
@@ -920,17 +922,23 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
-write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
+write "/sys/kernel/debug/sched_features" "UTIL_EST"
+[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
+write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
+write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
+write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
 kmsg "Tweaked scheduler features"
 kmsg3 ""
 fi
 
-# Same as NO_GENTLE_FAIR_SLEEPERS above
+# Same as GENTLE_FAIR_SLEEPERS above
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
 write "/sys/kernel/sched/gentle_fair_sleepers" "0"
-kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg "Enabled GENTLE_FAIR_SLEEPERS scheduler feature"
 kmsg3 ""
 fi
 
@@ -954,20 +962,17 @@ fi
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "1"
 fi
-if [[ -e "${kernel}sched_boost" ]]; then
-write "${kernel}sched_boost" "0"
-fi
 if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
 write "${kernel}perf_cpu_time_max_percent" "4"
 fi
-if [[ -e "${kernel}nmi_watchdog" ]]; then
-write "${kernel}nmi_watchdog" "0"
-fi
-if [[ -e "${kernel}watchdog" ]]; then
-write "${kernel}watchdog" "0"
-fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "1"
+fi
+if [[ -e "/sys/devices/soc/$dv/clkscale_enable" ]]; then
+write "/sys/devices/soc/$dv/clkscale_enable" "0"
+fi
+if [[ -e "/sys/devices/soc/$dv/clkgate_enable" ]]; then
+write "/sys/devices/soc/$dv/clkgate_enable" "1"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
@@ -1002,8 +1007,8 @@ fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
-write "/sys/kernel/rcu_expedited" 0
-write "/sys/kernel/rcu_normal" 1
+write "/sys/kernel/rcu_expedited" "0"
+write "/sys/kernel/rcu_normal" "1"
 fi
 
 # Disable kernel tracing
@@ -1193,6 +1198,14 @@ kmsg "Disabled kernel battery saver"
 kmsg3 ""
 fi
 
+# Same as GENTLE_FAIR_SLEEPERS above
+if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
+then
+write "/sys/kernel/sched/gentle_fair_sleepers" "0"
+kmsg "Enabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg3 ""
+fi
+
 # Enable USB 3.0 fast charging
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
@@ -1367,10 +1380,10 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 128
+write "${queue}read_ahead_kb" 64
 write "${queue}nomerges" 1
 write "${queue}rq_affinity" 1
-write "${queue}nr_requests" 64
+write "${queue}nr_requests" 128
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -1624,7 +1637,13 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
-write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
+write "/sys/kernel/debug/sched_features" "UTIL_EST"
+[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
+write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
+write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
+write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "WAKEUP_PREEMPTION"
 kmsg "Tweaked scheduler features"
 kmsg3 ""
@@ -1650,20 +1669,17 @@ fi
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "1"
 fi
-if [[ -e "${kernel}sched_boost" ]]; then
-write "${kernel}sched_boost" "0"
-fi
 if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
 write "${kernel}perf_cpu_time_max_percent" "10"
 fi
-if [[ -e "${kernel}nmi_watchdog" ]]; then
-write "${kernel}nmi_watchdog" "0"
-fi
-if [[ -e "${kernel}watchdog" ]]; then
-write "${kernel}watchdog" "0"
-fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "1"
+fi
+if [[ -e "/sys/devices/soc/$dv/clkscale_enable" ]]; then
+write "/sys/devices/soc/$dv/clkscale_enable" "0"
+fi
+if [[ -e "/sys/devices/soc/$dv/clkgate_enable" ]]; then
+write "/sys/devices/soc/$dv/clkgate_enable" "1"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
@@ -1698,8 +1714,8 @@ fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
-write "/sys/kernel/rcu_expedited" 0
-write "/sys/kernel/rcu_normal" 1
+write "/sys/kernel/rcu_expedited" "0"
+write "/sys/kernel/rcu_normal" "1"
 fi
 
 # Disable kernel tracing
@@ -1980,6 +1996,14 @@ if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]]
 then
 write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
 kmsg "Enabled pm2 idle sleep mode"
+kmsg3 ""
+fi
+
+# Same as GENTLE_FAIR_SLEEPERS above
+if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
+then
+write "/sys/kernel/sched/gentle_fair_sleepers" "0"
+kmsg "Enabled GENTLE_FAIR_SLEEPERS scheduler feature"
 kmsg3 ""
 fi
 
@@ -2283,7 +2307,7 @@ fi
 [[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "2"
 [[ $qcom == "true" ]] && write "$gpu/force_no_nap" "0"
 [[ $qcom == "true" ]] && write "$gpu/bus_split" "0"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" $gpumxfreq
+[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" "$gpumxfreq"
 [[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
 [[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "3"
 [[ $qcom == "true" ]] && write "$gpu/force_bus_on" "0"
@@ -2349,7 +2373,7 @@ write "${stune}background/schedtune.sched_boost" "0"
 write "${stune}background/schedtune.prefer_perf" "0"
 
 write "${stune}foreground/schedtune.boost" "50"
-write "${stune}foreground/schedtune.prefer_idle" "0"
+write "${stune}foreground/schedtune.prefer_idle" "1"
 write "${stune}foreground/schedtune.sched_boost" "15"
 write "${stune}foreground/schedtune.sched_boost_no_override" "1"
 write "${stune}foreground/schedtune.prefer_perf" "1"
@@ -2360,7 +2384,7 @@ write "${stune}rt/schedtune.sched_boost" "0"
 write "${stune}rt/schedtune.prefer_perf" "0"
 
 write "${stune}top-app/schedtune.boost" "50"
-write "${stune}top-app/schedtune.prefer_idle" "0"
+write "${stune}top-app/schedtune.prefer_idle" "1"
 write "${stune}top-app/schedtune.sched_boost" "15"
 write "${stune}top-app/schedtune.sched_boost_no_override" "1"
 write "${stune}top-app/schedtune.prefer_perf" "1"
@@ -2426,7 +2450,13 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
-write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
+write "/sys/kernel/debug/sched_features" "UTIL_EST"
+[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
+write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
+write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
+write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
 kmsg "Tweaked scheduler features"
 kmsg3 ""
@@ -2452,20 +2482,17 @@ fi
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "0"
 fi
-if [[ -e "${kernel}sched_boost" ]]; then
-write "${kernel}sched_boost" "1"
-fi
 if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
 write "${kernel}perf_cpu_time_max_percent" "25"
 fi
-if [[ -e "${kernel}nmi_watchdog" ]]; then
-write "${kernel}nmi_watchdog" "0"
-fi
-if [[ -e "${kernel}watchdog" ]]; then
-write "${kernel}watchdog" "0"
-fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "0"
+fi
+if [[ -e "/sys/devices/soc/$dv/clkscale_enable" ]]; then
+write "/sys/devices/soc/$dv/clkscale_enable" "0"
+fi
+if [[ -e "/sys/devices/soc/$dv/clkgate_enable" ]]; then
+write "/sys/devices/soc/$dv/clkgate_enable" "0"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
@@ -2500,8 +2527,8 @@ fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
-write "/sys/kernel/rcu_expedited" 0
-write "/sys/kernel/rcu_normal" 1
+write "/sys/kernel/rcu_expedited" "0"
+write "/sys/kernel/rcu_normal" "1"
 fi
 
 # Disable kernel tracing
@@ -2798,10 +2825,11 @@ kmsg "Disabled LCD power reduce"
 kmsg3 ""
 fi
 
+# Same as GENTLE_FAIR_SLEEPERS above
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
 write "/sys/kernel/sched/gentle_fair_sleepers" "0"
-kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+kmsg "Enabled GENTLE_FAIR_SLEEPERS scheduler feature"
 kmsg3 ""
 fi
 
@@ -2985,7 +3013,7 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 128
+write "${queue}read_ahead_kb" 64
 write "${queue}nomerges" 0
 write "${queue}rq_affinity" 0
 write "${queue}nr_requests" 512
@@ -3241,8 +3269,14 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
+write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
+write "/sys/kernel/debug/sched_features" "UTIL_EST"
+[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
+write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
+write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
-write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "ARCH_POWER" 
 kmsg "Tweaked scheduler features"
 kmsg3 ""
@@ -3268,20 +3302,17 @@ fi
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "0"
 fi
-if [[ -e "${kernel}sched_boost" ]]; then
-write "${kernel}sched_boost" "0"
-fi
 if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
 write "${kernel}perf_cpu_time_max_percent" "3"
 fi
-if [[ -e "${kernel}nmi_watchdog" ]]; then
-write "${kernel}nmi_watchdog" "0"
-fi
-if [[ -e "${kernel}watchdog" ]]; then
-write "${kernel}watchdog" "0"
-fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "1"
+fi
+if [[ -e "/sys/devices/soc/$dv/clkscale_enable" ]]; then
+write "/sys/devices/soc/$dv/clkscale_enable" "0"
+fi
+if [[ -e "/sys/devices/soc/$dv/clkgate_enable" ]]; then
+write "/sys/devices/soc/$dv/clkgate_enable" "1"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
@@ -3316,8 +3347,8 @@ fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
-write "/sys/kernel/rcu_expedited" 0
-write "/sys/kernel/rcu_normal" 1
+write "/sys/kernel/rcu_expedited" "0"
+write "/sys/kernel/rcu_normal" "1"
 fi
 
 # Disable kernel tracing
@@ -3620,8 +3651,8 @@ fi
 
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
-write "/sys/kernel/sched/gentle_fair_sleepers" "0"
-kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+write "/sys/kernel/sched/gentle_fair_sleepers" "1"
+kmsg "Enabled GENTLE_FAIR_SLEEPERS scheduler feature"
 kmsg3 ""
 fi
 
@@ -3986,7 +4017,7 @@ write "${stune}background/schedtune.sched_boost" "0"
 write "${stune}background/schedtune.prefer_perf" "0"
 
 write "${stune}foreground/schedtune.boost" "50"
-write "${stune}foreground/schedtune.prefer_idle" "0"
+write "${stune}foreground/schedtune.prefer_idle" "1"
 write "${stune}foreground/schedtune.sched_boost" "15"
 write "${stune}foreground/schedtune.sched_boost_no_override" "1"
 write "${stune}foreground/schedtune.prefer_perf" "0"
@@ -3997,7 +4028,7 @@ write "${stune}rt/schedtune.sched_boost" "0"
 write "${stune}rt/schedtune.prefer_perf" "0"
 
 write "${stune}top-app/schedtune.boost" "50"
-write "${stune}top-app/schedtune.prefer_idle" "0"
+write "${stune}top-app/schedtune.prefer_idle" "1"
 write "${stune}top-app/schedtune.sched_boost" "15"
 write "${stune}top-app/schedtune.sched_boost_no_override" "1"
 write "${stune}top-app/schedtune.prefer_perf" "1"
@@ -4063,7 +4094,13 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
-write "/sys/kernel/debug/sched_features" "NO_GENTLE_FAIR_SLEEPERS"
+write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
+write "/sys/kernel/debug/sched_features" "UTIL_EST"
+[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
+write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
+write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
+write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
 kmsg "Tweaked scheduler features"
 kmsg3 ""
@@ -4089,20 +4126,17 @@ fi
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "0"
 fi
-if [[ -e "${kernel}sched_boost" ]]; then
-write "${kernel}sched_boost" "1"
-fi
 if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
 write "${kernel}perf_cpu_time_max_percent" "25"
 fi
-if [[ -e "${kernel}nmi_watchdog" ]]; then
-write "${kernel}nmi_watchdog" "0"
-fi
-if [[ -e "${kernel}watchdog" ]]; then
-write "${kernel}watchdog" "0"
-fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "0"
+fi
+if [[ -e "/sys/devices/soc/$dv/clkscale_enable" ]]; then
+write "/sys/devices/soc/$dv/clkscale_enable" "0"
+fi
+if [[ -e "/sys/devices/soc/$dv/clkgate_enable" ]]; then
+write "/sys/devices/soc/$dv/clkgate_enable" "0"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
@@ -4137,8 +4171,8 @@ fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
-write "/sys/kernel/rcu_expedited" 0
-write "/sys/kernel/rcu_normal" 1
+write "/sys/kernel/rcu_expedited" "0"
+write "/sys/kernel/rcu_normal" "1"
 fi
 
 # Disable kernel tracing
@@ -4437,8 +4471,8 @@ fi
 
 if [[ -e "/sys/kernel/sched/gentle_fair_sleepers" ]]
 then
-write "/sys/kernel/sched/gentle_fair_sleepers" "0"
-kmsg "Disabled GENTLE_FAIR_SLEEPERS scheduler feature"
+write "/sys/kernel/sched/gentle_fair_sleepers" "1"
+kmsg "Enabled GENTLE_FAIR_SLEEPERS scheduler feature"
 kmsg3 ""
 fi
 
