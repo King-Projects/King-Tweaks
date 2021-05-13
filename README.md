@@ -1,14 +1,14 @@
-# English
+# What is King Tweaks?
 
-**King Tweaks** is a magisk module developed by pedrozzz, the project have the concept of improve user experience, by *"tweaking"* kernel settings, system settings and much more to offers to you the best experience possible.
+**King Tweaks** is a tweaker / optimizer magisk module which aim to improve user-experience.
 
-# Portuguese
+It tweaks kernel settings, overall android settings, optimize databases, zipalign apks and much more.
 
-**King Tweaks** é um módulo do magisk desenvolvido por pedrozzz, o projeto tem o conceito de melhorar a experiência do usuário, por *tweakar* configurações do kernel, sistema e muito mais para te oferecer a melhor experiência possível.
+# Show us some ❤️
 
-# Usage 
+Join our group on [Telegram](https://t.me/kingprojectzdiscussion)
 
-To use **King Tweaks** is simple, as from Reborn 1.0 and soon, you just need to choose your profile on *spectrum* and enjoy the king experience.
+[Download it on pling](https://www.pling.com/p/1433363/)
 
 # Credits
 
@@ -30,10 +30,8 @@ Thanks to [HafizZiq](https://github.com/HafizZiq)
 
 Thanks to [darkhz](https://github.com/darkhz)
 
-And everyone that supports my projects. ❤️
+Thanks to [Kartik Verma](https://github.com/TheHitMan7)
 
-# Telegram
+Thanks to [Val Mandares](https://github.com/veez21)
 
-**Channel**: [Link](https://t.me/kingprojectz) @kingprojectz
-
-**Group (EN)**: [Link](https://t.me/kingprojectzdiscussion) @kingprojectzdiscussion
+And everyone that supports my projects.
