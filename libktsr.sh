@@ -210,7 +210,7 @@ SCHED_TASKS_THROUGHPUT="6"
     
     if [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$(cat $gpu/devfreq/available_frequencies | awk 'NF>1{print $NF}')
-    
+       
     elif [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
 
@@ -922,7 +922,7 @@ write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
 [[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
-write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
 write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
 write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
@@ -1104,11 +1104,6 @@ fi
 # Disable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
 write "${lmk}parameters/enable_adaptive_lmk" "0"
-fi
-
-# Tune lmk_cost
-if [[ -e "${lmk}parameters/cost" ]]; then
-write "${lmk}parameters/cost" "16"
 fi
 
 # Tune vm_min_free_kbytes
@@ -1637,7 +1632,7 @@ write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
 [[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
-write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
 write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
 write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
@@ -1812,7 +1807,7 @@ write "${vm}vfs_cache_pressure" "100"
 write "${vm}reap_mem_on_sigkill" "1"
 
 # Tune lmk_minfree
-if [[ -e "${lmk}/parameters/minfree" ]]; then
+if [[ -e "${lmk}parameters/minfree" ]]; then
 write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
 fi
 
@@ -1829,11 +1824,6 @@ fi
 # Disable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
 write "${lmk}parameters/enable_adaptive_lmk" "0"
-fi
-
-# Tune lmk_cost
-if [[ -e "${lmk}parameters/cost" ]]; then
-write "${lmk}parameters/cost" "32"
 fi
 
 # Tune vm_min_free_kbytes
@@ -2450,7 +2440,7 @@ write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
 [[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
-write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
 write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
 write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
@@ -2641,11 +2631,6 @@ fi
 # Disable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
 write "${lmk}parameters/enable_adaptive_lmk" "0"
-fi
-
-# Tune lmk_cost
-if [[ -e "${lmk}parameters/cost" ]]; then
-write "${lmk}parameters/cost" "32"
 fi
 
 # Tune vm_min_free_kbytes
@@ -3269,7 +3254,7 @@ write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
 [[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
-write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
 write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
 write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
@@ -3480,11 +3465,6 @@ fi
 # Disable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
 write "${lmk}parameters/enable_adaptive_lmk" "0"
-fi
-
-# Tune lmk_cost
-if [[ -e "${lmk}parameters/cost" ]]; then
-write "${lmk}parameters/cost" "32"
 fi
 
 # Tune vm_min_free_kbytes
@@ -4094,7 +4074,7 @@ write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
 [[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
-write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
 write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
 write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
@@ -4285,11 +4265,6 @@ fi
 # Enable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
 write "${lmk}parameters/enable_adaptive_lmk" "1"
-fi
-
-# Tune lmk_cost
-if [[ -e "${lmk}parameters/cost" ]]; then
-write "${lmk}parameters/cost" "32"
 fi
 
 # Tune vm_min_free_kbytes
