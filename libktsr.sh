@@ -210,10 +210,10 @@ SCHED_TASKS_THROUGHPUT="6"
     
     if [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$(cat $gpu/devfreq/available_frequencies | awk 'NF>1{print $NF}')
-       
+    
     elif [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
-
+    
     elif [[ $gpumx -ne $gpumxfreq ]]; then
     gpumx=$gpumxfreq
     fi
@@ -1703,6 +1703,9 @@ write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "0"
 fi
+if [[ -e "${kernel}sched_boost" ]]; then
+write "${kernel}sched_boost" "0"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
@@ -2510,6 +2513,9 @@ fi
 write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "0"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
+write "${kernel}sched_boost" "1"
 fi
 
 # Prefer rcu_normal instead of rcu_expedited
@@ -3325,6 +3331,9 @@ fi
 write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "1"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
+write "${kernel}sched_boost" "0"
 fi
 
 # Prefer rcu_normal instead of rcu_expedited
@@ -4144,6 +4153,9 @@ fi
 write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "0"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
+write "${kernel}sched_boost" "1"
 fi
 
 # Prefer rcu_normal instead of rcu_expedited
