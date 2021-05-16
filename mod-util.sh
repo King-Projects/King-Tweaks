@@ -3,7 +3,7 @@
 #
 # Terminal Utility Functions
 # by veez21
-# modified by pedrozzz0 
+# modified by Pedro (pedrozzz0 @ GitHub) 
 #
 ##########################################################################################
 
@@ -57,11 +57,11 @@ else
   false
 fi
 set_busybox $_bb
-[[ $? -ne 0 ]] && { echo "[!] Something went wrong!"; exit $?; }
+[[ $? -ne 0 ]] && { echo "[!] Something went wrong"; exit $?; }
 [[ -n "$ANDROID_SOCKET_adbd" ]] && alias clear='echo'
-_bbname="$($_bb | head -n1 | awk '{print $1,$2}')"
+_bbname="$($_bb | head -n 1 | awk '{print $1,$2}')"
 BBok=true
-if [[ "$_bbname" == "" ]]; then
+if [[ "$_bbname" = "" ]]; then
   _bbname="[!] Busybox not found"
   BBok=false
 fi
@@ -123,7 +123,6 @@ abort() {
   exit 1
 }
 
-
 # Device Info
 # Variables: BRAND MODEL DEVICE API ABI ABI2 ABILONG ARCH
 BRAND=$(getprop ro.product.brand)
@@ -178,7 +177,7 @@ div="${Bl}$(printf '%*s' "${character_no}" '' | tr " " "=")${N}"
 # title_div [-c] <title>
 # based on $div with <title>
 title_div() {
-  [[ "$1" == "-c" ]] && local character_no=$2 && shift 2
+  [[ "$1" = "-c" ]] && local character_no=$2 && shift 2
   [[ -z "$1" ]] && { local message=; no=0; } || { local message="$@ "; local no=$(echo "$@" | wc -c); }
   [[ $character_no -gt $no ]] && local extdiv=$((character_no-no)) || { echo "Invalid!"; return 1; }
   echo "${W}$message${N}${Bl}$(printf '%*s' "$extdiv" '' | tr " " "=")${N}"
@@ -297,7 +296,7 @@ upload_logs() {
 prandom() {
   local CHANCES=2
   local TARGET=2
-  [[ "$1" ==  "-c" ]] && { local CHANCES=$2; local TARGET=$3; shift 3; }
+  [[ "$1" =  "-c" ]] && { local CHANCES=$2; local TARGET=$3; shift 3; }
   [[ "$((RANDOM%CHANCES+1))" -eq "$TARGET" ]] && echo "$@"
 }
 
