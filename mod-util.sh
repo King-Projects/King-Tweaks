@@ -1,3 +1,4 @@
+#!/system/bin/sh
 ##########################################################################################
 #
 # Terminal Utility Functions
@@ -22,7 +23,7 @@ else
   SYSTEM2=/system
   CACHELOC=/cache
 fi
-[[ -z "$isABDevice" ]] && { echo "[!] Something went wrong!"; exit 1; }
+[[ -z "$isABDevice" ]] && { echo "[!] Something went wrong"; exit 1; }
 
 #=========================== Set Busybox up
 # Variables:
@@ -51,8 +52,8 @@ elif [[ -x $SYSTEM2/xbin/busybox ]]; then
 elif [[ -x $SYSTEM2/bin/busybox ]]; then
   _bb=$SYSTEM2/bin/busybox
 else
-  echo -e "[!] Busybox not detected"
-  echo -e "Please install it (@osm0sis busybox recommended)"
+  echo "[!] Busybox not detected"
+  echo "Please install it (@osm0sis busybox recommended)"
   false
 fi
 set_busybox $_bb
@@ -61,7 +62,7 @@ set_busybox $_bb
 _bbname="$($_bb | head -n1 | awk '{print $1,$2}')"
 BBok=true
 if [[ "$_bbname" == "" ]]; then
-  _bbname="Busybox not found!"
+  _bbname="[!] Busybox not found"
   BBok=false
 fi
 
@@ -69,36 +70,36 @@ fi
 
 # Set perm
 set_perm() {
-  chown $2:$3 $1 || return 1
-  chmod $4 $1 || return 1
+  chown "$2":"$3" "$1" || return 1
+  chmod "$4" "$1" || return 1
   (if [[ -z $5 ]]; then
     case $1 in
-      *"system/vendor/app/"*) chcon 'u:object_r:vendor_app_file:s0' $1;;
-      *"system/vendor/etc/"*) chcon 'u:object_r:vendor_configs_file:s0' $1;;
-      *"system/vendor/overlay/"*) chcon 'u:object_r:vendor_overlay_file:s0' $1;;
-      *"system/vendor/"*) chcon 'u:object_r:vendor_file:s0' $1;;
-      *) chcon 'u:object_r:system_file:s0' $1;;
+      *"system/vendor/app/"*) chcon 'u:object_r:vendor_app_file:s0' "$1";;
+      *"system/vendor/etc/"*) chcon 'u:object_r:vendor_configs_file:s0' "$1";;
+      *"system/vendor/overlay/"*) chcon 'u:object_r:vendor_overlay_file:s0' "$1";;
+      *"system/vendor/"*) chcon 'u:object_r:vendor_file:s0' "$1";;
+      *) chcon 'u:object_r:system_file:s0' "$1";;
     esac
   else
-    chcon $5 $1
+    chcon "$5" "$1"
   fi) || return 1
 }
 
 # Set perm recursive
 set_perm_recursive() {
-  find $1 -type d 2>/dev/null | while read dir; do
-    set_perm $dir $2 $3 $4 $6
+  find "$1" -type d 2>/dev/null | while read dir; do
+    set_perm "$dir" "$2" "$3" "$4" "$6"
   done
-  find $1 -type f -o -type l 2>/dev/null | while read file; do
-    set_perm $file $2 $3 $5 $6
+  find "$1" -type f -o -type l 2>/dev/null | while read file; do
+    set_perm "$file" "$2" "$3" "$5" "$6"
   done
 }
 
 # Mktouch
 mktouch() {
-  mkdir -p ${1%/*} 2>/dev/null
-  [[ -z $2 ]] && touch $1 || echo $2 > $1
-  chmod 644 $1
+  mkdir -p "${1%/*}" 2>/dev/null
+  [[ -z $2 ]] && touch "$1" || echo "$2" > "$1"
+  chmod 644 "$1"
 }
 
 # Grep prop
@@ -112,7 +113,7 @@ grep_prop() {
 
 # Is mounted
 is_mounted() {
-  grep -q " $(readlink -f $1) " /proc/mounts 2>/dev/null
+  grep -q " $(readlink -f "$1") " /proc/mounts 2>/dev/null
   return $?
 }
 
@@ -142,13 +143,13 @@ if [[ "$ABILONG" = "arm64-v8a" ]]; then ARCH=arm64; ARCH32=arm; IS64BIT=true; fi
 if [[ "$ABILONG" = "x86_64" ]]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
   
 # Version Number
-VER=$(grep_prop version $MODDIR/module.prop)
+VER=$(grep_prop version "$MODDIR"/module.prop)
 # Version Code
-REL=$(grep_prop versionCode $MODDIR/module.prop)
+REL=$(grep_prop versionCode "$MODDIR"/module.prop)
 # Author
-AUTHOR=$(grep_prop author $MODDIR/module.prop)
+AUTHOR=$(grep_prop author "$MODDIR"/module.prop)
 # Mod Name/Title
-MODTITLE=$(grep_prop name $MODDIR/module.prop)
+MODTITLE=$(grep_prop name "$MODDIR"/module.prop)
 
 # Colors
 G='\e[01;32m'		# GREEN TEXT
@@ -163,8 +164,8 @@ BGBL='\e[1;30;47m'	# Background W Text Bl
 N='\e[0m'			# How to use (example): echo "${G}example${N}"
 loadBar=' '			# Load UI
 # Remove color codes if -nc or in ADB Shell
-[[ -n "$1" -a "$1" == "-nc" ]] && shift && NC=true
-[[ "$NC" -o -n "$ANDROID_SOCKET_adbd" ]] && {
+[[ -n "$1" ]] && [[ "$1" = "-nc" ]] && shift && NC=true
+[[ "$NC" || -n "$ANDROID_SOCKET_adbd" ]] && {
   G=''; R=''; Y=''; B=''; V=''; Bl=''; C=''; W=''; N=''; BGBL=''; loadBar='=';
 }
 
@@ -192,7 +193,7 @@ set_file_prop() {
       echo "$1=$2" >> "$3"
     fi
   else
-    echo "$3 doesn't exist!"; return 1
+    echo "[!] $3 doesn't exist"; return 1
   fi
 }
 
@@ -269,12 +270,12 @@ upload_logs() {
   $BBok && {
     test_connection || exit
     echo "Uploading logs"
-    [[ -s $VERLOG ]] && verUp=$(cat $VERLOG | nc termbin.com 9999) || verUp=none
-    [[ -s $oldVERLOG ]] && oldverUp=$(cat $oldVERLOG | nc termbin.com 9999) || oldverUp=none
-    [[ -s $LOG ]] && logUp=$(cat $LOG | nc termbin.com 9999) || logUp=none
-    [[ -s $oldLOG ]] && oldlogUp=$(cat $oldLOG | nc termbin.com 9999) || oldlogUp=none
-    [[ -s $stdoutLOG ]] && stdoutUp=$(cat $stdoutLOG | nc termbin.com 9999) || stdoutUp=none
-    [[ -s $oldstdoutLOG ]] && oldstdoutUp=$(cat $oldstdoutLOG | nc termbin.com 9999) || oldstdoutUp=none
+    [[ -s $VERLOG ]] && verUp=$(cat "$VERLOG" | nc termbin.com 9999) || verUp=none
+    [[ -s $oldVERLOG ]] && oldverUp=$(cat "$oldVERLOG" | nc termbin.com 9999) || oldverUp=none
+    [[ -s $LOG ]] && logUp=$(cat "$LOG" | nc termbin.com 9999) || logUp=none
+    [[ -s $oldLOG ]] && oldlogUp=$(cat "$oldLOG" | nc termbin.com 9999) || oldlogUp=none
+    [[ -s $stdoutLOG ]] && stdoutUp=$(cat "$stdoutLOG" | nc termbin.com 9999) || stdoutUp=none
+    [[ -s $oldstdoutLOG ]] && oldstdoutUp=$(cat "$oldstdoutLOG" | nc termbin.com 9999) || oldstdoutUp=none
     echo -n "Link: "
     echo "$MODEL ($DEVICE) API $API\n$ROM\n$ID\n
     O_Verbose: $oldverUp
@@ -285,7 +286,7 @@ upload_logs() {
 
     O_Log: $oldlogUp
     Log:   $logUp" | nc termbin.com 9999
-  } || echo "Busybox not found!"
+  } || echo "[!] Busybox not found"
   exit 1
 }
 
