@@ -172,6 +172,13 @@ SCHED_TASKS_THROUGHPUT="6"
         gpu=$gpul6
         fi
         done
+        
+        for gpul7 in /sys/class/misc/mali*/device/devfreq/*.gpu
+        do
+        if [[ -d "$gpul7" ]]; then
+        gpu=$gpul7
+        fi
+        done
 
 	if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]; then
 		gpu="/sys/class/kgsl/kgsl-3d0"
@@ -183,6 +190,8 @@ SCHED_TASKS_THROUGHPUT="6"
 		gpu="/sys/devices/platform/gpusysfs"
 	elif [[ -d "/sys/devices/platform/mali.0" ]]; then
 		gpu="/sys/devices/platform/mali.0"
+		elif [[ -d "/sys/class/misc/mali0/device" ]]; then
+		gpu="/sys/class/misc/mali0/device"
 		fi
 		
         if [[ -d "/sys/devices/platform/gpusysfs" ]]; then
@@ -197,6 +206,9 @@ SCHED_TASKS_THROUGHPUT="6"
 
     if [[ -e "$gpui/gpu_governor" ]]; then
     GPU_GOVERNOR=$(cat $gpui/gpu_governor)
+    
+    elif [[ -e "$gpu/governor" ]]; then
+    GPU_GOVERNOR=$(cat $gpu/governor)
     
     elif [[ -e "$gpu/devfreq/governor" ]]; then
     GPU_GOVERNOR=$(cat $gpu/devfreq/governor)
@@ -218,15 +230,31 @@ SCHED_TASKS_THROUGHPUT="6"
     gpumx=$gpumxfreq
     fi
     
-    gpumx2=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
+    if [[ -e "$gpu/available_frequencies" ]]; then
+    gpumx2=$(cat $gpu/available_frequencies | awk 'NF>1{print $NF}')
     
-    if [[ $gpumx2 -ne $gpumxfreq ]]; then
-    gpumx2=$gpumxfreq
+    elif [[ $gpumx2 -ne $gpumxfreq ]]; then
+    gpumx2=$(cat $gpu/available_frequencies | awk '{print $1}')
+
+    elif [[ -e "$gpui/gpu_freq_table" ]]; then
+    gpumx2=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
+    fi
+
+    elif [[ $gpumx2 -ne $gpumxfreq ]]; then
+    gpumx2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
     fi
     
+    if [[ -e "$gpu/available_frequencies" ]]; then
+    gpumin=$(cat $gpu/available_frequencies | awk '{print $1}')
+   
+    elif [[ $gpumin -ne $gpumnfreq ]]; then
+    gpumin=$(cat $gpu/available_frequencies | awk 'NF>1{print $NF}')
+
+    elif [[ -e "$gpui/gpu_freq_table" ]]; then
     gpumin=$(cat $gpui/gpu_freq_table | awk '{print $1}')
-    
-    if [[ $gpumin -ne $gpumnfreq ]]; then
+    fi
+
+    elif [[ $gpumin -ne $gpumnfreq ]]; then
     gpumin=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
     fi
 
@@ -542,7 +570,10 @@ fi
 if [[ -e "$gpui/gpu_busy_percentage" ]]; then
 gpuld=$(cat $gpui/gpu_busy_percentage)
 
-else
+elif [[ -e "$gpu/load" ]]; then
+gpuld=$(cat $gpu/load)
+
+elif [[ -e "$gpui/gpu_busy" ]]; then
 gpuld=$(cat $gpui/gpu_busy)
 fi
 
@@ -788,6 +819,20 @@ kmsg3 ""
 		fi
 	done
 	
+	# Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in Interactive Dynamic Static ondemand
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/governor" "$governor"
+			break
+		fi
+	done
+	
 [[ $qcom == "true" ]] && write "$gpu/throttling" "1"
 [[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
 [[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
@@ -809,6 +854,8 @@ kmsg3 ""
 [[ $qcom == "false" ]] && write "$gpui/boost" "0"
 [[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "0"
 [[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
+[[ $qcom == "false" ]] && write "$gpu/max_freq" "$gpumxfreq"
+[[ $qcom == "false" ]] && write "$gpu/min_freq" "100000000"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1479,6 +1526,20 @@ fi
 		fi
 	done
 	
+    # Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in Interactive Dynamic Static ondemand
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/governor" "$governor"
+			break
+		fi
+	done
+
 [[ $qcom == "true" ]] && write "$gpu/throttling" "1"
 [[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
 [[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
@@ -1500,6 +1561,8 @@ fi
 [[ $qcom == "false" ]] && write "$gpui/boost" "0"
 [[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "0"
 [[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
+[[ $qcom == "false" ]] && write "$gpu/max_freq" "$gpumxfreq"
+[[ $qcom == "false" ]] && write "$gpu/min_freq" "100000000"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2292,6 +2355,20 @@ fi
 		fi
 	done
 
+    # Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in Interactive Dynamic Static ondemand
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/governor" "$governor"
+			break
+		fi
+	done
+
 [[ $qcom == "true" ]] && write "$gpu/throttling" "0"
 [[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
 [[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "2"
@@ -2314,6 +2391,8 @@ fi
 [[ $qcom == "false" ]] && write "$gpui/boost" "0"
 [[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "1"
 [[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "1"
+[[ $qcom == "false" ]] && write "$gpu/max_freq" "$gpumxfreq"
+[[ $qcom == "false" ]] && write "$gpu/min_freq" "100000000"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -3108,6 +3187,20 @@ fi
 		fi
 	done
 
+    # Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in Interactive Dynamic Static ondemand
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/governor" "$governor"
+			break
+		fi
+	done
+
 [[ $qcom == "true" ]] && write "$gpu/throttling" "1"
 [[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
 [[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
@@ -3129,6 +3222,8 @@ fi
 [[ $qcom == "false" ]] && write "$gpui/boost" "0"
 [[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "0"
 [[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
+[[ $qcom == "false" ]] && write "$gpu/max_freq" "$gpumxfreq"
+[[ $qcom == "false" ]] && write "$gpu/min_freq" "100000000"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -3932,6 +4027,20 @@ fi
 		fi
 	done
 
+    # Fetch the available governors from the GPU
+	avail_govs="$(cat "$gpu/available_governors")"
+
+	# Attempt to set the governor in this order
+	for governor in Interactive Dynamic Static ondemand
+	do
+		# Once a matching governor is found, set it and break
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/governor" "$governor"
+			break
+		fi
+	done
+
 [[ $qcom == "true" ]] && write "$gpu/throttling" "0"
 [[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
 [[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "3"
@@ -3954,6 +4063,8 @@ fi
 [[ $qcom == "false" ]] && write "$gpui/boost" "1"
 [[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "1"
 [[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "1"
+[[ $qcom == "false" ]] && write "$gpu/max_freq" "$gpumxfreq"
+[[ $qcom == "false" ]] && write "$gpu/min_freq" "$gpumx2"
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
