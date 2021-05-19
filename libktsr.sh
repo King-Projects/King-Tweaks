@@ -7,7 +7,7 @@ MODPATH=/data/adb/modules/KTSR
 
 KLOG=/sdcard/KTSR/KTSR.log
 
-KDBG=/sdcard/KTSR/KTSRDBG.log
+KDBG=/sdcard/KTSR/KTSR_DBG.log
 
 # Log in white and continue (unnecessary)
 kmsg() {
@@ -542,6 +542,10 @@ if [[ "$gbcapacity" == "" ]]; then
 gbcapacity=$(dumpsys batterystats | grep Capacity: | awk '{print $2}' | cut -d "," -f 1)
 fi
 
+if [[ "$gbcapacity" -gt "1000000" ]]; then
+gbcapacity=$((gbcapacity / 1000))
+fi
+
 # Get busybox version
 busybv=$(busybox | awk 'NR==1{print $2}')
 
@@ -600,6 +604,12 @@ dv=$(getprop ro.boot.bootdevice)
 # Get the amount of time that OS is running
 osruntime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
+# Get SQLite version
+sqlv=$(sqlite3 -version | awk '{print $1}')
+
+# Get SQLite build date
+sqlbd=$(sqlite3 -version | awk '{print $2,$3}')
+
 # Calculate CPU load (50 ms)
 read cpu user nice system idle iowait irq softirq steal guest< /proc/stat
 
@@ -635,7 +645,7 @@ lmk=/sys/module/lowmemorykiller/
 latency() {
      	init=$(date +%s)
   	
-kmsg "Info"
+kmsg "General Info"
 
 kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
@@ -672,8 +682,10 @@ kmsg3 "** Battery Temperature: $gbtemp °C"
 kmsg3 "** Device RAM: $totalram MB"                                                                                     
 kmsg3 "** Device Available RAM: $availram MB"
 kmsg3 "** Root: $root"
+kmsg3 "** SQLite Version: $sqlv"
+kmsg3 "** SQLite Build Date: $sqlbd"
 kmsg3 "** System Uptime: $osruntime"
-kmsg3 "** SELinux: $slstatus"                                                                                    
+kmsg3 "** SELinux: $slstatus"                                                                                   
 kmsg3 "** Busybox: $busybv"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
@@ -1286,9 +1298,9 @@ kmsg3 ""
 balanced() {
          init=$(date +%s)
          
-kmsg "Info"
-kmsg3 ""
+kmsg "General Info"
 
+kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
 kmsg3 "** Kernel: $kname"                                                                                           
 kmsg3 "** Kernel Build Date: $kbdd"
@@ -1323,8 +1335,10 @@ kmsg3 "** Battery Temperature: $gbtemp °C"
 kmsg3 "** Device RAM: $totalram MB"                                                                                     
 kmsg3 "** Device Available RAM: $availram MB"
 kmsg3 "** Root: $root"
+kmsg3 "** SQLite Version: $sqlv"
+kmsg3 "** SQLite Build Date: $sqlbd"
 kmsg3 "** System Uptime: $osruntime"
-kmsg3 "** SELinux: $slstatus"                                                                                    
+kmsg3 "** SELinux: $slstatus"                                                                                   
 kmsg3 "** Busybox: $busybv"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
@@ -2096,7 +2110,7 @@ kmsg "Elapsed time: $exectime seconds."
 extreme() {
 	init=$(date +%s)
      	
-kmsg "Info"
+kmsg "General Info"
 
 kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
@@ -2133,8 +2147,10 @@ kmsg3 "** Battery Temperature: $gbtemp °C"
 kmsg3 "** Device RAM: $totalram MB"                                                                                     
 kmsg3 "** Device Available RAM: $availram MB"
 kmsg3 "** Root: $root"
+kmsg3 "** SQLite Version: $sqlv"
+kmsg3 "** SQLite Build Date: $sqlbd"
 kmsg3 "** System Uptime: $osruntime"
-kmsg3 "** SELinux: $slstatus"                                                                                    
+kmsg3 "** SELinux: $slstatus"                                                                                   
 kmsg3 "** Busybox: $busybv"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
@@ -2929,7 +2945,7 @@ kmsg "Elapsed time: $exectime seconds."
 battery() {
 	init=$(date +%s)
      	
-kmsg "Info"
+kmsg "General Info"
 
 kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
@@ -2966,8 +2982,10 @@ kmsg3 "** Battery Temperature: $gbtemp °C"
 kmsg3 "** Device RAM: $totalram MB"                                                                                     
 kmsg3 "** Device Available RAM: $availram MB"
 kmsg3 "** Root: $root"
+kmsg3 "** SQLite Version: $sqlv"
+kmsg3 "** SQLite Build Date: $sqlbd"
 kmsg3 "** System Uptime: $osruntime"
-kmsg3 "** SELinux: $slstatus"                                                                                    
+kmsg3 "** SELinux: $slstatus"                                                                                   
 kmsg3 "** Busybox: $busybv"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
@@ -3768,6 +3786,8 @@ gaming() {
      	
 kmsg "Info"
 
+kmsg "General Info"
+
 kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
 kmsg3 "** Kernel: $kname"                                                                                           
@@ -3803,8 +3823,10 @@ kmsg3 "** Battery Temperature: $gbtemp °C"
 kmsg3 "** Device RAM: $totalram MB"                                                                                     
 kmsg3 "** Device Available RAM: $availram MB"
 kmsg3 "** Root: $root"
+kmsg3 "** SQLite Version: $sqlv"
+kmsg3 "** SQLite Build Date: $sqlbd"
 kmsg3 "** System Uptime: $osruntime"
-kmsg3 "** SELinux: $slstatus"                                                                                    
+kmsg3 "** SELinux: $slstatus"                                                                                   
 kmsg3 "** Busybox: $busybv"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
