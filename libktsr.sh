@@ -320,7 +320,7 @@ gpu_max_clk_mhz=$((gpu_max_freq / 1000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000
 fi
 
 if [[ "$gpu_max_freq" -gt "100000000" ]]; then
-gpu_max_clk_mhz=$((gpu_max_freq / 1000000)); gpuminclkmhz=$((gpu_min_freq / 1000000))
+gpu_max_clk_mhz=$((gpu_max_freq / 1000000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000000))
 fi
 
 # Get SOC manufacturer
