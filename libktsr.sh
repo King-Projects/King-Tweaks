@@ -291,11 +291,11 @@ if [[ "$cpu_min_freq" -gt "$cpu_min_freq2" ]]; then
 cpu_min_freq=$cpu_min_freq2
 fi
 
-# CPU max clock in MHz
-cpu_max_clk_mhz=$((cpu_min_freq / 1000))
-
 # CPU min clock in MHz
-cpu_min_clk_mhz=$((cpu_max_freq / 1000))
+cpu_min_clk_mhz=$((cpu_min_freq / 1000))
+
+# CPU max clock in MHz
+cpu_max_clk_mhz=$((cpu_max_freq / 1000))
 
 # Get max GPU frequency (gpu_max & gpu_max2 does almost the same thing)
 if [[ -e "$gpu/max_gpuclk" ]]; then
@@ -319,7 +319,7 @@ if [[ "$gpu_max_freq" -gt "100000" ]]; then
 gpu_max_clk_mhz=$((gpu_max_freq / 1000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000))
 fi
 
-if [[ "$gpumxfreq" -gt "100000000" ]]; then
+if [[ "$gpu_max_freq" -gt "100000000" ]]; then
 gpu_max_clk_mhz=$((gpu_max_freq / 1000000)); gpuminclkmhz=$((gpu_min_freq / 1000000))
 fi
 
@@ -676,7 +676,7 @@ kmsg3 "** Battery Charge Level: $gbpercentage%"
 kmsg3 "** Battery Capacity: $gbcapacity mAh"
 kmsg3 "** Battery Health: $bhealth"                                                                                     
 kmsg3 "** Battery Status: $bstatus"                                                                                     
-kmsg3 "** Battery Temperature: $gbtemp °C"                                                                               
+kmsg3 "** Battery Temperature: $btemp °C"                                                                               
 kmsg3 "** Device RAM: $total_ram MB"                                                                                     
 kmsg3 "** Device Available RAM: $avail_ram MB"
 kmsg3 "** Root: $root"
@@ -1332,7 +1332,7 @@ kmsg3 "** Battery Charge Level: $gbpercentage%"
 kmsg3 "** Battery Capacity: $gbcapacity mAh"
 kmsg3 "** Battery Health: $bhealth"                                                                                     
 kmsg3 "** Battery Status: $bstatus"                                                                                     
-kmsg3 "** Battery Temperature: $gbtemp °C"                                                                               
+kmsg3 "** Battery Temperature: $btemp °C"                                                                               
 kmsg3 "** Device RAM: $total_ram MB"                                                                                     
 kmsg3 "** Device Available RAM: $avail_ram MB"
 kmsg3 "** Root: $root"
@@ -2147,7 +2147,7 @@ kmsg3 "** Battery Charge Level: $gbpercentage%"
 kmsg3 "** Battery Capacity: $gbcapacity mAh"
 kmsg3 "** Battery Health: $bhealth"                                                                                     
 kmsg3 "** Battery Status: $bstatus"                                                                                     
-kmsg3 "** Battery Temperature: $gbtemp °C"                                                                               
+kmsg3 "** Battery Temperature: $btemp °C"                                                                               
 kmsg3 "** Device RAM: $total_ram MB"                                                                                     
 kmsg3 "** Device Available RAM: $avail_ram MB"
 kmsg3 "** Root: $root"
@@ -2985,7 +2985,7 @@ kmsg3 "** Battery Charge Level: $gbpercentage%"
 kmsg3 "** Battery Capacity: $gbcapacity mAh"
 kmsg3 "** Battery Health: $bhealth"                                                                                     
 kmsg3 "** Battery Status: $bstatus"                                                                                     
-kmsg3 "** Battery Temperature: $gbtemp °C"                                                                               
+kmsg3 "** Battery Temperature: $btemp °C"                                                                               
 kmsg3 "** Device RAM: $total_ram MB"                                                                                     
 kmsg3 "** Device Available RAM: $avail_ram MB"
 kmsg3 "** Root: $root"
@@ -3808,7 +3808,7 @@ kmsg3 "** Battery Charge Level: $gbpercentage%"
 kmsg3 "** Battery Capacity: $gbcapacity mAh"
 kmsg3 "** Battery Health: $bhealth"                                                                                     
 kmsg3 "** Battery Status: $bstatus"                                                                                     
-kmsg3 "** Battery Temperature: $gbtemp °C"                                                                               
+kmsg3 "** Battery Temperature: $btemp °C"                                                                               
 kmsg3 "** Device RAM: $total_ram MB"                                                                                     
 kmsg3 "** Device Available RAM: $avail_ram MB"
 kmsg3 "** Root: $root"
