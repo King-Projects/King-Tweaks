@@ -1,6 +1,6 @@
 #!/system/bin/sh
-# Written by Draco (tytydraco @ GitHub)
 # KTSR by Pedro (pedrozzz0 @ GitHub)
+# Credits: Tytydraco, Paget69, Matt Yang and Eight
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 MODPATH=/data/adb/modules/KTSR
@@ -205,61 +205,61 @@ SCHED_TASKS_THROUGHPUT="6"
 		fi
 
     if [[ -e "$gpui/gpu_governor" ]]; then
-    GPU_GOVERNOR=$(cat $gpui/gpu_governor)
+    gpu_gov=$(cat $gpui/gpu_governor)
     
     elif [[ -e "$gpu/governor" ]]; then
-    GPU_GOVERNOR=$(cat $gpu/governor)
+    gpu_gov=$(cat $gpu/governor)
     
     elif [[ -e "$gpu/devfreq/governor" ]]; then
-    GPU_GOVERNOR=$(cat $gpu/devfreq/governor)
+    gpu_gov=$(cat $gpu/devfreq/governor)
     fi
 
     if [[ -e "$gpu/num_pwrlevels" ]]; then
-    gpunpl=$(cat $gpu/num_pwrlevels)
+    gpu_num_pl=$(cat $gpu/num_pwrlevels)
     fi
     
-    gpumx=$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpunpl" '{print $var}')
+    gpu_max=$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpunpl" '{print $var}')
     
-    if [[ $gpumx -ne $gpumxfreq ]]; then
-    gpumx=$(cat $gpu/devfreq/available_frequencies | awk 'NF>1{print $NF}')
+    if [[ $gpu_max -ne $gpu_max_freq ]]; then
+    gpu_max=$(cat $gpu/devfreq/available_frequencies | awk 'NF>1{print $NF}')
     
-    elif [[ $gpumx -ne $gpumxfreq ]]; then
-    gpumx=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
+    elif [[ $gpu_max -ne $gpu_max_freq ]]; then
+    gpu_max=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
     
-    elif [[ $gpumx -ne $gpumxfreq ]]; then
-    gpumx=$gpumxfreq
+    elif [[ $gpu_max -ne $gpu_max_freq ]]; then
+    gpu_max=$gpu_max_freq
     fi
     
     if [[ -e "$gpu/available_frequencies" ]]; then
-    gpumx2=$(cat $gpu/available_frequencies | awk 'NF>1{print $NF}')
+    gpu_max2=$(cat $gpu/available_frequencies | awk 'NF>1{print $NF}')
     
-    elif [[ $gpumx2 -ne $gpumxfreq ]]; then
-    gpumx2=$(cat $gpu/available_frequencies | awk '{print $1}')
+    elif [[ $gpu_max2 -ne $gpu_max_freq ]]; then
+    gpu_max2=$(cat $gpu/available_frequencies | awk '{print $1}')
 
     elif [[ -e "$gpui/gpu_freq_table" ]]; then
-    gpumx2=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
+    gpu_max2=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
 
-    elif [[ $gpumx2 -ne $gpumxfreq ]]; then
-    gpumx2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
+    elif [[ $gpu_max2 -ne $gpu_max_freq ]]; then
+    gpu_max2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
     fi
     
     if [[ -e "$gpu/available_frequencies" ]]; then
-    gpumin=$(cat $gpu/available_frequencies | awk '{print $1}')
+    gpu_min=$(cat $gpu/available_frequencies | awk '{print $1}')
    
-    elif [[ $gpumin -ne $gpumnfreq ]]; then
-    gpumin=$(cat $gpu/available_frequencies | awk 'NF>1{print $NF}')
+    elif [[ $gpu_min -ne $gpu_min_freq ]]; then
+    gpu_min=$(cat $gpu/available_frequencies | awk 'NF>1{print $NF}')
 
     elif [[ -e "$gpui/gpu_freq_table" ]]; then
-    gpumin=$(cat $gpui/gpu_freq_table | awk '{print $1}')
+    gpu_min=$(cat $gpui/gpu_freq_table | awk '{print $1}')
 
-    elif [[ $gpumin -ne $gpumnfreq ]]; then
-    gpumin=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
+    elif [[ $gpu_min -ne $gpu_min_freq ]]; then
+    gpu_min=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
     fi
 
 # Get running CPU governor    
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-CPU_GOVERNOR=$(cat $cpu/scaling_governor)
+cpu_gov=$(cat $cpu/scaling_governor)
 done
 
 if [[ -z "$qcom" ]]; then
@@ -267,60 +267,60 @@ qcom=false
 fi
 
 # Get GPU minimum power level
-gpuminpl=$(cat $gpu/min_pwrlevel)
+gpu_min_pl=$(cat $gpu/min_pwrlevel)
 
 # Get GPU maximum power level
-gpumaxpl=$(cat $gpu/max_pwrlevel)
+gpu_max_pl=$(cat $gpu/max_pwrlevel)
 
 # Get max CPU clock
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-cpumxfreq=$(cat $cpu/scaling_max_freq)
-cpumxfreq2=$(cat $cpu/cpuinfo_max_freq)
+cpu_max_freq=$(cat $cpu/scaling_max_freq)
+cpu_max_freq2=$(cat $cpu/cpuinfo_max_freq)
 
-if [[ "$cpumxfreq2" -gt "$cpumxfreq" ]]; then
-cpumxfreq=$cpumxfreq2
+if [[ "$cpu_max_freq2" -gt "$cpu_max_freq" ]]; then
+cpu_max_freq=$cpu_max_freq2
 fi
 done
 
 # Get min CPU clock
-cpumnfreq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
-cpumnfreq2=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
+cpu_min_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
+cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
 
-if [[ "$cpumnfreq" -gt "$cpumnfreq2" ]]; then
-cpumnfreq=$cpumnfreq2
+if [[ "$cpu_min_freq" -gt "$cpu_min_freq2" ]]; then
+cpu_min_freq=$cpu_min_freq2
 fi
 
 # CPU max clock in MHz
-cpumaxclkmhz=$((cpumxfreq / 1000))
+cpu_max_clk_mhz=$((cpu_min_freq / 1000))
 
 # CPU min clock in MHz
-cpuminclkmhz=$((cpumnfreq / 1000))
+cpu_min_clk_mhz=$((cpu_max_freq / 1000))
 
-# Get max GPU frequency (gpumx does almost the same thing)
+# Get max GPU frequency (gpu_max & gpu_max2 does almost the same thing)
 if [[ -e "$gpu/max_gpuclk" ]]; then
-gpumxfreq=$(cat $gpu/max_gpuclk)
+gpu_max_freq=$(cat $gpu/max_gpuclk)
 
 elif [[ -e "$gpu/max_clock" ]]; then
-gpumxfreq=$(cat $gpu/max_clock)
+gpu_max_freq=$(cat $gpu/max_clock)
 fi
 
 # Get minimum GPU frequency (gpumin also does almost the same thing)
 if [[ -e "$gpu/min_clock_mhz" ]]; then
-gpumnfreq=$(cat $gpu/min_clock_mhz)
-gpumnfreq=$((gpumnfreq * 1000000))
+gpu_min_freq=$(cat $gpu/min_clock_mhz)
+gpu_min_freq=$((gpu_min_freq * 1000000))
 
 elif [[ -e "$gpu/min_clock" ]]; then
-gpumnfreq=$(cat $gpu/min_clock)
+gpu_min_freq=$(cat $gpu/min_clock)
 fi
 
 # Max & min GPU clock in MHz
-if [[ "$gpumxfreq" -gt "100000" ]]; then
-gpumaxclkmhz=$((gpumxfreq / 1000)); gpuminclkmhz=$((gpumnfreq / 1000))
+if [[ "$gpu_max_freq" -gt "100000" ]]; then
+gpu_max_clk_mhz=$((gpu_max_freq / 1000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000))
 fi
 
 if [[ "$gpumxfreq" -gt "100000000" ]]; then
-gpumaxclkmhz=$((gpumxfreq / 1000000)); gpuminclkmhz=$((gpumnfreq / 1000000))
+gpu_max_clk_mhz=$((gpu_max_freq / 1000000)); gpuminclkmhz=$((gpu_min_freq / 1000000))
 fi
 
 # Get SOC manufacturer
@@ -356,7 +356,7 @@ aarch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}')
 arv=$(getprop ro.build.version.release)
 
 # Get device codename
-dcdm=$(getprop ro.product.device)
+dvc_cdn=$(getprop ro.product.device)
 
 # Get root version
 root=$(su -v)
@@ -381,27 +381,27 @@ fi
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 if [[ "$(cat $cpu/scaling_available_governors | grep 'sched')" ]]; then
-cpusched=EAS
+cpu_sched=EAS
 
 elif [[ "$(cat $cpu/scaling_available_governors | grep 'interactive')" ]]; then
-cpusched=HMP
+cpu_sched=HMP
 
 else
-cpusched=Unknown
+cpu_sched=Unknown
 fi
 done
 
 # Get kernel name and version
-kname=$(uname -r)
+k_name=$(uname -r)
 
 # Get kernel build date
-kbdd=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
+k_bd=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 
 # Get device total amount of memory RAM
-totalram=$(busybox free -m | awk '/Mem:/{print $2}')
+total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
 
-# Get device total amount of available RAM
-availram=$(busybox free -m | grep Mem: | awk '{print $7}')
+# Get device amount of available RAM
+avail_ram=$(busybox free -m | grep Mem: | awk '{print $7}')
 
 # Get battery actual capacity
 if [[ -e "/sys/class/power_supply/battery/capacity" ]]; then
@@ -436,33 +436,33 @@ else
 btemp=$(dumpsys battery | awk '/temperature/{print $2}')
 fi
 
+# Ignore the battery temperature decimal
+btemp=$((btemp / 10))
+
 # Get GPU model
 if [[ $exynos == "true" ]]; then
-gpumdl=$(cat $gpu/gpuinfo | awk '{print $1}')
+gpu_mdl=$(cat $gpu/gpuinfo | awk '{print $1}')
 
 elif [[ $mtk == "true" ]]; then
-gpumdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $4,$5,$6}' | tr -d ,)
+gpu_mdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $4,$5,$6}' | tr -d ,)
 
 elif [[ $qcom == "true" ]]; then
-gpumdl=$(cat $gpui/gpu_model)
+gpu_mdl=$(cat $gpui/gpu_model)
 
 elif [[ $gpumdl == "" ]]; then
-gpumdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
+gpu_mdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 fi
 
 # Get drivers info
 if [[ $exynos == "true" ]]; then
-driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $4,$5,$6,$7,$8,$9,$10,$11,$12,$13}')
+drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $4,$5,$6,$7,$8,$9,$10,$11,$12,$13}')
 
 elif [[ $mtk == "true" ]]; then
-driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $7,$8,$9,$10,$11,$12,$13}')
+drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $7,$8,$9,$10,$11,$12,$13}')
 
 else
-driversinfo=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
+drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
 fi
-
-# Ignore the battery temperature decimal
-gbtemp=$((btemp / 10))
 
 # Get display FPS 
 df=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
@@ -545,41 +545,41 @@ gbcapacity=$((gbcapacity / 1000))
 fi
 
 # Get busybox version
-busybv=$(busybox | awk 'NR==1{print $2}')
+busy_v=$(busybox | awk 'NR==1{print $2}')
 
 # Get device ROM info
-dvrom=$(getprop ro.build.display.id | awk '{print $1,$3,$4,$5}')
+dvc_ROM=$(getprop ro.build.display.id | awk '{print $1,$3,$4,$5}')
 
 # Get SELinux status
 if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
-slstatus=Enforcing
+SEL_status=Enforcing
 else
-slstatus=Permissive
+SEL_status=Permissive
 fi
 
 # Check if CPU is qcom then define var
-[[ $qcom == "true" ]] && gputhrlvl=$(cat $gpu/thermal_pwrlevel)
+[[ $qcom == "true" ]] && gpu_thrtl_lvl=$(cat $gpu/thermal_pwrlevel)
 
 # Disable the GPU thermal throttling clock restriction
-if [[ "$gputhrlvl" -eq "1" || "$gputhrlvl" -gt "1" ]]; then
-gpucalc=$((gputhrlvl - gputhrlvl))
+if [[ "$gpu_thrtl_lvl" -eq "1" ]] || [[ "$gpu_thrtl_lvl" -gt "1" ]]; then
+gpu_calc=$((gpu_thrtl_lvl - gpu_thrtl_lvl))
 
 else
-gpucalc=0
+gpu_calc=0
 fi
 
 # Get GPU load
 if [[ -e "$gpui/gpu_busy_percentage" ]]; then
-gpuld=$(cat $gpui/gpu_busy_percentage)
+gpu_ld=$(cat $gpui/gpu_busy_percentage)
 
 elif [[ -e "$gpu/load" ]]; then
-gpuld=$(cat $gpu/load)
+gpu_ld=$(cat $gpu/load)
 
 elif [[ -e "$gpui/gpu_busy" ]]; then
-gpuld=$(cat $gpui/gpu_busy)
+gpu_ld=$(cat $gpui/gpu_busy)
 fi
 
-# Get the amount of cores
+# Get the amount of CPU cores
 CA=$(cat /sys/devices/system/cpu/possible | awk -F "-" '{print $2}')
 CA=$((CA + 1))
 if [[ "$CA" -eq 0 ]]; then
@@ -587,26 +587,26 @@ CA=1
 fi
 
 # Get device brand
-dvb=$(getprop ro.product.brand)
+dvc_bd=$(getprop ro.product.brand)
 
 # Check if we're running on OneUI
 if [[ $(getprop net.knoxscep.version) ]] || [[ $(getprop ril.product_code) ]] || [[ $(getprop ro.boot.em.model) ]] || [[ $(getprop net.knoxvpn.version) ]] || [[ $(getprop ro.securestorage.knox) ]] || [[ $(getprop gsm.version.ril-impl | grep Samsung) ]] || [[ $(getprop ro.build.PDA) ]]; then
-isosoneui=true
+is_os_oneui=true
 
 else
-isosoneui=false
+is_os_oneui=false
 fi
 
 dv=$(getprop ro.boot.bootdevice)
 
 # Get the amount of time that OS is running
-osruntime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
+os_runtime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
 # Get SQLite version
-sqlv=$(sqlite3 -version | awk '{print $1}')
+sql_v=$(sqlite3 -version | awk '{print $1}')
 
 # Get SQLite build date
-sqlbd=$(sqlite3 -version | awk '{print $2,$3}')
+sql_bd=$(sqlite3 -version | awk '{print $2,$3}')
 
 # Calculate CPU load (50 ms)
 read cpu user nice system idle iowait irq softirq steal guest< /proc/stat
@@ -647,24 +647,24 @@ kmsg "General Info"
 
 kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
-kmsg3 "** Kernel: $kname"                                                                                           
-kmsg3 "** Kernel Build Date: $kbdd"
+kmsg3 "** Kernel: $k_name"                                                                                           
+kmsg3 "** Kernel Build Date: $k_bd"
 kmsg3 "** SOC: $mf, $soc"                                                                                               
 kmsg3 "** SDK: $sdk"
 kmsg3 "** Android Version: $arv"    
-kmsg3 "** CPU Governor: $CPU_GOVERNOR"   
+kmsg3 "** CPU Governor: $cpu_gov"   
 kmsg3 "** CPU Load: $cpu_load %"
 kmsg3 "** Number of cores: $CA"
-kmsg3 "** CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
-kmsg3 "** CPU Scheduling Type: $cpusched"                                                                               
+kmsg3 "** CPU Freq: $cpu_min_clk_mhz-$cpu_max_clk_mhz MHz"
+kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
 kmsg3 "** AArch: $aarch"        
-kmsg3 "** GPU Load: $gpuld"
-kmsg3 "** GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
-kmsg3 "** GPU Model: $gpumdl"                                                                                         
-kmsg3 "** GPU Drivers Info: $driversinfo"                                                                                  
-kmsg3 "** GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg3 "** Device: $dvb, $dcdm"                                                                                                
-kmsg3 "** ROM: $dvrom"                 
+kmsg3 "** GPU Load: $gpu_ld"
+kmsg3 "** GPU Freq: $gpu_min_clk_mhz-$gpu_max_clk_mhz MHz"
+kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
+kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
+kmsg3 "** GPU Governor: $gpu_gov"                                                                                  
+kmsg3 "** Device: $dvc_bd, $dvc_cdn"                                                                                                
+kmsg3 "** ROM: $dvc_ROM"                 
 kmsg3 "** Screen Size / Resolution: $(wm size | awk '{print $3}')"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}') PPI"
 kmsg3 "** Display FPS: $df"                                                                                                    
@@ -677,14 +677,14 @@ kmsg3 "** Battery Capacity: $gbcapacity mAh"
 kmsg3 "** Battery Health: $bhealth"                                                                                     
 kmsg3 "** Battery Status: $bstatus"                                                                                     
 kmsg3 "** Battery Temperature: $gbtemp °C"                                                                               
-kmsg3 "** Device RAM: $totalram MB"                                                                                     
-kmsg3 "** Device Available RAM: $availram MB"
+kmsg3 "** Device RAM: $total_ram MB"                                                                                     
+kmsg3 "** Device Available RAM: $avail_ram MB"
 kmsg3 "** Root: $root"
-kmsg3 "** SQLite Version: $sqlv"
-kmsg3 "** SQLite Build Date: $sqlbd"
-kmsg3 "** System Uptime: $osruntime"
-kmsg3 "** SELinux: $slstatus"                                                                                   
-kmsg3 "** Busybox: $busybv"
+kmsg3 "** SQLite Version: $sql_v"
+kmsg3 "** SQLite Build Date: $sql_bd"
+kmsg3 "** System Uptime: $os_runtime"
+kmsg3 "** SELinux: $SEL_status"                                                                                   
+kmsg3 "** Busybox: $busy_v"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
@@ -768,9 +768,9 @@ write "$governor/up_rate_limit_us" "1000"
 write "$governor/down_rate_limit_us" "1000"
 write "$governor/pl" "1"
 write "$governor/iowait_boost_enable" "1"
-write "$governor/rate_limit_us" "5000"
+write "$governor/rate_limit_us" "1000"
 write "$governor/hispeed_load" "89"
-write "$governor/hispeed_freq" "$cpumxfreq"
+write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
 # Apply governor specific tunables for interactive
@@ -786,10 +786,10 @@ write "$governor/use_sched_load" "1"
 write "$governor/fastlane" "1"
 write "$governor/fast_ramp_down" "0"
 write "$governor/sampling_rate" "1000"
-write "$governor/sampling_rate_min" "5000"
-write "$governor/min_sample_time" "5000"
+write "$governor/sampling_rate_min" "1000"
+write "$governor/min_sample_time" "1000"
 write "$governor/go_hispeed_load" "89"
-write "$governor/hispeed_freq" "$cpumxfreq"
+write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
 for i in 0 1 2 3 4 5 6 7 8 9; do
@@ -843,29 +843,32 @@ kmsg3 ""
 		fi
 	done
 	
-[[ $qcom == "true" ]] && write "$gpu/throttling" "1"
-[[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_no_nap" "0"
-[[ $qcom == "true" ]] && write "$gpu/bus_split" "1"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" "$gpumxfreq"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "$((gpuminpl - 1))"
-[[ $qcom == "true" ]] && write "$gpu/force_bus_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_clk_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/idle_timer" "89"
-[[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $isosoneui == "false" ]] && [[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
-[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_load" "80"
-[[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
-[[ $qcom == "false" ]] && write "$gpui/boost" "0"
-[[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "0"
-[[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
-[[ $qcom == "false" ]] && write "$gpu/max_freq" "$gpumxfreq"
-[[ $qcom == "false" ]] && write "$gpu/min_freq" "100000000"
+if [[ $qcom == "true" ]]; then
+write "$gpu/throttling" "1"
+write "$gpu/thermal_pwrlevel" "$gpu_calc"
+write "$gpu/devfreq/adrenoboost" "0"
+write "$gpu/force_no_nap" "0"
+write "$gpu/bus_split" "1"
+write "$gpu/devfreq/max_freq" "$gpu_max_freq"
+write "$gpu/devfreq/min_freq" "100000000"
+write "$gpu/default_pwrlevel" "$((gpu_min_pl - 1))"
+write "$gpu/force_bus_on" "0"
+write "$gpu/force_clk_on" "0"
+write "$gpu/force_rail_on" "0"
+write "$gpu/idle_timer" "89"
+write "$gpu/pwrnap" "1"
+else
+[[ $is_os_oneui == "false" ]] && write "$gpu/dvfs" "1"
+write "$gpui/gpu_min_clock" "$gpu_min"
+write "$gpu/highspeed_clock" "$gpu_max_freq"
+write "$gpu/highspeed_load" "80"
+write "$gpu/power_policy" "coarse_demand"
+write "$gpui/boost" "0"
+write "$gpug/mali_touch_boost_level" "0"
+write "/proc/gpufreq/gpufreq_input_boost" "0"
+write "$gpu/max_freq" "$gpu_max_freq"
+write "$gpu/min_freq" "100000000"
+fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -875,7 +878,7 @@ fi
 # Enable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
-write "/proc/mali/dvfs_enable" "1"
+[[ $is_os_oneui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
@@ -978,8 +981,8 @@ write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
-[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
-[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+[[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
+[[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
 write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
 write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
@@ -1073,22 +1076,22 @@ fi
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
 
-# Set min and max clocks.
-for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+# Set min and max clocks
+for cpus in /sys/devices/system/cpu/cpufreq/policy*/
 do
-if [[ -e "${minclk}scaling_min_freq" ]]
+if [[ -e "${cpus}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "$cpumnfreq"
-write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "${cpus}scaling_min_freq" "$cpu_min_freq"
+write "${cpus}scaling_max_freq" "$cpu_max_freq"
 fi
 done
 
-for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+for cores in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-if [[ -e "${mnclk}scaling_min_freq" ]]
+if [[ -e "${cores}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "$cpumnfreq"
-write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "${cores}scaling_min_freq" "$cpu_min_freq"
+write "${cores}scaling_max_freq" "$cpu_max_freq"
 fi
 done
 
@@ -1105,12 +1108,12 @@ fi
 # always sync before dropping caches
 sync
 
-fr=$(((totalram * 2 / 100) * 1024 / 4))
-bg=$(((totalram * 3 / 100) * 1024 / 4))
-et=$(((totalram * 4 / 100) * 1024 / 4))
-mr=$(((totalram * 6 / 100) * 1024 / 4))
-cd=$(((totalram * 9 / 100) * 1024 / 4))
-ab=$(((totalram * 12 / 100) * 1024 / 4))
+fr=$(((total_ram * 2 / 100) * 1024 / 4))
+bg=$(((total_ram * 3 / 100) * 1024 / 4))
+et=$(((total_ram * 4 / 100) * 1024 / 4))
+mr=$(((total_ram * 6 / 100) * 1024 / 4))
+cd=$(((total_ram * 9 / 100) * 1024 / 4))
+ab=$(((total_ram * 12 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
@@ -1118,7 +1121,7 @@ if [[ "$efr" -le "18432" ]]; then
   efr=18432
 fi
 
-mfr=$((totalram * 9 / 5))
+mfr=$((total_ram * 9 / 5))
 
 if [[ "$mfr" -le "3072" ]]; then
 mfr=3072
@@ -1133,14 +1136,14 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 4 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
+if [[ $exynos == "true" ]] && [[ $total_ram -lt "4000" ]]; then
 write "${vm}swappiness" "145"
 else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
-[[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ $total_ram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "${vm}reap_mem_on_sigkill" "1"
 
 # Tune lmk_minfree
@@ -1300,24 +1303,24 @@ kmsg "General Info"
 
 kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
-kmsg3 "** Kernel: $kname"                                                                                           
-kmsg3 "** Kernel Build Date: $kbdd"
+kmsg3 "** Kernel: $k_name"                                                                                           
+kmsg3 "** Kernel Build Date: $k_bd"
 kmsg3 "** SOC: $mf, $soc"                                                                                               
 kmsg3 "** SDK: $sdk"
 kmsg3 "** Android Version: $arv"    
-kmsg3 "** CPU Governor: $CPU_GOVERNOR"   
+kmsg3 "** CPU Governor: $cpu_gov"   
 kmsg3 "** CPU Load: $cpu_load %"
 kmsg3 "** Number of cores: $CA"
-kmsg3 "** CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
-kmsg3 "** CPU Scheduling Type: $cpusched"                                                                               
+kmsg3 "** CPU Freq: $cpu_min_clk_mhz-$cpu_max_clk_mhz MHz"
+kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
 kmsg3 "** AArch: $aarch"        
-kmsg3 "** GPU Load: $gpuld"
-kmsg3 "** GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
-kmsg3 "** GPU Model: $gpumdl"                                                                                         
-kmsg3 "** GPU Drivers Info: $driversinfo"                                                                                  
-kmsg3 "** GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg3 "** Device: $dvb, $dcdm"                                                                                                
-kmsg3 "** ROM: $dvrom"                 
+kmsg3 "** GPU Load: $gpu_ld"
+kmsg3 "** GPU Freq: $gpu_min_clk_mhz-$gpu_max_clk_mhz MHz"
+kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
+kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
+kmsg3 "** GPU Governor: $gpu_gov"                                                                                  
+kmsg3 "** Device: $dvc_bd, $dvc_cdn"                                                                                                
+kmsg3 "** ROM: $dvc_ROM"                 
 kmsg3 "** Screen Size / Resolution: $(wm size | awk '{print $3}')"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}') PPI"
 kmsg3 "** Display FPS: $df"                                                                                                    
@@ -1330,14 +1333,14 @@ kmsg3 "** Battery Capacity: $gbcapacity mAh"
 kmsg3 "** Battery Health: $bhealth"                                                                                     
 kmsg3 "** Battery Status: $bstatus"                                                                                     
 kmsg3 "** Battery Temperature: $gbtemp °C"                                                                               
-kmsg3 "** Device RAM: $totalram MB"                                                                                     
-kmsg3 "** Device Available RAM: $availram MB"
+kmsg3 "** Device RAM: $total_ram MB"                                                                                     
+kmsg3 "** Device Available RAM: $avail_ram MB"
 kmsg3 "** Root: $root"
-kmsg3 "** SQLite Version: $sqlv"
-kmsg3 "** SQLite Build Date: $sqlbd"
-kmsg3 "** System Uptime: $osruntime"
-kmsg3 "** SELinux: $slstatus"                                                                                   
-kmsg3 "** Busybox: $busybv"
+kmsg3 "** SQLite Version: $sql_v"
+kmsg3 "** SQLite Build Date: $sql_bd"
+kmsg3 "** System Uptime: $os_runtime"
+kmsg3 "** SELinux: $SEL_status"                                                                                   
+kmsg3 "** Busybox: $busy_v"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
@@ -1467,7 +1470,7 @@ write "$governor/pl" "0"
 write "$governor/iowait_boost_enable" "0"
 write "$governor/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
 write "$governor/hispeed_load" "89"
-write "$governor/hispeed_freq" "$cpumxfreq"
+write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
 # Apply governor specific tunables for interactive
@@ -1484,10 +1487,10 @@ write "$governor/boostpulse" "0"
 write "$governor/fastlane" "1"
 write "$governor/fast_ramp_down" "0"
 write "$governor/sampling_rate" "42000"
-write "$governor/sampling_rate_min" "60000"
-write "$governor/min_sample_time" "60000"
+write "$governor/sampling_rate_min" "50000"
+write "$governor/min_sample_time" "50000"
 write "$governor/go_hispeed_load" "89"
-write "$governor/hispeed_freq" "$cpumxfreq"
+write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
 for i in 0 1 2 3 4 5 6 7 8 9; do
@@ -1552,29 +1555,32 @@ fi
 		fi
 	done
 
-[[ $qcom == "true" ]] && write "$gpu/throttling" "1"
-[[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_no_nap" "0"
-[[ $qcom == "true" ]] && write "$gpu/bus_split" "1"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" "$gpumxfreq"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
-[[ $qcom == "true" ]] && write "$gpu/force_bus_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_clk_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/idle_timer" "66"
-[[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $isosoneui == "false" ]] && [[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
-[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_load" "86"
-[[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
-[[ $qcom == "false" ]] && write "$gpui/boost" "0"
-[[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "0"
-[[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
-[[ $qcom == "false" ]] && write "$gpu/max_freq" "$gpumxfreq"
-[[ $qcom == "false" ]] && write "$gpu/min_freq" "100000000"
+if [[ $qcom == "true" ]]; then
+write "$gpu/throttling" "1"
+write "$gpu/thermal_pwrlevel" "$gpu_calc"
+write "$gpu/devfreq/adrenoboost" "0"
+write "$gpu/force_no_nap" "0"
+write "$gpu/bus_split" "1"
+write "$gpu/devfreq/max_freq" "$gpu_max_freq"
+write "$gpu/devfreq/min_freq" "100000000"
+write "$gpu/default_pwrlevel" "$gpu_min_pl"
+write "$gpu/force_bus_on" "0"
+write "$gpu/force_clk_on" "0"
+write "$gpu/force_rail_on" "0"
+write "$gpu/idle_timer" "66"
+write "$gpu/pwrnap" "1"
+else
+[[ $is_os_oneui == "false" ]] && write "$gpu/dvfs" "1"
+write "$gpui/gpu_min_clock" "$gpu_min"
+write "$gpu/highspeed_clock" "$gpu_max_freq"
+write "$gpu/highspeed_load" "86"
+write "$gpu/power_policy" "coarse_demand"
+write "$gpui/boost" "0"
+write "$gpug/mali_touch_boost_level" "0"
+write "/proc/gpufreq/gpufreq_input_boost" "0"
+write "$gpu/max_freq" "$gpu_max_freq"
+write "$gpu/min_freq" "100000000"
+fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -1584,7 +1590,7 @@ fi
 # Enable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
-write "/proc/mali/dvfs_enable" "1"
+[[ $is_os_oneui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
@@ -1706,8 +1712,8 @@ write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
-[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
-[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+[[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
+[[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
 write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
 write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
@@ -1805,21 +1811,21 @@ kmsg3 ""
 fi
 
 # Set min and max clocks
-for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+for cpus in /sys/devices/system/cpu/cpufreq/policy*/
 do
-if [[ -e "${minclk}scaling_min_freq" ]]
+if [[ -e "${cpus}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "$cpumnfreq"
-write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "${cpus}scaling_min_freq" "$cpu_min_freq"
+write "${cpus}scaling_max_freq" "$cpu_max_freq"
 fi
 done
 
-for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+for cores in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-if [[ -e "${mnclk}scaling_min_freq" ]]
+if [[ -e "${cores}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "$cpumnfreq"
-write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "${cores}scaling_min_freq" "$cpu_min_freq"
+write "${cores}scaling_max_freq" "$cpu_max_freq"
 fi
 done
 
@@ -1844,14 +1850,14 @@ fi
 # always sync before dropping caches
 sync
 
-fr=$(((totalram * 5 / 2 / 100) * 1024 / 4))
-bg=$(((totalram * 3 / 100) * 1024 / 4))
-et=$(((totalram * 5 / 100) * 1024 / 4))
-mr=$(((totalram * 7 / 100) * 1024 / 4))
-cd=$(((totalram * 9 / 100) * 1024 / 4))
-ab=$(((totalram * 11 / 100) * 1024 / 4))
+fr=$(((total_ram * 5 / 2 / 100) * 1024 / 4))
+bg=$(((total_ram * 3 / 100) * 1024 / 4))
+et=$(((total_ram * 5 / 100) * 1024 / 4))
+mr=$(((total_ram * 7 / 100) * 1024 / 4))
+cd=$(((total_ram * 9 / 100) * 1024 / 4))
+ab=$(((total_ram * 11 / 100) * 1024 / 4))
 
-mfr=$((totalram * 8 / 5))
+mfr=$((total_ram * 8 / 5))
 
 if [[ "$mfr" -le "3072" ]]; then
   mfr=3072
@@ -1874,14 +1880,14 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 4 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
+if [[ $exynos == "true" ]] && [[ $total_ram -lt "4000" ]]; then
 write "${vm}swappiness" "145"
 else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
-[[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ $total_ram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "${vm}reap_mem_on_sigkill" "1"
 
 # Tune lmk_minfree
@@ -2112,24 +2118,24 @@ kmsg "General Info"
 
 kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
-kmsg3 "** Kernel: $kname"                                                                                           
-kmsg3 "** Kernel Build Date: $kbdd"
+kmsg3 "** Kernel: $k_name"                                                                                           
+kmsg3 "** Kernel Build Date: $k_bd"
 kmsg3 "** SOC: $mf, $soc"                                                                                               
 kmsg3 "** SDK: $sdk"
 kmsg3 "** Android Version: $arv"    
-kmsg3 "** CPU Governor: $CPU_GOVERNOR"   
+kmsg3 "** CPU Governor: $cpu_gov"   
 kmsg3 "** CPU Load: $cpu_load %"
 kmsg3 "** Number of cores: $CA"
-kmsg3 "** CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
-kmsg3 "** CPU Scheduling Type: $cpusched"                                                                               
+kmsg3 "** CPU Freq: $cpu_min_clk_mhz-$cpu_max_clk_mhz MHz"
+kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
 kmsg3 "** AArch: $aarch"        
-kmsg3 "** GPU Load: $gpuld"
-kmsg3 "** GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
-kmsg3 "** GPU Model: $gpumdl"                                                                                         
-kmsg3 "** GPU Drivers Info: $driversinfo"                                                                                  
-kmsg3 "** GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg3 "** Device: $dvb, $dcdm"                                                                                                
-kmsg3 "** ROM: $dvrom"                 
+kmsg3 "** GPU Load: $gpu_ld"
+kmsg3 "** GPU Freq: $gpu_min_clk_mhz-$gpu_max_clk_mhz MHz"
+kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
+kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
+kmsg3 "** GPU Governor: $gpu_gov"                                                                                  
+kmsg3 "** Device: $dvc_bd, $dvc_cdn"                                                                                                
+kmsg3 "** ROM: $dvc_ROM"                 
 kmsg3 "** Screen Size / Resolution: $(wm size | awk '{print $3}')"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}') PPI"
 kmsg3 "** Display FPS: $df"                                                                                                    
@@ -2142,14 +2148,14 @@ kmsg3 "** Battery Capacity: $gbcapacity mAh"
 kmsg3 "** Battery Health: $bhealth"                                                                                     
 kmsg3 "** Battery Status: $bstatus"                                                                                     
 kmsg3 "** Battery Temperature: $gbtemp °C"                                                                               
-kmsg3 "** Device RAM: $totalram MB"                                                                                     
-kmsg3 "** Device Available RAM: $availram MB"
+kmsg3 "** Device RAM: $total_ram MB"                                                                                     
+kmsg3 "** Device Available RAM: $avail_ram MB"
 kmsg3 "** Root: $root"
-kmsg3 "** SQLite Version: $sqlv"
-kmsg3 "** SQLite Build Date: $sqlbd"
-kmsg3 "** System Uptime: $osruntime"
-kmsg3 "** SELinux: $slstatus"                                                                                   
-kmsg3 "** Busybox: $busybv"
+kmsg3 "** SQLite Version: $sql_v"
+kmsg3 "** SQLite Build Date: $sql_bd"
+kmsg3 "** System Uptime: $os_runtime"
+kmsg3 "** SELinux: $SEL_status"                                                                                   
+kmsg3 "** Busybox: $busy_v"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
@@ -2228,7 +2234,7 @@ kmsg3 ""
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
+write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpu_max_freq 1:$cpu_max_freq 2:$cpu_max_freq 3:$cpu_max_freq 4:$cpu_max_freq 5:$cpu_max_freq 6:$cpu_max_freq 7:$cpu_max_freq"
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
@@ -2239,9 +2245,9 @@ kmsg3 ""
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_gold" "$cpumxfreq"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpu_max_freq"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpu_max_freq"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_gold" "$cpu_max_freq"
 kmsg "Tweaked CPU input boost"
 kmsg3 ""
 fi
@@ -2299,7 +2305,7 @@ write "$governor/pl" "1"
 write "$governor/iowait_boost_enable" "1"
 write "$governor/rate_limit_us" "0"
 write "$governor/hispeed_load" "80"
-write "$governor/hispeed_freq" "$cpumxfreq"
+write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
 # Apply governor specific tunables for interactive
@@ -2318,7 +2324,7 @@ write "$governor/sampling_rate" "0"
 write "$governor/sampling_rate_min" "0"
 write "$governor/min_sample_time" "0"
 write "$governor/go_hispeed_load" "80"
-write "$governor/hispeed_freq" "$cpumxfreq"
+write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 	
 for i in 0 1 2 3 4 5 6 7 8 9; do
@@ -2383,30 +2389,33 @@ fi
 		fi
 	done
 
-[[ $qcom == "true" ]] && write "$gpu/throttling" "0"
-[[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "2"
-[[ $qcom == "true" ]] && write "$gpu/force_no_nap" "0"
-[[ $qcom == "true" ]] && write "$gpu/bus_split" "0"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" "$gpumxfreq"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "3"
-[[ $qcom == "true" ]] && write "$gpu/force_bus_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_clk_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/idle_timer" "156"
-[[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $isosoneui == "false" ]] && [[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
-[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_load" "76"
-[[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
-[[ $qcom == "false" ]] && write "$gpu/cl_boost_disable" "0"
-[[ $qcom == "false" ]] && write "$gpui/boost" "0"
-[[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "1"
-[[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "1"
-[[ $qcom == "false" ]] && write "$gpu/max_freq" "$gpumxfreq"
-[[ $qcom == "false" ]] && write "$gpu/min_freq" "100000000"
+if [[ $qcom == "true" ]]; then
+write "$gpu/throttling" "0"
+write "$gpu/thermal_pwrlevel" "$gpu_calc"
+write "$gpu/devfreq/adrenoboost" "2"
+write "$gpu/force_no_nap" "0"
+write "$gpu/bus_split" "0"
+write "$gpu/devfreq/max_freq" "$gpu_max_freq"
+write "$gpu/devfreq/min_freq" "100000000"
+write "$gpu/default_pwrlevel" "1"
+write "$gpu/force_bus_on" "0"
+write "$gpu/force_clk_on" "0"
+write "$gpu/force_rail_on" "0"
+write "$gpu/idle_timer" "1000"
+write "$gpu/pwrnap" "1"
+else
+[[ $is_os_oneui == "false" ]] && write "$gpu/dvfs" "0"
+write "$gpui/gpu_min_clock" "$gpu_min"
+write "$gpu/highspeed_clock" "$gpu_max_freq"
+write "$gpu/highspeed_load" "76"
+write "$gpu/power_policy" "coarse_demand"
+write "$gpu/cl_boost_disable" "0"
+write "$gpui/boost" "0"
+write "$gpug/mali_touch_boost_level" "1"
+write "/proc/gpufreq/gpufreq_input_boost" "1"
+write "$gpu/max_freq" "$gpu_max_freq"
+write "$gpu/min_freq" "100000000"
+fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -2416,7 +2425,7 @@ fi
 # Disable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
-write "/proc/mali/dvfs_enable" "0"
+[[ $is_os_oneui == "false" ]] && write "/proc/mali/dvfs_enable" "0"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
@@ -2535,8 +2544,8 @@ write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
-[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
-[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+[[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
+[[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
 write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
 write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
@@ -2633,22 +2642,22 @@ kmsg "Enabled fingerprint_boost"
 kmsg3 ""
 fi
 
-# Set max clocks in gaming / extreme profile.
-for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+# Set min and max clocks
+for cpus in /sys/devices/system/cpu/cpufreq/policy*/
 do
-if [[ -e "${minclk}scaling_min_freq" ]]
+if [[ -e "${cpus}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "$cpumxfreq"
-write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "${cpus}scaling_min_freq" "$cpu_max_freq"
+write "${cpus}scaling_max_freq" "$cpu_max_freq"
 fi
 done
 
-for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+for cores in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-if [[ -e "${mnclk}scaling_min_freq" ]]
+if [[ -e "${cores}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "$cpumxfreq"
-write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "${cores}scaling_min_freq" "$cpu_max_freq"
+write "${cores}scaling_max_freq" "$cpu_max_freq"
 fi
 done
 
@@ -2673,12 +2682,12 @@ fi
 # always sync before dropping caches
 sync
 
-fr=$(((totalram * 3 / 2 / 100) * 1024 / 4))
-bg=$(((totalram * 3 / 100) * 1024 / 4))
-et=$(((totalram * 5 / 100) * 1024 / 4))
-mr=$(((totalram * 7 / 100) * 1024 / 4))
-cd=$(((totalram * 11 / 100) * 1024 / 4))
-ab=$(((totalram * 14 / 100) * 1024 / 4))
+fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
+bg=$(((total_ram * 3 / 100) * 1024 / 4))
+et=$(((total_ram * 5 / 100) * 1024 / 4))
+mr=$(((total_ram * 7 / 100) * 1024 / 4))
+cd=$(((total_ram * 11 / 100) * 1024 / 4))
+ab=$(((total_ram * 14 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
@@ -2686,7 +2695,7 @@ if [[ "$efr" -le "18432" ]]; then
   efr=18432
 fi
 
-mfr=$((totalram * 6 / 5))
+mfr=$((total_ram * 6 / 5))
 
 if [[ "$mfr" -le "3072" ]]; then
 mfr=3072
@@ -2702,14 +2711,14 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 4 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
+if [[ $exynos == "true" ]] && [[ $total_ram -lt "4000" ]]; then
 write "${vm}swappiness" "145"
 else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "150"
-[[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ $total_ram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "${vm}reap_mem_on_sigkill" "1"
 
 # Tune lmk_minfree
@@ -2947,24 +2956,24 @@ kmsg "General Info"
 
 kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
-kmsg3 "** Kernel: $kname"                                                                                           
-kmsg3 "** Kernel Build Date: $kbdd"
+kmsg3 "** Kernel: $k_name"                                                                                           
+kmsg3 "** Kernel Build Date: $k_bd"
 kmsg3 "** SOC: $mf, $soc"                                                                                               
 kmsg3 "** SDK: $sdk"
 kmsg3 "** Android Version: $arv"    
-kmsg3 "** CPU Governor: $CPU_GOVERNOR"   
+kmsg3 "** CPU Governor: $cpu_gov"   
 kmsg3 "** CPU Load: $cpu_load %"
 kmsg3 "** Number of cores: $CA"
-kmsg3 "** CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
-kmsg3 "** CPU Scheduling Type: $cpusched"                                                                               
+kmsg3 "** CPU Freq: $cpu_min_clk_mhz-$cpu_max_clk_mhz MHz"
+kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
 kmsg3 "** AArch: $aarch"        
-kmsg3 "** GPU Load: $gpuld"
-kmsg3 "** GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
-kmsg3 "** GPU Model: $gpumdl"                                                                                         
-kmsg3 "** GPU Drivers Info: $driversinfo"                                                                                  
-kmsg3 "** GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg3 "** Device: $dvb, $dcdm"                                                                                                
-kmsg3 "** ROM: $dvrom"                 
+kmsg3 "** GPU Load: $gpu_ld"
+kmsg3 "** GPU Freq: $gpu_min_clk_mhz-$gpu_max_clk_mhz MHz"
+kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
+kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
+kmsg3 "** GPU Governor: $gpu_gov"                                                                                  
+kmsg3 "** Device: $dvc_bd, $dvc_cdn"                                                                                                
+kmsg3 "** ROM: $dvc_ROM"                 
 kmsg3 "** Screen Size / Resolution: $(wm size | awk '{print $3}')"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}') PPI"
 kmsg3 "** Display FPS: $df"                                                                                                    
@@ -2977,14 +2986,14 @@ kmsg3 "** Battery Capacity: $gbcapacity mAh"
 kmsg3 "** Battery Health: $bhealth"                                                                                     
 kmsg3 "** Battery Status: $bstatus"                                                                                     
 kmsg3 "** Battery Temperature: $gbtemp °C"                                                                               
-kmsg3 "** Device RAM: $totalram MB"                                                                                     
-kmsg3 "** Device Available RAM: $availram MB"
+kmsg3 "** Device RAM: $total_ram MB"                                                                                     
+kmsg3 "** Device Available RAM: $avail_ram MB"
 kmsg3 "** Root: $root"
-kmsg3 "** SQLite Version: $sqlv"
-kmsg3 "** SQLite Build Date: $sqlbd"
-kmsg3 "** System Uptime: $osruntime"
-kmsg3 "** SELinux: $slstatus"                                                                                   
-kmsg3 "** Busybox: $busybv"
+kmsg3 "** SQLite Version: $sql_v"
+kmsg3 "** SQLite Build Date: $sql_bd"
+kmsg3 "** System Uptime: $os_runtime"
+kmsg3 "** SELinux: $SEL_status"                                                                                   
+kmsg3 "** Busybox: $busy_v"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
@@ -3127,12 +3136,12 @@ done
 find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
 write "$governor/up_rate_limit_us" "50000"
-write "$governor/down_rate_limit_us" "27000"
+write "$governor/down_rate_limit_us" "24000"
 write "$governor/pl" "0"
 write "$governor/iowait_boost_enable" "0"
-write "$governor/rate_limit_us" "70000"
+write "$governor/rate_limit_us" "50000"
 write "$governor/hispeed_load" "99"
-write "$governor/hispeed_freq" "$cpumxfreq"
+write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
 # Apply governor specific tunables for interactive
@@ -3149,10 +3158,10 @@ write "$governor/boostpulse" "0"
 write "$governor/fastlane" "1"
 write "$governor/fast_ramp_down" "1"
 write "$governor/sampling_rate" "50000"
-write "$governor/sampling_rate_min" "70000"
-write "$governor/min_sample_time" "70000"
+write "$governor/sampling_rate_min" "50000"
+write "$governor/min_sample_time" "50000"
 write "$governor/go_hispeed_load" "99"
-write "$governor/hispeed_freq" "$cpumxfreq"
+write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
 for i in 0 1 2 3 4 5 6 7 8 9; do
@@ -3217,29 +3226,32 @@ fi
 		fi
 	done
 
-[[ $qcom == "true" ]] && write "$gpu/throttling" "1"
-[[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_no_nap" "0"
-[[ $qcom == "true" ]] && write "$gpu/bus_split" "1"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "100000000"
-[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "$gpuminpl"
-[[ $qcom == "true" ]] && write "$gpu/force_bus_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_clk_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/force_rail_on" "0"
-[[ $qcom == "true" ]] && write "$gpu/idle_timer" "36"
-[[ $qcom == "true" ]] && write "$gpu/pwrnap" "1"
-[[ $isosoneui == "false" ]] && [[ $qcom == "false" ]] && write "$gpu/dvfs" "1"
-[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumin"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_load" "95"
-[[ $qcom == "false" ]] && write "$gpu/power_policy" "coarse_demand"
-[[ $qcom == "false" ]] && write "$gpu/cl_boost_disable" "1"
-[[ $qcom == "false" ]] && write "$gpui/boost" "0"
-[[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "0"
-[[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "0"
-[[ $qcom == "false" ]] && write "$gpu/max_freq" "$gpumxfreq"
-[[ $qcom == "false" ]] && write "$gpu/min_freq" "100000000"
+if [[ $qcom == "true" ]]; then
+write "$gpu/throttling" "1"
+write "$gpu/thermal_pwrlevel" "$gpu_calc"
+write "$gpu/devfreq/adrenoboost" "0"
+write "$gpu/force_no_nap" "0"
+write "$gpu/bus_split" "1"
+write "$gpu/devfreq/min_freq" "100000000"
+write "$gpu/default_pwrlevel" "$gpu_min_pl"
+write "$gpu/force_bus_on" "0"
+write "$gpu/force_clk_on" "0"
+write "$gpu/force_rail_on" "0"
+write "$gpu/idle_timer" "39"
+write "$gpu/pwrnap" "1"
+else
+[[ $is_os_oneui == "false" ]] && write "$gpu/dvfs" "1"
+write "$gpui/gpu_min_clock" "$gpu_min"
+write "$gpu/highspeed_clock" "$gpu_max_freq"
+write "$gpu/highspeed_load" "95"
+write "$gpu/power_policy" "coarse_demand"
+write "$gpu/cl_boost_disable" "1"
+write "$gpui/boost" "0"
+write "$gpug/mali_touch_boost_level" "0"
+write "/proc/gpufreq/gpufreq_input_boost" "0"
+write "$gpu/max_freq" "$gpu_max_freq"
+write "$gpu/min_freq" "100000000"
+fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
 then
@@ -3249,7 +3261,7 @@ fi
 # Enable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
-write "/proc/mali/dvfs_enable" "1"
+[[ $is_os_oneui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
@@ -3370,8 +3382,8 @@ write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
-[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
-[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+[[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
+[[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
 write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
 write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "NO_WAKEUP_PREEMPTION"
@@ -3469,41 +3481,22 @@ kmsg "Disabled fingerprint boost"
 kmsg3 ""
 fi
 
-# Set min and max clocks.
-for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+# Set min and max clocks
+for cpus in /sys/devices/system/cpu/cpufreq/policy*/
 do
-if [[ -e "${minclk}scaling_min_freq" && $bpercentage > "20" ]]
+if [[ -e "${cpus}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "$cpumnfreq"
-write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "${cpus}scaling_min_freq" "$cpu_min_freq"
+write "${cpus}scaling_max_freq" "$cpu_max_freq"
 fi
 done
 
-for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+for cores in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-if [[ -e "${mnclk}scaling_min_freq" && $bpercentage > "20" ]]
+if [[ -e "${cores}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "$cpumnfreq"
-write "${mnclk}scaling_max_freq" "$cpumxfreq"
-fi
-done
-
-# Set min and max clocks.
-for minclk in /sys/devices/system/cpu/cpufreq/policy*/
-do
-if [[ -e "${minclk}scaling_min_freq" && $bpercentage < "20" ]]
-then
-write "${minclk}scaling_min_freq" "$cpumnfreq"
-write "${minclk}scaling_max_freq" "$cpumxfreq"
-fi
-done
-
-for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
-do
-if [[ -e "${mnclk}scaling_min_freq" && $bpercentage < "20" ]]
-then
-write "${mnclk}scaling_min_freq" "$cpumnfreq"
-write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "${cores}scaling_min_freq" "$cpu_min_freq"
+write "${cores}scaling_max_freq" "$cpu_max_freq"
 fi
 done
 
@@ -3528,12 +3521,12 @@ fi
 # always sync before dropping caches
 sync
 
-fr=$(((totalram * 2 / 100) * 1024 / 4))
-bg=$(((totalram * 3 / 100) * 1024 / 4))
-et=$(((totalram * 4 / 100) * 1024 / 4))
-mr=$(((totalram * 8 / 100) * 1024 / 4))
-cd=$(((totalram * 12 / 100) * 1024 / 4))
-ab=$(((totalram * 14 / 100) * 1024 / 4))
+fr=$(((total_ram * 2 / 100) * 1024 / 4))
+bg=$(((total_ram * 3 / 100) * 1024 / 4))
+et=$(((total_ram * 4 / 100) * 1024 / 4))
+mr=$(((total_ram * 8 / 100) * 1024 / 4))
+cd=$(((total_ram * 12 / 100) * 1024 / 4))
+ab=$(((total_ram * 14 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
@@ -3541,7 +3534,7 @@ if [[ "$efr" -le "18432" ]]; then
   efr=18432
 fi
 
-mfr=$((totalram * 7 / 5))
+mfr=$((total_ram * 7 / 5))
 
 if [[ "$mfr" -le "3072" ]]; then
 mfr=3072
@@ -3557,14 +3550,14 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 4 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
+if [[ $exynos == "true" ]] && [[ $total_ram -lt "4000" ]]; then
 write "${vm}swappiness" "145"
 else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "1"
 write "${vm}vfs_cache_pressure" "60"
-[[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ $total_ram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "${vm}reap_mem_on_sigkill" "1"
 
 # Tune lmk_minfree
@@ -3782,30 +3775,28 @@ kmsg "Elapsed time: $exectime seconds."
 gaming() {
 	init=$(date +%s)
      	
-kmsg "Info"
-
 kmsg "General Info"
 
 kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
-kmsg3 "** Kernel: $kname"                                                                                           
-kmsg3 "** Kernel Build Date: $kbdd"
+kmsg3 "** Kernel: $k_name"                                                                                           
+kmsg3 "** Kernel Build Date: $k_bd"
 kmsg3 "** SOC: $mf, $soc"                                                                                               
 kmsg3 "** SDK: $sdk"
 kmsg3 "** Android Version: $arv"    
-kmsg3 "** CPU Governor: $CPU_GOVERNOR"   
+kmsg3 "** CPU Governor: $cpu_gov"   
 kmsg3 "** CPU Load: $cpu_load %"
 kmsg3 "** Number of cores: $CA"
-kmsg3 "** CPU Freq: $cpuminclkmhz-$cpumaxclkmhz MHz"
-kmsg3 "** CPU Scheduling Type: $cpusched"                                                                               
+kmsg3 "** CPU Freq: $cpu_min_clk_mhz-$cpu_max_clk_mhz MHz"
+kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
 kmsg3 "** AArch: $aarch"        
-kmsg3 "** GPU Load: $gpuld"
-kmsg3 "** GPU Freq: $gpuminclkmhz-$gpumaxclkmhz MHz"
-kmsg3 "** GPU Model: $gpumdl"                                                                                         
-kmsg3 "** GPU Drivers Info: $driversinfo"                                                                                  
-kmsg3 "** GPU Governor: $GPU_GOVERNOR"                                                                                  
-kmsg3 "** Device: $dvb, $dcdm"                                                                                                
-kmsg3 "** ROM: $dvrom"                 
+kmsg3 "** GPU Load: $gpu_ld"
+kmsg3 "** GPU Freq: $gpu_min_clk_mhz-$gpu_max_clk_mhz MHz"
+kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
+kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
+kmsg3 "** GPU Governor: $gpu_gov"                                                                                  
+kmsg3 "** Device: $dvc_bd, $dvc_cdn"                                                                                                
+kmsg3 "** ROM: $dvc_ROM"                 
 kmsg3 "** Screen Size / Resolution: $(wm size | awk '{print $3}')"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}') PPI"
 kmsg3 "** Display FPS: $df"                                                                                                    
@@ -3818,14 +3809,14 @@ kmsg3 "** Battery Capacity: $gbcapacity mAh"
 kmsg3 "** Battery Health: $bhealth"                                                                                     
 kmsg3 "** Battery Status: $bstatus"                                                                                     
 kmsg3 "** Battery Temperature: $gbtemp °C"                                                                               
-kmsg3 "** Device RAM: $totalram MB"                                                                                     
-kmsg3 "** Device Available RAM: $availram MB"
+kmsg3 "** Device RAM: $total_ram MB"                                                                                     
+kmsg3 "** Device Available RAM: $avail_ram MB"
 kmsg3 "** Root: $root"
-kmsg3 "** SQLite Version: $sqlv"
-kmsg3 "** SQLite Build Date: $sqlbd"
-kmsg3 "** System Uptime: $osruntime"
-kmsg3 "** SELinux: $slstatus"                                                                                   
-kmsg3 "** Busybox: $busybv"
+kmsg3 "** SQLite Version: $sql_v"
+kmsg3 "** SQLite Build Date: $sql_bd"
+kmsg3 "** System Uptime: $os_runtime"
+kmsg3 "** SELinux: $SEL_status"                                                                                   
+kmsg3 "** Busybox: $busy_v"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
@@ -3904,7 +3895,7 @@ kmsg3 ""
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpumxfreq 1:$cpumxfreq 2:$cpumxfreq 3:$cpumxfreq 4:$cpumxfreq 5:$cpumxfreq 6:$cpumxfreq 7:$cpumxfreq"
+write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpu_max_freq 1:$cpu_max_freq 2:$cpu_max_freq 3:$cpu_max_freq 4:$cpu_max_freq 5:$cpu_max_freq 6:$cpu_max_freq 7:$cpu_max_freq"
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
@@ -3915,9 +3906,9 @@ kmsg3 ""
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpumxfreq"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpumxfreq"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_gold" "$cpumxfreq"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpu_max_freq"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpu_max_freq"
+write "/sys/module/cpu_input_boost/parameters/input_boost_freq_gold" "$cpu_max_freq"
 kmsg "Tweaked CPU input boost"
 kmsg3 ""
 fi
@@ -3976,7 +3967,7 @@ write "$governor/pl" "1"
 write "$governor/iowait_boost_enable" "1"
 write "$governor/rate_limit_us" "0"
 write "$governor/hispeed_load" "80"
-write "$governor/hispeed_freq" "cpumxfreq"
+write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
 # Apply governor specific tunables for interactive
@@ -3996,7 +3987,7 @@ write "$governor/sampling_rate" "0"
 write "$governor/sampling_rate_min" "0"
 write "$governor/min_sample_time" "0"
 write "$governor/go_hispeed_load" "80"
-write "$governor/hispeed_freq" "$cpumxfreq"
+write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
 for i in 0 1 2 3 4 5 6 7 8 9; do
@@ -4061,30 +4052,33 @@ fi
 		fi
 	done
 
-[[ $qcom == "true" ]] && write "$gpu/throttling" "0"
-[[ $qcom == "true" ]] && write "$gpu/thermal_pwrlevel" "$gpucalc"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/adrenoboost" "3"
-[[ $qcom == "true" ]] && write "$gpu/force_no_nap" "1"
-[[ $qcom == "true" ]] && write "$gpu/bus_split" "0"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/max_freq" "$gpumxfreq"
-[[ $qcom == "true" ]] && write "$gpu/devfreq/min_freq" "$gpumx"
-[[ $qcom == "true" ]] && write "$gpu/default_pwrlevel" "$gpumaxpl"
-[[ $qcom == "true" ]] && write "$gpu/force_bus_on" "1"
-[[ $qcom == "true" ]] && write "$gpu/force_clk_on" "1"
-[[ $qcom == "true" ]] && write "$gpu/force_rail_on" "1"
-[[ $qcom == "true" ]] && write "$gpu/idle_timer" "1009"
-[[ $qcom == "true" ]] && write "$gpu/pwrnap" "0"
-[[ $isosoneui == "false" ]] && [[ $qcom == "false" ]] && write "$gpu/dvfs" "0"
-[[ $qcom == "false" ]] && write "$gpui/gpu_min_clock" "$gpumx2"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_clock" "$gpumxfreq"
-[[ $qcom == "false" ]] && write "$gpu/highspeed_load" "76"
-[[ $qcom == "false" ]] && write "$gpu/power_policy" "always_on"
-[[ $qcom == "false" ]] && write "$gpu/cl_boost_disable" "0"
-[[ $qcom == "false" ]] && write "$gpui/boost" "1"
-[[ $qcom == "false" ]] && write "$gpug/mali_touch_boost_level" "1"
-[[ $qcom == "false" ]] && write "/proc/gpufreq/gpufreq_input_boost" "1"
-[[ $qcom == "false" ]] && write "$gpu/max_freq" "$gpumxfreq"
-[[ $qcom == "false" ]] && write "$gpu/min_freq" "$gpumx2"
+if [[ $qcom == "true" ]]; then
+write "$gpu/throttling" "0"
+write "$gpu/thermal_pwrlevel" "$gpu_calc"
+write "$gpu/devfreq/adrenoboost" "3"
+write "$gpu/force_no_nap" "1"
+write "$gpu/bus_split" "0"
+write "$gpu/devfreq/max_freq" "$gpu_max_freq"
+write "$gpu/devfreq/min_freq" "$gpu_max"
+write "$gpu/default_pwrlevel" "$gpu_max_pl"
+write "$gpu/force_bus_on" "1"
+write "$gpu/force_clk_on" "1"
+write "$gpu/force_rail_on" "1"
+write "$gpu/idle_timer" "1000000"
+write "$gpu/pwrnap" "0"
+else
+[[ $is_os_oneui == "false" ]] && write "$gpu/dvfs" "0"
+write "$gpui/gpu_min_clock" "$gpu_max2"
+write "$gpu/highspeed_clock" "$gpu_max_freq"
+write "$gpu/highspeed_load" "76"
+write "$gpu/power_policy" "always_on"
+write "$gpu/cl_boost_disable" "0"
+write "$gpui/boost" "1"
+write "$gpug/mali_touch_boost_level" "1"
+write "/proc/gpufreq/gpufreq_input_boost" "1"
+write "$gpu/max_freq" "$gpu_max_freq"
+write "$gpu/min_freq" "$gpu_max2"
+fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
 then
@@ -4094,7 +4088,7 @@ fi
 # Disable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
-write "/proc/mali/dvfs_enable" "0"
+[[ $is_os_oneui == "false" ]] && write "/proc/mali/dvfs_enable" "0"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
@@ -4213,8 +4207,8 @@ write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
 write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
-[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
-[[ $cpusched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+[[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
+[[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
 write "/sys/kernel/debug/sched_features" "FIND_BEST_TARGET"
 write "/sys/kernel/debug/sched_features" "NONTASK_CAPACITY"
 write "/sys/kernel/debug/sched_features" "GENTLE_FAIR_SLEEPERS"
@@ -4311,22 +4305,22 @@ kmsg "Enabled fingerprint boost"
 kmsg3 ""
 fi
 
-# Set max clocks in gaming / extreme profile.
-for minclk in /sys/devices/system/cpu/cpufreq/policy*/
+# Set min and max clocks
+for cpus in /sys/devices/system/cpu/cpufreq/policy*/
 do
-if [[ -e "${minclk}scaling_min_freq" ]]
+if [[ -e "${cpus}scaling_min_freq" ]]
 then
-write "${minclk}scaling_min_freq" "$cpumxfreq"
-write "${minclk}scaling_max_freq" "$cpumxfreq"
+write "${cpus}scaling_min_freq" "$cpu_max_freq"
+write "${cpus}scaling_max_freq" "$cpu_max_freq"
 fi
 done
 
-for mnclk in /sys/devices/system/cpu/cpu*/cpufreq/
+for cores in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-if [[ -e "${mnclk}scaling_min_freq" ]]
+if [[ -e "${cores}scaling_min_freq" ]]
 then
-write "${mnclk}scaling_min_freq" "$cpumxfreq"
-write "${mnclk}scaling_max_freq" "$cpumxfreq"
+write "${cores}scaling_min_freq" "$cpu_max_freq"
+write "${cores}scaling_max_freq" "$cpu_max_freq"
 fi
 done
 
@@ -4351,12 +4345,12 @@ fi
 # always sync before dropping caches
 sync
 
-fr=$(((totalram * 3 / 2 / 100) * 1024 / 4))
-bg=$(((totalram * 2 / 100) * 1024 / 4))
-et=$(((totalram * 4 / 100) * 1024 / 4))
-mr=$(((totalram * 7 / 100) * 1024 / 4))
-cd=$(((totalram * 11 / 100) * 1024 / 4))
-ab=$(((totalram * 13 / 100) * 1024 / 4))
+fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
+bg=$(((total_ram * 2 / 100) * 1024 / 4))
+et=$(((total_ram * 4 / 100) * 1024 / 4))
+mr=$(((total_ram * 7 / 100) * 1024 / 4))
+cd=$(((total_ram * 11 / 100) * 1024 / 4))
+ab=$(((total_ram * 13 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
@@ -4364,7 +4358,7 @@ if [[ "$efr" -le "18432" ]]; then
   efr=18432
 fi
 
-mfr=$((totalram * 6 / 5))
+mfr=$((total_ram * 6 / 5))
 
 if [[ "$mfr" -le "3072" ]]; then
 mfr=3072
@@ -4380,14 +4374,14 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 4 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] && [[ $totalram -lt "4000" ]]; then
+if [[ $exynos == "true" ]] && [[ $total_ram -lt "4000" ]]; then
 write "${vm}swappiness" "145"
 else
 write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
-[[ $totalram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ $total_ram -lt "5000" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 write "${vm}reap_mem_on_sigkill" "1"
 
 # Tune lmk_minfree
@@ -4433,7 +4427,7 @@ kmsg "Tweaked msm_thermal"
 kmsg3 ""
 fi
 
-# Disable power efficient workqueue.
+# Disable power efficient workqueue
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "N" 
@@ -4448,7 +4442,7 @@ kmsg "Disabled CPU scheduler multi-core power-saving"
 kmsg3 ""
 fi
 
-# Fix DT2W.
+# Fix DT2W
 if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
