@@ -238,7 +238,6 @@ SCHED_TASKS_THROUGHPUT="6"
 
     elif [[ -e "$gpui/gpu_freq_table" ]]; then
     gpumx2=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
-    fi
 
     elif [[ $gpumx2 -ne $gpumxfreq ]]; then
     gpumx2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
@@ -252,7 +251,6 @@ SCHED_TASKS_THROUGHPUT="6"
 
     elif [[ -e "$gpui/gpu_freq_table" ]]; then
     gpumin=$(cat $gpui/gpu_freq_table | awk '{print $1}')
-    fi
 
     elif [[ $gpumin -ne $gpumnfreq ]]; then
     gpumin=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
