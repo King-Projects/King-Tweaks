@@ -218,7 +218,7 @@ SCHED_TASKS_THROUGHPUT="6"
     gpu_num_pl=$(cat $gpu/num_pwrlevels)
     fi
     
-    gpu_max=$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpunpl" '{print $var}')
+    gpu_max=$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpu_num_pl" '{print $var}')
     
     if [[ $gpu_max -ne $gpu_max_freq ]]; then
     gpu_max=$(cat $gpu/devfreq/available_frequencies | awk 'NF>1{print $NF}')
@@ -262,14 +262,15 @@ do
 cpu_gov=$(cat $cpu/scaling_governor)
 done
 
+# Check if var qcom is null
 if [[ -z "$qcom" ]]; then
 qcom=false
 fi
 
-# Get GPU minimum power level
+# GPU minimum power level
 gpu_min_pl=$(cat $gpu/min_pwrlevel)
 
-# Get GPU maximum power level
+# GPU maximum power level
 gpu_max_pl=$(cat $gpu/max_pwrlevel)
 
 # Get max CPU clock
@@ -1044,8 +1045,12 @@ fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
 fi
-[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
-[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
+if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
+write "${kernel}sched_min_task_util_for_colocation" "0"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
+write "${kernel}sched_min_task_util_for_boost" "0"
+fi
 write "${kernel}sched_nr_migrate" "2"
 write "${kernel}sched_schedstats" "0"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
@@ -1767,8 +1772,12 @@ fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
 fi
-[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
-[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
+if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
+write "${kernel}sched_min_task_util_for_colocation" "0"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
+write "${kernel}sched_min_task_util_for_boost" "0"
+fi
 write "${kernel}sched_nr_migrate" "32"
 write "${kernel}sched_schedstats" "0"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
@@ -2599,8 +2608,12 @@ fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
 fi
-[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
-[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
+if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
+write "${kernel}sched_min_task_util_for_colocation" "0"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
+write "${kernel}sched_min_task_util_for_boost" "0"
+fi
 write "${kernel}sched_nr_migrate" "128"
 write "${kernel}sched_schedstats" "0"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
@@ -3438,8 +3451,12 @@ fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
 fi
-[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
-[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
+if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
+write "${kernel}sched_min_task_util_for_colocation" "0"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
+write "${kernel}sched_min_task_util_for_boost" "0"
+fi
 write "${kernel}sched_nr_migrate" "192"
 write "${kernel}sched_schedstats" "0"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
@@ -4262,8 +4279,12 @@ fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
 fi
-[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
-[[ "$ANDROID" == "true" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
+if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
+write "${kernel}sched_min_task_util_for_colocation" "0"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
+write "${kernel}sched_min_task_util_for_boost" "0"
+fi
 write "${kernel}sched_nr_migrate" "128"
 write "${kernel}sched_schedstats" "0"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then

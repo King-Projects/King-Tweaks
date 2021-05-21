@@ -9,6 +9,8 @@ MODPATH=/data/adb/modules/KTSR
 
 full_ram=$((total_ram * 20 / 100))
 
+toptdir=/dev/stune/top-app/tasks
+
 # Get screen state
 get_scrn_state(){
 	scrn_state=$(dumpsys power | grep state=O | cut -d "=" -f 2)
@@ -18,11 +20,11 @@ get_scrn_state(){
 	is_scrn_on=0
 	fi
 	}
-	
+
 (
 while true; do
 for gpid in $(pgrep netease) $(pgrep com2us) $(pgrep zuuks) $(pgrep junegaming) $(pgrep junesoftware) $(pgrep sozap) $(pgrep dotemu) $(pgrep playables) $(pgrep playrisedigital) $(pgrep rockstar) $(pgrep blackpanther) $(pgrep noodlecake) $(pgrep linegames) $(pgrep kleientertainment) $(pgrep agaming) $(pgrep generagames) $(pgrep astragon) $(pgrep chucklefish) $(pgrep t2kgames) $(pgrep t2ksports) $(pgrep turner) $(pgrep uplayonline) $(pgrep pubg) $(pgrep dreamotion) $(pgrep snailgames) $(pgrep dexintgames) $(pgrep haegin) $(pgrep panzerdog) $(pgrep igg) $(pgrep gtarcade) $(pgrep naxon) $(pgrep mame4droid) $(pgrep kakaogames) $(pgrep telltalegames) $(pgrep seleuco) $(pgrep innersloth) $(pgrep kiloo) $(pgrep imaginalis) $(pgrep refuelgames) $(pgrep scottgames) $(pgrep clickteam) $(pgrep minigames) $(pgrep headupgames) $(pgrep mobigames) $(pgrep callofduty) $(pgrep ubisoft) $(pgrep ppsspp) $(pgrep cf) $(pgrep feralinteractive) $(pgrep riotgames) $(pgrep playgendary) $(pgrep joymax) $(pgrep deadeffect) $(pgrep blackdesertm) $(pgrep firsttouchgames) $(pgrep standoff2) $(pgrep criticalops) $(pgrep wolvesinteractive) $(pgrep gamedevltd) $(pgrep mojang) $(pgrep miHoYo) $(pgrep miniclip) $(pgrep moontoon) $(pgrep gameloft) $(pgrep netmarble) $(pgrep yoozoogames) $(pgrep eyougame) $(pgrep asphalt) $(pgrep dhlove) $(pgrep fifamobile) $(pgrep wildrift) $(pgrep freefireth) $(pgrep activision) $(pgrep konami) $(pgrep gamevil) $(pgrep madfingergames) $(pgrep supercell) $(pgrep ngame) $(pgrep garena); do
- if [[ "$(grep $gpid)" /dev/stune/top-app/tasks ]]; then
+ if [[ "$(grep $gpid $toptdir)" ]]; then
   . "$MODPATH"/libs/libktsr.sh
   kmsg "User is playing, applied gaming profile"
   kmsg3 ""
@@ -31,7 +33,7 @@ for gpid in $(pgrep netease) $(pgrep com2us) $(pgrep zuuks) $(pgrep junegaming) 
   sleep 30
   done
 for spid in $(pgrep whatsapp) $(pgrep musically) $(pgrep adobe) $(pgrep telegram) $(pgrep netflix) $(pgrep wemesh) $(pgrep discord) $(pgrep youtube) $(pgrep facebook) $(pgrep chrome) $(pgrep browser) $(pgrep instagram) $(pgrep docs) $(pgrep twitch); do
-  elif [[ "$(grep $gpid)" /dev/stune/top-app/tasks ]]; then
+  elif [[ "$(grep $gpid $toptdir)" ]]; then
   . "$MODPATH"/libs/libktsr.sh
   kmsg "User is using social media, and etc apps. Applied balanced profile"
   kmsg3 ""
@@ -40,7 +42,7 @@ for spid in $(pgrep whatsapp) $(pgrep musically) $(pgrep adobe) $(pgrep telegram
   sleep 30
   done
 for bpid in $(pgrep geekbench) $(pgrep androbench2) $(pgrep kinemaster) $(pgrep futuremark) $(pgrep cputhrottlingtest) $(pgrep camera) $(pgrep cam) $(pgrep antutu); do
-  elif [[ "$(grep $bpid)" /dev/stune/top-app/tasks ]]; then
+  elif [[ "$(grep $bpid $toptdir)" /dev/stune/top-app/tasks ]]; then
   . "$MODPATH"/libs/libktsr.sh
   kmsg "User is running benchmark / heavy apps. Applied extreme profile"
   kmsg3 ""
