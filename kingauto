@@ -31,7 +31,6 @@ for gpid in $(pgrep netease) $(pgrep com2us) $(pgrep zuuks) $(pgrep junegaming) 
   renice -n -20 -p $gpid
   gaming
   sleep 30
-  done
 for spid in $(pgrep whatsapp) $(pgrep musically) $(pgrep adobe) $(pgrep telegram) $(pgrep netflix) $(pgrep wemesh) $(pgrep discord) $(pgrep youtube) $(pgrep facebook) $(pgrep chrome) $(pgrep browser) $(pgrep instagram) $(pgrep docs) $(pgrep twitch); do
   elif [[ "$(grep $gpid $toptdir)" ]]; then
   . "$MODPATH"/libs/libktsr.sh
@@ -40,7 +39,6 @@ for spid in $(pgrep whatsapp) $(pgrep musically) $(pgrep adobe) $(pgrep telegram
   renice -n -9 -p $spid
   balanced
   sleep 30
-  done
 for bpid in $(pgrep geekbench) $(pgrep androbench2) $(pgrep kinemaster) $(pgrep futuremark) $(pgrep cputhrottlingtest) $(pgrep camera) $(pgrep cam) $(pgrep antutu); do
   elif [[ "$(grep $bpid $toptdir)" /dev/stune/top-app/tasks ]]; then
   . "$MODPATH"/libs/libktsr.sh
@@ -49,7 +47,6 @@ for bpid in $(pgrep geekbench) $(pgrep androbench2) $(pgrep kinemaster) $(pgrep 
   renice -n -20 -p $bpid
   extreme
   sleep 30
-  done
   elif [[ "$(cat /sys/class/leds/lcd-backlight/brightness)" ]] || [[ "$(cat /sys/class/backlight/panel*-backlight/brightness)" == "0" ]] || [[ get_scrn_state && $is_scrn_on == "0" ]]; then
   . "$MODPATH"/libs/libktsr.sh
   kmsg "Device screen is turned off. Applied battery profile, extended script check time"
@@ -75,6 +72,9 @@ for bpid in $(pgrep geekbench) $(pgrep androbench2) $(pgrep kinemaster) $(pgrep 
   latency
   sleep 15
   fi
+  done
+  done
+  done
   done
 
 if [[ $avail_ram -lt $full_ram ]] || [[ $avail_ram -eq $full_ram ]]; then
