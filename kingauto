@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# KTSR by Pedro (pedrozzz0 @ GitHub)
+# KTSR by pedro (pedrozzz0 @ GitHub)
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 MODPATH=/data/adb/modules/KTSR
@@ -7,9 +7,12 @@ MODPATH=/data/adb/modules/KTSR
 # Load libraries
 . "$MODPATH"/libs/libktsr.sh
 
+# Calc 80% of the total amount of RAM
 full_ram=$((total_ram * 20 / 100))
 
-toptdir=/dev/stune/top-app/tasks
+toptsdir=/dev/stune/top-app/tasks
+
+toptcdir=/dev/cpuset/top-app/tasks
 
 # Get screen state
 get_scrn_state(){
@@ -23,31 +26,29 @@ get_scrn_state(){
 
 (
 while true; do
-for gpid in $(pgrep netease) $(pgrep com2us) $(pgrep zuuks) $(pgrep junegaming) $(pgrep junesoftware) $(pgrep sozap) $(pgrep dotemu) $(pgrep playables) $(pgrep playrisedigital) $(pgrep rockstar) $(pgrep blackpanther) $(pgrep noodlecake) $(pgrep linegames) $(pgrep kleientertainment) $(pgrep agaming) $(pgrep generagames) $(pgrep astragon) $(pgrep chucklefish) $(pgrep t2kgames) $(pgrep t2ksports) $(pgrep turner) $(pgrep uplayonline) $(pgrep pubg) $(pgrep dreamotion) $(pgrep snailgames) $(pgrep dexintgames) $(pgrep haegin) $(pgrep panzerdog) $(pgrep igg) $(pgrep gtarcade) $(pgrep naxon) $(pgrep mame4droid) $(pgrep kakaogames) $(pgrep telltalegames) $(pgrep seleuco) $(pgrep innersloth) $(pgrep kiloo) $(pgrep imaginalis) $(pgrep refuelgames) $(pgrep scottgames) $(pgrep clickteam) $(pgrep minigames) $(pgrep headupgames) $(pgrep mobigames) $(pgrep callofduty) $(pgrep ubisoft) $(pgrep ppsspp) $(pgrep cf) $(pgrep feralinteractive) $(pgrep riotgames) $(pgrep playgendary) $(pgrep joymax) $(pgrep deadeffect) $(pgrep blackdesertm) $(pgrep firsttouchgames) $(pgrep standoff2) $(pgrep criticalops) $(pgrep wolvesinteractive) $(pgrep gamedevltd) $(pgrep mojang) $(pgrep miHoYo) $(pgrep miniclip) $(pgrep moontoon) $(pgrep gameloft) $(pgrep netmarble) $(pgrep yoozoogames) $(pgrep eyougame) $(pgrep asphalt) $(pgrep dhlove) $(pgrep fifamobile) $(pgrep wildrift) $(pgrep freefireth) $(pgrep activision) $(pgrep konami) $(pgrep gamevil) $(pgrep madfingergames) $(pgrep supercell) $(pgrep ngame) $(pgrep garena); do
-  if [[ "$(grep $gpid $toptdir)" ]]; then
+# This script basically check if packages PIDs is found on stune / cpuset top-app
+for gpid in $(pgrep netease) $(pgrep com2us) $(pgrep zuuks) $(pgrep junegaming) $(pgrep junesoftware) $(pgrep sozap) $(pgrep dotemu) $(pgrep playables) $(pgrep playrisedigital) $(pgrep rockstar) $(pgrep blackpanther) $(pgrep noodlecake) $(pgrep linegames) $(pgrep kleientertainment) $(pgrep agaming) $(pgrep generagames) $(pgrep astragon) $(pgrep chucklefish) $(pgrep t2kgames) $(pgrep t2ksports) $(pgrep turner) $(pgrep uplayonline) $(pgrep pubg) $(pgrep dreamotion) $(pgrep snailgames) $(pgrep dexintgames) $(pgrep haegin) $(pgrep panzerdog) $(pgrep igg) $(pgrep gtarcade) $(pgrep naxon) $(pgrep mame4droid) $(pgrep kakaogames) $(pgrep telltalegames) $(pgrep seleuco) $(pgrep innersloth) $(pgrep kiloo) $(pgrep imaginalis) $(pgrep refuelgames) $(pgrep scottgames) $(pgrep clickteam) $(pgrep minigames) $(pgrep headupgames) $(pgrep mobigames) $(pgrep callofduty) $(pgrep ubisoft) $(pgrep ppsspp) $(pgrep cf) $(pgrep feralinteractive) $(pgrep riotgames) $(pgrep playgendary) $(pgrep joymax) $(pgrep deadeffect) $(pgrep blackdesertm) $(pgrep firsttouchgames) $(pgrep standoff2) $(pgrep criticalops) $(pgrep wolvesinteractive) $(pgrep gamedevltd) $(pgrep mojang) $(pgrep miHoYo) $(pgrep miniclip) $(pgrep moontoon) $(pgrep gameloft) $(pgrep netmarble) $(pgrep yoozoogames) $(pgrep eyougame) $(pgrep asphalt) $(pgrep dhlove) $(pgrep fifamobile) $(pgrep freefireth) $(pgrep activision) $(pgrep konami) $(pgrep gamevil) $(pgrep madfingergames) $(pgrep supercell) $(pgrep allstar) $(pgrep garena); do
+  if [[ "$(grep $gpid $toptsdir)" ]] && [[ "$(grep $gpid $toptcdir)" ]]; then
   . "$MODPATH"/libs/libktsr.sh
   kmsg3 ""
   kmsg "User is playing, applied gaming profile"
   kmsg3 ""
-  renice -n -20 -p $gpid
   gaming
   sleep 30
 for spid in $(pgrep whatsapp) $(pgrep musically) $(pgrep adobe) $(pgrep telegram) $(pgrep netflix) $(pgrep wemesh) $(pgrep discord) $(pgrep youtube) $(pgrep facebook) $(pgrep chrome) $(pgrep browser) $(pgrep instagram) $(pgrep docs) $(pgrep twitch); do
-  if [[ "$(grep $spid $toptdir)" ]]; then
+  if [[ "$(grep $spid $toptsdir)" ]] && [[ "$(grep $spid $toptcdir)" ]]; then
   . "$MODPATH"/libs/libktsr.sh
   kmsg3 ""
   kmsg "User is using social media, and etc apps. Applied balanced profile"
   kmsg3 ""
-  renice -n -9 -p $spid
   balanced
   sleep 30
 for bpid in $(pgrep geekbench) $(pgrep androbench2) $(pgrep kinemaster) $(pgrep futuremark) $(pgrep cputhrottlingtest) $(pgrep camera) $(pgrep cam) $(pgrep antutu); do
-  if [[ "$(grep $bpid $toptdir)" ]]; then
+  if [[ "$(grep $bpid $toptsdir)" ]] && [[ "$(grep $bpid $toptcdir)" ]]; then
   . "$MODPATH"/libs/libktsr.sh
   kmsg3 ""
   kmsg "User is running benchmark / heavy apps. Applied extreme profile"
   kmsg3 ""
-  renice -n -20 -p $bpid
   extreme
   sleep 30
   fi
@@ -56,7 +57,7 @@ for bpid in $(pgrep geekbench) $(pgrep androbench2) $(pgrep kinemaster) $(pgrep 
   done
   fi
   done
-  if [[ "$(cat /sys/class/leds/lcd-backlight/brightness)" ]] || [[ "$(cat /sys/class/backlight/panel*-backlight/brightness)" == "0" ]] || [[ get_scrn_state && $is_scrn_on == "0" ]]; then
+  if [[ "$(cat /sys/class/leds/lcd-backlight/brightness)" ]] || [[ "$(cat /sys/class/backlight/panel*-backlight/brightness)" == "0" ]] || [[ get_scrn_state ]] && [[ $is_scrn_on == "0" ]]; then
   . "$MODPATH"/libs/libktsr.sh
   kmsg3 "" 
   kmsg "Device screen is turned off. Applied battery profile, extended script check time"
@@ -90,6 +91,10 @@ for bpid in $(pgrep geekbench) $(pgrep androbench2) $(pgrep kinemaster) $(pgrep 
 if [[ $avail_ram -lt $full_ram ]] || [[ $avail_ram -eq $full_ram ]]; then
 kmsg "Device ram is almost fully in use, dropping caches to free some RAM"
 kmsg3 ""
+sync
 write "$vm/drop_caches" "3"
+. "$MODPATH"/libs/libktsr.sh
+kmsg "Device ram after boosting: $avail_ram"
+kmsg3 ""
 fi
 )&

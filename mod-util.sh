@@ -164,7 +164,7 @@ N='\e[0m'			# How to use (example): echo "${G}example${N}"
 loadBar=' '			# Load UI
 # Remove color codes if -nc or in ADB Shell
 [[ -n "$1" ]] && [[ "$1" = "-nc" ]] && shift && NC=true
-[[ "$NC" || -n "$ANDROID_SOCKET_adbd" ]] && {
+[[ "$NC" ]] || [[ -n "$ANDROID_SOCKET_adbd" ]] && {
   G=''; R=''; Y=''; B=''; V=''; Bl=''; C=''; W=''; N=''; BGBL=''; loadBar='=';
 }
 
