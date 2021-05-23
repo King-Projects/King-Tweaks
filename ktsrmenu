@@ -238,59 +238,27 @@ read -r option
 						cmd package bg-dexopt-job
 						;;
 						
-						"8")
-						if [[ $(find /system -name "sqlite3" -type f) ]]; then
-						echo "${B}Optimizing databases...${N}"
-						for i in $(find /d* -iname "*.db"); do
-                        sqlite3 "$i" 'VACUUM;' 2>/dev/null
-                        resVac=$?
-                        if [[ $resVac == 0 ]]; then
-                        resVac="SUCCESS"
-                        else
-                        resVac="FAILED(ERRCODE)-$resVac"
-                        fi
-                        sqlite3 "$i" 'REINDEX;' 2>/dev/null
-                        resIndex=$?
-                        if [[ $resIndex == 0 ]]; then
-                        resIndex="SUCCESS"
-                        else
-                        resIndex="FAILED(ERRCODE)-$resIndex"
-                        fi
-                        sqlite3 "$i" 'ANALYZE;' 2>/dev/null
-                        resAnlz=$?
-                        if [[ $resAnlz == 0 ]]; then
-                        resAnlz="SUCCESS"
-                        else
-                        resAnlz="FAILED(ERRCODE)-$resAnlz"
-                        fi
-                        echo -e "Database $i: VACUUM=$resVac REINDEX=$resIndex ANALYZE=$resAnlz" >> /sdcard/KTSR/dbopt.log
-                        done
-						else
-						echo "${R}[!] SQLite not found, aborting...${N}"
-                        fi
-                        ;;
-						
-                        "9")
+                        "8")
                         settings put global low_power 1
                         echo "${G}Done!${N}"
                         ;;
                         
-                        "10")
+                        "9")
                         settings put global low_power 0
                         echo "${G}Done!${N}"
                         ;;
                         
-                        "11")
+                        "10")
                         cmd netpolicy set restrict-background true
                         echo "${G}Done!${N}"
                         ;;
                         
-                        "12")
+                        "11")
                         cmd netpolicy set restrict-background false
                         echo "${G}Done!${N}"
                         ;;
                         
-                        "13")
+                        "12")
                         echo "${B}Applying settings...${N}"
                         settings put secure location_mode "0"
                         settings put secure location_providers_allowed ""
@@ -298,35 +266,35 @@ read -r option
                         echo "${G}Done!${N}"
                         ;;
                         
-                        "14")
+                        "13")
                         settings put secure location_providers_allowed "gps,network"
                         echo "1" > "/sys/module/service_locator/parameters/enable"
                         echo "${G}Done!${N}"
                         ;;
                         
-                        "15")
+                        "14")
                         echo "${B}Cleaning debug logs and system trash...${N}"
                         cleantrash
                         echo "${G}Done!${N}"
                         ;;
                         
-						"16")
+						"15")
 						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
 						;;
 						
-						"17")
+						"16")
 						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released!"
 						echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
 						;;
 						
-						"18")
+						"17")
 						echo "${B}Killing all background apps...${N}"
 						am kill-all
 						sleep 2
 						echo "${G}Done!${N}"
 						;;
                         
-						"20")
+						"18")
 						echo "${B}Disabling thermal...${N}"
 						stop thermald 2>/dev/null
 						stop thermalservice 2>/dev/null
@@ -335,7 +303,7 @@ read -r option
 						echo "${G}Done!${N}"
 						;;
 
-						"21")
+						"19")
 						echo "${B}Enabling thermal...${N}"
 						start thermald 2>/dev/null
 						start thermalservice 2>/dev/null
