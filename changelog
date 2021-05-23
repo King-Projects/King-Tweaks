@@ -1,38 +1,24 @@
 
-• KTSR v2.0.2 beta 2 Codename: 2+2=5
+• KTSR v2.0.2 beta 1 (bl4ck0ut)
 
-~ Improve tweaks
+~ Improve tweaks.
 
-~ Greatly improve automatic profile apps detection
+~ Improve CLI (su -c ktsrmenu).
 
-~ Reduce boot time execution
+~ Improve logging & automatic profile database.
 
-~ Improve CLI and use mod-util (by veez21)
+~ Improve installer.
 
-~ Improve installer
+~ Misc other improvements & fixes.
 
-~ Other misc improvements and changes.
+• KTSR v2.0.1 beta 9 (dragon)
 
-• KTSR v2.0.2 beta 1 Codename: bl4ck0ut
+~ Fix installer not working properly.
 
-~ Improve tweaks
+~ Add cleantrash.
 
-~ Improve CLI (su -c ktsrmenu)
+~ Improve the terminal menu (su -c ktsrmenu).
 
-~ Improve logging & automatic profile database
+~ Fix info not being displayed properly for some SOCS.
 
-~ Improve installer
-
-~ Other misc improvements and fixes.
-
-• KTSR v2.0.1 beta 9 Codename: dr4g0n
-
-~ Fix installer not working properly
-
-~ Add cleantrash (remove useless files and logs)
-
-~ Improve the terminal menu (su -c ktsrmenu)
-
-~ Fix info not being displayed properly for some SOCS
-
-~ And other misc fixes and improvements.
+~ And other minor fixes and improvements.
