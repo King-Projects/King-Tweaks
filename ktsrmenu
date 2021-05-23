@@ -116,6 +116,8 @@ sleep 1.5
 echo "[*] Thermal: ${B}$thermal${N}"
 echo ""
 sleep 1.3
+test_connection
+echo ""
 echo "[*] Available profiles: "
 echo ""
 sleep 1.2
