@@ -317,7 +317,7 @@ read -r option
 						;;
 						
 						*)
-						echo "${R}[!] Unexpected response, aborting...${N}"
+						abort "${R}[!] Unexpected response, aborting...${N}"
 						;;
 						esac
 						}
@@ -362,8 +362,7 @@ read -r option
 						start thermal-engine 2>/dev/null
 						echo "${G}Done!${N}"
 						else
-                        echo "${R}[!] No valid thermal controllers found / Unknown thermal state, aborting...${N}"
-                        exit 1
+                        abort "${R}[!] No valid thermal controllers found / Unknown thermal state, aborting...${N}"
 						fi
 						;;
 						
