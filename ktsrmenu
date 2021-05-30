@@ -177,12 +177,16 @@ read -r option
 				echo "${B}Applying profile...${N}"
 				setprop persist.kingtweaks.mode "1" 2>/dev/null
                 echo "${G}Done!${N}"
-				;;
+				sleep 2 
+                menu
+                ;;
 				
 						"2")
 						echo "${B}Applying profile...${N}"
 						setprop persist.kingtweaks.mode "2" 2>/dev/null
 						echo "${G}Done!"
+                        sleep 2 
+                        menu
                         ;;
 						
 						"3")
@@ -195,81 +199,106 @@ read -r option
 						echo "${B}Applying profile...${N}"
 						setprop persist.kingtweaks.mode "4" 2>/dev/null
 						echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
                         ;;
 						
 						"5")
 						echo "${B}Applying profile...${N}"
 						setprop persist.kingtweaks.mode "5" 2>/dev/null
 						echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
                         ;;
 						
 						"6")
 						echo "${B}Applying profile...${N}"
 						setprop persist.kingtweaks.mode "6" 2>/dev/null
 						echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
                         ;;
 						
 						"7")
 						echo "${B}Optimizing packages...${N}"
 						cmd package bg-dexopt-job
-						;;
+						sleep 5
+                        menu
+                        ;;
 						
                         "8")
                         settings put global low_power_sticky 1
                         settings put global low_power 1
                         echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
                         ;;
                         
                         "9")
                         settings put global low_power_sticky 0
                         settings put global low_power 0
                         echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
                         ;;
                         
                         "10")
                         cmd netpolicy set restrict-background true
                         echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
                         ;;
                         
                         "11")
                         cmd netpolicy set restrict-background false
                         echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
                         ;;
                         
                         "12")
                         echo "${B}Applying settings...${N}"
                         settings put secure location_mode "0"
-                        settings put secure location_providers_allowed ""
-                        echo "0" > "/sys/module/service_locator/parameters/enable"
+                        settings put global assisted_gps_enabled "0"
                         echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
                         ;;
                         
                         "13")
-                        settings put secure location_providers_allowed "gps,network"
-                        echo "1" > "/sys/module/service_locator/parameters/enable"
+                        settings put global assisted_gps_enabled "1"
                         echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
                         ;;
                         
                         "14")
                         echo "${B}Cleaning debug logs and system trash...${N}"
-                        cleantrash
+                        cleantrash 2>/dev/null
                         echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
                         ;;
                         
 						"15")
 						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
-						;;
+						menu
+                        ;;
 						
 						"16")
 						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released!"
 						echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
-						;;
+						sleep 9
+                        menu
+                        ;;
 						
 						"17")
 						echo "${B}Killing all background apps...${N}"
 						am kill-all
 						sleep 2
 						echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
 						;;
                         
 						"18")
@@ -279,6 +308,8 @@ read -r option
 						stop mi_thermald 2>/dev/null
 						stop thermal-engine 2>/dev/null
 						echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
 						;;
 
 						"19")
@@ -288,6 +319,8 @@ read -r option
 						start mi_thermald 2>/dev/null
 						start thermal-engine 2>/dev/null
 						echo "${G}Done!${N}"
+                        sleep 2 
+                        menu
 						;;
 						
 						"0")
