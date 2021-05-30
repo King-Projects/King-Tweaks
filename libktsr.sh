@@ -267,10 +267,10 @@ if [[ -z "$qcom" ]]; then
 qcom=false
 fi
 
-# Fetch GPU minimum power level
+# Fetch minimum GPU power level
 gpu_min_pl=$(cat $gpu/min_pwrlevel)
 
-# Fetch GPU maximum power level
+# Fetch maximum GPU power level
 gpu_max_pl=$(cat $gpu/max_pwrlevel)
 
 # Fetch maximum CPU clock
@@ -284,7 +284,7 @@ cpu_max_freq=$cpu_max_freq2
 fi
 done
 
-# Fetch minmum CPU clock
+# Fetch minimum CPU clock
 cpu_min_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
 cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
 
@@ -292,13 +292,13 @@ if [[ "$cpu_min_freq" -gt "$cpu_min_freq2" ]]; then
 cpu_min_freq=$cpu_min_freq2
 fi
 
-# CPU min clock in MHz
+# Fetch CPU min clock in MHz
 cpu_min_clk_mhz=$((cpu_min_freq / 1000))
 
-# CPU max clock in MHz
+# Fetch CPU max clock in MHz
 cpu_max_clk_mhz=$((cpu_max_freq / 1000))
 
-# Get max GPU frequency (gpu_max & gpu_max2 does almost the same thing)
+# Fetch maximum GPU frequency (gpu_max & gpu_max2 does almost the same thing)
 if [[ -e "$gpu/max_gpuclk" ]]; then
 gpu_max_freq=$(cat $gpu/max_gpuclk)
 
@@ -306,7 +306,7 @@ elif [[ -e "$gpu/max_clock" ]]; then
 gpu_max_freq=$(cat $gpu/max_clock)
 fi
 
-# Get minimum GPU frequency (gpumin also does almost the same thing)
+# Fetch minimum GPU frequency (gpumin also does almost the same thing)
 if [[ -e "$gpu/min_clock_mhz" ]]; then
 gpu_min_freq=$(cat $gpu/min_clock_mhz)
 gpu_min_freq=$((gpu_min_freq * 1000000))
@@ -315,7 +315,7 @@ elif [[ -e "$gpu/min_clock" ]]; then
 gpu_min_freq=$(cat $gpu/min_clock)
 fi
 
-# Max & min GPU clock in MHz
+# Fetch maximum & minimum GPU clock in MHz
 if [[ "$gpu_max_freq" -gt "100000" ]]; then
 gpu_max_clk_mhz=$((gpu_max_freq / 1000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000))
 fi
@@ -324,10 +324,10 @@ if [[ "$gpu_max_freq" -gt "100000000" ]]; then
 gpu_max_clk_mhz=$((gpu_max_freq / 1000000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000000))
 fi
 
-# Get SOC manufacturer
+# Fetch the SOC manufacturer
 mf=$(getprop ro.boot.hardware)
 
-# Get device SOC
+# Fetch the device SOC
 soc=$(getprop ro.board.platform)
 
 if [[ $soc == "" ]]; then
@@ -389,19 +389,19 @@ cpu_sched=Unknown
 fi
 done
 
-# Get kernel name and version
+# Fetch kernel name and version
 k_name=$(uname -r)
 
-# Get kernel build date
+# Fetch kernel build date
 k_bd=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 
-# Get device total amount of memory RAM
+# Fetch device total amount of memory RAM
 total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
 
-# Get device amount of available RAM
+# Fetch device amount of available RAM
 avail_ram=$(busybox free -m | grep Mem: | awk '{print $7}')
 
-# Get battery actual capacity
+# Fetch battery actual capacity
 if [[ -e "/sys/class/power_supply/battery/capacity" ]]; then
 gbpercentage=$(cat /sys/class/power_supply/battery/capacity)
 
@@ -409,19 +409,19 @@ else
 gbpercentage=$(dumpsys battery | awk '/level/{print $2}')
 fi
 
-# Get KTSR version
+# Fetch KTSR version
 gbversion=$(cat $MODPATH/module.prop | grep version= | sed "s/version=//")
 
-# Get KTSR build type
+# Fetch KTSR build type
 gbtype=$(cat $MODPATH/ktsr.prop | grep buildtype= | sed "s/buildtype=//")
 
-# Get KTSR build date
+# Fetch KTSR build date
 gbdate=$(cat $MODPATH/ktsr.prop | grep builddate= | sed "s/builddate=//")
 
-# Get KTSR build codename
+# Fetch KTSR build codename
 gbcodename=$(cat $MODPATH/ktsr.prop | grep codename= | sed "s/codename=//")
 
-# Get battery temperature
+# Fetch battery temperature
 if [[ -e "/sys/class/power_supply/battery/temp" ]]
 then
 btemp=$(cat /sys/class/power_supply/battery/temp)
@@ -437,7 +437,7 @@ fi
 # Ignore the battery temperature decimal
 btemp=$((btemp / 10))
 
-# Get GPU model
+# Fetch GPU model
 if [[ $exynos == "true" ]]; then
 gpu_mdl=$(cat $gpu/gpuinfo | awk '{print $1}')
 
@@ -451,7 +451,7 @@ elif [[ $gpumdl == "" ]]; then
 gpu_mdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 fi
 
-# Get drivers info
+# Fetch drivers info
 if [[ $exynos == "true" ]]; then
 drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $4,$5,$6,$7,$8,$9,$10,$11,$12,$13}')
 
@@ -462,7 +462,7 @@ else
 drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
 fi
 
-# Get display FPS 
+# Fetch display FPS 
 df=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
 
 if [[ -z "$df" ]]; then
@@ -472,7 +472,7 @@ elif [[ -z "$df" ]]; then
 df=$(dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .)
 fi
 
-# Get battery health
+# Fetch battery health
 if [[ -e "/sys/class/power_supply/battery/health" ]]; then
 gbhealth=$(cat /sys/class/power_supply/battery/health)
 
@@ -505,7 +505,7 @@ else
 bhealth=$gbhealth
 fi
 
-# Get battery status
+# Fetch battery status
 if [[ -e "/sys/class/power_supply/battery/status" ]]; then
 gbstatus=$(cat /sys/class/power_supply/battery/status)
 
@@ -542,13 +542,13 @@ if [[ "$gbcapacity" -gt "1000000" ]]; then
 gbcapacity=$((gbcapacity / 1000))
 fi
 
-# Get busybox version
+# Fetch busybox version
 busy_v=$(busybox | awk 'NR==1{print $2}')
 
-# Get device ROM info
+# Fetch ROM info
 dvc_ROM=$(getprop ro.build.display.id | awk '{print $1,$3,$4,$5}')
 
-# Get SELinux status
+# Fetch SELinux state
 if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
 SEL_status=Enforcing
 else
@@ -566,7 +566,7 @@ else
 gpu_calc=0
 fi
 
-# Get GPU load
+# Fetch GPU load
 if [[ -e "$gpui/gpu_busy_percentage" ]]; then
 gpu_ld=$(cat $gpui/gpu_busy_percentage)
 
@@ -577,18 +577,18 @@ elif [[ -e "$gpui/gpu_busy" ]]; then
 gpu_ld=$(cat $gpui/gpu_busy)
 fi
 
-# Get the amount of CPU cores
+# Fetch the amount of the device CPU cores
 CA=$(cat /sys/devices/system/cpu/possible | awk -F "-" '{print $2}')
 CA=$((CA + 1))
 if [[ "$CA" -eq 0 ]]; then
 CA=1
 fi
 
-# Get device brand
+# Fetch the device brand
 dvc_bd=$(getprop ro.product.brand)
 
 # Check if we're running on OneUI
-if [[ $(getprop net.knoxscep.version) ]] || [[ $(getprop ril.product_code) ]] || [[ $(getprop ro.boot.em.model) ]] || [[ $(getprop net.knoxvpn.version) ]] || [[ $(getprop ro.securestorage.knox) ]] || [[ $(getprop gsm.version.ril-impl | grep Samsung) ]] || [[ $(getprop ro.build.PDA) ]]; then
+if [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]]; then
 is_os_oneui=true
 
 else
@@ -692,9 +692,6 @@ kmsg3 ""
 # Disable perfd and mpdecision
 stop perfd  	
 stop mpdecision
-
-# Disable trace
-stop traced
 
 kmsg "Disabled perfd and mpdecision"
 kmsg3 ""
