@@ -350,7 +350,6 @@ read -r option
                         }
 						
 						while getopts ":p:th:" opt; do
-						[[ $# -gt 2 ]] && help_me
 						case "${opt}" in
 						
 						p) echo "${B}Applying profile...${N}"
@@ -383,5 +382,3 @@ read -r option
                         done
 
                         shift $((OPTIND - 1))
-                        
-                        exit 0
