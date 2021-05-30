@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # KTSR by Pedro (pedrozzz0 @ GitHub)
-# Credits: Tytydraco, Paget69, Matt Yang and Eight
+# Credits: Tytydraco, Paget69, Matt Yang (yc9559) and Eight (dlwlrma123)
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 MODPATH=/data/adb/modules/KTSR
@@ -121,7 +121,7 @@ SCHED_TASKS_BALANCE="8"
 
 SCHED_TASKS_THROUGHPUT="6"
 
-    # Get GPU directories
+    # Fetch the GPU directory
     for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
     do
     if [[ -d "$gpul" ]]; then
@@ -262,18 +262,18 @@ do
 cpu_gov=$(cat $cpu/scaling_governor)
 done
 
-# Check if var qcom is null
+# Check if qcom string is null, then define it as false
 if [[ -z "$qcom" ]]; then
 qcom=false
 fi
 
-# GPU minimum power level
+# Fetch GPU minimum power level
 gpu_min_pl=$(cat $gpu/min_pwrlevel)
 
-# GPU maximum power level
+# Fetch GPU maximum power level
 gpu_max_pl=$(cat $gpu/max_pwrlevel)
 
-# Get max CPU clock
+# Fetch maximum CPU clock
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
 cpu_max_freq=$(cat $cpu/scaling_max_freq)
@@ -284,7 +284,7 @@ cpu_max_freq=$cpu_max_freq2
 fi
 done
 
-# Get min CPU clock
+# Fetch minmum CPU clock
 cpu_min_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
 cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
 
@@ -335,9 +335,6 @@ soc=$(getprop ro.product.board)
 
 elif [[ $soc == "" ]]; then
 soc=$(getprop ro.product.platform)
-
-elif [[ $soc == "" ]]; then
-soc=$(getprop ro.arch)
 fi
 
 # Get device SDK
@@ -699,7 +696,7 @@ stop mpdecision
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, mpdecision and traced"
+kmsg "Disabled perfd and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -717,13 +714,30 @@ kmsg "Tweaked dynamic stune boost"
 kmsg3 ""
 fi
 
+# Caf CPU Boost
+if [[ -d "/sys/module/cpu_boost" ]]
+then
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
+write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+kmsg "Tweaked CAF CPU input boost"
+kmsg3 ""
+
+# CPU input boost
+elif [[ -d "/sys/module/cpu_input_boost" ]]
+then
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "156"
+kmsg "Tweaked CPU input boost"
+kmsg3 ""
+fi
+
 # I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety kyber mq-deadline cfq noop none
+	for sched in tripndroid fiops bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -735,10 +749,10 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 64
+write "${queue}read_ahead_kb" 32
 write "${queue}nomerges" 0
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 32
+write "${queue}nr_requests" 16
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -765,11 +779,11 @@ done
 # Apply governor specific tunables for schedutil
 find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
 do
-write "$governor/up_rate_limit_us" "1000"
-write "$governor/down_rate_limit_us" "1000"
+write "$governor/up_rate_limit_us" "0"
+write "$governor/down_rate_limit_us" "0"
 write "$governor/pl" "1"
 write "$governor/iowait_boost_enable" "1"
-write "$governor/rate_limit_us" "1000"
+write "$governor/rate_limit_us" "0"
 write "$governor/hispeed_load" "89"
 write "$governor/hispeed_freq" "$cpu_max_freq"
 done
@@ -902,8 +916,8 @@ write "${stune}background/schedtune.prefer_idle" "0"
 write "${stune}background/schedtune.sched_boost" "0"
 write "${stune}background/schedtune.prefer_perf" "0"
 
-write "${stune}foreground/schedtune.boost" "5"
-write "${stune}foreground/schedtune.prefer_idle" "1"
+write "${stune}foreground/schedtune.boost" "0"
+write "${stune}foreground/schedtune.prefer_idle" "0"
 write "${stune}foreground/schedtune.sched_boost" "0"
 write "${stune}foreground/schedtune.sched_boost_no_override" "1"
 write "${stune}foreground/schedtune.prefer_perf" "0"
@@ -971,7 +985,7 @@ fi
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
 write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
-kmsg "Enabled dynamic_fsync"
+kmsg "Enabled dynamic fsync"
 kmsg3 ""
 fi
 
@@ -980,7 +994,6 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
-write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
 [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
 [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
@@ -1034,13 +1047,13 @@ write "/sys/devices/soc/$dv/clkgate_enable" "1"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
-write "${kernel}sched_latency_ns" "$SCHED_PERIOD_LATENCY"
+write "${kernel}sched_latency_ns" "10000000"
 fi
 if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
-write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LATENCY))"
+write "${kernel}sched_min_granularity_ns" "1250000"
 fi
 if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
-write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_LATENCY / 2))"
+write "${kernel}sched_wakeup_granularity_ns" "2000000"
 fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
 write "${kernel}sched_migration_cost_ns" "5000000"
@@ -1051,16 +1064,10 @@ fi
 if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
 write "${kernel}sched_min_task_util_for_boost" "0"
 fi
-write "${kernel}sched_nr_migrate" "2"
+write "${kernel}sched_nr_migrate" "4"
 write "${kernel}sched_schedstats" "0"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
-fi
-if [[ -e "${kernel}sched_sync_hint_enable" ]]; then
-write "${kernel}sched_sync_hint_enable" "0"
-fi
-if [[ -e "${kernel}sched_user_hint" ]]; then
-write "${kernel}sched_user_hint" "0"
 fi
 write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
@@ -1071,11 +1078,6 @@ fi
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" "0"
 write "/sys/kernel/rcu_normal" "1"
-fi
-
-# Disable kernel tracing
-if [[ -e "/sys/kernel/debug/tracing" ]]; then
-write "/sys/kernel/debug/tracing/tracing_on" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -1110,9 +1112,6 @@ kmsg "Allowed CPUs to use it's deepest sleep state"
 kmsg3 ""
 fi
 
-# always sync before dropping caches
-sync
-
 fr=$(((total_ram * 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 4 / 100) * 1024 / 4))
@@ -1131,6 +1130,9 @@ mfr=$((total_ram * 9 / 5))
 if [[ "$mfr" -le "3072" ]]; then
 mfr=3072
 fi
+
+# always sync before dropping caches
+sync
 
 # VM tweaks to improve overall user experience and smoothness.
 write "${vm}dirty_background_ratio" "10"
@@ -1244,7 +1246,7 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
-kmsg "Applied TCP / internet tweaks"
+kmsg "Applied TCP tweaks"
 kmsg3 ""
 
 # Disable kernel battery saver
@@ -1356,10 +1358,7 @@ kmsg3 ""
 stop perfd
 stop mpdecision
 
-# Disable trace
-stop traced
-
-kmsg "Disabled perfd, mpdecision and traced"
+kmsg "Disabled perfd and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -1421,13 +1420,30 @@ fi
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
 
+# Caf CPU Boost
+if [[ -d "/sys/module/cpu_boost" ]]
+then
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
+write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+kmsg "Tweaked CAF CPU input boost"
+kmsg3 ""
+
+# CPU input boost
+elif [[ -d "/sys/module/cpu_input_boost" ]]
+then
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
+kmsg "Tweaked CPU input boost"
+kmsg3 ""
+fi
+
 # I/O Scheduler Tweaks
 for queue in /sys/block/*/queue/
 do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq kyber bfq fiops zen sio anxiety mq-deadline cfq noop none
+	for sched in tripndroid fiops bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1441,7 +1457,7 @@ write "${queue}iostats" 0
 write "${queue}rotational" 0
 write "${queue}read_ahead_kb" 64
 write "${queue}nomerges" 1
-write "${queue}rq_affinity" 1
+write "${queue}rq_affinity" 2
 write "${queue}nr_requests" 128
 done
 
@@ -1471,8 +1487,8 @@ find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r gover
 do
 write "$governor/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
 write "$governor/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
-write "$governor/pl" "0"
-write "$governor/iowait_boost_enable" "0"
+write "$governor/pl" "1"
+write "$governor/iowait_boost_enable" "1"
 write "$governor/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
 write "$governor/hispeed_load" "89"
 write "$governor/hispeed_freq" "$cpu_max_freq"
@@ -1715,7 +1731,6 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
-write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
 [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
 [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
@@ -1748,7 +1763,7 @@ if [[ -e "${kernel}sched_child_runs_first" ]]; then
 write "${kernel}sched_child_runs_first" "1"
 fi
 if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
-write "${kernel}perf_cpu_time_max_percent" "10"
+write "${kernel}perf_cpu_time_max_percent" "6"
 fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
 write "${kernel}sched_autogroup_enabled" "1"
@@ -1783,12 +1798,6 @@ write "${kernel}sched_schedstats" "0"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
 fi
-if [[ -e "${kernel}sched_sync_hint_enable" ]]; then
-write "${kernel}sched_sync_hint_enable" "0"
-fi
-if [[ -e "${kernel}sched_user_hint" ]]; then
-write "${kernel}sched_user_hint" "0"
-fi
 write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "0"
@@ -1801,11 +1810,6 @@ fi
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" "0"
 write "/sys/kernel/rcu_normal" "1"
-fi
-
-# Disable kernel tracing
-if [[ -e "/sys/kernel/debug/tracing" ]]; then
-write "/sys/kernel/debug/tracing/tracing_on" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -1856,9 +1860,6 @@ kmsg "Disabled krait voltage boost"
 kmsg3 ""
 fi
 
-# always sync before dropping caches
-sync
-
 fr=$(((total_ram * 5 / 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 5 / 100) * 1024 / 4))
@@ -1878,6 +1879,9 @@ efr=$((mfr * 16 / 5))
 if [[ "$efr" -le "18432" ]]; then
   efr=18432
 fi
+
+# always sync before dropping caches
+sync
 
 # VM settings to improve overall user experience and smoothness.
 write "${vm}drop_caches" "3"
@@ -1929,7 +1933,7 @@ if [[ -e "${vm}extra_free_kbytes" ]]; then
 write "${vm}extra_free_kbytes" "$efr"
 fi
 
-kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
+kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
 
 # MSM thermal tweaks
@@ -2013,7 +2017,7 @@ avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 		fi
 	done
 	
-# Internet Tweaks
+# TCP Tweaks
 write "${tcp}ip_no_pmtu_disc" "0"
 write "${tcp}tcp_ecn" "1"
 write "${tcp}tcp_timestamps" "0"
@@ -2033,7 +2037,7 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
-kmsg "Applied TCP / internet tweaks"
+kmsg "Applied TCP tweaks"
 kmsg3 ""
 
 # Enable kernel battery saver
@@ -2175,10 +2179,7 @@ kmsg3 ""
 stop perfd
 stop mpdecision
 
-# Disable trace
-stop traced
-
-kmsg "Disabled perfd, mpdecision and traced"
+kmsg "Disabled perfd and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -2243,7 +2244,6 @@ kmsg3 ""
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpu_max_freq 1:$cpu_max_freq 2:$cpu_max_freq 3:$cpu_max_freq 4:$cpu_max_freq 5:$cpu_max_freq 6:$cpu_max_freq 7:$cpu_max_freq"
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
@@ -2254,9 +2254,6 @@ kmsg3 ""
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpu_max_freq"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpu_max_freq"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_gold" "$cpu_max_freq"
 kmsg "Tweaked CPU input boost"
 kmsg3 ""
 fi
@@ -2267,7 +2264,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety kyber mq-deadline cfq noop none
+	for sched in tripndroid fiops bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -2279,10 +2276,10 @@ do
 write "${queue}add_random" 0
 write "${queue}iostats" 0
 write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 256
+write "${queue}read_ahead_kb" 512
 write "${queue}nomerges" 2
 write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 128
+write "${queue}nr_requests" 256
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -2551,7 +2548,6 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
-write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
 [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
 [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
@@ -2619,12 +2615,6 @@ write "${kernel}sched_schedstats" "0"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
 fi
-if [[ -e "${kernel}sched_sync_hint_enable" ]]; then
-write "${kernel}sched_sync_hint_enable" "0"
-fi
-if [[ -e "${kernel}sched_user_hint" ]]; then
-write "${kernel}sched_user_hint" "0"
-fi
 write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "0"
@@ -2637,11 +2627,6 @@ fi
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" "0"
 write "/sys/kernel/rcu_normal" "1"
-fi
-
-# Disable kernel tracing
-if [[ -e "/sys/kernel/debug/tracing" ]]; then
-write "/sys/kernel/debug/tracing/tracing_on" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -2692,9 +2677,6 @@ kmsg "Enabled krait voltage boost"
 kmsg3 ""
 fi
 
-# always sync before dropping caches
-sync
-
 fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 5 / 100) * 1024 / 4))
@@ -2705,7 +2687,7 @@ ab=$(((total_ram * 14 / 100) * 1024 / 4))
 efr=$((mfr * 16 / 5))
 
 if [[ "$efr" -le "18432" ]]; then
-  efr=18432
+efr=18432
 fi
 
 mfr=$((total_ram * 6 / 5))
@@ -2713,6 +2695,9 @@ mfr=$((total_ram * 6 / 5))
 if [[ "$mfr" -le "3072" ]]; then
 mfr=3072
 fi
+
+# always sync before dropping caches
+sync
 
 # VM settings to improve overall user experience and performance.
 write "${vm}drop_caches" "3"
@@ -2764,7 +2749,7 @@ if [[ -e "${vm}extra_free_kbytes" ]]; then
 write "${vm}extra_free_kbytes" "$efr"
 fi
 
-kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
+kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
 
 # MSM thermal tweaks
@@ -2777,7 +2762,7 @@ kmsg "Tweaked msm_thermal"
 kmsg3 ""
 fi
 
-# Disable CPU power efficient workqueue.
+# Disable CPU power efficient workqueue
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
 write "/sys/module/workqueue/parameters/power_efficient" "N" 
@@ -2792,7 +2777,7 @@ kmsg "Disabled CPU scheduler multi-core power-saving"
 kmsg3 ""
 fi
 
-# Fix DT2W.
+# Fix DT2W
 if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
@@ -2847,7 +2832,7 @@ avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 		fi
 	done
 	
-# Internet Tweaks
+# TCP Tweaks
 write "${tcp}ip_no_pmtu_disc" "0"
 write "${tcp}tcp_ecn" "1"
 write "${tcp}tcp_timestamps" "0"
@@ -2867,7 +2852,7 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
-kmsg "Applied TCP / internet tweaks"
+kmsg "Applied TCP tweaks"
 kmsg3 ""
 
 # Disable kernel battery saver
@@ -3017,10 +3002,7 @@ kmsg3 ""
 stop perfd
 stop mpdecision
 
-# Disable trace
-stop traced
-
-kmsg "Disabled perfd, mpdecision and traced"
+kmsg "Disabled perfd and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -3085,18 +3067,18 @@ kmsg3 ""
 # Caf CPU Boost
 if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
 then
-write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
-write "/sys/module/cpu_boost/parameters/input_boost_enabled" "0"
-write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "0"
-kmsg "Disabled CAF CPU input boost"
+write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
+write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+kmsg "Tweaked CAF CPU input boost"
 kmsg3 ""
 fi
 
 # CPU input boost
 if [[ -e "/sys/module/cpu_input_boost/parameters/input_boost_duration" ]]
 then
-write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "0"
-kmsg "Disabled CPU input boost"
+write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "64"
+kmsg "Tweaked CPU input boost"
 kmsg3 ""
 fi
 
@@ -3106,7 +3088,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio anxiety kyber mq-deadline cfq noop none
+	for sched in tripndroid fiops bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -3150,8 +3132,8 @@ find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r gover
 do
 write "$governor/up_rate_limit_us" "50000"
 write "$governor/down_rate_limit_us" "24000"
-write "$governor/pl" "0"
-write "$governor/iowait_boost_enable" "0"
+write "$governor/pl" "1"
+write "$governor/iowait_boost_enable" "1"
 write "$governor/rate_limit_us" "50000"
 write "$governor/hispeed_load" "99"
 write "$governor/hispeed_freq" "$cpu_max_freq"
@@ -3326,7 +3308,7 @@ write "${stune}rt/schedtune.prefer_idle" "0"
 write "${stune}rt/schedtune.sched_boost" "0"
 write "${stune}rt/schedtune.prefer_perf" "0"
 
-write "${stune}top-app/schedtune.boost" "5"
+write "${stune}top-app/schedtune.boost" "10"
 write "${stune}top-app/schedtune.prefer_idle" "1"
 write "${stune}top-app/schedtune.sched_boost" "0"
 write "${stune}top-app/schedtune.sched_boost_no_override" "1"
@@ -3393,7 +3375,6 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
-write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
 [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
 [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
@@ -3462,12 +3443,6 @@ write "${kernel}sched_schedstats" "0"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
 fi
-if [[ -e "${kernel}sched_user_hint" ]]; then
-write "${kernel}sched_sync_hint_enable" "0"
-fi
-if [[ -e "${kernel}sched_user_hint" ]]; then
-write "${kernel}sched_user_hint" "0"
-fi
 write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "1"
@@ -3480,11 +3455,6 @@ fi
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" "0"
 write "/sys/kernel/rcu_normal" "1"
-fi
-
-# Disable kernel tracing
-if [[ -e "/sys/kernel/debug/tracing" ]]; then
-write "/sys/kernel/debug/tracing/tracing_on" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -3535,9 +3505,6 @@ kmsg "Disabled krait voltage boost"
 kmsg3 ""
 fi
 
-# always sync before dropping caches
-sync
-
 fr=$(((total_ram * 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 4 / 100) * 1024 / 4))
@@ -3556,6 +3523,9 @@ mfr=$((total_ram * 7 / 5))
 if [[ "$mfr" -le "3072" ]]; then
 mfr=3072
 fi
+
+# always sync before dropping caches
+sync
 
 # VM settings to improve overall user experience and performance.
 write "${vm}drop_caches" "1"
@@ -3607,7 +3577,7 @@ if [[ -e "${vm}extra_free_kbytes" ]]; then
 write "${vm}extra_free_kbytes" "$efr"
 fi
 
-kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
+kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
 
 # MSM thermal tweaks
@@ -3635,7 +3605,7 @@ kmsg "Enabled CPU multi-core power-saving"
 kmsg3 ""
 fi
 
-# Fix DT2W.
+# Fix DT2W
 if [[ -e "/sys/touchpanel/double_tap" && -e "/proc/tp_gesture" ]]
 then
 write "/sys/touchpanel/double_tap" "1"
@@ -3690,7 +3660,7 @@ avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 		fi
 	done
 	
-# Internet Tweaks
+# TCP Tweaks
 write "${tcp}ip_no_pmtu_disc" "0"
 write "${tcp}tcp_ecn" "1"
 write "${tcp}tcp_timestamps" "0"
@@ -3710,7 +3680,7 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
-kmsg "Applied TCP / internet tweaks"
+kmsg "Applied TCP tweaks"
 kmsg3 ""
 
 # Enable kernel battery saver
@@ -3847,10 +3817,10 @@ stop mpdecision
 # Disable trace
 stop traced
 
-kmsg "Disabled perfd, mpdecision and traced"
+kmsg "Disabled perfd and mpdecision"
 kmsg3 ""
 
-# Configure thermal profile
+# Configure thermal profile to dynamic (evaluation)
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
 write "/sys/class/thermal/thermal_message/sconfig" "10"
 kmsg "Tweaked thermal profile"
@@ -3912,7 +3882,6 @@ kmsg3 ""
 # Caf CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpu_max_freq 1:$cpu_max_freq 2:$cpu_max_freq 3:$cpu_max_freq 4:$cpu_max_freq 5:$cpu_max_freq 6:$cpu_max_freq 7:$cpu_max_freq"
 write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
 write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
@@ -3923,9 +3892,6 @@ kmsg3 ""
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
 write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpu_max_freq"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpu_max_freq"
-write "/sys/module/cpu_input_boost/parameters/input_boost_freq_gold" "$cpu_max_freq"
 kmsg "Tweaked CPU input boost"
 kmsg3 ""
 fi
@@ -3936,7 +3902,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid bfq-sq bfq-mq bfq fiops zen sio kyber anxiety mq-deadline cfq noop none
+	for sched in tripndroid fiops bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -4222,7 +4188,6 @@ if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
 write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
-write "/sys/kernel/debug/sched_features" "RT_RUNTIME_SHARE"
 write "/sys/kernel/debug/sched_features" "UTIL_EST"
 [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
 [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
@@ -4290,12 +4255,6 @@ write "${kernel}sched_schedstats" "0"
 if [[ -e "${kernel}sched_cstate_aware" ]]; then
 write "${kernel}sched_cstate_aware" "1"
 fi
-if [[ -e "${kernel}sched_user_hint_enable" ]]; then
-write "${kernel}sched_sync_hint_enable" "0"
-fi
-if [[ -e "${kernel}sched_user_hint" ]]; then
-write "${kernel}sched_user_hint" "0"
-fi
 write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
 write "${kernel}timer_migration" "0"
@@ -4308,11 +4267,6 @@ fi
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
 write "/sys/kernel/rcu_expedited" "0"
 write "/sys/kernel/rcu_normal" "1"
-fi
-
-# Disable kernel tracing
-if [[ -e "/sys/kernel/debug/tracing" ]]; then
-write "/sys/kernel/debug/tracing/tracing_on" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -4363,9 +4317,6 @@ kmsg "Enabled krait voltage boost"
 kmsg3 ""
 fi
 
-# always sync before dropping caches
-sync
-
 fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 2 / 100) * 1024 / 4))
 et=$(((total_ram * 4 / 100) * 1024 / 4))
@@ -4384,6 +4335,9 @@ mfr=$((total_ram * 6 / 5))
 if [[ "$mfr" -le "3072" ]]; then
 mfr=3072
 fi
+
+# always sync before dropping caches
+sync
 
 # VM settings to improve overall user experience and performance.
 write "${vm}drop_caches" "3"
@@ -4435,7 +4389,7 @@ if [[ -e "${vm}extra_free_kbytes" ]]; then
 write "${vm}extra_free_kbytes" "$efr"
 fi
 
-kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
+kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
 
 # MSM thermal tweaks
@@ -4518,7 +4472,7 @@ avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 		fi
 	done
 	
-# Internet Tweaks
+# TCP Tweaks
 write "${tcp}ip_no_pmtu_disc" "0"
 write "${tcp}tcp_ecn" "1"
 write "${tcp}tcp_timestamps" "0"
@@ -4538,7 +4492,7 @@ write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
-kmsg "Applied TCP / internet tweaks"
+kmsg "Applied TCP tweaks"
 kmsg3 ""
 
 # Disable kernel battery saver
