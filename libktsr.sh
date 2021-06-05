@@ -271,6 +271,20 @@ get_cpu_gov()
 cpu_gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
 }
 
+get_gpu_gov()
+{
+# Fetch GPU actual governor
+if [[ -e "$gpui/gpu_governor" ]]; then
+    gpu_gov=$(cat $gpui/gpu_governor)
+    
+elif [[ -e "$gpu/governor" ]]; then
+      gpu_gov=$(cat $gpu/governor)
+    
+elif [[ -e "$gpu/devfreq/governor" ]]; then
+      gpu_gov=$(cat $gpu/devfreq/governor)
+fi
+}
+
 check_qcom()
 {
 # Check if qcom string is null, then define it as false
@@ -769,6 +783,8 @@ get_gpu_min
 
 get_cpu_gov
 
+get_gpu_gov
+
 check_qcom
 
 define_gpu_pl
@@ -884,12 +900,12 @@ kmsg3 "** SOC: $soc_mf, $soc"
 kmsg3 "** SDK: $sdk"
 kmsg3 "** Android Version: $avs"    
 kmsg3 "** CPU Governor: $cpu_gov"   
-kmsg3 "** CPU Load: $cpu_load"
+kmsg3 "** CPU Load: $cpu_load %"
 kmsg3 "** Number of cores: $nr_cores"
 kmsg3 "** CPU Freq: $cpu_min_clk_mhz-$cpu_max_clk_mhz MHz"
 kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
 kmsg3 "** AArch: $arch"        
-kmsg3 "** GPU Load: $gpu_load %"
+kmsg3 "** GPU Load: $gpu_load%"
 kmsg3 "** GPU Freq: $gpu_min_clk_mhz-$gpu_max_clk_mhz MHz"
 kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
 kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
@@ -903,8 +919,8 @@ kmsg3 "** KTSR Version: $build_ver"
 kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
 kmsg3 "** Build Type: $build_tp"                                                                                         
 kmsg3 "** Build Date: $build_dt"                                                                                          
-kmsg3 "** Battery Charge Level: $batt_pctg%"  
-kmsg3 "** Battery Capacity: $gbcapacity mAh"
+kmsg3 "** Battery Charge Level: $batt_pctg %"  
+kmsg3 "** Battery Capacity: $batt_cpct mAh"
 kmsg3 "** Battery Health: $batt_hth"                                                                                     
 kmsg3 "** Battery Status: $batt_sts"                                                                                     
 kmsg3 "** Battery Temperature: $batt_tmp °C"                                                                               
@@ -1521,7 +1537,7 @@ init=$(date +%s)
 
 get_all
 
-kmsg3 ""
+kmsg3 ""  	
 kmsg "General Info"
 
 kmsg3 ""
@@ -1532,12 +1548,12 @@ kmsg3 "** SOC: $soc_mf, $soc"
 kmsg3 "** SDK: $sdk"
 kmsg3 "** Android Version: $avs"    
 kmsg3 "** CPU Governor: $cpu_gov"   
-kmsg3 "** CPU Load: $cpu_load"
+kmsg3 "** CPU Load: $cpu_load %"
 kmsg3 "** Number of cores: $nr_cores"
 kmsg3 "** CPU Freq: $cpu_min_clk_mhz-$cpu_max_clk_mhz MHz"
 kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
 kmsg3 "** AArch: $arch"        
-kmsg3 "** GPU Load: $gpu_load %"
+kmsg3 "** GPU Load: $gpu_load%"
 kmsg3 "** GPU Freq: $gpu_min_clk_mhz-$gpu_max_clk_mhz MHz"
 kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
 kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
@@ -1551,8 +1567,8 @@ kmsg3 "** KTSR Version: $build_ver"
 kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
 kmsg3 "** Build Type: $build_tp"                                                                                         
 kmsg3 "** Build Date: $build_dt"                                                                                          
-kmsg3 "** Battery Charge Level: $batt_pctg%"  
-kmsg3 "** Battery Capacity: $gbcapacity mAh"
+kmsg3 "** Battery Charge Level: $batt_pctg %"  
+kmsg3 "** Battery Capacity: $batt_cpct mAh"
 kmsg3 "** Battery Health: $batt_hth"                                                                                     
 kmsg3 "** Battery Status: $batt_sts"                                                                                     
 kmsg3 "** Battery Temperature: $batt_tmp °C"                                                                               
@@ -2335,7 +2351,7 @@ init=$(date +%s)
 
 get_all
   	
-kmsg3 ""
+kmsg3 ""  	
 kmsg "General Info"
 
 kmsg3 ""
@@ -2346,12 +2362,12 @@ kmsg3 "** SOC: $soc_mf, $soc"
 kmsg3 "** SDK: $sdk"
 kmsg3 "** Android Version: $avs"    
 kmsg3 "** CPU Governor: $cpu_gov"   
-kmsg3 "** CPU Load: $cpu_load"
+kmsg3 "** CPU Load: $cpu_load %"
 kmsg3 "** Number of cores: $nr_cores"
 kmsg3 "** CPU Freq: $cpu_min_clk_mhz-$cpu_max_clk_mhz MHz"
 kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
 kmsg3 "** AArch: $arch"        
-kmsg3 "** GPU Load: $gpu_load %"
+kmsg3 "** GPU Load: $gpu_load%"
 kmsg3 "** GPU Freq: $gpu_min_clk_mhz-$gpu_max_clk_mhz MHz"
 kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
 kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
@@ -2365,8 +2381,8 @@ kmsg3 "** KTSR Version: $build_ver"
 kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
 kmsg3 "** Build Type: $build_tp"                                                                                         
 kmsg3 "** Build Date: $build_dt"                                                                                          
-kmsg3 "** Battery Charge Level: $batt_pctg%"  
-kmsg3 "** Battery Capacity: $gbcapacity mAh"
+kmsg3 "** Battery Charge Level: $batt_pctg %"  
+kmsg3 "** Battery Capacity: $batt_cpct mAh"
 kmsg3 "** Battery Health: $batt_hth"                                                                                     
 kmsg3 "** Battery Status: $batt_sts"                                                                                     
 kmsg3 "** Battery Temperature: $batt_tmp °C"                                                                               
@@ -3144,9 +3160,10 @@ init=$(date +%s)
    
 get_all
   	
-kmsg3 ""
+kmsg3 ""  	
 kmsg "General Info"
 
+kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
 kmsg3 "** Kernel: $kern_ver_name"                                                                                           
 kmsg3 "** Kernel Build Date: $kern_bd_dt"
@@ -3154,12 +3171,12 @@ kmsg3 "** SOC: $soc_mf, $soc"
 kmsg3 "** SDK: $sdk"
 kmsg3 "** Android Version: $avs"    
 kmsg3 "** CPU Governor: $cpu_gov"   
-kmsg3 "** CPU Load: $cpu_load"
+kmsg3 "** CPU Load: $cpu_load %"
 kmsg3 "** Number of cores: $nr_cores"
 kmsg3 "** CPU Freq: $cpu_min_clk_mhz-$cpu_max_clk_mhz MHz"
 kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
 kmsg3 "** AArch: $arch"        
-kmsg3 "** GPU Load: $gpu_load %"
+kmsg3 "** GPU Load: $gpu_load%"
 kmsg3 "** GPU Freq: $gpu_min_clk_mhz-$gpu_max_clk_mhz MHz"
 kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
 kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
@@ -3173,8 +3190,8 @@ kmsg3 "** KTSR Version: $build_ver"
 kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
 kmsg3 "** Build Type: $build_tp"                                                                                         
 kmsg3 "** Build Date: $build_dt"                                                                                          
-kmsg3 "** Battery Charge Level: $batt_pctg%"  
-kmsg3 "** Battery Capacity: $gbcapacity mAh"
+kmsg3 "** Battery Charge Level: $batt_pctg %"  
+kmsg3 "** Battery Capacity: $batt_cpct mAh"
 kmsg3 "** Battery Health: $batt_hth"                                                                                     
 kmsg3 "** Battery Status: $batt_sts"                                                                                     
 kmsg3 "** Battery Temperature: $batt_tmp °C"                                                                               
@@ -3943,13 +3960,13 @@ exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
 }
 # Gaming Profile
-gaming() {
-
+gaming() 
+{
 init=$(date +%s)
      	
 get_all
 
-kmsg3 ""
+kmsg3 ""  	
 kmsg "General Info"
 
 kmsg3 ""
@@ -3960,12 +3977,12 @@ kmsg3 "** SOC: $soc_mf, $soc"
 kmsg3 "** SDK: $sdk"
 kmsg3 "** Android Version: $avs"    
 kmsg3 "** CPU Governor: $cpu_gov"   
-kmsg3 "** CPU Load: $cpu_load"
+kmsg3 "** CPU Load: $cpu_load %"
 kmsg3 "** Number of cores: $nr_cores"
 kmsg3 "** CPU Freq: $cpu_min_clk_mhz-$cpu_max_clk_mhz MHz"
 kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
 kmsg3 "** AArch: $arch"        
-kmsg3 "** GPU Load: $gpu_load %"
+kmsg3 "** GPU Load: $gpu_load%"
 kmsg3 "** GPU Freq: $gpu_min_clk_mhz-$gpu_max_clk_mhz MHz"
 kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
 kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
@@ -3979,8 +3996,8 @@ kmsg3 "** KTSR Version: $build_ver"
 kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
 kmsg3 "** Build Type: $build_tp"                                                                                         
 kmsg3 "** Build Date: $build_dt"                                                                                          
-kmsg3 "** Battery Charge Level: $batt_pctg%"  
-kmsg3 "** Battery Capacity: $gbcapacity mAh"
+kmsg3 "** Battery Charge Level: $batt_pctg %"  
+kmsg3 "** Battery Capacity: $batt_cpct mAh"
 kmsg3 "** Battery Health: $batt_hth"                                                                                     
 kmsg3 "** Battery Status: $batt_sts"                                                                                     
 kmsg3 "** Battery Temperature: $batt_tmp °C"                                                                               
