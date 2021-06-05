@@ -27,83 +27,88 @@ _bb=
 # Set Log Files
 mount -o remount,rw /cache 2>/dev/null
 mount -o rw,remount /cache 2>/dev/null
-# > Logs should go in this file
+
+# Logs should go in this file
 LOG=/data/local/tmp/$ID.log
 oldLOG=/data/local/tmp/$ID-old.log
-# > Verbose output goes here
+
+# Verbose output goes here
 VERLOG=/data/local/tmp/$ID-verbose.log
 oldVERLOG=/data/local/tmp/$ID-verbose-old.log
 stdoutLOG=$MODDIR/logs/$ID-STDOUT.log
 oldstdoutLOG=$MODDIR/logs/$ID-STDOUT-old.log
 
-# Start Logging verbosely
+# Start logging verbosely
 mv -f $VERLOG $oldVERLOG 2>/dev/null; mv -f $LOG $oldLOG 2>/dev/null; mv -f $stdoutLOG $oldstdoutLOG 2>/dev/null
+
 # exec 3>&1
+
 # exec 1>$stdoutLOG
+
 set -x 2>$VERLOG
 
 kts_mode=$(getprop persist.kingtweaks.mode)
  	
-if [[ "$kts_mode" == "1" ]]
-then
-kts_profile=Automatic
+case $kts_mode in
 
-elif [[ "$kts_mode" == "2" ]]
-then
-kts_profile=Battery
-        	
-elif [[ "$kts_mode" == "3" ]]
-then
-kts_profile=Balanced
-        	
-elif [[ "$kts_mode" == "4" ]]
-then
-kts_profile=Extreme
+1)
+  kts_profile=Automatic
+  ;;
 
-elif [[ "$kts_mode" == "5" ]]
-then
-kts_profile=Gaming
+  2)
+    kts_profile=Battery
+    ;;
 
-elif [[ "$kts_mode" == "6" ]]
-then
-kts_profile=Latency
+     3)
+      kts_profile=Balanced
+      ;;
 
-else
-kts_profile=Unknown
-fi
+       4)
+        kts_profile=Extreme
+        ;;
+
+        5)
+         kts_profile=Gaming
+         ;;
+
+          6)
+           kts_profile=Latency
+           ;;
+      esac
 
 if [[ "$(settings get global low_power)" == "1" ]]; then
-low_power_mode=Enabled
+    low_power_mode=Enabled
 
 else
-low_power_mode=Disabled
+    low_power_mode=Disabled
 fi
 
 if [[ "$(cmd netpolicy get restrict-background | awk '{print $4}')" == "enabled" ]]; then
-data_saver=Enabled
+    data_saver=Enabled
 
 else
-data_saver=Disabled
+    data_saver=Disabled
 fi
 
 if [[ "$(settings get secure location_providers_allowed)" == "" ]]; then
-loc_mode_pwr_saving=Enabled
+    loc_mode_pwr_saving=Enabled
 
 else
-loc_mode_pwr_saving=Disabled
+    loc_mode_pwr_saving=Disabled
 fi
 
 if [[ "$(getprop init.svc.thermal-engine)" == "running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "running" ]] || [[ "$(getprop init.svc.thermald)" == "running" ]] || [[ "$(getprop init.svc.thermalservice)" == "running" ]]; then
-ts=On
+    ts=On
 
 elif [[ "$(getprop init.svc.thermal-engine)" == "stopped" ]] || [[ "$(getprop init.svc.mi_thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermalservice)" == "stopped" ]]; then
-ts=Off
+      ts=Off
 
 else
-ts=Unknown
+    ts=Unknown
 fi
 
-menu() {
+menu() 
+{
 clear
 echo ""
 echo "******************************************"
@@ -116,7 +121,7 @@ echo "[*] Thermal: ${B}$ts${N}"
 echo ""
 echo "[*] Available profiles: "
 echo ""
-echo "${P}[1] Automatic: Change your profile automatically based on specific circumstances and do additional tweaking for a better user-experience.${N}"
+echo "${C}[1] Automatic: Change your profile automatically based on specific circumstances and do additional tweaking for a better user-experience.${N}"
 echo ""
 echo "${B}[2] Battery: Reduce power draw to less battery drain and energetic comsumption, ensuring a juicy battery life.${N}"
 echo ""
@@ -157,15 +162,13 @@ echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
 echo ""
 echo "[15] Access our telegram group"
 echo ""
-echo "[16] FKM updater script"
-echo ""
-echo "[17] Kill background apps"
+echo "[16] Kill background apps"
 echo ""
 if [[ "$ts" == "On" ]]; then
-echo "${B}[18] Disable thermal${N}"
+echo "${B}[17] Disable thermal${N}"
 echo ""
 elif [[ "$ts" == "Off" ]]; then
-echo "${B}[19] Enable thermal${N}"
+echo "${B}[18] Enable thermal${N}"
 echo ""
 fi
 echo "${R}[0] Exit${N}"
@@ -189,152 +192,145 @@ read -r option
                         menu
                         ;;
 						
-						"3")
-						echo "${B}Applying profile...${N}"
-						setprop persist.kingtweaks.mode "3" 2>/dev/null
-                        echo "${G}Done!${N}"
-						;;
+						 "3")
+						    echo "${B}Applying profile...${N}"
+						    setprop persist.kingtweaks.mode "3" 2>/dev/null
+                            echo "${G}Done!${N}"
+						    ;;
 						
-						"4")
-						echo "${B}Applying profile...${N}"
-						setprop persist.kingtweaks.mode "4" 2>/dev/null
-						echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-                        ;;
+						     "4")
+						        echo "${B}Applying profile...${N}"
+						        setprop persist.kingtweaks.mode "4" 2>/dev/null
+						        echo "${G}Done!${N}"
+                                sleep 2 
+                                menu
+                                ;;
 						
-						"5")
-						echo "${B}Applying profile...${N}"
-						setprop persist.kingtweaks.mode "5" 2>/dev/null
-						echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-                        ;;
+						         "5")
+						            echo "${B}Applying profile...${N}"
+						            setprop persist.kingtweaks.mode "5" 2>/dev/null
+						            echo "${G}Done!${N}"
+                                    sleep 2 
+                                    menu
+                                    ;;
 						
-						"6")
-						echo "${B}Applying profile...${N}"
-						setprop persist.kingtweaks.mode "6" 2>/dev/null
-						echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-                        ;;
+						           "6")
+						              echo "${B}Applying profile...${N}"
+						              setprop persist.kingtweaks.mode "6" 2>/dev/null
+						              echo "${G}Done!${N}"
+                                      sleep 2 
+                                      menu
+                                      ;;
 						
-						"7")
-						echo "${B}Optimizing packages...${N}"
-						cmd package bg-dexopt-job
-						sleep 5
-                        menu
-                        ;;
+						              "7")
+						                 echo "${B}Optimizing packages...${N}"
+						                 cmd package bg-dexopt-job
+						                 sleep 5
+                                         menu
+                                         ;;
 						
-                        "8")
-                        settings put global low_power_sticky 1
-                        settings put global low_power 1
-                        echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-                        ;;
+                                          "8")
+                                             settings put global low_power_sticky 1
+                                             settings put global low_power 1
+                                             echo "${G}Done!${N}"
+                                             sleep 2 
+                                             menu
+                                             ;;
                         
-                        "9")
-                        settings put global low_power_sticky 0
-                        settings put global low_power 0
-                        echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-                        ;;
+                                              "9")
+                                                 settings put global low_power_sticky 0
+                                                 settings put global low_power 0
+                                                 echo "${G}Done!${N}"
+                                                 sleep 2 
+                                                 menu
+                                                 ;;
                         
-                        "10")
-                        cmd netpolicy set restrict-background true
-                        echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-                        ;;
+                                                 "10")
+                                                     cmd netpolicy set restrict-background true
+                                                     echo "${G}Done!${N}"
+                                                     sleep 2 
+                                                     menu
+                                                     ;;
                         
-                        "11")
-                        cmd netpolicy set restrict-background false
-                        echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-                        ;;
+                                                      "11")
+                                                          cmd netpolicy set restrict-background false
+                                                          echo "${G}Done!${N}"
+                                                          sleep 2 
+                                                          menu
+                                                          ;;
                         
-                        "12")
-                        echo "${B}Applying settings...${N}"
-                        settings put secure location_mode "0"
-                        settings put global assisted_gps_enabled "0"
-                        echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-                        ;;
+                                                           "12")
+                                                               echo "${B}Applying settings...${N}"
+                                                               settings put secure location_mode "0"
+                                                               settings put global assisted_gps_enabled "0"
+                                                               echo "${G}Done!${N}"
+                                                               sleep 2 
+                                                               menu
+                                                               ;;
                         
-                        "13")
-                        settings put global assisted_gps_enabled "1"
-                        echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-                        ;;
+                                                                "13")
+                                                                    settings put global assisted_gps_enabled "1"
+                                                                    echo "${G}Done!${N}"
+                                                                    sleep 2 
+                                                                    menu
+                                                                    ;;
                         
-                        "14")
-                        echo "${B}Cleaning debug logs and system trash...${N}"
-                        cleantrash 2>/dev/null
-                        echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-                        ;;
+                                                                     "14")
+                                                                         echo "${B}Cleaning debug logs and system trash...${N}"
+                                                                         cleantrash 2>/dev/null
+                                                                         echo "${G}Done!${N}"
+                                                                         sleep 2 
+                                                                         menu
+                                                                         ;;
                         
-						"15")
-						am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
-						menu
-                        ;;
+                                                                          "15")
+                                                                              am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
+                                                                              menu
+                                                                            ;;
 						
-						"16")
-						echo "Copy this link to FKM -> Flasher -> Import a kernel download configuration to always getting alerted when a new KTSR update is released!"
-						echo "https://raw.githubusercontent.com/pedrozzz0/King-Tweaks/master/update.json"
-						sleep 9
-                        menu
-                        ;;
-						
-						"17")
-						echo "${B}Killing all background apps...${N}"
-						am kill-all
-						sleep 2
-						echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-						;;
+						                                            "16")
+						                                            echo "${B}Killing all background apps...${N}"
+						                                            am kill-all
+						                                            sleep 2
+						                                            echo "${G}Done!${N}"
+						                                            sleep 2 
+						                                            menu
+						                                           ;;
                         
-						"18")
-						echo "${B}Disabling thermal...${N}"
-						stop thermald 2>/dev/null
-						stop thermalservice 2>/dev/null
-						stop mi_thermald 2>/dev/null
-						stop thermal-engine 2>/dev/null
-						echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-						;;
+						                                    "17")
+						                                    echo "${B}Disabling thermal...${N}"
+						                                    stop thermald 2>/dev/null
+						                                    stop thermalservice 2>/dev/null
+						                                    stop mi_thermald 2>/dev/null
+						                                    stop thermal-engine 2>/dev/null
+						                                    echo "${G}Done!${N}"
+						                                    sleep 2 
+						                                    menu
+						                                   ;;
 
-						"19")
-						echo "${B}Enabling thermal...${N}"
-						start thermald 2>/dev/null
-						start thermalservice 2>/dev/null
-						start mi_thermald 2>/dev/null
-						start thermal-engine 2>/dev/null
-						echo "${G}Done!${N}"
-                        sleep 2 
-                        menu
-						;;
+						                              "18")
+						                              echo "${B}Enabling thermal...${N}"
+						                              start thermald 2>/dev/null
+						                              start thermalservice 2>/dev/null
+						                              start mi_thermald 2>/dev/null
+						                              start thermal-engine 2>/dev/null
+						                              echo "${G}Done!${N}"
+						                              sleep 2 
+						                              menu
+						                            ;;
+						                            
+						                        "0")
+						                        echo "${G}Hope that see ya soon! ;)${N}"
+						                       ;;
 						
-						"0")
-						echo "${G}Hope that see ya soon! ;)${N}"
-						;;
-						
-						*)
-						abort "${R}[!] Unexpected response, aborting...${N}"
-						;;
-						esac
-						}
+						                     *)
+						                     abort "${R}[!] Unexpected response, aborting...${N}"
+						                    ;;
+						               esac
+}
 						
 						if [[ -z "$1" ]]; then
-						menu
+						    menu
 						fi
 
 						help_me(){
@@ -352,33 +348,35 @@ read -r option
 						while getopts ":p:th:" opt; do
 						case "${opt}" in
 						
-						p) echo "${B}Applying profile...${N}"
-						setprop persist.kingtweaks.mode "$2" 2>/dev/null
-						echo "${G}Done!${N}"
-                        ;;
+						p) 
+						 echo "${B}Applying profile...${N}"
+						 setprop persist.kingtweaks.mode "$2" 2>/dev/null
+						 echo "${G}Done!${N}"
+                         ;;
 						
-						t) if [[ $thermal == "On" ]]; then 
-						echo "Disabling thermal..."
-						stop thermald 2>/dev/null
-						stop thermalservice 2>/dev/null
-						stop mi_thermald 2>/dev/null
-						stop thermal-engine 2>/dev/null
-						echo "${G}Done!${N}"
-						elif [[ $thermal == "Off" ]]; then
-						echo "${B}Enabling thermal...${N}"
-						start thermald 2>/dev/null
-						start thermalservice 2>/dev/null
-						start mi_thermald 2>/dev/null
-						start thermal-engine 2>/dev/null
-						echo "${G}Done!${N}"
-						else
-                        abort "${R}[!] No valid thermal controllers found / Unknown thermal state, aborting...${N}"
-						fi
-						;;
+						   t)
+						     if [[ $thermal == "On" ]]; then 
+						         echo "Disabling thermal..."
+						         stop thermald 2>/dev/null
+						         stop thermalservice 2>/dev/null
+						         stop mi_thermald 2>/dev/null
+						         stop thermal-engine 2>/dev/null
+						         echo "${G}Done!${N}"
+						     elif [[ $thermal == "Off" ]]; then
+						           echo "${B}Enabling thermal...${N}"
+						           start thermald 2>/dev/null
+						           start thermalservice 2>/dev/null
+						           start mi_thermald 2>/dev/null
+						           start thermal-engine 2>/dev/null
+						           echo "${G}Done!${N}"
+						     else
+                                 abort "${R}[!] No valid thermal controllers found / Unknown thermal state, aborting...${N}"
+						     fi
+						   ;;
 						
 						h | *) help_me
 						;;
-						esac
-                        done
-
-                        shift $((OPTIND - 1))
+					esac                             
+               done
+                      
+shift $((OPTIND - 1))
