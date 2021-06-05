@@ -490,10 +490,10 @@ get_batt_pctg()
 {               
 # Fetch battery actual capacity
 if [[ -e "/sys/class/power_supply/battery/capacity" ]]; then
-    battpctg=$(cat /sys/class/power_supply/battery/capacity)%
+    batt_pctg=$(cat /sys/class/power_supply/battery/capacity)%
               
 else
-    battpctg=$(dumpsys battery | awk '/level/{print $2}')%
+    batt_pctg=$(dumpsys battery | awk '/level/{print $2}')%
 fi
 }
 
