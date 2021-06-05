@@ -15,18 +15,19 @@ toptsdir=/dev/stune/top-app/tasks
 toptcdir=/dev/cpuset/top-app/tasks
 
 # Get screen state (ON | OFF)
-get_scrn_state(){
+get_scrn_state()
+{
 	scrn_state=$(dumpsys power | grep state=O | cut -d "=" -f 2)
 	if [[ "$scrn_state" == "ON" ]]; then 
 	    scrn_on=1
 	else 
 	    scrn_on=0
 	fi
-	}
+}
 
 (
 while true; do
-# This script basically check if packages PIDs is found on stune / cpuset top-app
+# This script basically check if packages PIDs is found on stune / cpuset top-app tasks
 for gpid in $(pgrep netease) $(pgrep tipsworks) $(pgrep studiowildcard) $(pgrep wardrumstudios) $(pgrep ExiliumGames) $(pgrep com2us) $(pgrep zuuks) $(pgrep junegaming) $(pgrep pixelbite) $(pgrep junesoftware) $(pgrep sozap) $(pgrep dotemu) $(pgrep playables) $(pgrep playrisedigital) $(pgrep rockstar) $(pgrep blackpanther) $(pgrep noodlecake) $(pgrep linegames) $(pgrep kleientertainment) $(pgrep agaming) $(pgrep generagames) $(pgrep astragon) $(pgrep chucklefish) $(pgrep t2kgames) $(pgrep t2ksports) $(pgrep turner) $(pgrep uplayonline) $(pgrep pubg) $(pgrep dreamotion) $(pgrep snailgames) $(pgrep dexintgames) $(pgrep haegin) $(pgrep panzerdog) $(pgrep igg) $(pgrep gtarcade) $(pgrep naxon) $(pgrep mame4droid) $(pgrep kakaogames) $(pgrep telltalegames) $(pgrep seleuco) $(pgrep innersloth) $(pgrep kiloo) $(pgrep imaginalis) $(pgrep refuelgames) $(pgrep scottgames) $(pgrep clickteam) $(pgrep minigames) $(pgrep headupgames) $(pgrep mobigames) $(pgrep callofduty) $(pgrep ubisoft) $(pgrep ppsspp) $(pgrep cf) $(pgrep feralinteractive) $(pgrep riotgames) $(pgrep playgendary) $(pgrep joymax) $(pgrep deadeffect) $(pgrep blackdesertm) $(pgrep firsttouchgames) $(pgrep standoff2) $(pgrep criticalops) $(pgrep wolvesinteractive) $(pgrep gamedevltd) $(pgrep mojang) $(pgrep miHoYo) $(pgrep miniclip) $(pgrep moontoon) $(pgrep gameloft) $(pgrep netmarble) $(pgrep yoozoogames) $(pgrep eyougame) $(pgrep asphalt) $(pgrep dhlove) $(pgrep fifamobile) $(pgrep freefireth) $(pgrep activision) $(pgrep konami) $(pgrep gamevil) $(pgrep pixonic) $(pgrep gameparadiso) $(pgrep wargaming) $(pgrep madfingergames) $(pgrep supercell) $(pgrep allstar) $(pgrep garena); do
   if [[ "$(grep $gpid $toptsdir)" ]] | [[ "$(grep $gpid $toptcdir)" ]]; then
       kmsg3 ""
@@ -52,6 +53,8 @@ for bpid in $(pgrep geekbench) $(pgrep androbench2) $(pgrep kinemaster) $(pgrep 
     done
         fi
           done
+              fi
+                done
 
       get_scrn_state
       if [[ "$(cat /sys/class/leds/lcd-backlight/brightness)" ]] || [[ "$(cat /sys/class/backlight/panel*-backlight/brightness)" == "0" ]] || [[ $scrn_on == "0" ]]; then
