@@ -490,10 +490,10 @@ get_batt_pctg()
 {               
 # Fetch battery actual capacity
 if [[ -e "/sys/class/power_supply/battery/capacity" ]]; then
-    batt_pctg=$(cat /sys/class/power_supply/battery/capacity)%
+    batt_pctg=$(cat /sys/class/power_supply/battery/capacity)
               
 else
-    batt_pctg=$(dumpsys battery | awk '/level/{print $2}')%
+    batt_pctg=$(dumpsys battery | awk '/level/{print $2}')
 fi
 }
 
@@ -777,6 +777,8 @@ get_all()
 {
 get_gpu_dir
 
+define_gpu_pl
+
 get_gpu_max
 
 get_gpu_min
@@ -786,8 +788,6 @@ get_cpu_gov
 get_gpu_gov
 
 check_qcom
-
-define_gpu_pl
 
 get_max_cpu_clk
 
@@ -1528,7 +1528,6 @@ sync
 kingauto
 	
 kmsg "Applied automatic profile"
-kmsg3 ""
 }
 # Balanced Profile
 balanced()
@@ -3154,8 +3153,8 @@ exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
 }
 # Battery Profile
-battery() {
-
+battery() 
+{
 init=$(date +%s)
    
 get_all

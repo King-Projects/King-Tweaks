@@ -50,11 +50,9 @@ for bpid in $(pgrep geekbench) $(pgrep androbench2) $(pgrep kinemaster) $(pgrep 
      sleep 30
   fi
     done
-      fi
-        done
-          fi
-            done
- 
+        fi
+          done
+
       get_scrn_state
       if [[ "$(cat /sys/class/leds/lcd-backlight/brightness)" ]] || [[ "$(cat /sys/class/backlight/panel*-backlight/brightness)" == "0" ]] || [[ $scrn_on == "0" ]]; then
       kmsg3 "" 
@@ -64,7 +62,6 @@ for bpid in $(pgrep geekbench) $(pgrep androbench2) $(pgrep kinemaster) $(pgrep 
       sleep 100
       get_batt_sts
   elif [[ "$batt_sts" == "Charging" ]]; then
-        . "$MODPATH"/libs/libktsr.sh
         kmsg3 ""
         kmsg "Device is charging, trying to reduce battery cycles by applying battery profile and extending check time"
         kmsg3 ""
