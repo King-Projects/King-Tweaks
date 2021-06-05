@@ -485,7 +485,6 @@ fi
 
 get_ktsr_info()
 {
-              
 # Fetch KTSR version
 build_ver=$(cat $MODPATH/module.prop | grep version= | sed "s/version=//")
 
@@ -545,10 +544,10 @@ elif [[ $mtk == "true" ]]; then
 else
     drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
 fi
+}
 
 get_rfrsh_rates()
 {
-              
 # Fetch supported refresh rates
 rrs=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
 
