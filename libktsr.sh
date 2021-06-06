@@ -1528,6 +1528,7 @@ sync
 kingauto
 	
 kmsg "Applied automatic profile"
+kmsg3 ""
 }
 # Balanced Profile
 balanced()
