@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # KTSR by Pedro (pedrozzz0 @ GitHub)
-# Credits: Draco (tytydraco @ GitHub), Dan (Paget69 @ XDA), mogoroku @ GitHub, Matt Yang (yc9559 @ GitHub) and Eight (dlwlrma123 @ GitHub).
+# Credits: Draco (tytydraco @ GitHub), Dan (Paget69 @ XDA), mogoroku @ GitHub, helloklf @ GitHub, Matt Yang (yc9559 @ GitHub) and Eight (dlwlrma123 @ GitHub).
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 MODPATH=/data/adb/modules/KTSR
@@ -10,82 +10,67 @@ KLOG=/sdcard/KTSR/KTSR.log
 KDBG=/sdcard/KTSR/KTSR_DBG.log
 
 # Log in white and continue (unnecessary)
-kmsg() 
-{
+kmsg() {
 	echo -e "[*] $@" >> $KLOG
 	echo -e "[*] $@"
 }
 
-kmsg1()
-{
+kmsg1() {
 	echo -e "$@" >> $KDBG
 	echo -e "$@"
 }
 
-kmsg2()
-{
+kmsg2() {
 	echo -e "[!] $@" >> $KDBG
 	echo -e "[!] $@"
 }
 
-kmsg3() 
-{
+kmsg3() {
 	echo -e "$@" >> $KLOG
 	echo -e "$@"
 }
 
-toast()
-{
+toast() {
 	am start -a android.intent.action.MAIN -e toasttext "Applying $kts_profile profile..." -n bellavita.toast/.MainActivity
 }
 	
-toast1() 
-{
+toast1() {
 	am start -a android.intent.action.MAIN -e toasttext "$kts_profile profile applied" -n bellavita.toast/.MainActivity
 }
 
-toastpt() 
-{
+toastpt() {
 	am start -a android.intent.action.MAIN -e toasttext "Aplicando perfil $kts_profilept..." -n bellavita.toast/.MainActivity
 }
 
-toastpt1() 
-{
+toastpt1() {
 	am start -a android.intent.action.MAIN -e toasttext "Perfil $kts_profilept aplicado" -n bellavita.toast/.MainActivity
 }
 
-toasttr() 
-{
+toasttr() {
 	am start -a android.intent.action.MAIN -e toasttext "$kts_profiletr profili uygulanıyor..." -n bellavita.toast/.MainActivity
 }
 
-toasttr1()
-{
+toasttr1() {
 	am start -a android.intent.action.MAIN -e toasttext "$kts_profiletr profili uygulandı" -n bellavita.toast/.MainActivity
 }
 
-toastin()
-{
+toastin() {
 	am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil $kts_profilein..." -n bellavita.toast/.MainActivity
 }
 
-toastin1() 
-{
+toastin1() {
 	am start -a android.intent.action.MAIN -e toasttext "Profil $kts_profilein terpakai" -n bellavita.toast/.MainActivity
 }
 
-toastfr() 
-{
+toastfr() {
 	am start -a android.intent.action.MAIN -e toasttext "Chargement du profil $kts_profilefr..." -n bellavita.toast/.MainActivity
 }
 
-toastfr1() 
-{
+toastfr1() {
 	am start -a android.intent.action.MAIN -e toasttext "Profil $kts_profilefr chargé" -n bellavita.toast/.MainActivity
 }
 
-write() 
-{
+write() {
 	# Bail out if file does not exist
 	if [[ ! -f "$1" ]]; then
 	    kmsg2 "$1 doesn't exist, skipping..."
@@ -134,8 +119,7 @@ SCHED_TASKS_BALANCE="8"
 SCHED_TASKS_THROUGHPUT="6"
 
 # Fetch GPU directories
-get_gpu_dir()
-{
+get_gpu_dir() {
 for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
  do
    if [[ -d "$gpul" ]]; then
@@ -221,8 +205,7 @@ done
                fi
 }
 
-get_gpu_max()
-{
+get_gpu_max() {
 gpu_max=$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpu_num_pl" '{print $var}')
     
 if [[ $gpu_max -ne $gpu_max_freq ]]; then
@@ -247,10 +230,11 @@ elif [[ -e "$gpui/gpu_freq_table" ]]; then
 elif [[ $gpu_max2 -ne $gpu_max_freq ]]; then
       gpu_max2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
 fi
+
+      gpu_max3=$(cat /proc/gpufreq/gpufreq_opp_dump | awk '{printf $4 "\n"}' | cut -f1 -d "," | sed -n '1p')
 }
 
-get_gpu_min()
-{
+get_gpu_min() {
 if [[ -e "$gpu/available_frequencies" ]]; then
     gpu_min=$(cat $gpu/available_frequencies | awk '{print $1}')
 
@@ -265,14 +249,12 @@ elif [[ $gpu_min -ne $gpu_min_freq ]]; then
 fi
 }
 
-get_cpu_gov()
-{
+get_cpu_gov() {
 # Fetch CPU actual governor    
 cpu_gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
 }
 
-get_gpu_gov()
-{
+get_gpu_gov() {
 # Fetch GPU actual governor
 if [[ -e "$gpui/gpu_governor" ]]; then
     gpu_gov=$(cat $gpui/gpu_governor)
@@ -285,16 +267,14 @@ elif [[ -e "$gpu/devfreq/governor" ]]; then
 fi
 }
 
-check_qcom()
-{
+check_qcom() {
 # Check if qcom string is null, then define it as false
 if [[ -z "$qcom" ]]; then
     qcom=false
 fi
 }
 
-define_gpu_pl()
-{
+define_gpu_pl() {
 # Fetch the GPU amount of power levels
 gpu_num_pl=$(cat $gpu/num_pwrlevels)
 
@@ -305,8 +285,7 @@ gpu_min_pl=$(cat $gpu/min_pwrlevel)
 gpu_max_pl=$(cat $gpu/max_pwrlevel)
 }
 
-get_max_cpu_clk() 
-{
+get_max_cpu_clk() {
 # Fetch max CPU clock
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
@@ -319,8 +298,7 @@ if [[ "$cpu_max_freq2" -gt "$cpu_max_freq" ]]; then
 done
 }
 
-get_min_cpu_clk()
-{
+get_min_cpu_clk() {
 # Fetch min CPU clock
 cpu_min_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
 cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
@@ -330,8 +308,7 @@ if [[ "$cpu_min_freq" -gt "$cpu_min_freq2" ]]; then
 fi
 }
 
-get_cpu_min_max_mhz()
-{
+get_cpu_min_max_mhz() {
 # Fetch CPU min clock in MHz
 cpu_min_clk_mhz=$((cpu_min_freq / 1000))
 
@@ -339,8 +316,7 @@ cpu_min_clk_mhz=$((cpu_min_freq / 1000))
 cpu_max_clk_mhz=$((cpu_max_freq / 1000))
 }
 
-get_gpu_min_max()
-{
+get_gpu_min_max() {
 # Fetch maximum GPU frequency (gpu_max & gpu_max2 does almost the same thing)
 if [[ -e "$gpu/max_gpuclk" ]]; then
     gpu_max_freq=$(cat $gpu/max_gpuclk)
@@ -359,8 +335,7 @@ elif [[ -e "$gpu/min_clock" ]]; then
 fi
 }
 
-get_gpu_min_max_mhz()
-{
+get_gpu_min_max_mhz() {
 # Fetch maximum & minimum GPU clock in MHz
 if [[ "$gpu_max_freq" -gt "100000" ]]; then
     gpu_max_clk_mhz=$((gpu_max_freq / 1000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000))
@@ -371,14 +346,12 @@ if [[ "$gpu_max_freq" -gt "100000000" ]]; then
 fi
 }
 
-get_soc_mf()
-{
+get_soc_mf() {
 # Fetch the SOC manufacturer
 soc_mf=$(getprop ro.boot.hardware)
 }
 
-get_soc()
-{
+get_soc() {
 # Fetch the device SOC
 soc=$(getprop ro.board.platform)
 
@@ -390,8 +363,7 @@ elif [[ $soc == "" ]]; then
 fi
 }
 
-get_sdk()
-{
+get_sdk() {
 # Fetch the device SDK              
 sdk=$(getprop ro.build.version.sdk)
 
@@ -403,33 +375,28 @@ elif [[ $sdk == "" ]]; then
 fi
 }
 
-get_arch()
-{
+get_arch() {
 # Fetch the device architeture
 arch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}')
 }
 
-get_andro_vs()
-{
+get_andro_vs() {
 # Fetch the android version
 avs=$(getprop ro.build.version.release)
 }
 
-get_dvc_cdn()
-{
+get_dvc_cdn() {
 # Fetch the device codename
 dvc_cdn=$(getprop ro.product.device)
 }
 
-get_root()
-{
+get_root() {
 # Fetch root method
 root=$(su -v)
 }
 
 # Detect if we're running on a exynos powered device
-is_exynos()
-{
+is_exynos() {
 if [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]]; then
     exynos=true
     qcom=false
@@ -439,8 +406,7 @@ else
 fi
 }
 
-is_mtk()
-{ 
+is_mtk() { 
 # Detect if we're running on a mediatek powered device              
 if [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]]; then
     mtk=true
@@ -451,8 +417,7 @@ else
 fi
 }
 
-detect_cpu_sched()
-{
+detect_cpu_sched() {
 # Fetch the CPU scheduling type
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
@@ -468,8 +433,7 @@ do
 done
 }
 
-get_kern_info()
-{
+get_kern_info() {
 # Fetch kernel name and version
 kern_ver_name=$(uname -r)
 
@@ -477,8 +441,7 @@ kern_ver_name=$(uname -r)
 kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 }
 
-get_ram_info()
-{
+get_ram_info() {
 # Fetch the total amount of memory RAM
 total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
 
@@ -486,8 +449,7 @@ total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
 avail_ram=$(busybox free -m | grep Mem: | awk '{print $7}')
 }
 
-get_batt_pctg()
-{               
+get_batt_pctg() {               
 # Fetch battery actual capacity
 if [[ -e "/sys/class/power_supply/battery/capacity" ]]; then
     batt_pctg=$(cat /sys/class/power_supply/battery/capacity)
@@ -497,8 +459,7 @@ else
 fi
 }
 
-get_ktsr_info()
-{
+get_ktsr_info() {
 # Fetch KTSR version
 build_ver=$(cat $MODPATH/module.prop | grep version= | sed "s/version=//")
 
@@ -512,8 +473,7 @@ build_dt=$(cat $MODPATH/ktsr.prop | grep builddate= | sed "s/builddate=//")
 build_cdn=$(cat $MODPATH/ktsr.prop | grep codename= | sed "s/codename=//")
 }
 
-get_batt_tmp()
-{
+get_batt_tmp() {
 # Fetch battery temperature
 if [[ -e "/sys/class/power_supply/battery/temp" ]]; then
     batt_tmp=$(cat /sys/class/power_supply/battery/temp)
@@ -529,8 +489,7 @@ fi
 batt_tmp=$((batt_tmp / 10))
 }
 
-get_gpu_mdl() 
-{
+get_gpu_mdl() {
 # Fetch GPU model
 if [[ $exynos == "true" ]]; then
     gpu_mdl=$(cat $gpu/gpuinfo | awk '{print $1}')
@@ -546,8 +505,7 @@ elif [[ $gpu_mdl == "" ]]; then
 fi
 }
 
-get_drvs_info()
-{
+get_drvs_info() {
 # Fetch drivers info
 if [[ $exynos == "true" ]]; then
     drvs_info=$(cat /sys/module/mali_kbase/version)
@@ -560,8 +518,7 @@ else
 fi
 }
 
-get_rfrsh_rates()
-{
+get_rfrsh_rates() {
 # Fetch supported refresh rates
 rrs=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
 
@@ -573,8 +530,7 @@ elif [[ -z "$df" ]]; then
 fi
 }
 
-get_batt_hth()
-{
+get_batt_hth() {
 # Fetch battery health
 if [[ -e "/sys/class/power_supply/battery/health" ]]; then
     batt_hth=$(cat /sys/class/power_supply/battery/health)
@@ -609,8 +565,7 @@ else
 fi
 }
 
-get_batt_sts()
-{
+get_batt_sts() {
 # Fetch battery status
 if [[ -e "/sys/class/power_supply/battery/status" ]]; then
     batt_sts=$(cat /sys/class/power_supply/battery/status)
@@ -639,8 +594,7 @@ else
 fi
 }
 
-get_batt_cpct()
-{
+get_batt_cpct() {
 batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
 
 if [[ "$batt_cpct" == "" ]]; then
@@ -652,20 +606,17 @@ if [[ "$gbcapacity" -gt "1000000" ]]; then
 fi
 }
 
-get_busy_ver()
-{
+get_busy_ver() {
 # Fetch busybox version
 busy_ver=$(busybox | awk 'NR==1{print $2}')
 }
 
-get_rom_info()
-{
+get_rom_info() {
 # Fetch ROM info
 rom_info=$(getprop ro.build.display.id | awk '{print $1,$3,$4,$5}')
 }
 
-get_slnx_stt()
-{
+get_slnx_stt() {
 # Fetch SELinux state
 if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
     slnx_stt=Enforcing
@@ -675,13 +626,11 @@ else
 fi
 }
 
-setup_adreno_gpu_thrtl()
-{
-# Check if CPU is qcom then define var
-[[ $qcom == "true" ]] && gpu_thrtl_lvl=$(cat $gpu/thermal_pwrlevel)
+setup_adreno_gpu_thrtl() {
+gpu_thrtl_lvl=$(cat $gpu/thermal_pwrlevel)
 
 # Disable the GPU thermal throttling clock restriction
-if [[ "$gpu_thrtl_lvl" -eq "1" ]] || [[ "$gpu_thrtl_lvl" -gt "1" ]]; then
+if [[ "$gpu_thrtl_lvl" -eq "1" ]] && [[ "$gpu_thrtl_lvl" -gt "1" ]]; then
 gpu_calc_thrtl=$((gpu_thrtl_lvl - gpu_thrtl_lvl))
 
 else
@@ -689,8 +638,7 @@ else
 fi
 }
 
-get_gpu_load()
-{
+get_gpu_load() {
 # Fetch GPU load
 if [[ -e "$gpui/gpu_busy_percentage" ]]; then
     gpu_load=$(cat $gpui/gpu_busy_percentage | tr -d %)
@@ -706,8 +654,7 @@ elif [[ -e "$gpui/gpu_busy" ]]; then
 fi
 }
 
-get_nr_cores()
-{
+get_nr_cores() {
 # Fetch the number of CPU cores
 nr_cores=$(cat /sys/devices/system/cpu/possible | awk -F "-" '{print $2}')
                
@@ -718,14 +665,12 @@ if [[ "$nr_cores" -eq 0 ]]; then
 fi
 }
 
-get_dvc_brnd()
-{
+get_dvc_brnd() {
 # Fetch device brand
 dvc_brnd=$(getprop ro.product.brand)
 }
 
-check_one_ui()
-{
+check_one_ui() {
 # Check if we're running on OneUI
 if [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]]; then
     one_ui=true
@@ -735,28 +680,26 @@ else
 fi
 }
                
-get_dv()
-{
+get_dv() {
 dv=$(getprop ro.boot.bootdevice)
 }
 
-get_uptime()
-{
+get_uptime() {
 # Fetch the amount of time since system is running
 sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 }
 
-get_sql_info()
-{
-# Fetch SQLite version
-sql_ver=$(sqlite3 -version | awk '{print $1}')
+get_sql_info() {
+if [[ "$(find /system -name "sqlite3" -type f)" ]]; then
+    # Fetch SQLite version
+    sql_ver=$(sqlite3 -version | awk '{print $1}')
 
-# Fetch SQLite build date
-sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}')
+    # Fetch SQLite build date
+    sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}')
+fi
 }
 
-get_cpu_load()
-{
+get_cpu_load() {
 # Calculate CPU load (50 ms)
 read cpu user nice system idle iowait irq softirq steal guest< /proc/stat
 
@@ -773,11 +716,24 @@ cpu_total_cur=$((user+system+nice+softirq+steal+idle+iowait))
 cpu_load=$((100*( cpu_active_cur-cpu_active_prev ) / (cpu_total_cur-cpu_total_prev) ))
 }
 
-get_all()
-{
+get_all() {
 get_gpu_dir
 
-define_gpu_pl
+is_mtk
+
+if [[ "$mtk" != "true" ]]; then
+    is_exynos
+fi
+
+check_qcom
+
+if [[ "$qcom" != "true" ]]; then
+    support_ppm
+fi
+
+if [[ "$qcom" == "true" ]]; then
+    define_gpu_pl
+fi
 
 get_gpu_max
 
@@ -786,8 +742,6 @@ get_gpu_min
 get_cpu_gov
 
 get_gpu_gov
-
-check_qcom
 
 get_max_cpu_clk
 
@@ -812,10 +766,6 @@ get_andro_vs
 get_dvc_cdn
 
 get_root
-
-is_exynos
-
-is_mtk
 
 detect_cpu_sched
 
@@ -847,7 +797,9 @@ get_rom_info
 
 get_slnx_stt
 
-setup_adreno_gpu_thrtl
+if [[ "$qcom" == "true" ]]; then
+    setup_adreno_gpu_thrtl
+fi
 
 get_gpu_load
 
@@ -883,8 +835,7 @@ stune=/dev/stune/
 lmk=/sys/module/lowmemorykiller/
 
 # Latency Profile
-latency() 
-{
+latency() {
 init=$(date +%s)
 
 get_all
@@ -1053,8 +1004,19 @@ do
    write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-for i in 0 1 2 3 4 5 6 7 8 9; do
-write "/sys/devices/system/cpu/cpu$i/online" "1"
+if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
+    write "/proc/cpufreq/cpufreq_power_mode" "0"
+fi
+
+if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
+    write "/proc/cpufreq/cpufreq_cci_mode" "0"
+fi
+
+[[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
+
+for i in 0 1 2 3 4 5 6 7 8 9
+do
+  write "/sys/devices/system/cpu/cpu$i/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
@@ -1123,6 +1085,7 @@ else
      write "$gpui/gpu_min_clock" "$gpu_min"
      write "$gpu/highspeed_clock" "$gpu_max_freq"
      write "$gpu/highspeed_load" "80"
+     write "$gpu/highspeed_delay" "0"
      write "$gpu/power_policy" "coarse_demand"
      write "$gpui/boost" "0"
      write "$gpug/mali_touch_boost_level" "0"
@@ -1130,6 +1093,9 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
+     write "/sys/modules/ged/parameters/gpu_dvfs" "1"
+     write "/sys/modules/ged/parameters/gx_game_mode" "0"
+     write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
 fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
@@ -1307,6 +1273,15 @@ write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
     write "${kernel}timer_migration" "0"
 fi
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "1"
+fi
+if [[ -e "/proc/ufs_perf" ]]; then
+    write "/proc/ufs_perf" "0"
+fi
+if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
+    write "/sys/kernel/debug/eara_thermal/enable" "0"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
@@ -1314,8 +1289,28 @@ if [[ -e "/sys/kernel/rcu_normal" ]]; then
     write "/sys/kernel/rcu_normal" "1"
 fi
 
+if [[ -e "/sys/power/little_thermal_temp" ]]; then
+    write "/sys/power/little_thermal_temp" "90"
+fi
+
+if [[ "$ppm" == "true" ]]; then
+    write "/proc/ppm/policy_status" "1 0"
+    write "/proc/ppm/policy_status" "2 0"
+    write "/proc/ppm/policy_status" "3 0"
+    write "/proc/ppm/policy_status" "4 1"
+    write "/proc/ppm/policy_status" "7 0"
+    write "/proc/ppm/policy_status" "9 0"
+fi
+
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
+
+if [[ "$ppm" == "true" ]]; then
+    write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "0 $cpu_min_freq"
+    write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "1 $cpu_min_freq"
+    write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "0 $cpu_max_freq"
+    write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "1 $cpu_max_freq"
+fi
 
 # Set min and max clocks
 for cpus in /sys/devices/system/cpu/cpufreq/policy*/
@@ -1377,7 +1372,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] | [[ $total_ram -lt "3000" ]]; then
+if [[ $exynos == "true" ]] && [[ $total_ram -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -1519,8 +1514,7 @@ exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
 }
 # Automatic Profile
-automatic() 
-{     	
+automatic() {     	
 kmsg "Applying automatic profile"
 kmsg3 ""
 
@@ -1531,8 +1525,7 @@ kmsg "Applied automatic profile"
 kmsg3 ""
 }
 # Balanced Profile
-balanced()
-{
+balanced() {
 init=$(date +%s)
 
 get_all
@@ -1746,8 +1739,19 @@ do
   write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-for i in 0 1 2 3 4 5 6 7 8 9; do
-write "/sys/devices/system/cpu/cpu$i/online" "1"
+if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
+    write "/proc/cpufreq/cpufreq_power_mode" "0"
+fi
+
+if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
+    write "/proc/cpufreq/cpufreq_cci_mode" "0"
+fi
+
+[[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
+
+for i in 0 1 2 3 4 5 6 7 8 9
+do
+  write "/sys/devices/system/cpu/cpu$i/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
@@ -1827,6 +1831,7 @@ else
      write "$gpui/gpu_min_clock" "$gpu_min"
      write "$gpu/highspeed_clock" "$gpu_max_freq"
      write "$gpu/highspeed_load" "86"
+     write "$gpu/highspeed_delay" "0"
      write "$gpu/power_policy" "coarse_demand"
      write "$gpui/boost" "0"
      write "$gpug/mali_touch_boost_level" "0"
@@ -1834,6 +1839,10 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
+     write "/sys/modules/ged/parameters/gpu_dvfs" "1"
+     write "/sys/modules/ged/parameters/gx_game_mode" "0"
+     write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
+     write "/proc/gpufreq/gpufreq_opp_freq" "0"
 fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
@@ -2033,11 +2042,33 @@ fi
 if [[ -e "${kernel}sched_boost" ]]; then
     write "${kernel}sched_boost" "0"
 fi
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "1"
+fi
+if [[ -e "/proc/ufs_perf" ]]; then
+    write "/proc/ufs_perf" "2"
+fi
+if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
+    write "/sys/kernel/debug/eara_thermal/enable" "0"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
     write "/sys/kernel/rcu_expedited" "0"
     write "/sys/kernel/rcu_normal" "1"
+fi
+
+if [[ -e "/sys/power/little_thermal_temp" ]]; then
+    write "/sys/power/little_thermal_temp" "90"
+fi
+
+if [[ "$ppm" == "true" ]]; then
+    write "/proc/ppm/policy_status" "1 0"
+    write "/proc/ppm/policy_status" "2 0"
+    write "/proc/ppm/policy_status" "3 0"
+    write "/proc/ppm/policy_status" "4 1"
+    write "/proc/ppm/policy_status" "7 0"
+    write "/proc/ppm/policy_status" "9 0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -2049,6 +2080,13 @@ then
     write "/sys/kernel/fp_boost/enabled" "1"
     kmsg "Enabled fingerprint boost"
     kmsg3 ""
+fi
+
+if [[ "$ppm" == "true" ]]; then
+    write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "0 $cpu_min_freq"
+    write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "1 $cpu_min_freq"
+    write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "0 $cpu_max_freq"
+    write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "1 $cpu_max_freq"
 fi
 
 # Set min and max clocks
@@ -2121,7 +2159,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] | [[ $total_ram -lt "3000" ]]; then
+if [[ $exynos == "true" ]] && [[ $total_ram -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -2192,14 +2230,14 @@ then
 fi
 
 # Fix DT2W
-if [[ -e "/sys/touchpanel/double_tap" ]] | [[ -e "/proc/tp_gesture" ]]
+if [[ -e "/sys/touchpanel/double_tap" ]] && [[ -e "/proc/tp_gesture" ]]
 then
     write "/sys/touchpanel/double_tap" "1"
     write "/proc/tp_gesture" "1"
     kmsg "Fixed DT2W if broken"
     kmsg3 ""
 
-elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
+elif [[ -e "/sys/class/sec/tsp/dt2w_enable" ]]
 then
     write "/sys/class/sec/tsp/dt2w_enable" "1"
     kmsg "Fixed DT2W if broken"
@@ -2219,13 +2257,13 @@ then
 fi
 
 # Disable touch boost on balance and battery profile
-if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
+if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]
 then
     write "/sys/module/msm_performance/parameters/touchboost" "0"
     kmsg "Disabled msm_performance touch boost"
     kmsg3 ""
 
-elif [[ -e /sys/power/pnpmgr/touch_boost ]]
+elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]
 then
     write "/sys/power/pnpmgr/touch_boost" "0"
     kmsg "Disabled pnpmgr touch boost"
@@ -2345,8 +2383,7 @@ exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
 }
 # Extreme Profile
-extreme()
-{
+extreme() {
 init=$(date +%s)
 
 get_all
@@ -2557,9 +2594,20 @@ do
   write "$governor/go_hispeed_load" "80"
   write "$governor/hispeed_freq" "$cpu_max_freq"
 done
-	
-for i in 0 1 2 3 4 5 6 7 8 9; do
-write "/sys/devices/system/cpu/cpu$i/online" "1"
+
+if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
+    write "/proc/cpufreq/cpufreq_power_mode" "3"
+fi
+
+if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
+    write "/proc/cpufreq/cpufreq_cci_mode" "1"
+fi
+
+[[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
+
+for i in 0 1 2 3 4 5 6 7 8 9
+do
+  write "/sys/devices/system/cpu/cpu$i/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
@@ -2639,6 +2687,7 @@ else
      write "$gpui/gpu_min_clock" "$gpu_min"
      write "$gpu/highspeed_clock" "$gpu_max_freq"
      write "$gpu/highspeed_load" "76"
+     write "$gpu/highspeed_delay" "0"
      write "$gpu/power_policy" "coarse_demand"
      write "$gpu/cl_boost_disable" "0"
      write "$gpui/boost" "0"
@@ -2647,6 +2696,10 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "0"
+     write "/sys/modules/ged/parameters/gpu_dvfs" "0"
+     write "/sys/modules/ged/parameters/gx_game_mode" "1"
+     write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
+     write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max3"
 fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
@@ -2843,11 +2896,33 @@ fi
 if [[ -e "${kernel}sched_boost" ]]; then
     write "${kernel}sched_boost" "2"
 fi
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "1"
+fi
+if [[ -e "/proc/ufs_perf" ]]; then
+    write "/proc/ufs_perf" "2"
+fi
+if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
+    write "/sys/kernel/debug/eara_thermal/enable" "0"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
     write "/sys/kernel/rcu_expedited" "0"
     write "/sys/kernel/rcu_normal" "1"
+fi
+
+if [[ -e "/sys/power/little_thermal_temp" ]]; then
+    write "/sys/power/little_thermal_temp" "90"
+fi
+
+if [[ "$ppm" == "true" ]]; then
+    write "/proc/ppm/policy_status" "1 0"
+    write "/proc/ppm/policy_status" "2 1"
+    write "/proc/ppm/policy_status" "3 0"
+    write "/proc/ppm/policy_status" "4 0"
+    write "/proc/ppm/policy_status" "7 0"
+    write "/proc/ppm/policy_status" "9 1"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -2859,6 +2934,13 @@ then
     write "/sys/kernel/fp_boost/enabled" "1"
     kmsg "Enabled fingerprint_boost"
     kmsg3 ""
+fi
+
+if [[ "$ppm" == "true" ]]; then
+write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "0 $cpu_max_freq"
+write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "1 $cpu_max_freq"
+write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "0 $cpu_max_freq"
+write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "1 $cpu_max_freq"
 fi
 
 # Set min and max clocks
@@ -2930,7 +3012,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] | [[ $total_ram -lt "3000" ]]; then
+if [[ $exynos == "true" ]] && [[ $total_ram -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3001,14 +3083,14 @@ then
 fi
 
 # Fix DT2W
-if [[ -e "/sys/touchpanel/double_tap" ]] | [[ -e "/proc/tp_gesture" ]]
+if [[ -e "/sys/touchpanel/double_tap" ]] && [[ -e "/proc/tp_gesture" ]]
 then
     write "/sys/touchpanel/double_tap" "1"
     write "/proc/tp_gesture" "1"
     kmsg "Fixed DT2W if broken"
     kmsg3 ""
 
-elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
+elif [[ -e "/sys/class/sec/tsp/dt2w_enable" ]]
 then
     write "/sys/class/sec/tsp/dt2w_enable" "1"
     kmsg "Fixed DT2W if broken"
@@ -3028,13 +3110,13 @@ then
 fi
 
 # Enable touch boost on gaming and performance profile.
-if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
+if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]
 then
     write "/sys/module/msm_performance/parameters/touchboost" "1"
     kmsg "Enabled msm_performance touch boost"
     kmsg3 ""
 
-elif [[ -e /sys/power/pnpmgr/touch_boost ]]
+elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]
 then
     write "/sys/power/pnpmgr/touch_boost" "1"
     kmsg "Enabled pnpmgr touch boost"
@@ -3154,8 +3236,7 @@ exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
 }
 # Battery Profile
-battery() 
-{
+battery() {
 init=$(date +%s)
    
 get_all
@@ -3370,8 +3451,15 @@ do
   write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-for i in 0 1 2 3 4 5 6 7 8 9; do
-write "/sys/devices/system/cpu/cpu$i/online" "1"
+write "/proc/cpufreq/cpufreq_power_mode" "1"
+
+write "/proc/cpufreq/cpufreq_cci_mode" "0"
+
+write "/proc/ppm/enabled" "1"
+
+for i in 0 1 2 3 4 5 6 7 8 9
+do
+  write "/sys/devices/system/cpu/cpu$i/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
@@ -3450,6 +3538,7 @@ else
      write "$gpui/gpu_min_clock" "$gpu_min"
      write "$gpu/highspeed_clock" "$gpu_max_freq"
      write "$gpu/highspeed_load" "95"
+     write "$gpu/highspeed_delay" "0"
      write "$gpu/power_policy" "coarse_demand"
      write "$gpu/cl_boost_disable" "1"
      write "$gpui/boost" "0"
@@ -3458,6 +3547,10 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
+     write "/sys/modules/ged/parameters/gpu_dvfs" "1"
+     write "/sys/modules/ged/parameters/gx_game_mode" "0"
+     write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
+     write "/proc/gpufreq/gpufreq_opp_freq" "0"
 fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
@@ -3656,11 +3749,33 @@ fi
 if [[ -e "${kernel}sched_boost" ]]; then
     write "${kernel}sched_boost" "0"
 fi
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "1"
+fi
+if [[ -e "/proc/ufs_perf" ]]; then
+    write "/proc/ufs_perf" "0"
+fi
+if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
+    write "/sys/kernel/debug/eara_thermal/enable" "0"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
     write "/sys/kernel/rcu_expedited" "0"
     write "/sys/kernel/rcu_normal" "1"
+fi
+
+if [[ -e "/sys/power/little_thermal_temp" ]]; then
+    write "/sys/power/little_thermal_temp" "90"
+fi
+
+if [[ "$ppm" == "true" ]]; then
+    write "/proc/ppm/policy_status" "1 0"
+    write "/proc/ppm/policy_status" "2 0"
+    write "/proc/ppm/policy_status" "3 0"
+    write "/proc/ppm/policy_status" "4 1"
+    write "/proc/ppm/policy_status" "7 0"
+    write "/proc/ppm/policy_status" "9 0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -3672,6 +3787,13 @@ then
     write "/sys/kernel/fp_boost/enabled" "0"
     kmsg "Disabled fingerprint boost"
     kmsg3 ""
+fi
+
+if [[ "$ppm" == "true" ]]; then
+    write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "0 $cpu_min_freq"
+    write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "1 $cpu_min_freq"
+    write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "0 $cpu_max_freq"
+    write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "1 $cpu_max_freq"
 fi
 
 # Set min and max clocks
@@ -3743,12 +3865,12 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP if device haven't more than 3 GB RAM
-if [[ $exynos == "true" ]] | [[ $total_ram -lt "3000" ]]; then
+if [[ $exynos == "true" ]] && [[ $total_ram -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
 fi
-write "${vm}laptop_mode" "1"
+write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "60"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] | [[ $total_ram -lt "5000" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3814,14 +3936,14 @@ then
 fi
 
 # Fix DT2W
-if [[ -e "/sys/touchpanel/double_tap" ]] | [[ -e "/proc/tp_gesture" ]]
+if [[ -e "/sys/touchpanel/double_tap" ]] && [[ -e "/proc/tp_gesture" ]]
 then
     write "/sys/touchpanel/double_tap" "1"
     write "/proc/tp_gesture" "1"
     kmsg "Fixed DT2W if broken"
     kmsg3 ""
 
-elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
+elif [[ -e "/sys/class/sec/tsp/dt2w_enable" ]]
 then
     write "/sys/class/sec/tsp/dt2w_enable" "1"
     kmsg "Fixed DT2W if broken"
@@ -3960,8 +4082,7 @@ exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
 }
 # Gaming Profile
-gaming() 
-{
+gaming() {
 init=$(date +%s)
      	
 get_all
@@ -4175,8 +4296,15 @@ do
    write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-for i in 0 1 2 3 4 5 6 7 8 9; do
-write "/sys/devices/system/cpu/cpu$i/online" "1"
+write "/proc/cpufreq/cpufreq_power_mode" "3"
+
+write "/proc/cpufreq/cpufreq_cci_mode" "1"
+
+write "/proc/ppm/enabled" "0"
+
+for i in 0 1 2 3 4 5 6 7 8 9
+do
+  write "/sys/devices/system/cpu/cpu$i/online" "1"
 done
 
 kmsg "Tweaked CPU parameters"
@@ -4252,18 +4380,23 @@ if [[ $qcom == "true" ]]; then
     write "$gpu/idle_timer" "1000000"
     write "$gpu/pwrnap" "0"
 else
-[[ $one_ui == "false" ]] && write "$gpu/dvfs" "0"
- write "$gpui/gpu_min_clock" "$gpu_max2"
- write "$gpu/highspeed_clock" "$gpu_max_freq"
- write "$gpu/highspeed_load" "76"
- write "$gpu/power_policy" "always_on"
- write "$gpu/cl_boost_disable" "0"
- write "$gpui/boost" "1"
- write "$gpug/mali_touch_boost_level" "1"
- write "/proc/gpufreq/gpufreq_input_boost" "1"
- write "$gpu/max_freq" "$gpu_max_freq"
- write "$gpu/min_freq" "$gpu_max2"
- write "$gpu/tmu" "0"
+    [[ $one_ui == "false" ]] && write "$gpu/dvfs" "0"
+     write "$gpui/gpu_min_clock" "$gpu_max2"
+     write "$gpu/highspeed_clock" "$gpu_max_freq"
+     write "$gpu/highspeed_load" "76"
+     write "$gpu/highspeed_delay" "0"
+     write "$gpu/power_policy" "always_on"
+     write "$gpu/cl_boost_disable" "0"
+     write "$gpui/boost" "1"
+     write "$gpug/mali_touch_boost_level" "1"
+     write "/proc/gpufreq/gpufreq_input_boost" "1"
+     write "$gpu/max_freq" "$gpu_max_freq"
+     write "$gpu/min_freq" "$gpu_max2"
+     write "$gpu/tmu" "0"
+     write "/sys/modules/ged/parameters/gpu_dvfs" "0"
+     write "/sys/modules/ged/parameters/gx_game_mode" "1"
+     write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "1"
+     write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max3"
 fi
 
 if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
@@ -4274,7 +4407,7 @@ fi
 # Disable dvfs
 if [[ -e "/proc/mali/dvfs_enable" ]] 
 then
-[[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "0"
+    [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "0"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
@@ -4460,11 +4593,27 @@ fi
 if [[ -e "${kernel}sched_boost" ]]; then
     write "${kernel}sched_boost" "1"
 fi
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "1"
+fi
+if [[ -e "/proc/ufs_perf" ]]; then
+    write "/proc/ufs_perf" "2"
+fi
+if [[ -e "/proc/cpuidle/enable" ]]; then
+    write "/proc/cpuidle/enable" "0"
+fi
+if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
+    write "/sys/kernel/debug/eara_thermal/enable" "0"
+fi
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
     write "/sys/kernel/rcu_expedited" "0"
     write "/sys/kernel/rcu_normal" "1"
+fi
+
+if [[ -e "/sys/power/little_thermal_temp" ]]; then
+    write "/sys/power/little_thermal_temp" "90"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -4547,7 +4696,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] | [[ $total_ram -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ $total_ram -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -4618,14 +4767,14 @@ then
 fi
 
 # Fix DT2W
-if [[ -e "/sys/touchpanel/double_tap" ]] | [[ -e "/proc/tp_gesture" ]]
+if [[ -e "/sys/touchpanel/double_tap" ]] && [[ -e "/proc/tp_gesture" ]]
 then
     write "/sys/touchpanel/double_tap" "1"
     write "/proc/tp_gesture" "1"
     kmsg "Fix DT2W if broken"
     kmsg3 ""
 
-elif [[ -e /sys/class/sec/tsp/dt2w_enable ]]
+elif [[ -e "/sys/class/sec/tsp/dt2w_enable" ]]
 then
     write "/sys/class/sec/tsp/dt2w_enable" "1"
     kmsg "Fix DT2W if broken"
@@ -4645,13 +4794,13 @@ then
 fi
 
 # Enable touch boost on gaming and performance profile.
-if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
+if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]
 then
     write "/sys/module/msm_performance/parameters/touchboost" "1"
     kmsg "Enabled msm_performance touch boost"
     kmsg3 ""
 
-elif [[ -e /sys/power/pnpmgr/touch_boost ]]
+elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]
 then
     write "/sys/power/pnpmgr/touch_boost" "1"
     kmsg "Enabled pnpmgr touch boost"
