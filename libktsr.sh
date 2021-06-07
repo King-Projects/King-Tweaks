@@ -1279,6 +1279,9 @@ fi
 if [[ -e "/proc/ufs_perf" ]]; then
     write "/proc/ufs_perf" "0"
 fi
+if [[ -e "/proc/cpuidle/enable" ]]; then
+    write "/proc/cpuidle/enable" "1"
+fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
@@ -2046,7 +2049,10 @@ if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
 if [[ -e "/proc/ufs_perf" ]]; then
-    write "/proc/ufs_perf" "2"
+    write "/proc/ufs_perf" "0"
+fi
+if [[ -e "/proc/cpuidle/enable" ]]; then
+    write "/proc/cpuidle/enable" "1"
 fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
@@ -2902,6 +2908,9 @@ fi
 if [[ -e "/proc/ufs_perf" ]]; then
     write "/proc/ufs_perf" "2"
 fi
+if [[ -e "/proc/cpuidle/enable" ]]; then
+    write "/proc/cpuidle/enable" "0"
+fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
@@ -3754,6 +3763,9 @@ if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
 fi
 if [[ -e "/proc/ufs_perf" ]]; then
     write "/proc/ufs_perf" "0"
+fi
+if [[ -e "/proc/cpuidle/enable" ]]; then
+    write "/proc/cpuidle/enable" "1"
 fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
