@@ -525,7 +525,7 @@ rrs=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -
 if [[ -z "$rrs" ]]; then
     rrs=$(dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .)
 
-elif [[ -z "$df" ]]; then
+elif [[ -z "$rrs" ]]; then
       rrs=$(dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .)
 fi
 }
@@ -646,6 +646,9 @@ if [[ -e "$gpui/gpu_busy_percentage" ]]; then
 elif [[ -e "$gpu/utilization" ]]; then
       gpu_load=$(cat $gpu/utilization)
                
+elif [[ -e "/proc/mali/utilization" ]]; then
+      gpu_load=$(cat /proc/mali/utilization)
+
 elif [[ -e "$gpu/load" ]]; then
       gpu_load=$(cat $gpu/load | tr -d %)
 
@@ -1012,6 +1015,10 @@ if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
     write "/proc/cpufreq/cpufreq_cci_mode" "0"
 fi
 
+if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
+    write "/proc/cpufreq/cpufreq_stress_test" "0"
+fi
+
 [[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
 
 for i in 0 1 2 3 4 5 6 7 8 9
@@ -1093,6 +1100,7 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
+     write "/proc/mali/always_on" "0"
      write "/sys/modules/ged/parameters/gpu_dvfs" "1"
      write "/sys/modules/ged/parameters/gx_game_mode" "0"
      write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
@@ -1285,6 +1293,16 @@ fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
+
+# Enable UTW (UFS Turbo Write)
+for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
+   if [[ -d "$ufs" ]]; then
+       write "${ufs}tw_enable" "1"
+       kmsg "Enabled UFS Turbo Write"
+       kmsg3 ""
+     fi
+  break
+done
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
@@ -1750,6 +1768,10 @@ if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
     write "/proc/cpufreq/cpufreq_cci_mode" "0"
 fi
 
+if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
+    write "/proc/cpufreq/cpufreq_stress_test" "0"
+fi
+
 [[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
 
 for i in 0 1 2 3 4 5 6 7 8 9
@@ -1842,6 +1864,7 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
+     write "/proc/mali/always_on" "0"
      write "/sys/modules/ged/parameters/gpu_dvfs" "1"
      write "/sys/modules/ged/parameters/gx_game_mode" "0"
      write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
@@ -2057,6 +2080,16 @@ fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
+
+# Disable UTW (UFS Turbo Write)
+for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
+   if [[ -d "$ufs" ]]; then
+       write "${ufs}tw_enable" "0"
+       kmsg "Disabled UFS Turbo Write"
+       kmsg3 ""
+     fi
+  break
+done
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
@@ -2609,6 +2642,10 @@ if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
     write "/proc/cpufreq/cpufreq_cci_mode" "1"
 fi
 
+if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
+    write "/proc/cpufreq/cpufreq_stress_test" "1"
+fi
+
 [[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
 
 for i in 0 1 2 3 4 5 6 7 8 9
@@ -2702,6 +2739,7 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "0"
+     write "/proc/mali/always_on" "0"
      write "/sys/modules/ged/parameters/gpu_dvfs" "0"
      write "/sys/modules/ged/parameters/gx_game_mode" "1"
      write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
@@ -2914,6 +2952,16 @@ fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
+
+# Enable UTW (UFS Turbo Write)
+for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
+   if [[ -d "$ufs" ]]; then
+       write "${ufs}tw_enable" "1"
+       kmsg "Disabled UFS Turbo Write"
+       kmsg3 ""
+     fi
+  break
+done
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
@@ -3460,11 +3508,19 @@ do
   write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-write "/proc/cpufreq/cpufreq_power_mode" "1"
+if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
+    write "/proc/cpufreq/cpufreq_power_mode" "1"
+fi
 
-write "/proc/cpufreq/cpufreq_cci_mode" "0"
+if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
+    write "/proc/cpufreq/cpufreq_cci_mode" "0"
+fi
 
-write "/proc/ppm/enabled" "1"
+if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
+    write "/proc/cpufreq/cpufreq_stress_test" "0"
+fi
+
+[[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
 
 for i in 0 1 2 3 4 5 6 7 8 9
 do
@@ -3556,6 +3612,7 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
+     write "/proc/mali/always_on" "0"
      write "/sys/modules/ged/parameters/gpu_dvfs" "1"
      write "/sys/modules/ged/parameters/gx_game_mode" "0"
      write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
@@ -3770,6 +3827,16 @@ fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
+
+# Disable UTW (UFS Turbo Write)
+for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
+   if [[ -d "$ufs" ]]; then
+       write "${ufs}tw_enable" "0"
+       kmsg "Disabled UFS Turbo Write"
+       kmsg3 ""
+     fi
+  break
+done
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
@@ -4308,11 +4375,19 @@ do
    write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-write "/proc/cpufreq/cpufreq_power_mode" "3"
+if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]];
+    write "/proc/cpufreq/cpufreq_power_mode" "3"
+fi
 
-write "/proc/cpufreq/cpufreq_cci_mode" "1"
+if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
+    write "/proc/cpufreq/cpufreq_cci_mode" "1"
+fi
 
-write "/proc/ppm/enabled" "0"
+if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
+    write "/proc/cpufreq/cpufreq_stress_test" "1"
+fi
+
+[[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "0"
 
 for i in 0 1 2 3 4 5 6 7 8 9
 do
@@ -4405,6 +4480,7 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "$gpu_max2"
      write "$gpu/tmu" "0"
+     write "/proc/mali/always_on" "1"
      write "/sys/modules/ged/parameters/gpu_dvfs" "0"
      write "/sys/modules/ged/parameters/gx_game_mode" "1"
      write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "1"
@@ -4617,6 +4693,16 @@ fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
+
+# Enable UTW (UFS Turbo Write)
+for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
+   if [[ -d "$ufs" ]]; then
+       write "${ufs}tw_enable" "1"
+       kmsg "Disabled UFS Turbo Write"
+       kmsg3 ""
+     fi
+  break
+done
 
 # Prefer rcu_normal instead of rcu_expedited
 if [[ -e "/sys/kernel/rcu_normal" ]]; then
