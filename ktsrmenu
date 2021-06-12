@@ -16,27 +16,27 @@ ls /data >/dev/null 2>&1 || { echo "[!] $ID needs to run as root"; echo "type 's
 # Magisk Mod Directory
 [[ -d "/sbin/.magisk" ]] && MOUNTPATH="/sbin/.magisk/modules" || MOUNTPATH="$(find /dev -mindepth 2 -maxdepth 2 -type d -name ".magisk")/modules"
 MODDIR="$MOUNTPATH/$ID"
-[[ ! -d $MODDIR ]] && { echo "[!] Module not detected"; exit 1; }
+[[ ! -d "$MODDIR" ]] && { echo "[!] Module not detected"; exit 1; }
 
 # Set path to your busybox if applicable
 _bb=
 
 # Load mod-util.sh
-. $MODDIR/mod-util.sh || exit $?
+. "$MODDIR"/mod-util.sh || exit $?
 
 # Set Log Files
 mount -o remount,rw /cache 2>/dev/null
 mount -o rw,remount /cache 2>/dev/null
 
 # Logs should go in this file
-LOG=/data/local/tmp/$ID.log
-oldLOG=/data/local/tmp/$ID-old.log
+LOG=/data/local/tmp/"$ID".log
+oldLOG=/data/local/tmp/"$ID"-old.log
 
 # Verbose output goes here
 VERLOG=/data/local/tmp/$ID-verbose.log
 oldVERLOG=/data/local/tmp/$ID-verbose-old.log
-stdoutLOG=$MODDIR/logs/$ID-STDOUT.log
-oldstdoutLOG=$MODDIR/logs/$ID-STDOUT-old.log
+stdoutLOG="$MODDIR"/logs/$ID-STDOUT.log
+oldstdoutLOG="$MODDIR"/logs/$ID-STDOUT-old.log
 
 # Start logging verbosely
 mv -f $VERLOG $oldVERLOG 2>/dev/null; mv -f $LOG $oldLOG 2>/dev/null; mv -f $stdoutLOG $oldstdoutLOG 2>/dev/null
@@ -45,7 +45,7 @@ mv -f $VERLOG $oldVERLOG 2>/dev/null; mv -f $LOG $oldLOG 2>/dev/null; mv -f $std
 
 # exec 1>$stdoutLOG
 
-set -x 2>$VERLOG
+set -x 2>"$VERLOG"
 
 kts_mode=$(getprop persist.kingtweaks.mode)
  	
@@ -107,8 +107,7 @@ else
     ts=Unknown
 fi
 
-menu() 
-{
+menu() {
 clear
 echo ""
 echo "******************************************"
@@ -171,6 +170,20 @@ elif [[ "$ts" == "Off" ]]; then
 echo "${B}[18] Enable thermal${N}"
 echo ""
 fi
+if [[ "$(settings get system peak_refresh_rate)" -ne "60" ]]; then
+echo "[19] 60 HZ Refresh Rate"
+echo ""
+fi
+if [[ "$(settings get system peak_refresh_rate)" -ne "90" ]]; then
+echo "[20] 90 HZ Refresh Rate"
+echo ""
+fi
+if [[ "$(settings get system peak_refresh_rate)" -ne "120" ]]; then
+echo "[21] 120 HZ Refresh Rate"
+echo ""
+fi
+echo "[22] Reset Refresh Rate config"
+echo ""
 echo "${R}[0] Exit${N}"
 echo ""
 echo -n "${Y}[*] Select the desired option:${N} "
@@ -230,16 +243,30 @@ read -r option
                                          ;;
 						
                                           "8")
-                                             settings put global low_power_sticky 1
                                              settings put global low_power 1
+                                             settings put global low_power_sticky 1
+                                             settings put global app_standby_enabled 1
+                                             settings put global forced_app_standby_enabled 1
+                                             settings put global app_auto_restriction_enabled true
+                                             settings put global forced_app_standby_for_small_battery_enabled 1
                                              echo "${G}Done!${N}"
                                              sleep 2 
                                              menu
                                              ;;
                         
                                               "9")
-                                                 settings put global low_power_sticky 0
                                                  settings put global low_power 0
+                                                 settings reset global low_power
+                                                 settings put global low_power_sticky 0
+                                                 settings reset global low_power_sticky
+                                                 settings put global app_standby_enabled 1
+                                                 settings reset global app_standby_enabled
+                                                 settings put global forced_app_standby_enabled 0
+                                                 settings reset global forced_app_standby_enabled
+                                                 settings put global app_auto_restriction_enabled false
+                                                 settings reset global app_auto_restriction_enabled
+                                                 settings put global forced_app_standby_for_small_battery_enabled 0
+                                                 settings reset global forced_app_standby_for_small_battery_enabled 1
                                                  echo "${G}Done!${N}"
                                                  sleep 2 
                                                  menu
@@ -269,17 +296,17 @@ read -r option
                                                                ;;
                         
                                                                 "13")
-                                                                    settings put global assisted_gps_enabled "1"
-                                                                    echo "${G}Done!${N}"
-                                                                    sleep 2 
-                                                                    menu
+                                                                     settings put global assisted_gps_enabled "1"
+                                                                     echo "${G}Done!${N}"
+                                                                     sleep 2 
+                                                                     menu
                                                                     ;;
                         
                                                                      "14")
-                                                                         echo "${B}Cleaning debug logs and system trash...${N}"
-                                                                         cleantrash 2>/dev/null
-                                                                         echo "${G}Done!${N}"
-                                                                         sleep 2 
+                                                                          echo "${B}Cleaning debug logs and system trash...${N}"
+                                                                          cleantrash 2>/dev/null
+                                                                          echo "${G}Done!${N}"
+                                                                          sleep 2 
                                                                          menu
                                                                          ;;
                         
@@ -306,7 +333,7 @@ read -r option
 						                                    echo "${G}Done!${N}"
 						                                    sleep 2 
 						                                    menu
-						                                   ;;
+						                                    ;;
 
 						                              "18")
 						                              echo "${B}Enabling thermal...${N}"
@@ -317,23 +344,51 @@ read -r option
 						                              echo "${G}Done!${N}"
 						                              sleep 2 
 						                              menu
-						                            ;;
+						                              ;;
 						                            
-						                        "0")
-						                        echo "${G}Hope that see ya soon! ;)${N}"
-						                       ;;
+                                                 "19") 
+                                                      settings put system min_refresh_rate 60
+                                                      settings put system peak_refresh_rate 60
+                                                      settings put system user_refresh_rate 60
+                                                      settings put global oneplus_screen_refresh_rate 1
+                                                      ;;
+       
+                                                "20")
+                                                     settings put system min_refresh_rate 90
+                                                     settings put system peak_refresh_rate 90
+                                                     settings put system user_refresh_rate 90
+                                                     settings put global oneplus_screen_refresh_rate 0
+                                                     ;;
+
+                                            "21")
+                                                 settings put system min_refresh_rate 120
+                                                 settings put system peak_refresh_rate 120
+                                                 settings put system user_refresh_rate 120
+                                                 settings put global oneplus_screen_refresh_rate 0
+                                                 ;;
+						                      
+                                          "22")
+                                               settings reset system min_refresh_rate
+                                               settings reset system peak_refresh_rate
+                                               settings reset system user_refresh_rate
+                                               settings reset global oneplus_screen_refresh_rate
+                                               ;;
+                                               
+                                       "0")
+						                   echo "${G}Hope that see ya soon! ;)${N}"
+						                   ;;
 						
-						                     *)
-						                     abort "${R}[!] Unexpected response, aborting...${N}"
-						                    ;;
-						               esac
+						           *)
+						             abort "${R}[!] Unexpected response, aborting...${N}"
+						             ;;
+						        esac
 }
 						
 						if [[ -z "$1" ]]; then
 						    menu
 						fi
 
-						help_me(){
+						help_me() {
                         echo "$MODTITLE $VER($REL)"
                         echo "by $AUTHOR"
                         echo "Usage: $_name"
@@ -372,11 +427,11 @@ read -r option
 						     else
                                  abort "${R}[!] No valid thermal controllers found / Unknown thermal state, aborting...${N}"
 						     fi
-						   ;;
+						     ;;
 						
-						h | *) help_me
-						;;
-					esac                             
-               done
-                      
+					      h | *) help_me
+						  ;;
+					 esac                             
+                done
+
 shift $((OPTIND - 1))

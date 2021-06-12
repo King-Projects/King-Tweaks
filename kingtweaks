@@ -182,10 +182,10 @@ kdbg_max_size=1000000
 sqlite_opt_max_size=1000000
 
 if [[ "$(stat -t "$KDBG" | awk '{print $2}')" -eq "$kdbg_max_size" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}')" -gt "$kdbg_max_size" ]]; then
-rm "$KDBG"
+rm -f "$KDBG"
 
 elif [[ "$(stat -t /sdcard/KTSR/sqlite_opt.log | awk '{print $2}')" -eq "$sqlite_opt_max_size" ]] || [[ "$(stat -t /sdcard/KTSR/sqlite_opt.log | awk '{print $2}')" -gt "$sqlite_opt_max_size" ]]; then
-rm "/sdcard/KTSR/sqlite_opt.log"
+rm -f "/sdcard/KTSR/sqlite_opt.log"
 fi
 }
 
