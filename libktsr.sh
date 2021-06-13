@@ -946,13 +946,13 @@ do
 		fi
 	done
 	
-write "${queue}add_random" 0
-write "${queue}iostats" 0
-write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 32
-write "${queue}nomerges" 0
-write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 16
+   write "${queue}add_random" 0
+   write "${queue}iostats" 0
+   write "${queue}rotational" 0
+   write "${queue}read_ahead_kb" 32
+   write "${queue}nomerges" 0
+   write "${queue}rq_affinity" 2
+   write "${queue}nr_requests" 16
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -1303,12 +1303,6 @@ for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
      fi
   break
 done
-
-# Prefer rcu_normal instead of rcu_expedited
-if [[ -e "/sys/kernel/rcu_normal" ]]; then
-    write "/sys/kernel/rcu_expedited" "0"
-    write "/sys/kernel/rcu_normal" "1"
-fi
 
 if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
@@ -2090,12 +2084,6 @@ for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
      fi
   break
 done
-
-# Prefer rcu_normal instead of rcu_expedited
-if [[ -e "/sys/kernel/rcu_normal" ]]; then
-    write "/sys/kernel/rcu_expedited" "0"
-    write "/sys/kernel/rcu_normal" "1"
-fi
 
 if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
@@ -2962,12 +2950,6 @@ for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
      fi
   break
 done
-
-# Prefer rcu_normal instead of rcu_expedited
-if [[ -e "/sys/kernel/rcu_normal" ]]; then
-    write "/sys/kernel/rcu_expedited" "0"
-    write "/sys/kernel/rcu_normal" "1"
-fi
 
 if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
@@ -3838,12 +3820,6 @@ for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
   break
 done
 
-# Prefer rcu_normal instead of rcu_expedited
-if [[ -e "/sys/kernel/rcu_normal" ]]; then
-    write "/sys/kernel/rcu_expedited" "0"
-    write "/sys/kernel/rcu_normal" "1"
-fi
-
 if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
 fi
@@ -4703,12 +4679,6 @@ for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
      fi
   break
 done
-
-# Prefer rcu_normal instead of rcu_expedited
-if [[ -e "/sys/kernel/rcu_normal" ]]; then
-    write "/sys/kernel/rcu_expedited" "0"
-    write "/sys/kernel/rcu_normal" "1"
-fi
 
 if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
