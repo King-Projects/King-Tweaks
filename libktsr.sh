@@ -909,6 +909,10 @@ stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
 
+if [[ -e "/data/system/perfd/default_values" ]]; then
+    rm -f "/data/system/perfd/default_values"
+fi
+
 kmsg "Disabled perf and mpdecision"
 kmsg3 ""
 
@@ -1109,10 +1113,10 @@ else
      write "$gpu/power_policy" "coarse_demand"
      write "$gpui/boost" "0"
      write "$gpug/mali_touch_boost_level" "0"
-     write "/proc/gpufreq/gpufreq_input_boost" "0"
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "1"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "60"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "40"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "50"
@@ -1146,6 +1150,7 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]] 
 then
+    write "/proc/gpufreq/gpufreq_input_boost" "0"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
@@ -1436,7 +1441,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] | [[ $total_ram -lt "5000" ]]; then
+if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ $total_ram -lt "5000" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 write "${vm}reap_mem_on_sigkill" "1"
@@ -1641,9 +1646,14 @@ for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
 done
+
 stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
+
+if [[ -e "/data/system/perfd/default_values" ]]; then
+    rm -f "/data/system/perfd/default_values"
+fi
 
 kmsg "Disabled perf and mpdecision"
 kmsg3 ""
@@ -1905,15 +1915,14 @@ else
      write "$gpu/power_policy" "coarse_demand"
      write "$gpui/boost" "0"
      write "$gpug/mali_touch_boost_level" "0"
-     write "/proc/gpufreq/gpufreq_input_boost" "0"
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "1"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "70"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "45"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "65"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "40"
-     write "/proc/gpufreq/gpufreq_opp_freq" "0"
 fi
 
 if [[ -d "/sys/modules/ged/" ]]
@@ -1943,6 +1952,8 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]] 
 then
+    write "/proc/gpufreq/gpufreq_opp_freq" "0"
+    write "/proc/gpufreq/gpufreq_input_boost" "0"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
@@ -2488,9 +2499,14 @@ for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
 done
+
 stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
+
+if [[ -e "/data/system/perfd/default_values" ]]; then
+    rm -f "/data/system/perfd/default_values"
+fi
 
 kmsg "Disabled perf and mpdecision"
 kmsg3 ""
@@ -2755,11 +2771,11 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "0"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "0"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "40"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "20"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "30"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "10"
-     write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max3"
 fi
 
 if [[ -d "/sys/modules/ged/" ]]
@@ -2780,7 +2796,7 @@ then
     write "/sys/module/ged/parameters/gpu_debug_enable" "0"
     write "/sys/module/ged/parameters/gpu_dvfs_enable" "0"
     write "/sys/module/ged/parameters/gx_3D_benchmark_on" "1"
-    write "/sys/module/ged/parameters/gx_dfps" "0"
+    write "/sys/module/ged/parameters/gx_dfps" "1"
     write "/sys/module/ged/parameters/gx_force_cpu_boost" "1"
     write "/sys/module/ged/parameters/gx_frc_mode" "1"
     write "/sys/module/ged/parameters/gx_game_mode" "0"
@@ -2789,6 +2805,7 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]] 
 then
+    write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max3"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
@@ -3399,6 +3416,10 @@ stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
 
+if [[ -e "/data/system/perfd/default_values" ]]; then
+    rm -f "/data/system/perfd/default_values"
+fi
+
 kmsg "Disabled perf and mpdecision"
 kmsg3 ""
 
@@ -3664,11 +3685,11 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "1"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "85"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "65"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "75"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "55"
-     write "/proc/gpufreq/gpufreq_opp_freq" "0"
 fi
 
 if [[ -d "/sys/modules/ged/" ]]
@@ -3698,6 +3719,7 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]] 
 then
+    write "/proc/gpufreq/gpufreq_opp_freq" "0"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
@@ -4117,13 +4139,13 @@ then
 fi
 
 # Disable touch boost on battery and balance profile.
-if [[ -e /sys/module/msm_performance/parameters/touchboost ]]
+if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]
 then
     write "/sys/module/msm_performance/parameters/touchboost" "0"
     kmsg "Disabled msm_performance touch boost"
     kmsg3 ""
 
-elif [[ -e /sys/power/pnpmgr/touch_boost ]]
+elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]
 then
     write "/sys/power/pnpmgr/touch_boost" "0"
     write "/sys/power/pnpmgr/long_duration_touch_boost" "0"
@@ -4300,6 +4322,10 @@ done
 stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
+
+if [[ -e "/data/system/perfd/default_values" ]]; then
+    rm -f "/data/system/perfd/default_values"
+fi
 
 kmsg "Disabled perf and mpdecision"
 kmsg3 ""
@@ -4566,11 +4592,11 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "$gpu_max2"
      write "$gpu/tmu" "0"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "0"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "35"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "15"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "25"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "10"
-     write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max3"
 fi
 
 if [[ -d "/sys/modules/ged/" ]]
@@ -4600,6 +4626,7 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]]
 then
+    write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max3"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
