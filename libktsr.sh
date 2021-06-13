@@ -1967,6 +1967,68 @@ then
      write "/proc/mali/always_on" "0"
 fi
 
+if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
+then
+    write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
+fi
+
+if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
+then
+    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
+fi
+
+kmsg "Tweaked GPU parameters"
+kmsg3 ""
+
+if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]
+then
+    write "/sys/module/cryptomgr/parameters/notests" "Y"
+    kmsg "Disabled forced cryptography tests"
+    kmsg3 ""
+fi
+
+# Enable and tweak adreno idler
+if [[ -d "/sys/module/adreno_idler" ]]
+then
+     write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
+     write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "5000"
+     write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "35"
+     write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
+     kmsg "Enabled and tweaked adreno idler"
+     kmsg3 ""
+fi
+
+# Schedtune Tweaks
+if [[ -d "$stune" ]]
+then
+    write "${stune}background/schedtune.boost" "0"
+    write "${stune}background/schedtune.prefer_idle" "0"
+    write "${stune}background/schedtune.sched_boost" "0"
+    write "${stune}background/schedtune.prefer_perf" "0"
+
+    write "${stune}foreground/schedtune.boost" "0"
+    write "${stune}foreground/schedtune.prefer_idle" "0"
+    write "${stune}foreground/schedtune.sched_boost" "0"
+    write "${stune}foreground/schedtune.sched_boost_no_override" "1"
+    write "${stune}foreground/schedtune.prefer_perf" "0"
+
+    write "${stune}rt/schedtune.boost" "0"
+    write "${stune}rt/schedtune.prefer_idle" "0"
+    write "${stune}rt/schedtune.sched_boost" "0"
+    write "${stune}rt/schedtune.prefer_perf" "0"
+
+    write "${stune}top-app/schedtune.boost" "10"
+    write "${stune}top-app/schedtune.prefer_idle" "1"
+    write "${stune}top-app/schedtune.sched_boost" "0"
+    write "${stune}top-app/schedtune.sched_boost_no_override" "1"
+    write "${stune}top-app/schedtune.prefer_perf" "1"
+
+    write "${stune}schedtune.boost" "0"
+    write "${stune}schedtune.prefer_idle" "0"
+    kmsg "Tweaked cpuset schedtune"
+    kmsg3 ""
+fi
+
 # Uclamp Tweaks
 if [[ -e "${cpuset}top-app/uclamp.max" ]]
 then
@@ -3758,7 +3820,7 @@ if [[ -d "/sys/module/adreno_idler" ]]
 then
     write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
     write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "10000"
-    write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
+    write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "45"
     write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
     kmsg "Enabled and tweaked adreno idler"
     kmsg3 ""
@@ -3773,7 +3835,7 @@ then
     write "${stune}background/schedtune.prefer_perf" "0"
 
     write "${stune}foreground/schedtune.boost" "0"
-    write "${stune}foreground/schedtune.prefer_idle" "1"
+    write "${stune}foreground/schedtune.prefer_idle" "0"
     write "${stune}foreground/schedtune.sched_boost" "0"
     write "${stune}foreground/schedtune.prefer_perf" "0"
 
@@ -4677,7 +4739,7 @@ then
     write "${stune}background/schedtune.prefer_perf" "0"
 
     write "${stune}foreground/schedtune.boost" "50"
-    write "${stune}foreground/schedtune.prefer_idle" "1"
+    write "${stune}foreground/schedtune.prefer_idle" "0"
     write "${stune}foreground/schedtune.sched_boost" "15"
     write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "0"
