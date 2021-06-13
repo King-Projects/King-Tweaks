@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # KTSR by Pedro (pedrozzz0 @ GitHub)
-# Credits: Draco (tytydraco @ GitHub), Dan (Paget69 @ XDA), mogoroku @ GitHub, helloklf @ GitHub, Matt Yang (yc9559 @ GitHub) and Eight (dlwlrma123 @ GitHub).
+# Credits: Draco (tytydraco @ GitHub), Dan (Paget69 @ XDA), mogoroku @ GitHub, helloklf @ GitHub, chenzyadb @ Gitee, Matt Yang (yc9559 @ GitHub) and Eight (dlwlrma123 @ GitHub).
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 MODPATH=/data/adb/modules/KTSR
@@ -141,41 +141,48 @@ done
         if [[ -d "$gpul2" ]]; then
         gpu=$gpul2
         fi
-     done
+    done
          
        for gpul3 in /sys/devices/platform/*.gpu
        do
          if [[ -d "$gpul3" ]]; then
          gpu=$gpul3
          fi
-      done
+     done
        
          for gpul4 in /sys/devices/platform/mali-*.0
          do
            if [[ -d "$gpul4" ]]; then
            gpu=$gpul4
            fi
-        done
+       done
            
            for gpul5 in /sys/devices/platform/*.mali
            do
              if [[ -d "$gpul5" ]]; then
              gpu=$gpul5
              fi
-          done
+         done
                  
              for gpul6 in /sys/class/misc/mali*/device/devfreq/gpufreq
              do
                if [[ -d "$gpul6" ]]; then
                gpu=$gpul6
                fi
-            done
+           done
              
               for gpul7 in /sys/class/misc/mali*/device/devfreq/*.gpu
               do
                 if [[ -d "$gpul7" ]]; then
                 gpu=$gpul7
                 fi
+            done
+
+               for gpul8 in /sys/devices/platform/*.mali/misc/mali0
+               do
+                 if [[ -d "$gpul8" ]]; then
+                 gpu=$gpul8
+                 fi
              done
 
                if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]; then
@@ -892,11 +899,17 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd and mpdecision
-stop perfd  	
-stop mpdecision
+# Disable perf and mpdecision
+for v in 0 1 2 3 4; do
+    stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
+    stop perf-hal-$v-$v 2>/dev/null
+done
 
-kmsg "Disabled perfd and mpdecision"
+stop perfd 2>/dev/null
+stop mpdecision 2>/dev/null
+stop vendor.perfservice 2>/dev/null
+
+kmsg "Disabled perf and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -1100,21 +1113,50 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
-     write "/proc/mali/always_on" "0"
-     write "/sys/modules/ged/parameters/gpu_dvfs" "1"
-     write "/sys/modules/ged/parameters/gx_game_mode" "0"
-     write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "60"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "40"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "50"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "30"
 fi
 
-if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
+if [[ -d "/sys/modules/ged/" ]]
+then
+    write "/sys/module/ged/parameters/ged_boost_enable" "0"
+    write "/sys/module/ged/parameters/boost_gpu_enable" "0"
+    write "/sys/module/ged/parameters/boost_extra" "0"
+    write "/sys/module/ged/parameters/enable_cpu_boost" "0"
+    write "/sys/module/ged/parameters/enable_gpu_boost" "0"
+    write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
+    write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
+    write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
+    write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
+    write "/sys/module/ged/parameters/ged_smart_boost" "0"
+    write "/sys/module/ged/parameters/gpu_debug_enable" "0"
+    write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
+    write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
+    write "/sys/module/ged/parameters/gx_dfps" "0"
+    write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
+    write "/sys/module/ged/parameters/gx_frc_mode" "0"
+    write "/sys/module/ged/parameters/gx_game_mode" "0"
+    write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
+fi
+
+if [[ -d "/proc/gpufreq/" ]] 
 then
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
 fi
 
-# Enable dvfs
-if [[ -e "/proc/mali/dvfs_enable" ]] 
+# Tweak some mali parameters
+if [[ -d "/proc/mali/" ]] 
 then
      [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+     write "/proc/mali/always_on" "0"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
@@ -1594,11 +1636,16 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd and mpdecision
-stop perfd
-stop mpdecision
+# Disable perf and mpdecision
+for v in 0 1 2 3 4; do
+    stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
+    stop perf-hal-$v-$v 2>/dev/null
+done
+stop perfd 2>/dev/null
+stop mpdecision 2>/dev/null
+stop vendor.perfservice 2>/dev/null
 
-kmsg "Disabled perfd and mpdecision"
+kmsg "Disabled perf and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -1652,9 +1699,13 @@ fi
 if [[ -e "/sys/module/autosmp" ]]; then
     write "/sys/module/autosmp/parameters/enabled" "0"
 fi
-
+ 
 if [[ -e "/sys/kernel/zen_decision" ]]; then
     write "/sys/kernel/zen_decision/enabled" "0"
+fi
+
+if [[ -e "/proc/hps" ]]; then
+    write "/proc/hps/enabled" "0"
 fi
 
 kmsg "Disabled core control & CPU hotplug"
@@ -1692,13 +1743,13 @@ do
 		fi
 	done
 	
-write "${queue}add_random" 0
-write "${queue}iostats" 0
-write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 64
-write "${queue}nomerges" 1
-write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 128
+   write "${queue}add_random" 0
+   write "${queue}iostats" 0
+   write "${queue}rotational" 0
+   write "${queue}read_ahead_kb" 64
+   write "${queue}nomerges" 1
+   write "${queue}rq_affinity" 2
+   write "${queue}nr_requests" 128
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -1858,84 +1909,51 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
-     write "/proc/mali/always_on" "0"
-     write "/sys/modules/ged/parameters/gpu_dvfs" "1"
-     write "/sys/modules/ged/parameters/gx_game_mode" "0"
-     write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "70"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "45"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "65"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "40"
      write "/proc/gpufreq/gpufreq_opp_freq" "0"
 fi
 
-if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
+if [[ -d "/sys/modules/ged/" ]]
+then
+    write "/sys/module/ged/parameters/ged_boost_enable" "0"
+    write "/sys/module/ged/parameters/boost_gpu_enable" "0"
+    write "/sys/module/ged/parameters/boost_extra" "0"
+    write "/sys/module/ged/parameters/enable_cpu_boost" "0"
+    write "/sys/module/ged/parameters/enable_gpu_boost" "0"
+    write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
+    write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
+    write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
+    write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
+    write "/sys/module/ged/parameters/ged_smart_boost" "0"
+    write "/sys/module/ged/parameters/gpu_debug_enable" "0"
+    write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
+    write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
+    write "/sys/module/ged/parameters/gx_dfps" "0"
+    write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
+    write "/sys/module/ged/parameters/gx_frc_mode" "0"
+    write "/sys/module/ged/parameters/gx_game_mode" "0"
+    write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
+fi
+
+if [[ -d "/proc/gpufreq/" ]] 
 then
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
 fi
 
-# Enable dvfs
-if [[ -e "/proc/mali/dvfs_enable" ]] 
+# Tweak some mali parameters
+if [[ -d "/proc/mali/" ]] 
 then
-    [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
-fi
-
-if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
-then
-    write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
-fi
-
-if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
-then
-    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
-fi
-
-kmsg "Tweaked GPU parameters"
-kmsg3 ""
-
-if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]
-then
-    write "/sys/module/cryptomgr/parameters/notests" "Y"
-    kmsg "Disabled forced cryptography tests"
-    kmsg3 ""
-fi
-
-# Enable and tweak adreno idler
-if [[ -d "/sys/module/adreno_idler" ]]
-then
-     write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
-     write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "6000"
-     write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "25"
-     write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
-     kmsg "Enabled and tweaked adreno idler"
-     kmsg3 ""
-fi
-
-# Schedtune Tweaks
-if [[ -d "$stune" ]]
-then
-    write "${stune}background/schedtune.boost" "0"
-    write "${stune}background/schedtune.prefer_idle" "0"
-    write "${stune}background/schedtune.sched_boost" "0"
-    write "${stune}background/schedtune.prefer_perf" "0"
-
-    write "${stune}foreground/schedtune.boost" "0"
-    write "${stune}foreground/schedtune.prefer_idle" "1"
-    write "${stune}foreground/schedtune.sched_boost" "0"
-    write "${stune}foreground/schedtune.sched_boost_no_override" "1"
-    write "${stune}foreground/schedtune.prefer_perf" "0"
-
-    write "${stune}rt/schedtune.boost" "0"
-    write "${stune}rt/schedtune.prefer_idle" "0"
-    write "${stune}rt/schedtune.sched_boost" "0"
-    write "${stune}rt/schedtune.prefer_perf" "0"
-
-    write "${stune}top-app/schedtune.boost" "10"
-    write "${stune}top-app/schedtune.prefer_idle" "1"
-    write "${stune}top-app/schedtune.sched_boost" "0"
-    write "${stune}top-app/schedtune.sched_boost_no_override" "1"
-    write "${stune}top-app/schedtune.prefer_perf" "1"
-
-    write "${stune}schedtune.boost" "0"
-    write "${stune}schedtune.prefer_idle" "0"
-    kmsg "Tweaked cpuset schedtune"
-    kmsg3 ""
+     [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+     write "/proc/mali/always_on" "0"
 fi
 
 # Uclamp Tweaks
@@ -2293,6 +2311,7 @@ then
 elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]
 then
     write "/sys/power/pnpmgr/touch_boost" "0"
+    write "/sys/power/pnpmgr/long_duration_touch_boost" "0"
     kmsg "Disabled pnpmgr touch boost"
     kmsg3 ""
 fi
@@ -2464,11 +2483,16 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd and mpdecision
-stop perfd
-stop mpdecision
+# Disable perf and mpdecision
+for v in 0 1 2 3 4; do
+    stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
+    stop perf-hal-$v-$v 2>/dev/null
+done
+stop perfd 2>/dev/null
+stop mpdecision 2>/dev/null
+stop vendor.perfservice 2>/dev/null
 
-kmsg "Disabled perfd and mpdecision"
+kmsg "Disabled perf and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -2527,6 +2551,10 @@ if [[ -e "/sys/kernel/zen_decision" ]]; then
     write "/sys/kernel/zen_decision/enabled" "0"
 fi
 
+if [[ -e "/proc/hps" ]]; then
+    write "/proc/hps/enabled" "0"
+fi
+
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
 
@@ -2562,13 +2590,13 @@ do
 		fi
 	done
 	
-write "${queue}add_random" 0
-write "${queue}iostats" 0
-write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 512
-write "${queue}nomerges" 2
-write "${queue}rq_affinity" 2
-write "${queue}nr_requests" 256
+   write "${queue}add_random" 0
+   write "${queue}iostats" 0
+   write "${queue}rotational" 0
+   write "${queue}read_ahead_kb" 512
+   write "${queue}nomerges" 2
+   write "${queue}rq_affinity" 2
+   write "${queue}nr_requests" 256
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -2727,22 +2755,51 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "0"
-     write "/proc/mali/always_on" "0"
-     write "/sys/modules/ged/parameters/gpu_dvfs" "0"
-     write "/sys/modules/ged/parameters/gx_game_mode" "1"
-     write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "40"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "20"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "30"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "10"
      write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max3"
 fi
 
-if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
+if [[ -d "/sys/modules/ged/" ]]
 then
-    write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
+    write "/sys/module/ged/parameters/ged_boost_enable" "1"
+    write "/sys/module/ged/parameters/boost_gpu_enable" "1"
+    write "/sys/module/ged/parameters/boost_extra" "1"
+    write "/sys/module/ged/parameters/enable_cpu_boost" "1"
+    write "/sys/module/ged/parameters/enable_gpu_boost" "1"
+    write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
+    write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
+    write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
+    write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
+    write "/sys/module/ged/parameters/ged_smart_boost" "0"
+    write "/sys/module/ged/parameters/gpu_debug_enable" "0"
+    write "/sys/module/ged/parameters/gpu_dvfs_enable" "0"
+    write "/sys/module/ged/parameters/gx_3D_benchmark_on" "1"
+    write "/sys/module/ged/parameters/gx_dfps" "0"
+    write "/sys/module/ged/parameters/gx_force_cpu_boost" "1"
+    write "/sys/module/ged/parameters/gx_frc_mode" "1"
+    write "/sys/module/ged/parameters/gx_game_mode" "0"
+    write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
 fi
 
-# Disable dvfs
-if [[ -e "/proc/mali/dvfs_enable" ]] 
+if [[ -d "/proc/gpufreq/" ]] 
 then
-    [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "0"
+    write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
+    write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
+fi
+
+# Tweak some mali parameters
+if [[ -d "/proc/mali/" ]] 
+then
+     [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "0"
+     write "/proc/mali/always_on" "0"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
@@ -2928,7 +2985,9 @@ fi
 if [[ -e "${kernel}sched_boost" ]]; then
     write "${kernel}sched_boost" "2"
 fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "$mtk" == "true" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "2"
+else
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
 if [[ -e "/proc/ufs_perf" ]]; then
@@ -2945,7 +3004,7 @@ fi
 for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
    if [[ -d "$ufs" ]]; then
        write "${ufs}tw_enable" "1"
-       kmsg "Disabled UFS Turbo Write"
+       kmsg "Enabled UFS Turbo Write"
        kmsg3 ""
      fi
   break
@@ -3158,6 +3217,7 @@ then
 elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]
 then
     write "/sys/power/pnpmgr/touch_boost" "1"
+    write "/sys/power/pnpmgr/long_duration_touch_boost" "1"
     kmsg "Enabled pnpmgr touch boost"
     kmsg3 ""
 fi
@@ -3329,11 +3389,17 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd and mpdecision
-stop perfd
-stop mpdecision
+# Disable perf and mpdecision
+for v in 0 1 2 3 4; do
+    stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
+    stop perf-hal-$v-$v 2>/dev/null
+done
 
-kmsg "Disabled perfd and mpdecision"
+stop perfd 2>/dev/null
+stop mpdecision 2>/dev/null
+stop vendor.perfservice 2>/dev/null
+
+kmsg "Disabled perf and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -3392,6 +3458,10 @@ if [[ -e "/sys/kernel/zen_decision" ]]; then
     write "/sys/kernel/zen_decision/enabled" "0"
 fi
 
+if [[ -e "/proc/hps" ]]; then
+    write "/proc/hps/enabled" "1"
+fi
+
 kmsg "Disabled core control and CPU hotplug"
 kmsg3 ""
 
@@ -3428,13 +3498,13 @@ do
 		fi
 	done
 	
-write "${queue}add_random" 0
-write "${queue}iostats" 0
-write "${queue}rotational" 0
-write "${queue}read_ahead_kb" 64
-write "${queue}nomerges" 0
-write "${queue}rq_affinity" 0
-write "${queue}nr_requests" 512
+   write "${queue}add_random" 0
+   write "${queue}iostats" 0
+   write "${queue}rotational" 0
+   write "${queue}read_ahead_kb" 64
+   write "${queue}nomerges" 0
+   write "${queue}rq_affinity" 0
+   write "${queue}nr_requests" 512
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -3594,22 +3664,51 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "100000000"
      write "$gpu/tmu" "1"
-     write "/proc/mali/always_on" "0"
-     write "/sys/modules/ged/parameters/gpu_dvfs" "1"
-     write "/sys/modules/ged/parameters/gx_game_mode" "0"
-     write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "0"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "85"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "65"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "75"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "55"
      write "/proc/gpufreq/gpufreq_opp_freq" "0"
 fi
 
-if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]] 
+if [[ -d "/sys/modules/ged/" ]]
 then
-    write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+    write "/sys/module/ged/parameters/ged_boost_enable" "0"
+    write "/sys/module/ged/parameters/boost_gpu_enable" "0"
+    write "/sys/module/ged/parameters/boost_extra" "0"
+    write "/sys/module/ged/parameters/enable_cpu_boost" "0"
+    write "/sys/module/ged/parameters/enable_gpu_boost" "0"
+    write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
+    write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
+    write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
+    write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
+    write "/sys/module/ged/parameters/ged_smart_boost" "0"
+    write "/sys/module/ged/parameters/gpu_debug_enable" "0"
+    write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
+    write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
+    write "/sys/module/ged/parameters/gx_dfps" "0"
+    write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
+    write "/sys/module/ged/parameters/gx_frc_mode" "0"
+    write "/sys/module/ged/parameters/gx_game_mode" "0"
+    write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
 fi
 
-# Enable dvfs
-if [[ -e "/proc/mali/dvfs_enable" ]] 
+if [[ -d "/proc/gpufreq/" ]] 
 then
-    [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+    write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
+    write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
+fi
+
+# Tweak some mali parameters
+if [[ -d "/proc/mali/" ]] 
+then
+     [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+     write "/proc/mali/always_on" "0"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
@@ -4027,6 +4126,7 @@ then
 elif [[ -e /sys/power/pnpmgr/touch_boost ]]
 then
     write "/sys/power/pnpmgr/touch_boost" "0"
+    write "/sys/power/pnpmgr/long_duration_touch_boost" "0"
     kmsg "Disabled pnpmgr touch boost"
     kmsg3 ""
 fi
@@ -4191,11 +4291,17 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perfd and mpdecision
-stop perfd
-stop mpdecision
+# Disable perf and mpdecision
+for v in 0 1 2 3 4; do
+    stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
+    stop perf-hal-$v-$v 2>/dev/null
+done
 
-kmsg "Disabled perfd and mpdecision"
+stop perfd 2>/dev/null
+stop mpdecision 2>/dev/null
+stop vendor.perfservice 2>/dev/null
+
+kmsg "Disabled perf and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile to dynamic (evaluation)
@@ -4254,6 +4360,10 @@ if [[ -e "/sys/kernel/zen_decision" ]]; then
     write "/sys/kernel/zen_decision/enabled" "0"
 fi
 
+if [[ -e "/proc/hps" ]]; then
+    write "/proc/hps/enabled" "0"
+fi
+
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
 
@@ -4289,13 +4399,13 @@ do
 		fi
 	done
 	
-  write "${queue}add_random" 0
-  write "${queue}iostats" 0
-  write "${queue}rotational" 0
-  write "${queue}read_ahead_kb" 512
-  write "${queue}nomerges" 2
-  write "${queue}rq_affinity" 2
-  write "${queue}nr_requests" 256
+   write "${queue}add_random" 0
+   write "${queue}iostats" 0
+   write "${queue}rotational" 0
+   write "${queue}read_ahead_kb" 512
+   write "${queue}nomerges" 2
+   write "${queue}rq_affinity" 2
+   write "${queue}nr_requests" 256
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -4456,22 +4566,51 @@ else
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "$gpu_max2"
      write "$gpu/tmu" "0"
-     write "/proc/mali/always_on" "1"
-     write "/sys/modules/ged/parameters/gpu_dvfs" "0"
-     write "/sys/modules/ged/parameters/gx_game_mode" "1"
-     write "/sys/modules/ged/parameters/gx_3d_benchmark_on" "1"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "35"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "15"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "25"
+     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "10"
      write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max3"
 fi
 
-if [[ -e "/proc/gpufreq/gpufreq_limited_thermal_ignore" ]]
+if [[ -d "/sys/modules/ged/" ]]
 then
-    write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
+    write "/sys/module/ged/parameters/ged_boost_enable" "1"
+    write "/sys/module/ged/parameters/boost_gpu_enable" "1"
+    write "/sys/module/ged/parameters/boost_extra" "1"
+    write "/sys/module/ged/parameters/enable_cpu_boost" "1"
+    write "/sys/module/ged/parameters/enable_gpu_boost" "1"
+    write "/sys/module/ged/parameters/enable_game_self_frc_detect" "1"
+    write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
+    write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
+    write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
+    write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
+    write "/sys/module/ged/parameters/ged_smart_boost" "0"
+    write "/sys/module/ged/parameters/gpu_debug_enable" "0"
+    write "/sys/module/ged/parameters/gpu_dvfs_enable" "0"
+    write "/sys/module/ged/parameters/gx_3D_benchmark_on" "1"
+    write "/sys/module/ged/parameters/gx_dfps" "1"
+    write "/sys/module/ged/parameters/gx_force_cpu_boost" "1"
+    write "/sys/module/ged/parameters/gx_frc_mode" "1"
+    write "/sys/module/ged/parameters/gx_game_mode" "1"
+    write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
 fi
 
-# Disable dvfs
-if [[ -e "/proc/mali/dvfs_enable" ]] 
+if [[ -d "/proc/gpufreq/" ]]
 then
-    [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "0"
+    write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
+    write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
+    write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
+    write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
+fi
+
+# Tweak some mali parameters
+if [[ -d "/proc/mali/" ]] 
+then
+     [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "0"
+     write "/proc/mali/always_on" "1"
 fi
 
 if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
@@ -4657,7 +4796,9 @@ fi
 if [[ -e "${kernel}sched_boost" ]]; then
     write "${kernel}sched_boost" "1"
 fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "$mtk" == "true" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "2"
+else
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
 if [[ -e "/proc/ufs_perf" ]]; then
@@ -4674,7 +4815,7 @@ fi
 for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
    if [[ -d "$ufs" ]]; then
        write "${ufs}tw_enable" "1"
-       kmsg "Disabled UFS Turbo Write"
+       kmsg "Enabled UFS Turbo Write"
        kmsg3 ""
      fi
   break
@@ -4871,6 +5012,7 @@ then
 elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]
 then
     write "/sys/power/pnpmgr/touch_boost" "1"
+    write "/sys/power/pnpmgr/long_duration_touch_boost" "1"
     kmsg "Enabled pnpmgr touch boost"
     kmsg3 ""
 fi
