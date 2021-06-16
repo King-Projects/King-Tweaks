@@ -1,7 +1,7 @@
 #!/system/bin/sh
 # KTSR by Pedro (pedrozzz0 @ GitHub)
 # Credits: Draco (tytydraco @ GitHub), Dan (Paget69 @ XDA), mogoroku @ GitHub, helloklf @ GitHub, chenzyadb @ Gitee, Matt Yang (yc9559 @ GitHub) and Eight (dlwlrma123 @ GitHub).
-# If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
+# If you wanna use it as part of your project, please maintain the credits to it's respectives authors.
 
 MODPATH=/data/adb/modules/KTSR
 
@@ -4549,7 +4549,7 @@ do
    write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]];
+if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
     write "/proc/cpufreq/cpufreq_power_mode" "3"
 fi
 
