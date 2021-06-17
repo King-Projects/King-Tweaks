@@ -237,8 +237,6 @@ elif [[ -e "$gpui/gpu_freq_table" ]]; then
 elif [[ $gpu_max2 -ne $gpu_max_freq ]]; then
       gpu_max2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
 fi
-
-      gpu_max3=$(cat /proc/gpufreq/gpufreq_opp_dump | awk '{printf $4 "\n"}' | cut -f1 -d "," | sed -n '1p')
 }
 
 get_gpu_min() {
@@ -257,12 +255,12 @@ fi
 }
 
 get_cpu_gov() {
-# Fetch CPU actual governor    
+# Fetch CPU governor    
 cpu_gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
 }
 
 get_gpu_gov() {
-# Fetch GPU actual governor
+# Fetch GPU governor
 if [[ -e "$gpui/gpu_governor" ]]; then
     gpu_gov=$(cat $gpui/gpu_governor)
     
@@ -307,8 +305,8 @@ done
 
 get_min_cpu_clk() {
 # Fetch min CPU clock
-cpu_min_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
-cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
+cpu_min_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
+cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu4/cpufreq/cpuinfo_min_freq)
 
 if [[ "$cpu_min_freq" -gt "$cpu_min_freq2" ]]; then
     cpu_min_freq=$cpu_min_freq2
@@ -330,6 +328,10 @@ if [[ -e "$gpu/max_gpuclk" ]]; then
 
 elif [[ -e "$gpu/max_clock" ]]; then
       gpu_max_freq=$(cat $gpu/max_clock)
+
+elif [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]]; then
+      gpu_max_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | awk '{print $4}' | cut -f1 -d "," | head -n 1)
+      mtk=true
 fi
 
 # Fetch minimum GPU frequency (gpumin also does almost the same thing)
@@ -339,6 +341,9 @@ if [[ -e "$gpu/min_clock_mhz" ]]; then
 
 elif [[ -e "$gpu/min_clock" ]]; then
       gpu_min_freq=$(cat $gpu/min_clock)
+
+elif [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]]; then
+      gpu_min_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | tail -1 | awk '{print $4}' | cut -f1 -d ",")
 fi
 }
 
@@ -406,8 +411,8 @@ root=$(su -v)
 is_exynos() {
 if [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]]; then
     exynos=true
+    mtk=false
     qcom=false
-
 else
     exynos=false
 fi
@@ -417,8 +422,8 @@ is_mtk() {
 # Detect if we're running on a mediatek powered device              
 if [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]]; then
     mtk=true
+    exynos=false
     qcom=false
-               
 else
     mtk=false
 fi
@@ -498,28 +503,21 @@ batt_tmp=$((batt_tmp / 10))
 
 get_gpu_mdl() {
 # Fetch GPU model
-if [[ $exynos == "true" ]]; then
+if [[ "$exynos" == "true" ]] || [[ $mtk == "true" ]]; then
     gpu_mdl=$(cat $gpu/gpuinfo | awk '{print $1}')
 
-elif [[ $mtk == "true" ]]; then
-      gpu_mdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $4,$5,$6}' | tr -d ,)
-
-elif [[ $qcom == "true" ]]; then
+elif [[ "$qcom" == "true" ]]; then
       gpu_mdl=$(cat $gpui/gpu_model)
-
-elif [[ $gpu_mdl == "" ]]; then
+      
+elif [[ "$gpu_mdl" == "" ]]; then
       gpu_mdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 fi
 }
 
 get_drvs_info() {
 # Fetch drivers info
-if [[ $exynos == "true" ]]; then
-    drvs_info=$(cat /sys/module/mali_kbase/version)
-
-elif [[ $mtk == "true" ]]; then
-      drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $7,$8,$9,$10,$11,$12,$13}')
-
+if [[ "$exynos" == "true" ]] || [[ "$mtk" == "true" ]]; then
+    drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}')
 else
     drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
 fi
@@ -608,7 +606,7 @@ if [[ "$batt_cpct" == "" ]]; then
     batt_cpct=$(dumpsys batterystats | grep Capacity: | awk '{print $2}' | cut -d "," -f 1)
 fi
                
-if [[ "$gbcapacity" -gt "1000000" ]]; then
+if [[ "$batt_cpct" -gt "1000000" ]]; then
     batt_cpct=$((batt_cpct / 1000))
 fi
 }
@@ -652,10 +650,7 @@ if [[ -e "$gpui/gpu_busy_percentage" ]]; then
 
 elif [[ -e "$gpu/utilization" ]]; then
       gpu_load=$(cat $gpu/utilization)
-               
-elif [[ -e "/proc/mali/utilization" ]]; then
-      gpu_load=$(cat /proc/mali/utilization)
-
+      
 elif [[ -e "$gpu/load" ]]; then
       gpu_load=$(cat $gpu/load | tr -d %)
 
@@ -700,13 +695,11 @@ sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 }
 
 get_sql_info() {
-if [[ "$(find /system -name "sqlite3" -type f)" ]]; then
     # Fetch SQLite version
     sql_ver=$(sqlite3 -version | awk '{print $1}')
 
     # Fetch SQLite build date
     sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}')
-fi
 }
 
 get_cpu_load() {
@@ -726,19 +719,29 @@ cpu_total_cur=$((user+system+nice+softirq+steal+idle+iowait))
 cpu_load=$((100*( cpu_active_cur-cpu_active_prev ) / (cpu_total_cur-cpu_total_prev) ))
 }
 
+check_ppm_support() {
+if [[ -d "/proc/ppm/" ]] && [[ "$mtk" == "true" ]]; then
+    ppm=true
+else
+    ppm=false
+fi
+}
+
 get_all() {
 get_gpu_dir
 
-is_mtk
+if [[ "$qcom" != "true" ]]; then
+    is_mtk
+fi
 
-if [[ "$mtk" != "true" ]]; then
+if [[ "$mtk" != "true" ]] && [[ "$qcom" != "true" ]]; then
     is_exynos
 fi
 
 check_qcom
 
-if [[ "$qcom" != "true" ]]; then
-    support_ppm
+if [[ "$qcom" != "true" ]] && [[ "$exynos" != "true" ]]; then
+    check_ppm_support
 fi
 
 if [[ "$qcom" == "true" ]]; then
@@ -823,7 +826,12 @@ get_dv
 
 get_uptime
 
-get_sql_info
+if [[ "$(find /system -name "sqlite3" -type f)" ]]; then
+    get_sql_info
+else
+    sql_ver=Not Installed
+    sql_bd_dt=Not Installed
+fi
 
 get_cpu_load
 }
@@ -1090,14 +1098,14 @@ kmsg3 ""
 		fi
 	done
 	
-if [[ $qcom == "true" ]]; then
+if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "1"
     write "$gpu/thermal_pwrlevel" "$gpu_calc_thrtl"
     write "$gpu/devfreq/adrenoboost" "0"
     write "$gpu/force_no_nap" "0"
     write "$gpu/bus_split" "1"
     write "$gpu/devfreq/max_freq" "$gpu_max_freq"
-    write "$gpu/devfreq/min_freq" "100000000"
+    write "$gpu/devfreq/min_freq" "$gpu_min_freq"
     write "$gpu/default_pwrlevel" "$((gpu_min_pl - 1))"
     write "$gpu/force_bus_on" "0"
     write "$gpu/force_clk_on" "0"
@@ -1105,7 +1113,7 @@ if [[ $qcom == "true" ]]; then
     write "$gpu/idle_timer" "90"
     write "$gpu/pwrnap" "1"
 else
-    [[ $one_ui == "false" ]] && write "$gpu/dvfs" "1"
+    [[ "$one_ui" == "false" ]] && write "$gpu/dvfs" "1"
      write "$gpui/gpu_min_clock" "$gpu_min"
      write "$gpu/highspeed_clock" "$gpu_max_freq"
      write "$gpu/highspeed_load" "80"
@@ -1114,7 +1122,7 @@ else
      write "$gpui/boost" "0"
      write "$gpug/mali_touch_boost_level" "0"
      write "$gpu/max_freq" "$gpu_max_freq"
-     write "$gpu/min_freq" "100000000"
+     write "$gpu/min_freq" "$gpu_min_freq"
      write "$gpu/tmu" "1"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "1"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "60"
@@ -1150,6 +1158,7 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]] 
 then
+    write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
     write "/proc/gpufreq/gpufreq_input_boost" "0"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
@@ -1899,7 +1908,7 @@ if [[ $qcom == "true" ]]; then
     write "$gpu/force_no_nap" "0"
     write "$gpu/bus_split" "1"
     write "$gpu/devfreq/max_freq" "$gpu_max_freq"
-    write "$gpu/devfreq/min_freq" "100000000"
+    write "$gpu/devfreq/min_freq" "$gpu_min_freq"
     write "$gpu/default_pwrlevel" "$gpu_min_pl"
     write "$gpu/force_bus_on" "0"
     write "$gpu/force_clk_on" "0"
@@ -1916,7 +1925,7 @@ else
      write "$gpui/boost" "0"
      write "$gpug/mali_touch_boost_level" "0"
      write "$gpu/max_freq" "$gpu_max_freq"
-     write "$gpu/min_freq" "100000000"
+     write "$gpu/min_freq" "$gpu_min_freq"
      write "$gpu/tmu" "1"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "1"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "70"
@@ -1952,6 +1961,7 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]] 
 then
+    write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
     write "/proc/gpufreq/gpufreq_opp_freq" "0"
     write "/proc/gpufreq/gpufreq_input_boost" "0"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
@@ -2812,7 +2822,7 @@ if [[ $qcom == "true" ]]; then
     write "$gpu/force_no_nap" "0"
     write "$gpu/bus_split" "0"
     write "$gpu/devfreq/max_freq" "$gpu_max_freq"
-    write "$gpu/devfreq/min_freq" "100000000"
+    write "$gpu/devfreq/min_freq" "$gpu_min_freq"
     write "$gpu/default_pwrlevel" "1"
     write "$gpu/force_bus_on" "0"
     write "$gpu/force_clk_on" "0"
@@ -2831,7 +2841,7 @@ else
      write "$gpug/mali_touch_boost_level" "1"
      write "/proc/gpufreq/gpufreq_input_boost" "1"
      write "$gpu/max_freq" "$gpu_max_freq"
-     write "$gpu/min_freq" "100000000"
+     write "$gpu/min_freq" "$gpu_min_freq"
      write "$gpu/tmu" "0"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "0"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "40"
@@ -2867,7 +2877,8 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]] 
 then
-    write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max3"
+    write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
+    write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max_freq"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
@@ -3114,10 +3125,10 @@ then
 fi
 
 if [[ "$ppm" == "true" ]]; then
-write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "0 $cpu_max_freq"
-write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "1 $cpu_max_freq"
-write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "0 $cpu_max_freq"
-write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "1 $cpu_max_freq"
+    write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "0 $cpu_max_freq"
+    write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "1 $cpu_max_freq"
+    write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "0 $cpu_max_freq"
+    write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "1 $cpu_max_freq"
 fi
 
 # Set min and max clocks
@@ -3726,7 +3737,7 @@ if [[ $qcom == "true" ]]; then
     write "$gpu/devfreq/adrenoboost" "0"
     write "$gpu/force_no_nap" "0"
     write "$gpu/bus_split" "1"
-    write "$gpu/devfreq/min_freq" "100000000"
+    write "$gpu/devfreq/min_freq" "$gpu_min_freq"
     write "$gpu/default_pwrlevel" "$gpu_min_pl"
     write "$gpu/force_bus_on" "0"
     write "$gpu/force_clk_on" "0"
@@ -3745,7 +3756,7 @@ else
      write "$gpug/mali_touch_boost_level" "0"
      write "/proc/gpufreq/gpufreq_input_boost" "0"
      write "$gpu/max_freq" "$gpu_max_freq"
-     write "$gpu/min_freq" "100000000"
+     write "$gpu/min_freq" "$gpu_min_freq"
      write "$gpu/tmu" "1"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "1"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "85"
@@ -3781,6 +3792,7 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]] 
 then
+    write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
     write "/proc/gpufreq/gpufreq_opp_freq" "0"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
@@ -4652,7 +4664,7 @@ else
      write "$gpug/mali_touch_boost_level" "1"
      write "/proc/gpufreq/gpufreq_input_boost" "1"
      write "$gpu/max_freq" "$gpu_max_freq"
-     write "$gpu/min_freq" "$gpu_max2"
+     write "$gpu/min_freq" "$gpu_max_freq"
      write "$gpu/tmu" "0"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "0"
      write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "35"
@@ -4688,7 +4700,8 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]]
 then
-    write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max3"
+    write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
+    write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max_freq"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
