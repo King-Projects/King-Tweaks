@@ -215,26 +215,26 @@ done
 get_gpu_max() {
 gpu_max=$(cat $gpu/devfreq/available_frequencies | awk -v var="$gpu_num_pl" '{print $var}')
     
-if [[ $gpu_max -ne $gpu_max_freq ]]; then
+if [[ "$gpu_max" -ne "$gpu_max_freq" ]]; then
     gpu_max=$(cat $gpu/devfreq/available_frequencies | awk 'NF>1{print $NF}')
     
-elif [[ $gpu_max -ne $gpu_max_freq ]]; then
+elif [[ "$gpu_max" -ne "$gpu_max_freq" ]]; then
       gpu_max=$(cat $gpu/devfreq/available_frequencies | awk '{print $1}')
                
-elif [[ $gpu_max -ne $gpu_max_freq ]]; then
+elif [[ "$gpu_max" -ne "$gpu_max_freq" ]]; then
       gpu_max=$gpu_max_freq
 fi
 
 if [[ -e "$gpu/available_frequencies" ]]; then
     gpu_max2=$(cat $gpu/available_frequencies | awk 'NF>1{print $NF}')
     
-elif [[ $gpu_max2 -ne $gpu_max_freq ]]; then
+elif [[ "$gpu_max2" -ne "$gpu_max_freq" ]]; then
       gpu_max2=$(cat $gpu/available_frequencies | awk '{print $1}')
     
 elif [[ -e "$gpui/gpu_freq_table" ]]; then
       gpu_max2=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
 
-elif [[ $gpu_max2 -ne $gpu_max_freq ]]; then
+elif [[ "$gpu_max2" -ne "$gpu_max_freq" ]]; then
       gpu_max2=$(cat $gpui/gpu_freq_table | awk '{print $1}')
 fi
 }
@@ -243,13 +243,13 @@ get_gpu_min() {
 if [[ -e "$gpu/available_frequencies" ]]; then
     gpu_min=$(cat $gpu/available_frequencies | awk '{print $1}')
 
-elif [[ $gpu_min -ne $gpu_min_freq ]]; then
+elif [[ "$gpu_min" -ne "$gpu_min_freq" ]]; then
       gpu_min=$(cat $gpu/available_frequencies | awk 'NF>1{print $NF}')
 
 elif [[ -e "$gpui/gpu_freq_table" ]]; then
       gpu_min=$(cat $gpui/gpu_freq_table | awk '{print $1}')
 
-elif [[ $gpu_min -ne $gpu_min_freq ]]; then
+elif [[ "$gpu_min" -ne "$gpu_min_freq" ]]; then
       gpu_min=$(cat $gpui/gpu_freq_table | awk 'NF>1{print $NF}')
 fi
 }
@@ -280,7 +280,7 @@ fi
 }
 
 define_gpu_pl() {
-# Fetch the GPU amount of power levels
+# Fetch the amount of power levels from the GPU
 gpu_num_pl=$(cat $gpu/num_pwrlevels)
 
 # Fetch lower GPU power level
@@ -292,23 +292,24 @@ gpu_max_pl=$(cat $gpu/max_pwrlevel)
 
 get_max_cpu_clk() {
 # Fetch max CPU clock
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
-do
-  cpu_max_freq=$(cat $cpu/scaling_max_freq)
-  cpu_max_freq2=$(cat $cpu/cpuinfo_max_freq)
+cpu_max_freq=$(cat /sys/devices/system/cpu/cpu7/cpufreq/cpuinfo_max_freq)
+cpu_max_freq2=$(cat /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_max_freq)
+cpu_max_freq3=$(cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_max_freq)
 
-if [[ "$cpu_max_freq2" -gt "$cpu_max_freq" ]]; then
+if [[ "$cpu_max_freq2" -gt "$cpu_max_freq" ]] && [[ "$cpu_max_freq2" -gt "$cpu_max_freq3" ]]; then
     cpu_max_freq=$cpu_max_freq2
-  fi
-done
+
+elif [[ "$cpu_max_freq3" -gt "$cpu_max_freq" ]] && [[ "$cpu_max_freq3" -gt "$cpu_max_freq2" ]]; then
+      cpu_max_freq=$cpu_max_freq3
+fi
 }
 
 get_min_cpu_clk() {
 # Fetch min CPU clock
 cpu_min_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
-cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu4/cpufreq/cpuinfo_min_freq)
+cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_min_freq)
 
-if [[ "$cpu_min_freq" -gt "$cpu_min_freq2" ]]; then
+if [[ "$cpu_min_freq2" -lt "$cpu_min_freq" ]]; then
     cpu_min_freq=$cpu_min_freq2
 fi
 }
@@ -367,10 +368,10 @@ get_soc() {
 # Fetch the device SOC
 soc=$(getprop ro.board.platform)
 
-if [[ $soc == "" ]]; then
+if [[ "$soc" == "" ]]; then
     soc=$(getprop ro.product.board)
 
-elif [[ $soc == "" ]]; then
+elif [[ "$soc" == "" ]]; then
       soc=$(getprop ro.product.platform)
 fi
 }
@@ -379,10 +380,10 @@ get_sdk() {
 # Fetch the device SDK              
 sdk=$(getprop ro.build.version.sdk)
 
-if [[ $sdk == "" ]]; then
+if [[ "$sdk" == "" ]]; then
     sdk=$(getprop ro.vendor.build.version.sdk)
 
-elif [[ $sdk == "" ]]; then
+elif [[ "$sdk" == "" ]]; then
       sdk=$(getprop ro.vndk.version)
 fi
 }
@@ -435,13 +436,11 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   if [[ "$(cat $cpu/scaling_available_governors | grep 'sched')" ]]; then
       cpu_sched=EAS
-
   elif [[ "$(cat $cpu/scaling_available_governors | grep 'interactive')" ]]; then
         cpu_sched=HMP
-
   else
       cpu_sched=Unknown
-    fi
+  fi
 done
 }
 
@@ -464,8 +463,7 @@ avail_ram=$(busybox free -m | grep Mem: | awk '{print $7}')
 get_batt_pctg() {               
 # Fetch battery actual capacity
 if [[ -e "/sys/class/power_supply/battery/capacity" ]]; then
-    batt_pctg=$(cat /sys/class/power_supply/battery/capacity)
-              
+    batt_pctg=$(cat /sys/class/power_supply/battery/capacity)             
 else
     batt_pctg=$(dumpsys battery | awk '/level/{print $2}')
 fi
@@ -517,7 +515,7 @@ fi
 get_drvs_info() {
 # Fetch drivers info
 if [[ "$exynos" == "true" ]] || [[ "$mtk" == "true" ]]; then
-    drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}')
+    drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $5,$6,$7,$8,$9,$10,$11,$12,$13}')
 else
     drvs_info=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
 fi
@@ -544,25 +542,25 @@ else
     batt_hth=$(dumpsys battery | awk '/health/{print $2}')
 fi
 
-if [[ $batt_hth == "1" ]]; then
+if [[ "$batt_hth" == "1" ]]; then
     batt_hth=Unknown
 
-elif [[ $batt_hth == "2" ]]; then
+elif [[ "$batt_hth" == "2" ]]; then
       batt_hth=Good
 
-elif [[ $batt_hth == "3" ]]; then
+elif [[ "$batt_hth" == "3" ]]; then
       batt_hth=Overheat
 
-elif [[ $batt_hth == "4" ]]; then
+elif [[ "$batt_hth" == "4" ]]; then
       batt_hth=Dead
 
-elif [[ $batt_hth == "5" ]]; then
+elif [[ "$batt_hth" == "5" ]]; then
       batt_hth=Over voltage
 
-elif [[ $batt_hth == "6" ]]; then
+elif [[ "$batt_hth" == "6" ]]; then
       batt_hth=Unspecified failure
 
-elif [[ $batt_hth == "7" ]]; then
+elif [[ "$batt_hth" == "7" ]]; then
       batt_hth=Cold
                
 else
@@ -579,19 +577,19 @@ else
     batt_sts=$(dumpsys battery | awk '/status/{print $2}')
 fi
 
-if [[ $batt_sts == "1" ]]; then
+if [[ "$batt_sts" == "1" ]]; then
     batt_sts=Unknown
 
-elif [[ $batt_sts == "2" ]]; then
+elif [[ "$batt_sts" == "2" ]]; then
       batt_sts=Charging
 
-elif [[ $batt_sts == "3" ]]; then
+elif [[ "$batt_sts" == "3" ]]; then
       batt_sts=Discharging
 
-elif [[ $batt_sts == "4" ]]; then
+elif [[ "$batt_sts" == "4" ]]; then
       batt_sts=Not charging
 
-elif [[ $batt_sts == "5" ]]; then
+elif [[ "$batt_sts" == "5" ]]; then
       batt_sts=Full
 
 else
@@ -636,8 +634,7 @@ gpu_thrtl_lvl=$(cat $gpu/thermal_pwrlevel)
 
 # Disable the GPU thermal throttling clock restriction
 if [[ "$gpu_thrtl_lvl" -eq "1" ]] && [[ "$gpu_thrtl_lvl" -gt "1" ]]; then
-gpu_calc_thrtl=$((gpu_thrtl_lvl - gpu_thrtl_lvl))
-
+    gpu_calc_thrtl=$((gpu_thrtl_lvl - gpu_thrtl_lvl))
 else
     gpu_calc_thrtl=0
 fi
@@ -651,6 +648,9 @@ if [[ -e "$gpui/gpu_busy_percentage" ]]; then
 elif [[ -e "$gpu/utilization" ]]; then
       gpu_load=$(cat $gpu/utilization)
       
+elif [[ -e "/proc/mali/utilization" ]]; then
+      gpu_load=$(cat /proc/mali/utilization)
+
 elif [[ -e "$gpu/load" ]]; then
       gpu_load=$(cat $gpu/load | tr -d %)
 
@@ -679,7 +679,6 @@ check_one_ui() {
 # Check if we're running on OneUI
 if [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]]; then
     one_ui=true
-
 else
     one_ui=false
 fi
@@ -1272,7 +1271,7 @@ then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
     write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
     write "/sys/kernel/debug/sched_features" "UTIL_EST"
-    [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+    [[ "$cpu_sched" == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
      kmsg "Tweaked scheduler features"
      kmsg3 ""
 fi
@@ -1350,6 +1349,9 @@ if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
 
+kmsg "Tweaked various kernel parameters"
+kmsg3 ""
+
 # Enable UTW (UFS Turbo Write)
 for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
    if [[ -d "$ufs" ]]; then
@@ -1371,10 +1373,9 @@ if [[ "$ppm" == "true" ]]; then
     write "/proc/ppm/policy_status" "4 1"
     write "/proc/ppm/policy_status" "7 0"
     write "/proc/ppm/policy_status" "9 0"
+    kmsg "Tweaked PPM Policies"
+    kmsg3 ""
 fi
-
-kmsg "Tweaked various kernel parameters"
-kmsg3 ""
 
 if [[ "$ppm" == "true" ]]; then
     write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "0 $cpu_min_freq"
@@ -1390,6 +1391,8 @@ do
   then
       write "${cpus}scaling_min_freq" "$cpu_min_freq"
       write "${cpus}scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}user_scaling_min_freq" "$cpu_min_freq"
+      write "${cpus}user_scaling_min_freq" "$cpu_max_freq"
    fi
 done
 
@@ -1399,6 +1402,8 @@ do
   then
       write "${cpus}scaling_min_freq" "$cpu_min_freq"
       write "${cpus}scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}user_scaling_min_freq" "$cpu_min_freq"
+      write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
    fi
 done
 
@@ -2095,7 +2100,7 @@ then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
     write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
     write "/sys/kernel/debug/sched_features" "UTIL_EST"
-    [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+    [[ "$cpu_sched" == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
      kmsg "Tweaked scheduler features"
      kmsg3 ""
 fi
@@ -2176,6 +2181,9 @@ if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
 
+kmsg "Tweaked various kernel parameters"
+kmsg3 ""
+
 # Disable UTW (UFS Turbo Write)
 for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
    if [[ -d "$ufs" ]]; then
@@ -2197,10 +2205,9 @@ if [[ "$ppm" == "true" ]]; then
     write "/proc/ppm/policy_status" "4 1"
     write "/proc/ppm/policy_status" "7 0"
     write "/proc/ppm/policy_status" "9 0"
+    kmsg "Tweaked PPM Policies"
+    kmsg3 ""
 fi
-
-kmsg "Tweaked various kernel parameters"
-kmsg3 ""
 
 # Enable fingerprint boost
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
@@ -2224,6 +2231,8 @@ do
   then
       write "${cpus}scaling_min_freq" "$cpu_min_freq"
       write "${cpus}scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}user_scaling_min_freq" "$cpu_min_freq"
+      write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
    fi
 done
 
@@ -2231,8 +2240,10 @@ for cpus in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   if [[ -e "${cpus}scaling_min_freq" ]]
   then
-      write "${cores}scaling_min_freq" "$cpu_min_freq"
-      write "${cores}scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}scaling_min_freq" "$cpu_min_freq"
+      write "${cpus}scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}user_scaling_min_freq" "$cpu_min_freq"
+      write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
    fi
 done
 
@@ -2839,7 +2850,6 @@ else
      write "$gpu/cl_boost_disable" "0"
      write "$gpui/boost" "0"
      write "$gpug/mali_touch_boost_level" "1"
-     write "/proc/gpufreq/gpufreq_input_boost" "1"
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "$gpu_min_freq"
      write "$gpu/tmu" "0"
@@ -2879,6 +2889,7 @@ if [[ -d "/proc/gpufreq/" ]]
 then
     write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
     write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max_freq"
+    write "/proc/gpufreq/gpufreq_input_boost" "1"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
@@ -3007,7 +3018,7 @@ then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
     write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
     write "/sys/kernel/debug/sched_features" "UTIL_EST"
-    [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+    [[ "$cpu_sched" == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
     kmsg "Tweaked scheduler features"
     kmsg3 ""
 fi
@@ -3090,6 +3101,9 @@ if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
 
+kmsg "Tweaked various kernel parameters"
+kmsg3 ""
+
 # Enable UTW (UFS Turbo Write)
 for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
    if [[ -d "$ufs" ]]; then
@@ -3111,10 +3125,9 @@ if [[ "$ppm" == "true" ]]; then
     write "/proc/ppm/policy_status" "4 0"
     write "/proc/ppm/policy_status" "7 0"
     write "/proc/ppm/policy_status" "9 1"
+    kmsg "Tweaked PPM Policies"
+    kmsg3 ""
 fi
-
-kmsg "Tweaked various kernel parameters"
-kmsg3 ""
 
 # Enable fingerprint boost
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
@@ -3138,6 +3151,8 @@ do
   then
       write "${cpus}scaling_min_freq" "$cpu_max_freq"
       write "${cpus}scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}user_scaling_min_freq" "$cpu_max_freq"
+      write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
    fi
 done
 
@@ -3147,6 +3162,8 @@ do
   then
       write "${cpus}scaling_min_freq" "$cpu_max_freq"
       write "${cpus}scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}user_scaling_min_freq" "$cpu_max_freq"
+      write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
    fi
 done
 
@@ -3297,7 +3314,7 @@ then
      kmsg3 ""
 fi
 
-# Enable touch boost on gaming and performance profile.
+# Enable touch boost on gaming and extreme profile.
 if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]
 then
     write "/sys/module/msm_performance/parameters/touchboost" "1"
@@ -3754,7 +3771,6 @@ else
      write "$gpu/cl_boost_disable" "1"
      write "$gpui/boost" "0"
      write "$gpug/mali_touch_boost_level" "0"
-     write "/proc/gpufreq/gpufreq_input_boost" "0"
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "$gpu_min_freq"
      write "$gpu/tmu" "1"
@@ -3794,6 +3810,7 @@ if [[ -d "/proc/gpufreq/" ]]
 then
     write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
     write "/proc/gpufreq/gpufreq_opp_freq" "0"
+    write "/proc/gpufreq/gpufreq_input_boost" "0"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
@@ -3924,7 +3941,7 @@ then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
     write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
     write "/sys/kernel/debug/sched_features" "UTIL_EST"
-    [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+    [[ "$cpu_sched" == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
     kmsg "Tweaked scheduler features"
     kmsg3 ""
 fi
@@ -4005,6 +4022,9 @@ if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
 
+kmsg "Tweaked various kernel parameters"
+kmsg3 ""
+
 # Disable UTW (UFS Turbo Write)
 for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
    if [[ -d "$ufs" ]]; then
@@ -4026,10 +4046,9 @@ if [[ "$ppm" == "true" ]]; then
     write "/proc/ppm/policy_status" "4 1"
     write "/proc/ppm/policy_status" "7 0"
     write "/proc/ppm/policy_status" "9 0"
+    kmsg "Tweaked PPM Policies"
+    kmsg3 ""
 fi
-
-kmsg "Tweaked various kernel parameters"
-kmsg3 ""
 
 # Disable fingerprint boost
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
@@ -4053,6 +4072,8 @@ do
   then
       write "${cpus}scaling_min_freq" "$cpu_min_freq"
       write "${cpus}scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}user_scaling_min_freq" "$cpu_min_freq"
+      write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
    fi
 done
 
@@ -4062,6 +4083,8 @@ do
   then
       write "${cpus}scaling_min_freq" "$cpu_min_freq"
       write "${cpus}scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}user_scaling_min_freq" "$cpu_min_freq"
+      write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
    fi
 done
 
@@ -4662,7 +4685,6 @@ else
      write "$gpu/cl_boost_disable" "0"
      write "$gpui/boost" "1"
      write "$gpug/mali_touch_boost_level" "1"
-     write "/proc/gpufreq/gpufreq_input_boost" "1"
      write "$gpu/max_freq" "$gpu_max_freq"
      write "$gpu/min_freq" "$gpu_max_freq"
      write "$gpu/tmu" "0"
@@ -4702,6 +4724,7 @@ if [[ -d "/proc/gpufreq/" ]]
 then
     write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
     write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max_freq"
+    write "/proc/gpufreq/gpufreq_input_boost" "1"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
@@ -4830,7 +4853,7 @@ then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
     write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
     write "/sys/kernel/debug/sched_features" "UTIL_EST"
-    [[ $cpu_sched == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
+    [[ "$cpu_sched" == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
     kmsg "Tweaked scheduler features"
     kmsg3 ""
 fi
@@ -4913,6 +4936,9 @@ if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
 
+kmsg "Tweaked various kernel parameters"
+kmsg3 ""
+
 # Enable UTW (UFS Turbo Write)
 for ufs in /sys/devices/platform/soc/*.ufshc/ufstw_lu*; do
    if [[ -d "$ufs" ]]; then
@@ -4926,9 +4952,6 @@ done
 if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
 fi
-
-kmsg "Tweaked various kernel parameters"
-kmsg3 ""
 
 # Enable fingerprint boost
 if [[ -e "/sys/kernel/fp_boost/enabled" ]]
