@@ -1168,7 +1168,7 @@ fi
 # Tweak some mali parameters
 if [[ -d "/proc/mali/" ]] 
 then
-     [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+     [[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "1"
      write "/proc/mali/always_on" "0"
 fi
 
@@ -1179,7 +1179,9 @@ fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
-    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
+    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+    write "/sys/module/simple_gpu_algorithm/parameters/default_laziness" "3"
+    write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "2500"
 fi
 
 kmsg "Tweaked GPU parameters"
@@ -1989,7 +1991,9 @@ fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
-    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
+    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+    write "/sys/module/simple_gpu_algorithm/parameters/default_laziness" "4"
+    write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "3500"
 fi
 
 kmsg "Tweaked GPU parameters"
@@ -2910,7 +2914,9 @@ fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
-    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
+    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+    write "/sys/module/simple_gpu_algorithm/parameters/default_laziness" "1"
+    write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "1750"
 fi
 
 kmsg "Tweaked GPU parameters"
@@ -3831,7 +3837,7 @@ fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
-    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
+    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 fi
 
 kmsg "Tweaked GPU parameters"
@@ -4745,7 +4751,9 @@ fi
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
-    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "Y"
+    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+    write "/sys/module/simple_gpu_algorithm/parameters/default_laziness" "0"
+    write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "1000"
 fi
 
 kmsg "Tweaked GPU parameters"

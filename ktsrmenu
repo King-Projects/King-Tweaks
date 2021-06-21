@@ -33,13 +33,13 @@ LOG=/data/local/tmp/"$ID".log
 oldLOG=/data/local/tmp/"$ID"-old.log
 
 # Verbose output goes here
-VERLOG=/data/local/tmp/$ID-verbose.log
-oldVERLOG=/data/local/tmp/$ID-verbose-old.log
-stdoutLOG="$MODDIR"/logs/$ID-STDOUT.log
-oldstdoutLOG="$MODDIR"/logs/$ID-STDOUT-old.log
+VERLOG=/data/local/tmp/"$ID"-verbose.log
+oldVERLOG=/data/local/tmp/"$ID"-verbose-old.log
+stdoutLOG="$MODDIR"/logs/"$ID"-STDOUT.log
+oldstdoutLOG="$MODDIR"/logs/"$ID"-STDOUT-old.log
 
 # Start logging verbosely
-mv -f $VERLOG $oldVERLOG 2>/dev/null; mv -f $LOG $oldLOG 2>/dev/null; mv -f $stdoutLOG $oldstdoutLOG 2>/dev/null
+mv -f "$VERLOG" "$oldVERLOG" 2>/dev/null; mv -f "$LOG" "$oldLOG" 2>/dev/null; mv -f "$stdoutLOG" "$oldstdoutLOG" 2>/dev/null
 
 # exec 3>&1
 
@@ -49,7 +49,7 @@ set -x 2>"$VERLOG"
 
 kts_mode=$(getprop persist.kingtweaks.mode)
  	
-case $kts_mode in
+case "$kts_mode" in
 
 1)
   kts_profile=Automatic
@@ -78,31 +78,26 @@ case $kts_mode in
 
 if [[ "$(settings get global low_power)" == "1" ]]; then
     low_power_mode=Enabled
-
 else
     low_power_mode=Disabled
 fi
 
 if [[ "$(cmd netpolicy get restrict-background | awk '{print $4}')" == "enabled" ]]; then
     data_saver=Enabled
-
 else
     data_saver=Disabled
 fi
 
 if [[ "$(settings get secure location_providers_allowed)" == "" ]]; then
     loc_mode_pwr_saving=Enabled
-
 else
     loc_mode_pwr_saving=Disabled
 fi
 
 if [[ "$(getprop init.svc.thermal-engine)" == "running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "running" ]] || [[ "$(getprop init.svc.thermald)" == "running" ]] || [[ "$(getprop init.svc.thermalservice)" == "running" ]]; then
     ts=On
-
 elif [[ "$(getprop init.svc.thermal-engine)" == "stopped" ]] || [[ "$(getprop init.svc.mi_thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermalservice)" == "stopped" ]]; then
       ts=Off
-
 else
     ts=Unknown
 fi
@@ -137,25 +132,25 @@ echo ""
 echo "[7] Optimize apps package"
 echo ""
 if [[ "$low_power_mode" == "Disabled" ]]; then
-echo "[8] Enable low power mode"
-echo ""
+    echo "[8] Enable low power mode"
+    echo ""
 else
-echo "[9] Disable low power mode"
-echo ""
+    echo "[9] Disable low power mode"
+    echo ""
 fi
 if [[ "$data_saver" == "Disabled" ]]; then
-echo "[10] Enable data saver"
-echo ""
+    echo "[10] Enable data saver"
+    echo ""
 else
-echo "[11] Disable data saver"
-echo ""
+    echo "[11] Disable data saver"
+    echo ""
 fi
 if [[ "$loc_mode_pwr_saving" == "Disabled" ]]; then
-echo "[12] Enable power-saving location mode"
-echo ""
+    echo "[12] Enable power-saving location mode"
+    echo ""
 else
-echo "[13] Disable power-saving location mode"
-echo ""
+    echo "[13] Disable power-saving location mode"
+    echo ""
 fi
 echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
 echo ""
@@ -164,25 +159,33 @@ echo ""
 echo "[16] Kill background apps"
 echo ""
 if [[ "$ts" == "On" ]]; then
-echo "${B}[17] Disable thermal${N}"
-echo ""
+    echo "${B}[17] Disable thermal${N}"
+    echo ""
 elif [[ "$ts" == "Off" ]]; then
-echo "${B}[18] Enable thermal${N}"
-echo ""
+      echo "${B}[18] Enable thermal${N}"
+      echo ""
+fi
+if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+')" "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+    echo "[19] 50 HZ Refresh Rate"   
+    echo ""
+    echo "[20] 55 HZ Refresh Rate"
+elif [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+      echo "[19] 50 HZ Refresh Rate"   
+      echo ""
 fi
 if [[ "$(settings get system peak_refresh_rate)" -ne "60" ]]; then
-echo "[19] 60 HZ Refresh Rate"
+echo "[21] 60 HZ Refresh Rate"
 echo ""
 fi
 if [[ "$(settings get system peak_refresh_rate)" -ne "90" ]]; then
-echo "[20] 90 HZ Refresh Rate"
+echo "[22] 90 HZ Refresh Rate"
 echo ""
 fi
 if [[ "$(settings get system peak_refresh_rate)" -ne "120" ]]; then
-echo "[21] 120 HZ Refresh Rate"
+echo "[23] 120 HZ Refresh Rate"
 echo ""
 fi
-echo "[22] Reset Refresh Rate config"
+echo "[24] Reset Refresh Rate config"
 echo ""
 echo "${R}[0] Exit${N}"
 echo ""
@@ -347,27 +350,46 @@ read -r option
 						                              ;;
 						                            
                                                  "19") 
+                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+')" "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+                                                          echo "50" > "/sys/module/mdss_mdp/parameters/custom_hz"
+                                                      else
+                                                          echo "Y" > "/sys/module/mdss_mdp/parameters/custom_hz"
+                                                      fi
+                                                      ;;
+                                                      
+                                                 "20")
+                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+')" "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+                                                          echo "55" > "/sys/module/mdss_mdp/parameters/custom_hz"
+                                                      fi
+                                                      ;;
+                                                      
+                                                 "21")
+                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+')" "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+                                                          echo "60" > "/sys/module/mdss_mdp/parameters/custom_hz"
+                                                      else
+                                                          echo "N" > "/sys/module/mdss_mdp/parameters/custom_hz"
+                                                      fi
                                                       settings put system min_refresh_rate 60
                                                       settings put system peak_refresh_rate 60
                                                       settings put system user_refresh_rate 60
                                                       settings put global oneplus_screen_refresh_rate 1
                                                       ;;
        
-                                                "20")
+                                                "22")
                                                      settings put system min_refresh_rate 90
                                                      settings put system peak_refresh_rate 90
                                                      settings put system user_refresh_rate 90
                                                      settings put global oneplus_screen_refresh_rate 0
                                                      ;;
 
-                                            "21")
+                                            "23")
                                                  settings put system min_refresh_rate 120
                                                  settings put system peak_refresh_rate 120
                                                  settings put system user_refresh_rate 120
                                                  settings put global oneplus_screen_refresh_rate 0
                                                  ;;
 						                      
-                                          "22")
+                                          "24")
                                                settings reset system min_refresh_rate
                                                settings reset system peak_refresh_rate
                                                settings reset system user_refresh_rate
