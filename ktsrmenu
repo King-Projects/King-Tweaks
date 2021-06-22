@@ -96,6 +96,7 @@ fi
 
 if [[ "$(getprop init.svc.thermal-engine)" == "running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "running" ]] || [[ "$(getprop init.svc.thermald)" == "running" ]] || [[ "$(getprop init.svc.thermalservice)" == "running" ]]; then
     ts=On
+    
 elif [[ "$(getprop init.svc.thermal-engine)" == "stopped" ]] || [[ "$(getprop init.svc.mi_thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermalservice)" == "stopped" ]]; then
       ts=Off
 else
@@ -165,7 +166,7 @@ elif [[ "$ts" == "Off" ]]; then
       echo "${B}[18] Enable thermal${N}"
       echo ""
 fi
-if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+')" "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
     echo "[19] 50 HZ Refresh Rate"   
     echo ""
     echo "[20] 55 HZ Refresh Rate"
@@ -350,7 +351,7 @@ read -r option
 						                              ;;
 						                            
                                                  "19") 
-                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+')" "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
                                                           echo "50" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       else
                                                           echo "Y" > "/sys/module/mdss_mdp/parameters/custom_hz"
@@ -358,13 +359,13 @@ read -r option
                                                       ;;
                                                       
                                                  "20")
-                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+')" "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
                                                           echo "55" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       fi
                                                       ;;
                                                       
                                                  "21")
-                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+')" "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
                                                           echo "60" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       else
                                                           echo "N" > "/sys/module/mdss_mdp/parameters/custom_hz"
