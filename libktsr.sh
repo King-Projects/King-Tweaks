@@ -906,7 +906,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf and mpdecision
+# Disable perf, traced and mpdecision
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -915,12 +915,13 @@ done
 stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
+stop traced 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
 fi
 
-kmsg "Disabled perf and mpdecision"
+kmsg "Disabled perf, traced and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -1657,7 +1658,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf and mpdecision
+# Disable perf, traced and mpdecision
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -1666,12 +1667,13 @@ done
 stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
+stop traced 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
 fi
 
-kmsg "Disabled perf and mpdecision"
+kmsg "Disabled perf, traced and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -2581,7 +2583,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf and mpdecision
+# Disable perf, traced and mpdecision
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -2590,12 +2592,13 @@ done
 stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
+stop traced 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
 fi
 
-kmsg "Disabled perf and mpdecision"
+kmsg "Disabled perf, traced and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -3502,7 +3505,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf and mpdecision
+# Disable perf, traced and mpdecision
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -3511,12 +3514,13 @@ done
 stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
+stop traced 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
 fi
 
-kmsg "Disabled perf and mpdecision"
+kmsg "Disabled perf, traced and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile
@@ -3838,6 +3842,8 @@ fi
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
 then
     write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
+    write "/sys/module/simple_gpu_algorithm/parameters/default_laziness" "4"
+    write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "5000"
 fi
 
 kmsg "Tweaked GPU parameters"
@@ -4416,7 +4422,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf and mpdecision
+# Disable perf, traced and mpdecision
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -4425,12 +4431,13 @@ done
 stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
+stop traced 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
 fi
 
-kmsg "Disabled perf and mpdecision"
+kmsg "Disabled perf, traced and mpdecision"
 kmsg3 ""
 
 # Configure thermal profile to dynamic (evaluation)

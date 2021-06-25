@@ -45,6 +45,7 @@ fi
 kts_mode=$(getprop persist.kingtweaks.mode)
 
 case $kts_mode in
+
 1)
   kts_profilein=Otomatis
   ;;
@@ -71,6 +72,7 @@ case $kts_mode in
        esac
 
 case $kts_mode in
+
 1)
   kts_profilept=Automático
   ;;
@@ -97,6 +99,7 @@ case $kts_mode in
       esac
 
 case $kts_mode in
+
 1)
   kts_profile=Automatic
   ;;
@@ -123,6 +126,7 @@ case $kts_mode in
       esac
 
 case $kts_mode in 
+
 1)
   kts_profiletr=Gecikme
   ;;

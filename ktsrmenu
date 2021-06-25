@@ -110,6 +110,8 @@ echo "******************************************"
 echo "* KTSR (Alt.) Profile Controller & Misc. *"
 echo "******************************************"
 echo ""
+echo "Version: v1.5-beta-r3"
+echo ""
 echo "[*] Current Profile: ${G}$kts_profile${N}"
 echo ""
 echo "[*] Thermal: ${B}$ts${N}"
@@ -157,36 +159,41 @@ echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
 echo ""
 echo "[15] Access our telegram group"
 echo ""
-echo "[16] Kill background apps"
-echo ""
 if [[ "$ts" == "On" ]]; then
-    echo "${B}[17] Disable thermal${N}"
+    echo "${B}[16] Disable thermal${N}"
     echo ""
 elif [[ "$ts" == "Off" ]]; then
-      echo "${B}[18] Enable thermal${N}"
+      echo "${B}[17] Enable thermal${N}"
       echo ""
 fi
-if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
-    echo "[19] 50 HZ Refresh Rate"   
+if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+    echo "[18] 50 HZ Refresh Rate"   
     echo ""
-    echo "[20] 55 HZ Refresh Rate"
-elif [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
-      echo "[19] 50 HZ Refresh Rate"   
+elif [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
+      echo "[18] 50 HZ Refresh Rate"   
+      echo ""
+      echo "[19] 55 HZ Refresh Rate"
       echo ""
 fi
 if [[ "$(settings get system peak_refresh_rate)" -ne "60" ]]; then
-echo "[21] 60 HZ Refresh Rate"
+echo "[20] 60 HZ Refresh Rate"
 echo ""
 fi
 if [[ "$(settings get system peak_refresh_rate)" -ne "90" ]]; then
-echo "[22] 90 HZ Refresh Rate"
+echo "[21] 90 HZ Refresh Rate"
 echo ""
 fi
 if [[ "$(settings get system peak_refresh_rate)" -ne "120" ]]; then
-echo "[23] 120 HZ Refresh Rate"
+echo "[22] 120 HZ Refresh Rate"
 echo ""
 fi
-echo "[24] Reset Refresh Rate config"
+echo "[23] Reset Refresh Rate config"
+echo ""
+echo "[24] Free RAM [ Balanced ] (Will only drop caches)."
+echo ""
+echo "[25] Free RAM [ Agressive ] (Will kill all background apps and drop caches)."
+echo ""
+echo "[26] Free RAM [ Extreme ] (Will kill all apps, and drop caches)."
 echo ""
 echo "${R}[0] Exit${N}"
 echo ""
@@ -318,17 +325,8 @@ read -r option
                                                                               am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
                                                                               menu
                                                                             ;;
-						
-						                                            "16")
-						                                            echo "${B}Killing all background apps...${N}"
-						                                            am kill-all
-						                                            sleep 2
-						                                            echo "${G}Done!${N}"
-						                                            sleep 2 
-						                                            menu
-						                                           ;;
-                        
-						                                    "17")
+                                                                            
+						                                    "16")
 						                                    echo "${B}Disabling thermal...${N}"
 						                                    stop thermald 2>/dev/null
 						                                    stop thermalservice 2>/dev/null
@@ -339,7 +337,7 @@ read -r option
 						                                    menu
 						                                    ;;
 
-						                              "18")
+						                              "17")
 						                              echo "${B}Enabling thermal...${N}"
 						                              start thermald 2>/dev/null
 						                              start thermalservice 2>/dev/null
@@ -350,23 +348,27 @@ read -r option
 						                              menu
 						                              ;;
 						                            
-                                                 "19") 
+                                                 "18") 
                                                       if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
                                                           echo "50" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       else
                                                           echo "Y" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       fi
+                                                      echo "${G}Done!${N}"
+                                                      sleep 2
+                                                      menu
+                                                      ;;
+                                                      
+                                                 "19")
+                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
+                                                          echo "55" > "/sys/module/mdss_mdp/parameters/custom_hz"
+                                                      fi
+                                                      echo "${G}Done!${N}"
+                                                      sleep 2
                                                       menu
                                                       ;;
                                                       
                                                  "20")
-                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
-                                                          echo "55" > "/sys/module/mdss_mdp/parameters/custom_hz"
-                                                      fi
-                                                      menu
-                                                      ;;
-                                                      
-                                                 "21")
                                                       if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
                                                           echo "60" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       else
@@ -376,33 +378,72 @@ read -r option
                                                       settings put system peak_refresh_rate 60
                                                       settings put system user_refresh_rate 60
                                                       settings put global oneplus_screen_refresh_rate 1
+                                                      echo "${G}Done!${N}"
+                                                      sleep 2
                                                       menu
                                                       ;;
        
-                                                "22")
+                                                "21")
                                                      settings put system min_refresh_rate 90
                                                      settings put system peak_refresh_rate 90
                                                      settings put system user_refresh_rate 90
                                                      settings put global oneplus_screen_refresh_rate 0
+                                                     echo "${G}Done!${N}"
+                                                     sleep 2
                                                      menu
                                                      ;;
 
-                                            "23")
+                                            "22")
                                                  settings put system min_refresh_rate 120
                                                  settings put system peak_refresh_rate 120
                                                  settings put system user_refresh_rate 120
                                                  settings put global oneplus_screen_refresh_rate 0
+                                                 echo "${G}Done!${N}"
+                                                 sleep 2
                                                  menu
                                                  ;;
 						                      
-                                          "24")
+                                          "23")
                                                settings reset system min_refresh_rate
                                                settings reset system peak_refresh_rate
                                                settings reset system user_refresh_rate
                                                settings reset global oneplus_screen_refresh_rate
+                                               echo "${G}Done!${N}"
+                                               sleep 2
                                                menu
                                                ;;
                                                
+                                        "24")
+                                             sync
+                                             echo "3" > /proc/sys/vm/drop_caches
+                                             echo "${G}Done!${N}"
+                                             sleep 2
+                                             menu
+                                             ;;
+                                             
+                                      "25")
+                                           sync
+                                           echo "3" > /proc/sys/vm/drop_caches
+                                           am kill-all
+                                           echo "${G}Done!${N}"
+                                           sleep 3
+                                           menu
+                                           ;;
+                                           
+                                       "26")
+                                            sync
+                                            echo "3" > /proc/sys/vm/drop_caches
+                                            am kill-all
+                                            sleep 3
+                                            while IFS= read -r line; do
+                                            if [[ ! "$line" == "com.termux" ]] || [[ ! "$line" == "jackpal.androidterm" ]] || [[ ! "$line" == "yarolegovich.materialterminal" ]] || [[ ! "$line" == "com.google.android.inputmethod.latin" ]]; then
+                                            am force-stop "$line"
+                                            fi
+                                            done <<< $(pm list packages -e -3 | grep package | cut -f 2 -d ":")
+                                            echo "${G}Done!${N}"
+                                            sleep 2
+                                            ;;
+                                           
                                        "0")
 						                   echo "${G}Hope that see ya soon! ;)${N}"
 						                   ;;
@@ -411,7 +452,6 @@ read -r option
 						             abort "${R}[!] Unexpected response, aborting...${N}"
 						             ;;
 						        esac
-}
 						
 						if [[ -z "$1" ]]; then
 						    menu

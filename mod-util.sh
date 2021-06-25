@@ -45,12 +45,12 @@ set_busybox() {
   fi
 }
 _busybox=false
-if [[ -n $_bb ]]; then
+if [[ -n "$_bb" ]]; then
   true
-elif [[ -x $SYSTEM2/xbin/busybox ]]; then
+elif [[ -x "$SYSTEM2"/xbin/busybox ]]; then
   _bb=$SYSTEM2/xbin/busybox
-elif [[ -x $SYSTEM2/bin/busybox ]]; then
-  _bb=$SYSTEM2/bin/busybox
+elif [[ -x "$SYSTEM2"/bin/busybox ]]; then
+  _bb="$SYSTEM2"/bin/busybox
 else
   echo "[!] Busybox not detected"
   echo "Please install it (@osm0sis busybox recommended)"
@@ -72,7 +72,7 @@ fi
 set_perm() {
   chown "$2":"$3" "$1" || return 1
   chmod "$4" "$1" || return 1
-  (if [[ -z $5 ]]; then
+  (if [[ -z "$5" ]]; then
     case $1 in
       *"system/vendor/app/"*) chcon 'u:object_r:vendor_app_file:s0' "$1";;
       *"system/vendor/etc/"*) chcon 'u:object_r:vendor_configs_file:s0' "$1";;
