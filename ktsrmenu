@@ -452,7 +452,8 @@ read -r option
 						             abort "${R}[!] Unexpected response, aborting...${N}"
 						             ;;
 						        esac
-						
+}
+
 						if [[ -z "$1" ]]; then
 						    menu
 						fi
