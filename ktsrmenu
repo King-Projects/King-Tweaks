@@ -436,7 +436,7 @@ read -r option
                                             am kill-all
                                             sleep 3
                                             while IFS= read -r line; do
-                                            if [[ ! "$line" == "com.termux" ]] || [[ ! "$line" == "jackpal.androidterm" ]] || [[ ! "$line" == "yarolegovich.materialterminal" ]] || [[ ! "$line" == "com.google.android.inputmethod.latin" ]]; then
+                                            if [[ ! "$line" == "com.termux" ]] && [[ ! "$line" == "jackpal.androidterm" ]] && [[ ! "$line" == "yarolegovich.materialterminal" ]] && [[ ! "$line" == "com.google.android.inputmethod.latin" ]]; then
                                             am force-stop "$line"
                                             fi
                                             done <<< $(pm list packages -e -3 | grep package | cut -f 2 -d ":")
