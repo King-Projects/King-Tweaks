@@ -851,6 +851,8 @@ stune=/dev/stune/
 
 lmk=/sys/module/lowmemorykiller/
 
+blkio=/dev/blkio/
+
 # Latency Profile
 latency() {
 init=$(date +%s)
@@ -1247,6 +1249,16 @@ then
     kmsg3 ""
 fi
 
+# Block Tweaks
+if [[ -d "$blkio" ]]; then
+    write "${blkio}blkio.weight" "1000"
+    write "${blkio}background/blkio.weight" "200"
+    write "${blkio}blkio.group_idle" "2000"
+    write "${blkio}background/blkio.group_idle" "0"
+    kmsg "Tweaked blkio"
+    kmsg3 ""
+fi
+
 # FS Tweaks
 if [[ -d "/proc/sys/fs" ]]
 then
@@ -1351,6 +1363,9 @@ fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
+
+# Set memory sleep mode to s2idle 
+write "/sys/power/mem_sleep" "s2idle"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -1910,7 +1925,7 @@ fi
 		fi
 	done
 
-if [[ $qcom == "true" ]]; then
+if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "1"
     write "$gpu/thermal_pwrlevel" "$gpu_calc_thrtl"
     write "$gpu/devfreq/adrenoboost" "0"
@@ -1925,7 +1940,7 @@ if [[ $qcom == "true" ]]; then
     write "$gpu/idle_timer" "66"
     write "$gpu/pwrnap" "1"
 else
-    [[ $one_ui == "false" ]] && write "$gpu/dvfs" "1"
+    [[ "$one_ui" == "false" ]] && write "$gpu/dvfs" "1"
      write "$gpui/gpu_min_clock" "$gpu_min"
      write "$gpu/highspeed_clock" "$gpu_max_freq"
      write "$gpu/highspeed_load" "86"
@@ -1982,7 +1997,7 @@ fi
 # Tweak some mali parameters
 if [[ -d "/proc/mali/" ]] 
 then
-     [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+     [[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "1"
      write "/proc/mali/always_on" "0"
 fi
 
@@ -2076,6 +2091,16 @@ then
     write "${cpuset}system-background/uclamp.boosted" "0"
     write "${cpuset}system-background/uclamp.latency_sensitive" "0"
     kmsg "Tweaked cpuset uclamp"
+    kmsg3 ""
+fi
+
+# Block Tweaks
+if [[ -d "$blkio" ]]; then
+    write "${blkio}blkio.weight" "1000"
+    write "${blkio}background/blkio.weight" "200"
+    write "${blkio}blkio.group_idle" "2000"
+    write "${blkio}background/blkio.group_idle" "0"
+    kmsg "Tweaked blkio"
     kmsg3 ""
 fi
 
@@ -2186,6 +2211,9 @@ fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
+
+# Set memory sleep mode to deep 
+write "/sys/power/mem_sleep" "deep"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -2833,7 +2861,7 @@ fi
 		fi
 	done
 
-if [[ $qcom == "true" ]]; then
+if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "0"
     write "$gpu/thermal_pwrlevel" "$gpu_calc_thrtl"
     write "$gpu/devfreq/adrenoboost" "2"
@@ -2848,7 +2876,7 @@ if [[ $qcom == "true" ]]; then
     write "$gpu/idle_timer" "1000"
     write "$gpu/pwrnap" "1"
 else
-    [[ $one_ui == "false" ]] && write "$gpu/dvfs" "0"
+    [[ "$one_ui" == "false" ]] && write "$gpu/dvfs" "0"
      write "$gpui/gpu_min_clock" "$gpu_min"
      write "$gpu/highspeed_clock" "$gpu_max_freq"
      write "$gpu/highspeed_load" "76"
@@ -2906,7 +2934,7 @@ fi
 # Tweak some mali parameters
 if [[ -d "/proc/mali/" ]] 
 then
-     [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "0"
+     [[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "0"
      write "/proc/mali/always_on" "0"
 fi
 
@@ -2997,6 +3025,16 @@ then
     write "${cpuset}system-background/uclamp.boosted" "0"
     write "${cpuset}system-background/uclamp.latency_sensitive" "0"
     kmsg "Tweaked cpuset uclamp"
+    kmsg3 ""
+fi
+
+# Block Tweaks
+if [[ -d "$blkio" ]]; then
+    write "${blkio}blkio.weight" "1000"
+    write "${blkio}background/blkio.weight" "200"
+    write "${blkio}blkio.group_idle" "2000"
+    write "${blkio}background/blkio.group_idle" "0"
+    kmsg "Tweaked blkio"
     kmsg3 ""
 fi
 
@@ -3109,6 +3147,9 @@ fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
+
+# Set memory sleep mode to s2idle 
+write "/sys/power/mem_sleep" "s2idle"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3758,7 +3799,7 @@ fi
 		fi
 	done
 
-if [[ $qcom == "true" ]]; then
+if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "1"
     write "$gpu/thermal_pwrlevel" "$gpu_calc_thrtl"
     write "$gpu/devfreq/adrenoboost" "0"
@@ -3772,7 +3813,7 @@ if [[ $qcom == "true" ]]; then
     write "$gpu/idle_timer" "39"
     write "$gpu/pwrnap" "1"
 else
-    [[ $one_ui == "false" ]] && write "$gpu/dvfs" "1"
+    [[ "$one_ui" == "false" ]] && write "$gpu/dvfs" "1"
      write "$gpui/gpu_min_clock" "$gpu_min"
      write "$gpu/highspeed_clock" "$gpu_max_freq"
      write "$gpu/highspeed_load" "95"
@@ -3926,6 +3967,16 @@ then
     kmsg3 ""
 fi
 
+# Block Tweaks
+if [[ -d "$blkio" ]]; then
+    write "${blkio}blkio.weight" "1000"
+    write "${blkio}background/blkio.weight" "200"
+    write "${blkio}blkio.group_idle" "2000"
+    write "${blkio}background/blkio.group_idle" "0"
+    kmsg "Tweaked blkio"
+    kmsg3 ""
+fi
+
 # FS Tweaks
 if [[ -d "/proc/sys/fs" ]]
 then
@@ -4033,6 +4084,9 @@ fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
+
+# Set memory sleep mode to deep 
+write "/sys/power/mem_sleep" "deep"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -4150,7 +4204,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP if device haven't more than 3 GB RAM
-if [[ $exynos == "true" ]] && [[ $total_ram -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ $total_ram -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -4442,7 +4496,7 @@ kmsg3 ""
 
 # Configure thermal profile to dynamic (evaluation)
 if [[ -e "/sys/class/thermal/thermal_message" ]]; then
-    write "/sys/class/thermal/thermal_message/sconfig" "10"
+    write "/sys/class/thermal/thermal_message/sconfig" "13"
     kmsg "Tweaked thermal profile"
     kmsg3 ""
 fi
@@ -4674,7 +4728,7 @@ fi
 		fi
 	done
 
-if [[ $qcom == "true" ]]; then
+if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "0"
     write "$gpu/thermal_pwrlevel" "$gpu_calc_thrtl"
     write "$gpu/devfreq/adrenoboost" "3"
@@ -4689,7 +4743,7 @@ if [[ $qcom == "true" ]]; then
     write "$gpu/idle_timer" "1000000"
     write "$gpu/pwrnap" "0"
 else
-    [[ $one_ui == "false" ]] && write "$gpu/dvfs" "0"
+    [[ "$one_ui" == "false" ]] && write "$gpu/dvfs" "0"
      write "$gpui/gpu_min_clock" "$gpu_max2"
      write "$gpu/highspeed_clock" "$gpu_max_freq"
      write "$gpu/highspeed_load" "76"
@@ -4747,7 +4801,7 @@ fi
 # Tweak some mali parameters
 if [[ -d "/proc/mali/" ]] 
 then
-     [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "0"
+     [[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "0"
      write "/proc/mali/always_on" "1"
 fi
 
@@ -4838,6 +4892,16 @@ then
     write "${cpuset}system-background/uclamp.boosted" "0"
     write "${cpuset}system-background/uclamp.latency_sensitive" "0"
     kmsg "Tweaked cpuset uclamp"
+    kmsg3 ""
+fi
+
+# Block Tweaks
+if [[ -d "$blkio" ]]; then
+    write "${blkio}blkio.weight" "1000"
+    write "${blkio}background/blkio.weight" "200"
+    write "${blkio}blkio.group_idle" "2000"
+    write "${blkio}background/blkio.group_idle" "0"
+    kmsg "Tweaked blkio"
     kmsg3 ""
 fi
 
@@ -4950,6 +5014,9 @@ fi
 if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
     write "/sys/kernel/debug/eara_thermal/enable" "0"
 fi
+
+# Set memory sleep mode to s2idle 
+write "/sys/power/mem_sleep" "s2idle"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
