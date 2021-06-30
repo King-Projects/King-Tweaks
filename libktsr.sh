@@ -908,7 +908,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf, traced and mpdecision
+# Disable perf, traced, mpdecision and few debug services
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -918,6 +918,8 @@ stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
 stop traced 2>/dev/null
+stop vendor.cnss_diag 2>/dev/null
+stop vendor.tcpdump 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
@@ -1466,7 +1468,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] && [[ $total_ram -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ $total_ram -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -1673,7 +1675,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf, traced and mpdecision
+# Disable perf, traced, mpdecision and few debug services
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -1683,6 +1685,8 @@ stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
 stop traced 2>/dev/null
+stop vendor.cnss_diag 2>/dev/null
+stop vendor.tcpdump 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
@@ -2332,7 +2336,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] && [[ $total_ram -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ $total_ram -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -2611,7 +2615,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf, traced and mpdecision
+# Disable perf, traced, mpdecision and few debug services
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -2621,6 +2625,8 @@ stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
 stop traced 2>/dev/null
+stop vendor.cnss_diag 2>/dev/null
+stop vendor.tcpdump 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
@@ -3267,7 +3273,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ $exynos == "true" ]] && [[ $total_ram -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ $total_ram -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3546,7 +3552,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf, traced and mpdecision
+# Disable perf, traced, mpdecision and few debug services
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -3556,6 +3562,8 @@ stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
 stop traced 2>/dev/null
+stop vendor.cnss_diag 2>/dev/null
+stop vendor.tcpdump 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
@@ -4476,7 +4484,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf, traced and mpdecision
+# Disable perf, traced, mpdecision and few debug services
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -4486,12 +4494,14 @@ stop perfd 2>/dev/null
 stop mpdecision 2>/dev/null
 stop vendor.perfservice 2>/dev/null
 stop traced 2>/dev/null
+stop vendor.cnss_diag 2>/dev/null
+stop vendor.tcpdump 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
 fi
 
-kmsg "Disabled perf, traced and mpdecision"
+kmsg "Disabled perf, traced, mpdecision and few debug services"
 kmsg3 ""
 
 # Configure thermal profile to dynamic (evaluation)
@@ -4844,7 +4854,7 @@ then
     write "${stune}background/schedtune.prefer_perf" "0"
 
     write "${stune}foreground/schedtune.boost" "50"
-    write "${stune}foreground/schedtune.prefer_idle" "0"
+    write "${stune}foreground/schedtune.prefer_idle" "1"
     write "${stune}foreground/schedtune.sched_boost" "15"
     write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "0"
