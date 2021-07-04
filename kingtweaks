@@ -16,7 +16,7 @@ fi
 
 if [[ -e "$KLOG" ]] 
 then
-    rm -f "$KLOG"
+    rm -rf "$KLOG"
 fi
 
 if [[ ! -d "/sdcard/KTSR" ]] 
@@ -31,7 +31,7 @@ fi
 
 if [[ -e "$KDBG" ]]
 then
-    rm -f "$KDBG"
+    rm -rf "$KDBG"
 fi
 
 boot_run_once=false
@@ -191,10 +191,10 @@ kdbg_max_size=1000000
 sqlite_opt_max_size=1000000
 
 if [[ "$(stat -t "$KDBG" | awk '{print $2}')" -eq "$kdbg_max_size" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}')" -gt "$kdbg_max_size" ]]; then
-rm -f "$KDBG"
+    rm -rf "$KDBG"
 
 elif [[ "$(stat -t /sdcard/KTSR/sqlite_opt.log | awk '{print $2}')" -eq "$sqlite_opt_max_size" ]] || [[ "$(stat -t /sdcard/KTSR/sqlite_opt.log | awk '{print $2}')" -gt "$sqlite_opt_max_size" ]]; then
-rm -f "/sdcard/KTSR/sqlite_opt.log"
+      rm -rf "/sdcard/KTSR/sqlite_opt.log"
 fi
 }
 
