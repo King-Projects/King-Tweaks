@@ -110,7 +110,7 @@ echo "******************************************"
 echo "* KTSR (Alt.) Profile Controller & Misc. *"
 echo "******************************************"
 echo ""
-echo "Version: v1.5-beta-r3"
+echo "Version: v1.5.1-beta-r4"
 echo ""
 echo "[*] Current Profile: ${G}$kts_profile${N}"
 echo ""
@@ -435,11 +435,11 @@ read -r option
                                             echo "3" > /proc/sys/vm/drop_caches
                                             am kill-all
                                             sleep 3
-                                            while IFS= read -r line; do
-                                            if [[ ! "$line" == "com.termux" ]] && [[ ! "$line" == "jackpal.androidterm" ]] && [[ ! "$line" == "yarolegovich.materialterminal" ]] && [[ ! "$line" == "com.google.android.inputmethod.latin" ]]; then
-                                            am force-stop "$line"
+                                            while IFS= read -r pkgnm; do
+                                            if [[ ! "$pkgnm" == "com.termux" ]] && [[ ! "$pkgnm" == "jackpal.androidterm" ]] && [[ ! "$pkgnm" == "yarolegovich.materialterminal" ]] && [[ ! "$pkgnm" == "com.google.android.inputmethod.latin" ]] && [[ ! "$pkgnm" == "com.termoneplus" ]]; then
+                                            am force-stop "$pkgnm"
                                             fi
-                                            done <<< $(pm list packages -e -3 | grep package | cut -f 2 -d ":")
+                                            done < $(pm list packages -e -3 | grep package | cut -f 2 -d ":")
                                             echo "${G}Done!${N}"
                                             sleep 2
                                             ;;

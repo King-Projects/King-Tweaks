@@ -11,22 +11,22 @@ KDBG=/sdcard/KTSR/KTSR_DBG.log
 
 # Log in white and continue (unnecessary)
 kmsg() {
-	echo -e "[*] $@" >> $KLOG
+	echo -e "[*] $@" >> "$KLOG"
 	echo -e "[*] $@"
 }
 
 kmsg1() {
-	echo -e "$@" >> $KDBG
+	echo -e "$@" >> "$KDBG"
 	echo -e "$@"
 }
 
 kmsg2() {
-	echo -e "[!] $@" >> $KDBG
+	echo -e "[!] $@" >> "$KDBG"
 	echo -e "[!] $@"
 }
 
 kmsg3() {
-	echo -e "$@" >> $KLOG
+	echo -e "$@" >> "$KLOG"
 	echo -e "$@"
 }
 
@@ -408,8 +408,8 @@ get_root() {
 root=$(su -v)
 }
 
-# Detect if we're running on a exynos powered device
 is_exynos() {
+# Detect if we're running on a exynos powered device
 if [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]]; then
     exynos=true
     mtk=false
@@ -521,15 +521,15 @@ else
 fi
 }
 
-get_rfrsh_rates() {
-# Fetch supported refresh rates
-rrs=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
+get_max_rr() {
+# Fetch max refresh rate
+rr=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
 
-if [[ -z "$rrs" ]]; then
-    rrs=$(dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .)
+if [[ -z "$rr" ]]; then
+    rr=$(dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 
-elif [[ -z "$rrs" ]]; then
-      rrs=$(dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tr -d .)
+elif [[ -z "$rr" ]]; then
+      rr=$(dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 fi
 }
 
@@ -665,7 +665,7 @@ nr_cores=$(cat /sys/devices/system/cpu/possible | awk -F "-" '{print $2}')
                
 nr_cores=$((nr_cores + 1))
                
-if [[ "$nr_cores" -eq 0 ]]; then
+if [[ "$nr_cores" -eq "0" ]]; then
     nr_cores=1
 fi
 }
@@ -684,8 +684,8 @@ else
 fi
 }
                
-get_dv() {
-dv=$(getprop ro.boot.bootdevice)
+get_bt_dvc() {
+bt_dvc=$(getprop ro.boot.bootdevice)
 }
 
 get_uptime() {
@@ -795,7 +795,7 @@ get_gpu_mdl
 
 get_drvs_info
 
-get_rfrsh_rates
+get_max_rr
 
 get_batt_hth
 
@@ -821,15 +821,15 @@ get_dvc_brnd
 
 check_one_ui
 
-get_dv
+get_bt_dvc
 
 get_uptime
 
 if [[ "$(find /system -name "sqlite3" -type f)" ]]; then
     get_sql_info
 else
-    sql_ver=Not Installed
-    sql_bd_dt=Not Installed
+    sql_ver=Not Present
+    sql_bd_dt=Not Present
 fi
 
 get_cpu_load
@@ -882,9 +882,9 @@ kmsg3 "** GPU Drivers Info: $drvs_info"
 kmsg3 "** GPU Governor: $gpu_gov"                                                                                  
 kmsg3 "** Device: $dvc_brnd, $dvc_cdn"                                                                                                
 kmsg3 "** ROM: $rom_info"                 
-kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}')"
-kmsg3 "** Screen Density: $(wm density | awk '{print $3}') PPI"
-kmsg3 "** Supported Refresh Rates: $rrs HZ"                                                                                                    
+kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}' | tail -n 1)"
+kmsg3 "** Screen Density: $(wm density | awk '{print $3}' | tail -n 1) PPI"
+kmsg3 "** Refresh Rate: $rr HZ"                                         
 kmsg3 "** KTSR Version: $build_ver"                                                                                     
 kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
 kmsg3 "** Build Type: $build_tp"                                                                                         
@@ -908,7 +908,7 @@ kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
 kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
 kmsg3 ""
 
-# Disable perf, traced, mpdecision and few debug services
+# Disable perf, mpdecision and few debug services
 for v in 0 1 2 3 4; do
     stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
     stop perf-hal-$v-$v 2>/dev/null
@@ -925,7 +925,7 @@ if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -f "/data/system/perfd/default_values"
 fi
 
-kmsg "Disabled perf, traced and mpdecision"
+kmsg "Disabled perf, mpdecision and few debug services"
 kmsg3 ""
 
 # Configure thermal profile
@@ -1319,11 +1319,11 @@ fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
     write "${kernel}sched_autogroup_enabled" "1"
 fi
-if [[ -e "/sys/devices/soc/$dv/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$dv/clkscale_enable" "0"
+if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
 fi
-if [[ -e "/sys/devices/soc/$dv/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$dv/clkgate_enable" "1"
+if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
@@ -1651,7 +1651,7 @@ kmsg3 "** Device: $dvc_brnd, $dvc_cdn"
 kmsg3 "** ROM: $rom_info"                 
 kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}')"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}') PPI"
-kmsg3 "** Supported Refresh Rates: $rrs HZ"                                                                                                    
+kmsg3 "** Refresh Rate: $rr HZ"                                                                                                    
 kmsg3 "** KTSR Version: $build_ver"                                                                                     
 kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
 kmsg3 "** Build Type: $build_tp"                                                                                         
@@ -2166,11 +2166,11 @@ fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
     write "${kernel}sched_autogroup_enabled" "1"
 fi
-if [[ -e "/sys/devices/soc/$dv/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$dv/clkscale_enable" "0"
+if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
 fi
-if [[ -e "/sys/devices/soc/$dv/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$dv/clkgate_enable" "1"
+if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
@@ -2591,7 +2591,7 @@ kmsg3 "** Device: $dvc_brnd, $dvc_cdn"
 kmsg3 "** ROM: $rom_info"                 
 kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}')"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}') PPI"
-kmsg3 "** Supported Refresh Rates: $rrs HZ"                                                                                                    
+kmsg3 "** Refresh Rate: $rr HZ"                                                                                                    
 kmsg3 "** KTSR Version: $build_ver"                                                                                     
 kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
 kmsg3 "** Build Type: $build_tp"                                                                                         
@@ -3102,11 +3102,11 @@ fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
     write "${kernel}sched_autogroup_enabled" "0"
 fi
-if [[ -e "/sys/devices/soc/$dv/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$dv/clkscale_enable" "0"
+if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
 fi
-if [[ -e "/sys/devices/soc/$dv/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$dv/clkgate_enable" "0"
+if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
@@ -3528,7 +3528,7 @@ kmsg3 "** Device: $dvc_brnd, $dvc_cdn"
 kmsg3 "** ROM: $rom_info"                 
 kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}')"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}') PPI"
-kmsg3 "** Supported Refresh Rates: $rrs HZ"                                                                                                    
+kmsg3 "** Refresh Rate: $rr HZ"                                                                                                    
 kmsg3 "** KTSR Version: $build_ver"                                                                                     
 kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
 kmsg3 "** Build Type: $build_tp"                                                                                         
@@ -4043,11 +4043,11 @@ fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
     write "${kernel}sched_autogroup_enabled" "1"
 fi
-if [[ -e "/sys/devices/soc/$dv/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$dv/clkscale_enable" "0"
+if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
 fi
-if [[ -e "/sys/devices/soc/$dv/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$dv/clkgate_enable" "1"
+if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
@@ -4460,7 +4460,7 @@ kmsg3 "** Device: $dvc_brnd, $dvc_cdn"
 kmsg3 "** ROM: $rom_info"                 
 kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}')"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}') PPI"
-kmsg3 "** Supported Refresh Rates: $rrs HZ"                                                                                                    
+kmsg3 "** Refresh Rate: $rr HZ"                                                                                                    
 kmsg3 "** KTSR Version: $build_ver"                                                                                     
 kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
 kmsg3 "** Build Type: $build_tp"                                                                                         
@@ -4973,11 +4973,11 @@ fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
     write "${kernel}sched_autogroup_enabled" "0"
 fi
-if [[ -e "/sys/devices/soc/$dv/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$dv/clkscale_enable" "0"
+if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
 fi
-if [[ -e "/sys/devices/soc/$dv/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$dv/clkgate_enable" "0"
+if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
 fi
 write "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then

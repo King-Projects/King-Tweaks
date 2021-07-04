@@ -16,7 +16,12 @@ fi
 
 if [[ -e "$KLOG" ]] 
 then
-    rm "$KLOG"
+    rm -f "$KLOG"
+fi
+
+if [[ ! -d "/sdcard/KTSR" ]] 
+then
+    mkdir -p "/sdcard/KTSR"
 fi
 
 if [[ -d "/sdcard/KTSR" ]] 
@@ -26,19 +31,19 @@ fi
 
 if [[ -e "$KDBG" ]]
 then
-    rm "$KDBG"
+    rm -f "$KDBG"
 fi
 
 boot_run_once=false
 kts_mode=$(getprop persist.kingtweaks.mode)
-[ -z "$kts_mode" ] && setprop persist.kingtweaks.mode "1"
+[[ -z "$kts_mode" ]] && setprop persist.kingtweaks.mode "3"
 
 while true
 do
 sleep 3
-if $boot_run_once
+if "$boot_run_once"
 then
-[ "$(getprop persist.kingtweaks.mode)" == "$kts_mode" ] && continue
+[[ "$(getprop persist.kingtweaks.mode)" == "$kts_mode" ]] && continue
 else
 boot_run_once=true
 fi
@@ -193,7 +198,7 @@ rm -f "/sdcard/KTSR/sqlite_opt.log"
 fi
 }
 
-clear_logs 
+clear_logs
 
 case "$kts_profile" in
 "Automatic") 

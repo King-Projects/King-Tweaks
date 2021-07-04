@@ -2,45 +2,45 @@
 # KTSR by pedro (pedrozzz0 @ GitHub)
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
-rm -f /data/*.log
-rm -rf /data/vendor/wlan_logs
-rm -f /data/*.txt
-rm -f /cache/*.apk
-rm -f /data/anr/*
-rm -f /data/backup/pending/*.tmp
-rm -f /data/cache/*.*
-rm -f /data/data/*.log
-rm -f /data/data/*.txt
-rm -f /data/log/*.log
-rm -f /data/log/*.txt
-rm -f /data/local/*.apk
-rm -f /data/local/*.log
-rm -f /data/local/*.txt
-rm -f /data/last_alog/*.log
-rm -f /data/last_alog/*.txt
-rm -f /data/last_kmsg/*.log
-rm -f /data/last_kmsg/*.txt
-rm -f /data/mlog/*
-rm -f /data/system/*.log
-rm -f /data/system/*.txt
-rm -f /data/system/dropbox/*
-rm -f /data/system/usagestats/*
-rm -f /data/system/shared_prefs/*
-rm -f /data/tombstones/* 
-rm -rf /sdcard/LOST.DIR 
-rm -rf /sdcard/found000
-rm -rf /sdcard/LazyList 
-rm -rf /sdcard/albumthumbs
-rm -rf /sdcard/kunlun 
-rm -rf /sdcard/.CacheOfEUI 
-rm -rf /sdcard/.bstats 
-rm -rf /sdcard/.taobao 
-rm -rf /sdcard/Backucup 
-rm -rf /sdcard/MIUI/debug_log
-rm -rf /sdcard/ramdump
-rm -rf /sdcard/UnityAdsVideoCache
-rm -f /sdcard/*.log
-rm -f /sdcard/*.CHK
+rm -rf \
+/data/*.log \
+/data/vendor/wlan_logs \
+/data/*.txt \
+/cache/*.apk \
+/data/anr/* \
+/data/backup/pending/*.tmp \
+/data/cache/*.* \
+/data/data/*.log \
+/data/data/*.txt \
+/data/log/*.log \
+/data/log/*.txt \
+/data/local/*.apk \
+/data/local/*.log \
+/data/local/*.txt \
+/data/mlog/* \
+/data/system/*.log \
+/data/system/*.txt \
+/data/system/dropbox/* \
+/data/system/usagestats/* \
+/data/system/shared_prefs/* \
+/data/tombstones/* \
+/sdcard/LOST.DIR \
+/sdcard/found000 \
+/sdcard/LazyList \
+/sdcard/albumthumbs \
+/sdcard/kunlun \
+/sdcard/.CacheOfEUI \
+/sdcard/.bstats \
+/sdcard/.taobao \
+/sdcard/Backucup \
+/sdcard/MIUI/debug_log \
+/sdcard/ramdump \
+/sdcard/UnityAdsVideoCache \
+/sdcard/*.log \
+/sdcard/*.CHK \
+/sdcard/duilite \
+/sdcard/DkMiBrowserDemo \
+/sdcard/.xlDownload \
 
 # always return success, even if any command fail
 exit 0
