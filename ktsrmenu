@@ -439,7 +439,7 @@ read -r option
                                             if [[ ! "$pkgnm" == "com.termux" ]] && [[ ! "$pkgnm" == "jackpal.androidterm" ]] && [[ ! "$pkgnm" == "yarolegovich.materialterminal" ]] && [[ ! "$pkgnm" == "com.google.android.inputmethod.latin" ]] && [[ ! "$pkgnm" == "com.termoneplus" ]]; then
                                             am force-stop "$pkgnm"
                                             fi
-                                            done < $(pm list packages -e -3 | grep package | cut -f 2 -d ":")
+                                            done <<< $(pm list packages -e -3 | grep package | cut -f 2 -d ":")
                                             echo "${G}Done!${N}"
                                             sleep 2
                                             ;;
