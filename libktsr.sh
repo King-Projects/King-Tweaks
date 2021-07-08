@@ -4595,9 +4595,8 @@ kmsg "Applying automatic profile"
 kmsg3 ""
 
 sync
-setprop kingauto.enabled true
 kingauto
-
+	
 kmsg "Applied automatic profile"
 kmsg3 ""
 }

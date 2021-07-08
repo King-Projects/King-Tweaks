@@ -171,7 +171,7 @@ else
     toast
 fi
      	  
-    setprop kingauto.enabled false
+    killall -9 kingauto
     balanced
 	 	
   if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -241,7 +241,7 @@ else
     toast
 fi
      	   
-      setprop kingauto.enabled false
+      killall -9 kingauto
 	  extreme
 	 		 
       if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -311,7 +311,7 @@ else
     toast
 fi
      	
-           setprop kingauto.enabled false
+           killall -9 kingauto
 	 	  battery
 	 			
          if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -381,7 +381,7 @@ else
     toast
 fi
          
-              setprop kingauto.enabled false
+              killall -9 kingauto
 	 	     gaming
 	 				
               if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -451,7 +451,7 @@ else
     toast
 fi
          
-                 setprop kingauto.enabled false
+                 killall -9 kingauto
 	 			latency
 	 				
                  if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
