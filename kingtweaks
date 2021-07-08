@@ -35,153 +35,20 @@ then
 fi
 
 boot_run_once=false
-kts_mode=$(getprop persist.kingtweaks.mode)
-[[ -z "$kts_mode" ]] && setprop persist.kingtweaks.mode "3"
+ktsr_prof=$(getprop persist.kingtweaks.mode)
+[[ -z "$ktsr_prof" ]] && setprop persist.kingtweaks.mode "3"
 
 while true
 do
 sleep 3
 if "$boot_run_once"
 then
-[[ "$(getprop persist.kingtweaks.mode)" == "$kts_mode" ]] && continue
+[[ "$(getprop persist.kingtweaks.mode)" == "$ktsr_prof" ]] && continue
 else
 boot_run_once=true
 fi
-kts_mode=$(getprop persist.kingtweaks.mode)
 
-case $kts_mode in
-
-1)
-  kts_profilein=Otomatis
-  ;;
-
-    2)
-     kts_profilein=Baterai
-     ;;
-
-      3)
-       kts_profilein=Seimbang
-       ;;
-
-        4)
-         kts_profilein=Ekstrim
-         ;;
-
-         5)
-          kts_profilein=Gaming
-          ;;
-
-           6)
-            kts_profilein=Latensi
-            ;;
-       esac
-
-case $kts_mode in
-
-1)
-  kts_profilept=Automático
-  ;;
-
-  2)
-   kts_profilept=Bateria
-    ;;
-
-    3)
-     kts_profilept=Balanceado
-     ;;
-    
-      4)
-       kts_profilept=Extremo
-       ;;
-        	
-        5)
-         kts_profilept=Gaming
-         ;;
-
-         6)
-          kts_profilept=Latência
-          ;;
-      esac
-
-case $kts_mode in
-
-1)
-  kts_profile=Automatic
-  ;;
-
-  2)
-    kts_profile=Battery
-    ;;
-
-     3)
-      kts_profile=Balanced
-      ;;
-
-       4)
-        kts_profile=Extreme
-        ;;
-
-        5)
-         kts_profile=Gaming
-         ;;
-
-          6)
-           kts_profile=Latency
-           ;;
-      esac
-
-case $kts_mode in 
-
-1)
-  kts_profiletr=Gecikme
-  ;;
-
-    2)
-     kts_profiletr=Batarya
-     ;;
-
-      3)
-       kts_profiletr=Dengeli
-       ;;
-
-        4)
-         kts_profiletr=Aşırı
-         ;;
-
-          5)
-            kts_profiletr=Oyun
-            ;;
-
-             6)
-              kts_profiletr=Gecikme
-              ;;
-         esac
-
-case $kts_mode in
-1)
-  kts_profilefr=Automatique
-  ;;
-
-   2)
-    kts_profilefr=Batterie
-    ;;
-
-     3)
-       kts_profilefr=Modéré
-       ;;
-
-        4)
-         kts_profilefr=Extrême
-         ;;
-
-          5)
-           kts_profilefr=Jeu
-           ;;
-
-            6)
-             kts_profilefr=Latence
-             ;;
-        esac
+ktsr_prof=$(getprop persist.kingtweaks.mode)
 
 clear_logs() {
 # Remove debug log if size is = / > 1 MB
@@ -200,8 +67,8 @@ fi
 
 clear_logs
 
-case "$kts_profile" in
-"Automatic") 
+case "$ktsr_prof_en" in
+"automatic") 
 
 if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
 then
@@ -213,23 +80,23 @@ then
          
 elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
 then
-    toastpt
+    toast_pt
      	
 elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
 then
-    toastin
+    toast_in
      	
 elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
 then
-    toasttr
+    toast_tr
      	
 elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
 then
-    toastfr
+    toast_fr
 
 elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
 then
-    toastfr
+    toast_fr
 
 else
     toast
@@ -239,385 +106,385 @@ automatic
          
 if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
 then
-    toast1
+    toast_1
      	
 elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
 then
-    toast1
+    toast_1
          
 elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
 then
-    toastpt1
+    toast_pt_1
      	
 elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
 then
-    toastin1
+    toast_in_1
      	
 elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
 then
-    toasttr1
+    toast_tr_1
      	
 elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
 then
-    toastfr1
+    toast_fr_1
 
 elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
 then
-    toastfr1
+    toast_fr_1
 
 else
 	toast1
 fi
 ;;
 	 
-  "Balanced")
+  "balanced")
 
   if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
-  then
-      toast
+then
+    toast
      	
-  elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
-  then
-      toast
+elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
+then
+    toast
          
-  elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
-  then
-      toastpt
+elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
+then
+    toast_pt
      	
-  elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
-  then
-      toastin
+elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
+then
+    toast_in
      	
-  elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
-  then
-      toasttr
+elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
+then
+    toast_tr
      	
-  elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
-  then
-      toastfr
+elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
+then
+    toast_fr
 
-  elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
-  then
-      toastfr
+elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
+then
+    toast_fr
 
-  else
-      toast
-  fi
+else
+    toast
+fi
      	  
     killall -9 kingauto
     balanced
 	 	
   if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
-  then
-      toast1
+then
+    toast_1
      	
-  elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
-  then
-      toast1
+elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
+then
+    toast_1
          
-  elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
-  then
-      toastpt1
+elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
+then
+    toast_pt_1
      	
-  elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
-  then
-      toastin1
+elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
+then
+    toast_in_1
      	
-  elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
-  then
-      toasttr1
+elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
+then
+    toast_tr_1
      	
-  elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
-  then
-      toastfr1
+elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
+then
+    toast_fr_1
 
-  elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
-  then
-      toastfr1
+elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
+then
+    toast_fr_1
 
-  else
-      toast1
-  fi
+else
+	toast1
+fi
   ;;
 	
-	"Extreme") 
+	"extreme") 
 
     if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
-    then
-        toast
+then
+    toast
      	
-    elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
-    then
-        toast
+elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
+then
+    toast
          
-    elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
-    then
-        toastpt
+elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
+then
+    toast_pt
      	
-    elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
-    then
-        toastin
+elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
+then
+    toast_in
      	
-    elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
-    then
-        toasttr
+elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
+then
+    toast_tr
      	
-    elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
-    then
-        toastfr
+elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
+then
+    toast_fr
 
-    elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
-    then
-         toastfr
+elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
+then
+    toast_fr
 
-    else
-        toast
-    fi
+else
+    toast
+fi
      	   
       killall -9 kingauto
 	  extreme
 	 		 
       if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
-      then
-     	 toast1
+then
+    toast_1
      	
-      elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
-      then
-          toast1
+elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
+then
+    toast_1
          
-      elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
-      then
-     	 toastpt1
+elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
+then
+    toast_pt_1
      	
-      elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
-      then
-          toastin1
-
-      elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
-      then
-     	 toasttr1
+elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
+then
+    toast_in_1
      	
-      elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
-      then
-          toastfr1
+elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
+then
+    toast_tr_1
+     	
+elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
+then
+    toast_fr_1
 
-      elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
-      then
-     	 toastfr1
+elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
+then
+    toast_fr_1
 
-      else
-     	 toast1
-      fi
+else
+	toast1
+fi
 	  ;;
 	 		
-	 	"Battery")
+	 	"battery")
 	
          if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
-     	then
-     	    toast
+then
+    toast
      	
-     	elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
-         then
-             toast
+elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
+then
+    toast
          
-     	elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
-     	then
-         	toastpt
+elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
+then
+    toast_pt
      	
-     	elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
-     	then
-     	    toastin
+elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
+then
+    toast_in
      	
-     	elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
-     	then
-         	toasttr
+elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
+then
+    toast_tr
      	
-     	elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
-     	then
-         	toastfr
+elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
+then
+    toast_fr
 
-     	elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
-     	then
-         	toastfr
+elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
+then
+    toast_fr
 
-     	else
-         	toast
-     	fi
+else
+    toast
+fi
      	
            killall -9 kingauto
 	 	  battery
 	 			
          if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
-     	then
-         	toast1
+then
+    toast_1
      	
-     	elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
-         then
-             toast1
+elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
+then
+    toast_1
          
-     	elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
-     	then
-         	toastpt1
+elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
+then
+    toast_pt_1
      	
-     	elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
-     	then
-         	toastin1
+elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
+then
+    toast_in_1
      	
-     	elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
-     	then
-         	toasttr1
+elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
+then
+    toast_tr_1
      	
-     	elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
-     	then
-         	toastfr1
+elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
+then
+    toast_fr_1
 
-     	elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
-     	then
-         	toastfr1
+elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
+then
+    toast_fr_1
 
-     	else
-         	toast1
-     	fi
+else
+	toast1
+fi
 	 	;;
 
-	    	"Gaming")
+	    	"gaming")
 
             if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
-        	then
-            	toast
+then
+    toast
      	
-        	elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
-            then
-                toast
+elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
+then
+    toast
          
-        	elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
-        	then
-            	toastpt
+elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
+then
+    toast_pt
      	
-        	elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
-        	then
-            	toastin
+elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
+then
+    toast_in
      	
-        	elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
-        	then
-            	toasttr
+elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
+then
+    toast_tr
      	
-        	elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
-        	then
-            	toastfr
+elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
+then
+    toast_fr
 
-        	elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
-        	then
-            	toastfr
+elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
+then
+    toast_fr
 
-        	else
-            	toast
-        	fi
+else
+    toast
+fi
          
               killall -9 kingauto
 	 	     gaming
 	 				
               if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
-          	then
-              	toast1
+then
+    toast_1
      	
-          	elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
-              then
-                  toast1
-        
-          	elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
-          	then
-              	toastpt1
+elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
+then
+    toast_1
+         
+elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
+then
+    toast_pt_1
      	
-          	elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
-          	then
-              	toastin1
+elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
+then
+    toast_in_1
      	
-          	elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
-          	then
-              	toasttr1
+elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
+then
+    toast_tr_1
      	
-          	elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
-          	then
-              	toastfr1
+elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
+then
+    toast_fr_1
 
-          	elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
-          	then
-              	toastfr1
+elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
+then
+    toast_fr_1
 
-          	else
-              	toast1
-          	fi
+else
+	toast1
+fi
 	      	;;
 	 	
-	        	"Latency")
+	        	"latency")
 
                 if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
-            	then
-     	           toast
+then
+    toast
      	
-            	elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
-                then
-                    toast
+elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
+then
+    toast
          
-            	elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
-            	then
-                	toastpt
+elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
+then
+    toast_pt
      	
-           	elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
-               then
-                   toastin
+elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
+then
+    toast_in
      	
-           	elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
-           	then
-               	toasttr
+elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
+then
+    toast_tr
      	
-           	elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
-           	then
-               	toastfr
-            
-           	elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
-           	then
-               	toastfr
+elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
+then
+    toast_fr
 
-           	else
-               	toast
-           	fi
+elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
+then
+    toast_fr
+
+else
+    toast
+fi
          
                  killall -9 kingauto
 	 			latency
 	 				
                  if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
-             	then
-                 	toast1
-     	
-             	elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
                  then
-                     toast1
-         
-     	        elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
-             	then
-                 	toastpt1
+                 toast_1
      	
-     	        elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
-             	then
-                 	toastin1
+                elif [[ "$(getprop persist.sys.locale)" == "en-GB" ]]
+                then
+                toast_1
+    
+                elif [[ "$(getprop persist.sys.locale)" == "pt-BR" ]]
+                then
+                toast_pt_1
      	
-             	elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
-             	then
-                 	toasttr1
+                elif [[ "$(getprop persist.sys.locale)" == "id-ID" ]]
+                then
+                toast_in_1
+                
+                elif [[ "$(getprop persist.sys.locale)" == "tr-TR" ]]
+                then
+                    toast_tr_1
      	
-             	elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
-             	then
-                 	toastfr1
+                elif [[ "$(getprop persist.sys.locale)" == "fr-FR" ]]
+                then
+                    toast_fr_1
 
-             	elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
-             	then
-                 	toastfr1
-
-             	else
-                 	toast1
-             	fi
-	         	;;
+                elif [[ "$(getprop persist.sys.locale)" == "fr-CA" ]]
+                then
+                    toast_fr_1
+                
+                else
+                    toast1
+                fi
+                ;;
             esac
        done

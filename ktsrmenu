@@ -47,32 +47,32 @@ mv -f "$VERLOG" "$oldVERLOG" 2>/dev/null; mv -f "$LOG" "$oldLOG" 2>/dev/null; mv
 
 set -x 2>"$VERLOG"
 
-kts_mode=$(getprop persist.kingtweaks.mode)
+ktsr_prof=$(getprop persist.kingtweaks.mode)
  	
-case "$kts_mode" in
+case "$ktsr_prof" in
 
 1)
-  kts_profile=Automatic
+  ktsr_prof_en=Automatic
   ;;
 
   2)
-    kts_profile=Battery
+    ktsr_prof_en=Battery
     ;;
 
      3)
-      kts_profile=Balanced
+      ktsr_prof_en=Balanced
       ;;
 
        4)
-        kts_profile=Extreme
+        ktsr_prof_en=Extreme
         ;;
 
         5)
-         kts_profile=Gaming
+         ktsr_prof_en=Gaming
          ;;
 
           6)
-           kts_profile=Latency
+           ktsr_prof_en=Latency
            ;;
       esac
 
@@ -110,9 +110,9 @@ echo "******************************************"
 echo "* KTSR (Alt.) Profile Controller & Misc. *"
 echo "******************************************"
 echo ""
-echo "Version: v1.5.1-beta-r4"
+echo "Version: v1.5.2-beta-r4"
 echo ""
-echo "[*] Current Profile: ${G}$kts_profile${N}"
+echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 echo ""
 echo "[*] Thermal: ${B}$ts${N}"
 echo ""
