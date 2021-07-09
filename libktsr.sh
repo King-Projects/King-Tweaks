@@ -702,13 +702,11 @@ get_sql_info() {
 }
 
 get_cpu_load() {
-# Calculate CPU load (50 ms)
+# Calculate CPU load
 read -r cpu user nice system idle iowait irq softirq steal guest< /proc/stat
 
 cpu_active_prev=$((user+system+nice+softirq+steal))
 cpu_total_prev=$((user+system+nice+softirq+steal+idle+iowait))
-
-usleep 50000
 
 read -r cpu user nice system idle iowait irq softirq steal guest< /proc/stat
 
@@ -854,7 +852,7 @@ do
 
   elif [[ -e "${corectl}/disable" ]]; then
         write "${corectl}/disable" "1"
-  fi
+    fi
 done
 
 if [[ -e "/sys/power/cpuhotplug/enable" ]]; then
@@ -892,6 +890,56 @@ if [[ -e "/proc/hps" ]]; then
 fi
 
 kmsg "Disabled core control & CPU hotplug"
+kmsg3 ""
+}
+
+enable_core_ctl() {
+for corectl in /sys/devices/system/cpu/cpu*/core_ctl
+do
+  if [[ -e "${corectl}/enable" ]]
+  then
+      write "${corectl}/enable" "1"
+
+  elif [[ -e "${corectl}/disable" ]]; then
+        write "${corectl}/disable" "0"
+    fi
+done
+
+if [[ -e "/sys/power/cpuhotplug/enable" ]]; then
+    write "/sys/power/cpuhotplug/enable" "1"
+
+elif [[ -e "/sys/power/cpuhotplug/enabled" ]]; then
+      write "/sys/power/cpuhotplug/enabled" "1"
+
+elif [[ -e "/sys/devices/system/cpu/cpuhotplug/enabled" ]]; then
+      write "/sys/devices/system/cpu/cpuhotplug/enabled" "1"
+fi
+
+if [[ -e "/sys/kernel/intelli_plug" ]]; then
+    write "/sys/kernel/intelli_plug/intelli_plug_active" "1"
+fi
+
+if [[ -e "/sys/module/blu_plug" ]]; then
+    write "/sys/module/blu_plug/parameters/enabled" "1"
+fi
+
+if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
+    write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "1"
+fi
+
+if [[ -e "/sys/module/autosmp" ]]; then
+    write "/sys/module/autosmp/parameters/enabled" "1"
+fi
+ 
+if [[ -e "/sys/kernel/zen_decision" ]]; then
+    write "/sys/kernel/zen_decision/enabled" "1"
+fi
+
+if [[ -e "/proc/hps" ]]; then
+    write "/proc/hps/enabled" "1"
+fi
+
+kmsg "Enabled core control & CPU hotplug"
 kmsg3 ""
 }
 
@@ -2278,7 +2326,7 @@ set_volt() {
     volt=$3
     if [[ -f "$cluster" ]]; then
         valid="$(cat $cluster | grep "$freq")"
-        if [[ -n "$valid" && ! -z "$valid" ]]; then
+        if [[ -n "$valid" ]] && [[ ! -z "$valid" ]]; then
             echo "$freq $volt"
             echo "$freq $volt" > "$cluster"
         fi
@@ -2870,8 +2918,11 @@ fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
 write "${kernel}sched_init_task_load" "25"
 fi
-if [[ -e "/sys/power/ipa/tdp" ]]; then
+if [[ "$soc" == "exynos5" ]] && [[ -e "/sys/power/ipa/tdp" ]]; then
 write "/sys/power/ipa/tdp" "4500"
+fi
+if [[ -e "/proc/sys/kernel/sched_migration_fixup" ]]; then
+write "/proc/sys/kernel/sched_migration_fixup" "1"
 fi
 
 # Set memory sleep mode to s2idle 
@@ -2955,6 +3006,9 @@ write "${kernel}sched_boost_top_app" "1"
 fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
 write "${kernel}sched_init_task_load" "20"
+fi
+if [[ -e "/proc/sys/kernel/sched_migration_fixup" ]]; then
+write "/proc/sys/kernel/sched_migration_fixup" "1"
 fi
 
 # Set memory sleep mode to deep 
@@ -3041,8 +3095,17 @@ fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
 write "${kernel}sched_init_task_load" "30"
 fi
-if [[ -e "/sys/power/ipa/tdp" ]]; then
+if [[ "$soc" == "exynos5" ]] && [[ -e "/sys/power/ipa/tdp" ]]; then
 write "/sys/power/ipa/tdp" "5000"
+fi
+if [[ -e "/proc/sys/kernel/sched_migration_fixup" ]]; then
+write "/proc/sys/kernel/sched_migration_fixup" "1"
+fi
+if [[ -e "/proc/sys/kernel/sched_enable_power_aware" ]]; then
+write "/proc/sys/kernel/sched_enable_power_aware" "1"
+fi
+if [[ -e "/proc/sys/kernel/sched_enable_power_aware" ]]; then
+write "/proc/sys/kernel/power_aware_timer_migration" "1"
 fi
 
 # Set memory sleep mode to s2idle 
@@ -3126,6 +3189,9 @@ write "${kernel}sched_boost_top_app" "1"
 fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
 write "${kernel}sched_init_task_load" "15"
+fi
+if [[ -e "/proc/sys/kernel/sched_migration_fixup" ]]; then
+write "/proc/sys/kernel/sched_migration_fixup" "1"
 fi
 
 # Set memory sleep mode to deep 
@@ -3212,8 +3278,11 @@ fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
 write "${kernel}sched_init_task_load" "30"
 fi
-if [[ -e "/sys/power/ipa/tdp" ]]; then
+if [[ "$soc" == "exynos5" ]] && [[ -e "/sys/power/ipa/tdp" ]]; then
 write "/sys/power/ipa/tdp" "5000"
+fi
+if [[ -e "/proc/sys/kernel/sched_migration_fixup" ]]; then
+write "/proc/sys/kernel/sched_migration_fixup" "1"
 fi
 
 # Set memory sleep mode to s2idle 
@@ -3403,7 +3472,8 @@ fi
 # always sync before dropping caches
 sync
 
-# VM tweaks to improve overall user experience and smoothness.
+# VM settings to improve overall user experience and performance
+write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "25"
 write "${vm}dirty_expire_centisecs" "3000"
@@ -3419,7 +3489,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ $total_ram -lt "5000" ]]; then
+if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 write "${vm}reap_mem_on_sigkill" "1"
@@ -3459,6 +3529,87 @@ kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 kmsg3 ""
 }
 
+vm_lmk_balanced() {
+fr=$(((total_ram * 5 / 2 / 100) * 1024 / 4))
+bg=$(((total_ram * 3 / 100) * 1024 / 4))
+et=$(((total_ram * 5 / 100) * 1024 / 4))
+mr=$(((total_ram * 7 / 100) * 1024 / 4))
+cd=$(((total_ram * 9 / 100) * 1024 / 4))
+ab=$(((total_ram * 11 / 100) * 1024 / 4))
+
+mfr=$((total_ram * 8 / 5))
+
+if [[ "$mfr" -le "3072" ]]; then
+    mfr=3072
+fi
+
+# Extra free kbytes calculated based on min_free_kbytes
+efr=$((mfr * 16 / 5))
+
+if [[ "$efr" -le "18432" ]]; then
+    efr=18432
+fi
+
+# always sync before dropping caches
+sync
+
+# VM settings to improve overall user experience and performance
+write "${vm}drop_caches" "2"
+write "${vm}dirty_background_ratio" "10"
+write "${vm}dirty_ratio" "25"
+write "${vm}dirty_expire_centisecs" "1000"
+write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}page-cluster" "0"
+write "${vm}stat_interval" "60"
+write "${vm}extfrag_threshold" "750"
+# Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
+if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+    write "${vm}swappiness" "150"
+else
+    write "${vm}swappiness" "100"
+fi
+write "${vm}laptop_mode" "0"
+write "${vm}vfs_cache_pressure" "100"
+if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
+    write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+fi
+write "${vm}reap_mem_on_sigkill" "1"
+write "${vm}swap_ratio" "100"
+
+# Tune lmk_minfree
+if [[ -e "${lmk}parameters/minfree" ]]; then
+    write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+fi
+
+# Enable oom_reaper
+if [[ -e "${lmk}parameters/oom_reaper" ]]; then
+    write "${lmk}parameters/oom_reaper" "1"
+fi
+	
+# Enable lmk_fast_run
+if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
+    write "${lmk}parameters/lmk_fast_run" "1"
+fi
+
+# Disable adaptive_lmk
+if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+    write "${lmk}parameters/enable_adaptive_lmk" "0"
+fi
+
+# Tune vm_min_free_kbytes
+if [[ -e "${vm}min_free_kbytes" ]]; then
+    write "${vm}min_free_kbytes" "$mfr"
+fi
+  
+# Tune vm_extra_free_kbytes
+if [[ -e "${vm}extra_free_kbytes" ]]; then
+    write "${vm}extra_free_kbytes" "$efr"
+fi
+
+kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
+kmsg3 ""
+}
+
 vm_lmk_extreme() {
 fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
@@ -3482,7 +3633,7 @@ fi
 # always sync before dropping caches
 sync
 
-# VM settings to improve overall user experience and performance.
+# VM settings to improve overall user experience and performance
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
@@ -3492,7 +3643,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ $total_ram -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3503,7 +3654,7 @@ if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] || [
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 write "${vm}reap_mem_on_sigkill" "1"
-write "${vm}/swap_ratio" "100"
+write "${vm}swap_ratio" "100"
 
 # Tune lmk_minfree
 if [[ -e "${lmk}/parameters/minfree" ]]; then
@@ -3562,7 +3713,7 @@ fi
 # always sync before dropping caches
 sync
 
-# VM settings to improve overall user experience and performance.
+# VM settings to improve overall user experience and performance
 write "${vm}drop_caches" "1"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "20"
@@ -3577,13 +3728,13 @@ if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
 else
     write "${vm}swappiness" "100"
 fi
-write "${vm}laptop_mode" "0"
+write "${vm}laptop_mode" "1"
 write "${vm}vfs_cache_pressure" "60"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] || [[ $total_ram -lt "5000" ]]; then
+if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 write "${vm}reap_mem_on_sigkill" "1"
-write "${vm}/swap_ratio" "100"
+write "${vm}swap_ratio" "100"
 
 # Tune lmk_minfree
 if [[ -e "${lmk}/parameters/minfree" ]]; then
@@ -3659,11 +3810,11 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] || [[ $total_ram -lt "5000" ]]; then
+if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 write "${vm}reap_mem_on_sigkill" "1"
-write "${vm}/swap_ratio" "100"
+write "${vm}swap_ratio" "100"
 
 # Tune lmk_minfree
 if [[ -e "${lmk}/parameters/minfree" ]]; then
@@ -4116,7 +4267,11 @@ elif [[ "$ktsr_prof_en" == "gaming" ]]; then
       thermal_pubg
 fi
 
-disable_core_ctl
+if !! "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
+    enable_core_ctl
+else
+    disable_core_ctl
+fi
 
 if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
     enable_devfreq_boost
@@ -4280,13 +4435,17 @@ elif [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
       thermal_pubg
 fi
 
-if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
+if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
     enable_devfreq_boost
 else
     disable_devfreq_boost
 fi
 
-disable_core_ctl
+if !! "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+    enable_core_ctl
+else
+    disable_core_ctl
+fi
 
 boost_$(getprop kingauto.prof)
 
@@ -4326,6 +4485,10 @@ fi
 hmp_$(getprop kingauto.prof)
 
 gpu_$(getprop kingauto.prof)
+
+if [[ "$soc" == "exynos5" ]]; then
+    volt_exynos5
+fi
 
 schedtune_$(getprop kingauto.prof)
 
