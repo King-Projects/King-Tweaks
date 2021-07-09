@@ -47,8 +47,142 @@ then
 else
 boot_run_once=true
 fi
-
 ktsr_prof=$(getprop persist.kingtweaks.mode)
+
+case "$ktsr_prof" in
+
+1)
+  ktsr_prof_in=otomatis
+  ;;
+
+    2)
+     ktsr_prof_in=baterai
+     ;;
+
+      3)
+       ktsr_prof_in=seimbang
+       ;;
+
+        4)
+         ktsr_prof_in=ekstrim
+         ;;
+
+         5)
+          ktsr_prof_in=gaming
+          ;;
+
+           6)
+            ktsr_prof_in=latensi
+            ;;
+       esac
+
+case "$ktsr_prof" in
+
+1)
+  ktsr_prof_pt=automático
+  ;;
+
+  2)
+   ktsr_prof_pt=bateria
+    ;;
+
+    3)
+     ktsr_prof_pt=balanceado
+     ;;
+    
+      4)
+       ktsr_prof_pt=extremo
+       ;;
+        	
+        5)
+         ktsr_prof_pt=gaming
+         ;;
+
+         6)
+          ktsr_prof_pt=latência
+          ;;
+      esac
+
+case "$ktsr_prof" in
+
+1)
+  ktsr_prof_en=automatic
+  ;;
+
+  2)
+    ktsr_prof_en=battery
+    ;;
+
+     3)
+      ktsr_prof_en=balanced
+      ;;
+
+       4)
+        ktsr_prof_en=extreme
+        ;;
+
+        5)
+         ktsr_prof_en=gaming
+         ;;
+
+          6)
+           ktsr_prof_en=latency
+           ;;
+      esac
+
+case "$ktsr_prof" in 
+
+1)
+  ktsr_prof_tr=gecikme
+  ;;
+
+    2)
+     ktsr_prof_tr=batarya
+     ;;
+
+      3)
+       ktsr_prof_tr=dengeli
+       ;;
+
+        4)
+         ktsr_prof_tr=aşırı
+         ;;
+
+          5)
+            ktsr_prof_tr=oyun
+            ;;
+
+             6)
+              ktsr_prof_tr=gecikme
+              ;;
+         esac
+
+case "$ktsr_prof" in
+
+1)
+  ktsr_prof_fr=automatique
+  ;;
+
+   2)
+    kts_prof_fr=batterie
+    ;;
+
+     3)
+       ktsr_prof_fr=modéré
+       ;;
+
+        4)
+         ktsr_prof_fr=extrême
+         ;;
+
+          5)
+           ktsr_prof_fr=jeu
+           ;;
+
+            6)
+             ktsr_prof_fr=latence
+             ;;
+        esac
 
 clear_logs() {
 # Remove debug log if size is = / > 1 MB
