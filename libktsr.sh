@@ -2409,6 +2409,85 @@ kmsg "Tweaked GPU parameters"
 kmsg3 ""
 }
 
+set_volt() {
+    cluster=$1
+    freq=$2
+    volt=$3
+    if [[ -f "$cluster" ]]; then
+        valid="$(cat $cluster | grep "$freq")"
+        if [[ -n "$valid" && ! -z "$valid" ]]; then
+            echo "$freq $volt"
+            echo "$freq $volt" > "$cluster"
+        fi
+    fi
+}
+
+# Change voltage on exynos, credits to helloklf
+volt_exynos5() {
+        cluster0="/sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster0_volt_table"
+        cluster1="/sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster1_volt_table"
+        set_volt "$cluster1" "2704000 " "1161250"
+        set_volt "$cluster1" "2600000 " "1087500"
+        set_volt "$cluster1" "2496000 " "1050000"
+        set_volt "$cluster1" "2392000 " "1025000"
+        set_volt "$cluster1" "2288000 " "987500"
+        set_volt "$cluster1" "2184000 " "950000"
+        set_volt "$cluster1" "2080000 " "925000"
+        set_volt "$cluster1" "1976000 " "900000"
+        set_volt "$cluster1" "1872000 " "868750"
+        set_volt "$cluster1" "1768000 " "843750"
+        set_volt "$cluster1" "1664000 " "818750"
+        set_volt "$cluster1" "1560000 " "781250"
+        set_volt "$cluster1" "1456000 " "750000"
+        set_volt "$cluster1" "1352000 " "725000"
+        set_volt "$cluster1" "1248000 " "700000"
+        set_volt "$cluster1" "1144000 " "712500"
+        set_volt "$cluster1" "1040000 " "681250"
+        set_volt "$cluster1" "936000 " "656250"
+        set_volt "$cluster1" "832000 " "631250"
+        set_volt "$cluster1" "728000 " "606250"
+        set_volt "$cluster1" "624000 " "581250"
+        set_volt "$cluster1" "520000 " "562500"
+        set_volt "$cluster1" "416000 " "543750"
+        set_volt "$cluster1" "312000 " "543750"
+        set_volt "$cluster1" "208000 " "543750"
+
+        write "/sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster1_min_freq" "130000"
+
+        set_volt "$cluster0" "1794000 " "962500"
+        set_volt "$cluster0" "1690000 " "987500"
+        set_volt "$cluster0" "1586000 " "950000"
+        set_volt "$cluster0" "1482000 " "900000"
+        set_volt "$cluster0" "1378000 " "856250"
+        set_volt "$cluster0" "1274000 " "818750"
+        set_volt "$cluster0" "1170000 " "768750"
+        set_volt "$cluster0" "1066000 " "731250"
+        set_volt "$cluster0" "962000 " "693750"
+        set_volt "$cluster0" "858000 " "662500"
+        set_volt "$cluster0" "754000 " "631250"
+        set_volt "$cluster0" "650000 " "600000"
+        set_volt "$cluster0" "546000 " "568750"
+        set_volt "$cluster0" "442000 " "531250"
+        set_volt "$cluster0" "338000 " "512500"
+        set_volt "$cluster0" "234000 " "512500"
+        set_volt "$cluster0" "130000 " "512500"
+
+        gpu_volt_table="/sys/devices/14ac0000.mali/volt_table"
+        chmod 0755 "$gpu_volt_table"
+        set_volt "$gpu_volt_table" "806 " "737500"
+        set_volt "$gpu_volt_table" "728 " "725000"
+        set_volt "$gpu_volt_table" "702 " "718750"
+        set_volt "$gpu_volt_table" "650 " "687500"
+        set_volt "$gpu_volt_table" "600 " "668750"
+        set_volt "$gpu_volt_table" "546 " "650000"
+        set_volt "$gpu_volt_table" "419 " "600000"
+        set_volt "$gpu_volt_table" "338 " "575000"
+        set_volt "$gpu_volt_table" "260 " "568750"
+        
+        kmsg3 "Tweaked CPU / GPU voltage"
+        kmsg ""
+}
+
 disable_crypto_tests(){
 if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]
 then
@@ -2578,154 +2657,6 @@ then
     kmsg "Tweaked cpuset uclamp"
     kmsg3 ""
 fi
-}
-
-gpu_battery() {
-# GPU tweaks
-
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
-
-	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz simple_ondemand ondemand
-	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpu/devfreq/governor" "$governor"
-			break
-		fi
-	done
-	
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpui/gpu_available_governor")"
-
-	# Attempt to set the governor in this order
-	for governor in Interactive Static ondemand
-	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpui/gpu_governor" "$governor"
-			break
-		fi
-	done
-
-    # Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/available_governors")"
-
-	# Attempt to set the governor in this order
-	for governor in Interactive Dynamic Static ondemand
-	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpu/governor" "$governor"
-			break
-		fi
-	done
-
-if [[ "$qcom" == "true" ]]; then
-    write "$gpu/throttling" "1"
-    write "$gpu/thermal_pwrlevel" "$gpu_calc_thrtl"
-    write "$gpu/devfreq/adrenoboost" "0"
-    write "$gpu/force_no_nap" "0"
-    write "$gpu/bus_split" "1"
-    write "$gpu/devfreq/min_freq" "$gpu_min_freq"
-    write "$gpu/default_pwrlevel" "$gpu_min_pl"
-    write "$gpu/force_bus_on" "0"
-    write "$gpu/force_clk_on" "0"
-    write "$gpu/force_rail_on" "0"
-    write "$gpu/idle_timer" "39"
-    write "$gpu/pwrnap" "1"
-else
-    [[ "$one_ui" == "false" ]] && write "$gpu/dvfs" "1"
-     write "$gpui/gpu_min_clock" "$gpu_min"
-     write "$gpu/highspeed_clock" "$gpu_max_freq"
-     write "$gpu/highspeed_load" "95"
-     write "$gpu/highspeed_delay" "0"
-     write "$gpu/power_policy" "coarse_demand"
-     write "$gpu/cl_boost_disable" "1"
-     write "$gpui/boost" "0"
-     write "$gpug/mali_touch_boost_level" "0"
-     write "$gpu/max_freq" "$gpu_max_freq"
-     write "$gpu/min_freq" "$gpu_min_freq"
-     write "$gpu/tmu" "1"
-     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "1"
-     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "85"
-     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "65"
-     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "75"
-     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "55"
-fi
-
-if [[ -d "/sys/modules/ged/" ]]
-then
-    write "/sys/module/ged/parameters/ged_boost_enable" "0"
-    write "/sys/module/ged/parameters/boost_gpu_enable" "0"
-    write "/sys/module/ged/parameters/boost_extra" "0"
-    write "/sys/module/ged/parameters/enable_cpu_boost" "0"
-    write "/sys/module/ged/parameters/enable_gpu_boost" "0"
-    write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
-    write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
-    write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
-    write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
-    write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
-    write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
-    write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
-    write "/sys/module/ged/parameters/ged_smart_boost" "0"
-    write "/sys/module/ged/parameters/gpu_debug_enable" "0"
-    write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
-    write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
-    write "/sys/module/ged/parameters/gx_dfps" "0"
-    write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
-    write "/sys/module/ged/parameters/gx_frc_mode" "0"
-    write "/sys/module/ged/parameters/gx_game_mode" "0"
-    write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
-fi
-
-if [[ -d "/proc/gpufreq/" ]] 
-then
-    write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
-    write "/proc/gpufreq/gpufreq_opp_freq" "0"
-    write "/proc/gpufreq/gpufreq_input_boost" "0"
-    write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
-    write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
-    write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
-    write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
-fi
-
-# Tweak some mali parameters
-if [[ -d "/proc/mali/" ]] 
-then
-     [[ $one_ui == "false" ]] && write "/proc/mali/dvfs_enable" "1"
-     write "/proc/mali/always_on" "0"
-fi
-
-if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]] 
-then
-    write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
-fi
-
-if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]
-then
-    write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
-    write "/sys/module/simple_gpu_algorithm/parameters/default_laziness" "4"
-    write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "5000"
-fi
-
-# Enable and tweak adreno idler
-if [[ -d "/sys/module/adreno_idler" ]]
-then
-    write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
-    write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "10000"
-    write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "45"
-    write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
-    kmsg "Enabled and tweaked adreno idler"
-    kmsg3 ""
-fi
-
-kmsg "Tweaked GPU parameters"
-kmsg3 ""
 }
 
 schedtune_battery() {
@@ -3064,6 +2995,21 @@ fi
 if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
 fi
+if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
+write "${kernel}sched_walt_rotate_big_tasks" "1"
+fi
+if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
+write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+fi
+if [[ -e "${kernel}sched_boost_top_app" ]]; then
+write "${kernel}sched_boost_top_app" "1"
+fi
+if [[ -e "${kernel}sched_init_task_load" ]]; then
+write "${kernel}sched_init_task_load" "25"
+fi
+if [[ -e "/sys/power/ipa/tdp" ]]; then
+write "/sys/power/ipa/tdp" "4500"
+fi
 
 # Set memory sleep mode to s2idle 
 write "/sys/power/mem_sleep" "s2idle"
@@ -3134,6 +3080,18 @@ if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
 fi
 if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
+fi
+if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
+write "${kernel}sched_walt_rotate_big_tasks" "1"
+fi
+if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
+write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+fi
+if [[ -e "${kernel}sched_boost_top_app" ]]; then
+write "${kernel}sched_boost_top_app" "1"
+fi
+if [[ -e "${kernel}sched_init_task_load" ]]; then
+write "${kernel}sched_init_task_load" "20"
 fi
 
 # Set memory sleep mode to deep 
@@ -3208,9 +3166,107 @@ fi
 if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
 fi
+if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
+write "${kernel}sched_walt_rotate_big_tasks" "1"
+fi
+if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
+write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+fi
+if [[ -e "${kernel}sched_boost_top_app" ]]; then
+write "${kernel}sched_boost_top_app" "1"
+fi
+if [[ -e "${kernel}sched_init_task_load" ]]; then
+write "${kernel}sched_init_task_load" "30"
+fi
+if [[ -e "/sys/power/ipa/tdp" ]]; then
+write "/sys/power/ipa/tdp" "5000"
+fi
 
 # Set memory sleep mode to s2idle 
 write "/sys/power/mem_sleep" "s2idle"
+
+kmsg "Tweaked various kernel parameters"
+kmsg3 ""
+}
+
+sched_battery() {
+# Tweak some kernel settings to improve overall performance.
+if [[ -e "${kernel}sched_child_runs_first" ]]; then
+    write "${kernel}sched_child_runs_first" "0"
+fi
+if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
+    write "${kernel}perf_cpu_time_max_percent" "3"
+fi
+if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
+    write "${kernel}sched_autogroup_enabled" "1"
+fi
+if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
+fi
+if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
+fi
+write "${kernel}sched_tunable_scaling" "0"
+if [[ -e "${kernel}sched_latency_ns" ]]; then
+    write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
+fi
+if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
+    write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
+fi
+if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
+    write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
+fi
+if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
+    write "${kernel}sched_migration_cost_ns" "5000000"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
+    write "${kernel}sched_min_task_util_for_colocation" "0"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
+    write "${kernel}sched_min_task_util_for_boost" "0"
+fi
+write "${kernel}sched_nr_migrate" "192"
+write "${kernel}sched_schedstats" "0"
+if [[ -e "${kernel}sched_cstate_aware" ]]; then
+    write "${kernel}sched_cstate_aware" "1"
+fi
+write "${kernel}printk_devkmsg" "off"
+if [[ -e "${kernel}timer_migration" ]]; then
+    write "${kernel}timer_migration" "1"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
+    write "${kernel}sched_boost" "0"
+fi
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "1"
+fi
+if [[ -e "/proc/ufs_perf" ]]; then
+    write "/proc/ufs_perf" "0"
+fi
+if [[ -e "/proc/cpuidle/enable" ]]; then
+    write "/proc/cpuidle/enable" "1"
+fi
+if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
+    write "/sys/kernel/debug/eara_thermal/enable" "0"
+fi
+if [[ -e "/sys/power/little_thermal_temp" ]]; then
+    write "/sys/power/little_thermal_temp" "90"
+fi
+if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
+write "${kernel}sched_walt_rotate_big_tasks" "1"
+fi
+if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
+write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+fi
+if [[ -e "${kernel}sched_boost_top_app" ]]; then
+write "${kernel}sched_boost_top_app" "1"
+fi
+if [[ -e "${kernel}sched_init_task_load" ]]; then
+write "${kernel}sched_init_task_load" "15"
+fi
+
+# Set memory sleep mode to deep 
+write "/sys/power/mem_sleep" "deep"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3281,22 +3337,27 @@ fi
 if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
 fi
+if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
+write "${kernel}sched_walt_rotate_big_tasks" "1"
+fi
+if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
+write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+fi
+if [[ -e "${kernel}sched_boost_top_app" ]]; then
+write "${kernel}sched_boost_top_app" "1"
+fi
+if [[ -e "${kernel}sched_init_task_load" ]]; then
+write "${kernel}sched_init_task_load" "30"
+fi
+if [[ -e "/sys/power/ipa/tdp" ]]; then
+write "/sys/power/ipa/tdp" "5000"
+fi
 
 # Set memory sleep mode to s2idle 
 write "/sys/power/mem_sleep" "s2idle"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
-}
-
-disable_kvb() {
-# Disable krait voltage boost
-if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
-then
-    write "/sys/module/acpuclock_krait/parameters/boost" "N"
-    kmsg "Disabled krait voltage boost"
-    kmsg3 ""
-fi
 }
 
 enable_kvb() {
@@ -3309,75 +3370,14 @@ then
 fi
 }
 
-sched_battery() {
-# Tweak some kernel settings to improve overall performance.
-if [[ -e "${kernel}sched_child_runs_first" ]]; then
-    write "${kernel}sched_child_runs_first" "0"
+disable_kvb() {
+# Disable krait voltage boost
+if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] 
+then
+    write "/sys/module/acpuclock_krait/parameters/boost" "N"
+    kmsg "Disabled krait voltage boost"
+    kmsg3 ""
 fi
-if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
-    write "${kernel}perf_cpu_time_max_percent" "3"
-fi
-if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
-    write "${kernel}sched_autogroup_enabled" "1"
-fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
-fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
-fi
-write "${kernel}sched_tunable_scaling" "0"
-if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
-fi
-if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
-    write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
-fi
-if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
-    write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
-fi
-if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "5000000"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
-    write "${kernel}sched_min_task_util_for_colocation" "0"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
-    write "${kernel}sched_min_task_util_for_boost" "0"
-fi
-write "${kernel}sched_nr_migrate" "192"
-write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_cstate_aware" ]]; then
-    write "${kernel}sched_cstate_aware" "1"
-fi
-write "${kernel}printk_devkmsg" "off"
-if [[ -e "${kernel}timer_migration" ]]; then
-    write "${kernel}timer_migration" "1"
-fi
-if [[ -e "${kernel}sched_boost" ]]; then
-    write "${kernel}sched_boost" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "1"
-fi
-if [[ -e "/proc/ufs_perf" ]]; then
-    write "/proc/ufs_perf" "0"
-fi
-if [[ -e "/proc/cpuidle/enable" ]]; then
-    write "/proc/cpuidle/enable" "1"
-fi
-if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
-    write "/sys/kernel/debug/eara_thermal/enable" "0"
-fi
-if [[ -e "/sys/power/little_thermal_temp" ]]; then
-    write "/sys/power/little_thermal_temp" "90"
-fi
-
-# Set memory sleep mode to deep 
-write "/sys/power/mem_sleep" "deep"
-
-kmsg "Tweaked various kernel parameters"
-kmsg3 ""
 }
 
 enable_fp_boost() {
@@ -3411,6 +3411,7 @@ if [[ "$ppm" == "true" ]]; then
     write "/proc/ppm/policy_status" "2 0"
     write "/proc/ppm/policy_status" "3 0"
     write "/proc/ppm/policy_status" "4 1"
+    write "/proc/ppm/policy_status" "5 0"
     write "/proc/ppm/policy_status" "7 0"
     write "/proc/ppm/policy_status" "9 0"
     kmsg "Tweaked PPM Policies"
@@ -3431,6 +3432,7 @@ if [[ "$ppm" == "true" ]]; then
     write "/proc/ppm/policy_status" "2 1"
     write "/proc/ppm/policy_status" "3 0"
     write "/proc/ppm/policy_status" "4 0"
+    write "/proc/ppm/policy_status" "5 0"
     write "/proc/ppm/policy_status" "7 0"
     write "/proc/ppm/policy_status" "9 1"
     kmsg "Tweaked PPM Policies"
@@ -3547,7 +3549,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ $total_ram -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3558,6 +3560,7 @@ if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 write "${vm}reap_mem_on_sigkill" "1"
+write "${vm}/swap_ratio" "100"
 
 # Tune lmk_minfree
 if [[ -e "${lmk}/parameters/minfree" ]]; then
@@ -3637,6 +3640,7 @@ if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] || [
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 write "${vm}reap_mem_on_sigkill" "1"
+write "${vm}/swap_ratio" "100"
 
 # Tune lmk_minfree
 if [[ -e "${lmk}/parameters/minfree" ]]; then
@@ -3705,7 +3709,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP if device haven't more than 3 GB RAM
-if [[ "$exynos" == "true" ]] && [[ $total_ram -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3716,6 +3720,7 @@ if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] || [
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 write "${vm}reap_mem_on_sigkill" "1"
+write "${vm}/swap_ratio" "100"
 
 # Tune lmk_minfree
 if [[ -e "${lmk}/parameters/minfree" ]]; then
@@ -3784,7 +3789,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ $total_ram -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3795,6 +3800,7 @@ if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] || [
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 write "${vm}reap_mem_on_sigkill" "1"
+write "${vm}/swap_ratio" "100"
 
 # Tune lmk_minfree
 if [[ -e "${lmk}/parameters/minfree" ]]; then
@@ -3842,16 +3848,6 @@ then
 fi
 }
 
-disable_pewq() {
-# Disable CPU power efficient workqueue
-if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
-then 
-    write "/sys/module/workqueue/parameters/power_efficient" "N"
-    kmsg "Disabled CPU power efficient workqueue"
-    kmsg3 ""
-fi
-}
-
 enable_pewq() {
 # Enable CPU power efficient workqueue
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
@@ -3862,12 +3858,12 @@ then
 fi
 }
 
-disable_mcps() {
-# Disable scheduler multi-core power-saving
-if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
-then
-    write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
-    kmsg "Disabled scheduler multi-core power-saving"
+disable_pewq() {
+# Disable CPU power efficient workqueue
+if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
+then 
+    write "/sys/module/workqueue/parameters/power_efficient" "N"
+    kmsg "Disabled CPU power efficient workqueue"
     kmsg3 ""
 fi
 }
@@ -3878,6 +3874,16 @@ if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
 then
     write "/sys/devices/system/cpu/sched_mc_power_savings" "2"
     kmsg "Enabled scheduler multi-core power-saving"
+    kmsg3 ""
+fi
+}
+
+disable_mcps() {
+# Disable scheduler multi-core power-saving
+if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]
+then
+    write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
+    kmsg "Disabled scheduler multi-core power-saving"
     kmsg3 ""
 fi
 }
@@ -3911,23 +3917,6 @@ then
 fi
 }
 
-disable_tb() {
-# Disable touch boost
-if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]
-then
-    write "/sys/module/msm_performance/parameters/touchboost" "0"
-    kmsg "Disabled msm_performance touch boost"
-    kmsg3 ""
-
-elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]
-then
-    write "/sys/power/pnpmgr/touch_boost" "0"
-    write "/sys/power/pnpmgr/long_duration_touch_boost" "0"
-    kmsg "Disabled pnpmgr touch boost"
-    kmsg3 ""
-fi
-}
-
 enable_tb() {
 # Enable touch boost
 if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]
@@ -3941,6 +3930,23 @@ then
     write "/sys/power/pnpmgr/touch_boost" "1"
     write "/sys/power/pnpmgr/long_duration_touch_boost" "1"
     kmsg "Enabled pnpmgr touch boost"
+    kmsg3 ""
+fi
+}
+
+disable_tb() {
+# Disable touch boost
+if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]
+then
+    write "/sys/module/msm_performance/parameters/touchboost" "0"
+    kmsg "Disabled msm_performance touch boost"
+    kmsg3 ""
+
+elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]
+then
+    write "/sys/power/pnpmgr/touch_boost" "0"
+    write "/sys/power/pnpmgr/long_duration_touch_boost" "0"
+    kmsg "Disabled pnpmgr touch boost"
     kmsg3 ""
 fi
 }
@@ -3984,16 +3990,6 @@ kmsg "Applied TCP tweaks"
 kmsg3 ""
 }
 
-disable_kernel_batt_saver() {
-# Disable kernel battery saver
-if [[ -d "/sys/module/battery_saver" ]]
-then
-    write "/sys/module/battery_saver/parameters/enabled" "N"
-    kmsg "Disabled kernel battery saver"
-    kmsg3 ""
-fi
-}
-
 enable_kernel_batt_saver() {
 # Enable kernel battery saver
 if [[ -d "/sys/module/battery_saver" ]]
@@ -4004,18 +4000,14 @@ then
 fi
 }
 
-disable_hp_audio() {
-# Disable high performance audio
-for hpm in /sys/module/snd_soc_wcd*
-do
-  if [[ -e "$hpm" ]]
-  then
-      write "${hpm}/parameters/high_perf_mode" "0"
-      kmsg "Disabled high performance audio"
-      kmsg3 ""
-      break
-   fi
-done
+disable_kernel_batt_saver() {
+# Disable kernel battery saver
+if [[ -d "/sys/module/battery_saver" ]]
+then
+    write "/sys/module/battery_saver/parameters/enabled" "N"
+    kmsg "Disabled kernel battery saver"
+    kmsg3 ""
+fi
 }
 
 enable_hp_audio() {
@@ -4026,6 +4018,20 @@ do
   then
       write "${hpm}/parameters/high_perf_mode" "1"
       kmsg "Enabled high performance audio"
+      kmsg3 ""
+      break
+   fi
+done
+}
+
+disable_hp_audio() {
+# Disable high performance audio
+for hpm in /sys/module/snd_soc_wcd*
+do
+  if [[ -e "$hpm" ]]
+  then
+      write "${hpm}/parameters/high_perf_mode" "0"
+      kmsg "Disabled high performance audio"
       kmsg3 ""
       break
    fi
@@ -4086,19 +4092,19 @@ then
 fi
 }
 
-disable_lcd_prdc() {
+enable_lcd_prdc() {
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
-    write "/sys/class/lcd/panel/power_reduce" "0"
+    write "/sys/class/lcd/panel/power_reduce" "1"
     kmsg "Disabled LCD power reduce"
     kmsg3 ""
 fi
 }
 
-enable_lcd_prdc() {
+disable_lcd_prdc() {
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
-    write "/sys/class/lcd/panel/power_reduce" "1"
+    write "/sys/class/lcd/panel/power_reduce" "0"
     kmsg "Disabled LCD power reduce"
     kmsg3 ""
 fi
@@ -4293,6 +4299,10 @@ fi
 hmp_$ktsr_prof_en
 
 gpu_$ktsr_prof_en
+
+if [[ "$soc" == "exynos5" ]]; then
+    volt_exynos5
+fi
 
 schedtune_$ktsr_prof_en
 

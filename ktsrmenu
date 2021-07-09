@@ -94,10 +94,10 @@ else
     loc_mode_pwr_saving=Disabled
 fi
 
-if [[ "$(getprop init.svc.thermal-engine)" == "running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "running" ]] || [[ "$(getprop init.svc.thermald)" == "running" ]] || [[ "$(getprop init.svc.thermalservice)" == "running" ]]; then
+if [[ "$(getprop init.svc.thermal-engine)" == "running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "running" ]] || [[ "$(getprop init.svc.thermald)" == "running" ]] || [[ "$(getprop init.svc.thermalservice)" == "running" ]] || [[ "$(getprop init.svc.thermanager)" == "running" ]]; then
     ts=On
     
-elif [[ "$(getprop init.svc.thermal-engine)" == "stopped" ]] || [[ "$(getprop init.svc.mi_thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermalservice)" == "stopped" ]]; then
+elif [[ "$(getprop init.svc.thermal-engine)" == "stopped" ]] || [[ "$(getprop init.svc.mi_thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermalservice)" == "stopped" ]] || [[ "$(getprop init.svc.thermanager)" == "stopped" ]]; then
       ts=Off
 else
     ts=Unknown
@@ -332,6 +332,7 @@ read -r option
 						                                    stop thermalservice 2>/dev/null
 						                                    stop mi_thermald 2>/dev/null
 						                                    stop thermal-engine 2>/dev/null
+						                                    stop thermanager 2>/dev/null
 						                                    echo "${G}Done!${N}"
 						                                    sleep 2 
 						                                    menu
@@ -343,6 +344,7 @@ read -r option
 						                              start thermalservice 2>/dev/null
 						                              start mi_thermald 2>/dev/null
 						                              start thermal-engine 2>/dev/null
+						                              start thermanager 2>/dev/null
 						                              echo "${G}Done!${N}"
 						                              sleep 2 
 						                              menu
@@ -480,19 +482,21 @@ read -r option
                          ;;
 						
 						   t)
-						     if [[ $thermal == "On" ]]; then 
+						     if [[ "$thermal" == "On" ]]; then 
 						         echo "Disabling thermal..."
 						         stop thermald 2>/dev/null
 						         stop thermalservice 2>/dev/null
 						         stop mi_thermald 2>/dev/null
 						         stop thermal-engine 2>/dev/null
+						         stop thermanager 2>/dev/null
 						         echo "${G}Done!${N}"
-						     elif [[ $thermal == "Off" ]]; then
+						     elif [[ "$thermal" == "Off" ]]; then
 						           echo "${B}Enabling thermal...${N}"
 						           start thermald 2>/dev/null
 						           start thermalservice 2>/dev/null
 						           start mi_thermald 2>/dev/null
 						           start thermal-engine 2>/dev/null
+						           start thermanager 2>/dev/null
 						           echo "${G}Done!${N}"
 						     else
                                  abort "${R}[!] No valid thermal controllers found / Unknown thermal state, aborting...${N}"
