@@ -195,7 +195,7 @@ echo "[25] Free RAM [ Agressive ] (Will kill all background apps and drop caches
 echo ""
 echo "[26] Free RAM [ Extreme ] (Will kill all apps, and drop caches)."
 echo ""
-echo "[27] Recompile all apps with speed-profile flag (faster apps startup, optimization, etc.)
+echo "[27] Recompile all apps with speed-profile flag (faster apps startup, optimization, etc.)"
 echo ""
 echo "${R}[0] Exit${N}"
 echo ""
