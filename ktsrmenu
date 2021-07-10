@@ -195,7 +195,9 @@ echo "[25] Free RAM [ Agressive ] (Will kill all background apps and drop caches
 echo ""
 echo "[26] Free RAM [ Extreme ] (Will kill all apps, and drop caches)."
 echo ""
-echo "[27] Recompile all apps with speed-profile flag (faster apps startup, optimization, etc.)"
+echo "[27] Reset apps flag"
+echo ""
+echo "[28] Recompile all apps with speed-profile flag (faster apps startup, optimization, etc) (Needs to reset apps flag first)"
 echo ""
 echo "${R}[0] Exit${N}"
 echo ""
@@ -453,9 +455,12 @@ read -r option
                                             ;;
                                            
                                             "27")
-                                                 cmd package compile --reset -a >/dev/null 2>&1 && cmd package compile -m speed-profile -f -a >/dev/null 2>&1
-                                                 echo "${G}Done!${N}"
+                                                 cmd package compile --reset -a >/dev/null 2>&1
                                                  ;;
+                                                 
+                                                 "28")
+                                                      cmd package compile -m speed-profile -f -a >/dev/null 2>&1
+                                                      ;;
                                                  
                                        "0")
 						                   echo "${G}Hope that see ya soon! ;)${N}"
