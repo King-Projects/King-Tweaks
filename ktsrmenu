@@ -195,6 +195,8 @@ echo "[25] Free RAM [ Agressive ] (Will kill all background apps and drop caches
 echo ""
 echo "[26] Free RAM [ Extreme ] (Will kill all apps, and drop caches)."
 echo ""
+echo "[27] Recompile all apps with speed-profile flag (faster apps startup, optimization, etc.)
+echo ""
 echo "${R}[0] Exit${N}"
 echo ""
 echo -n "${Y}[*] Select the desired option:${N} "
@@ -328,11 +330,13 @@ read -r option
                                                                             
 						                                    "16")
 						                                    echo "${B}Disabling thermal...${N}"
+						                                    stop thermal 2>/dev/null
 						                                    stop thermald 2>/dev/null
 						                                    stop thermalservice 2>/dev/null
 						                                    stop mi_thermald 2>/dev/null
 						                                    stop thermal-engine 2>/dev/null
 						                                    stop thermanager 2>/dev/null
+						                                    stop thermal_manager 2>/dev/null
 						                                    echo "${G}Done!${N}"
 						                                    sleep 2 
 						                                    menu
@@ -340,11 +344,13 @@ read -r option
 
 						                              "17")
 						                              echo "${B}Enabling thermal...${N}"
+						                              start thermal 2>/dev/null
 						                              start thermald 2>/dev/null
 						                              start thermalservice 2>/dev/null
 						                              start mi_thermald 2>/dev/null
 						                              start thermal-engine 2>/dev/null
 						                              start thermanager 2>/dev/null
+						                              start thermal_manager 2>/dev/null
 						                              echo "${G}Done!${N}"
 						                              sleep 2 
 						                              menu
@@ -446,6 +452,12 @@ read -r option
                                             sleep 2
                                             ;;
                                            
+                                            "27")
+                                                 cmd package compile --reset -a >/dev/null 2>&1
+                                                 cmd package compile -m speed-profile -f -a >/dev/null 2>&1
+                                                 echo "${G}Done!${N}"
+                                                 ;;
+                                                 
                                        "0")
 						                   echo "${G}Hope that see ya soon! ;)${N}"
 						                   ;;
@@ -484,19 +496,23 @@ read -r option
 						   t)
 						     if [[ "$thermal" == "On" ]]; then 
 						         echo "Disabling thermal..."
+						         stop thermal 2>/dev/null
 						         stop thermald 2>/dev/null
 						         stop thermalservice 2>/dev/null
 						         stop mi_thermald 2>/dev/null
 						         stop thermal-engine 2>/dev/null
 						         stop thermanager 2>/dev/null
+						         stop thermal_manager 2>/dev/null
 						         echo "${G}Done!${N}"
 						     elif [[ "$thermal" == "Off" ]]; then
 						           echo "${B}Enabling thermal...${N}"
+                                   start thermal 2>/dev/null
 						           start thermald 2>/dev/null
 						           start thermalservice 2>/dev/null
 						           start mi_thermald 2>/dev/null
 						           start thermal-engine 2>/dev/null
 						           start thermanager 2>/dev/null
+						           start thermal_manager 2>/dev/null
 						           echo "${G}Done!${N}"
 						     else
                                  abort "${R}[!] No valid thermal controllers found / Unknown thermal state, aborting...${N}"

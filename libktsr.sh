@@ -421,7 +421,7 @@ fi
 
 is_mtk() { 
 # Detect if we're running on a mediatek powered device              
-if [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]]; then
+if [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]]; then
     mtk=true
     exynos=false
     qcom=false
@@ -679,8 +679,10 @@ check_one_ui() {
 # Check if we're running on OneUI
 if [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]]; then
     one_ui=true
+    samsung=true
 else
     one_ui=false
+    samsung=false
 fi
 }
                
@@ -3482,7 +3484,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]] || [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3563,7 +3565,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]] || [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3643,7 +3645,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]] || [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3723,7 +3725,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP if device haven't more than 3 GB RAM
-if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]] || [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3803,7 +3805,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]] || [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -4101,7 +4103,7 @@ disable_pm2_idle_mode() {
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] 
 then
     write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
-    kmsg "Enabled pm2 idle sleep mode"
+    kmsg "Disabled pm2 idle sleep mode"
     kmsg3 ""
 fi
 }
@@ -4110,7 +4112,7 @@ enable_lcd_prdc() {
 if [[ -e "/sys/class/lcd/panel/power_reduce" ]] 
 then
     write "/sys/class/lcd/panel/power_reduce" "1"
-    kmsg "Disabled LCD power reduce"
+    kmsg "Enabled LCD power reduce"
     kmsg3 ""
 fi
 }
@@ -4159,6 +4161,8 @@ check_qcom
 if [[ "$qcom" != "true" ]] && [[ "$exynos" != "true" ]]; then
     check_ppm_support
 fi
+
+is_samsung
 
 if [[ "$qcom" == "true" ]]; then
     define_gpu_pl
