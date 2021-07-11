@@ -704,11 +704,13 @@ get_sql_info() {
 }
 
 get_cpu_load() {
-# Calculate CPU load
+# Calculate CPU load (50 ms)
 read -r cpu user nice system idle iowait irq softirq steal guest< /proc/stat
 
 cpu_active_prev=$((user+system+nice+softirq+steal))
 cpu_total_prev=$((user+system+nice+softirq+steal+idle+iowait))
+
+usleep 50000
 
 read -r cpu user nice system idle iowait irq softirq steal guest< /proc/stat
 
@@ -4271,7 +4273,7 @@ elif [[ "$ktsr_prof_en" == "gaming" ]]; then
       thermal_pubg
 fi
 
-if !! "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
     enable_core_ctl
 else
     disable_core_ctl
@@ -4445,7 +4447,7 @@ else
     disable_devfreq_boost
 fi
 
-if !! "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     enable_core_ctl
 else
     disable_core_ctl
