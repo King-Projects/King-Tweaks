@@ -732,6 +732,9 @@ enable_devfreq_boost() {
 for dir in /sys/class/devfreq/*; do
     write "$dir/min_freq" "$(cat "$dir"/max_freq)"
 done
+
+kmsg3 "Enabled devfreq boost"
+kmsg ""
 }
 
 disable_devfreq_boost() {
@@ -745,6 +748,9 @@ for dir in /sys/class/devfreq/*; do
 
      write "$dir/min_freq" "$min_dev_freq"
 done
+
+kmsg3 "Disabled devfreq boost"
+kmsg ""
 }
 
 print_info() {
@@ -806,7 +812,11 @@ for v in 0 1 2 3 4; do
 done
 
 stop perfd 2>/dev/null
-stop mpdecision 2>/dev/null
+if [[ "$ktsr_prof_en" == "battery" ]]; then
+    start mpdecision 2>/dev/null
+else
+    stop mpdecision 2>/dev/null
+fi
 stop vendor.perfservice 2>/dev/null
 stop traced 2>/dev/null
 stop vendor.cnss_diag 2>/dev/null
@@ -945,6 +955,125 @@ fi
 
 kmsg "Enabled core control & CPU hotplug"
 kmsg3 ""
+}
+
+# Most of these are based from helloklf (GitHub) vtools, credits to him.
+configure_cpuset() {
+if [[ "$soc" == "msm8937" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+    write "${cpuset}restricted/cpus" "0-3"
+
+elif [[ "$soc" == "msm8952" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+
+elif [[ "$soc" == "msm8953" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-3"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+
+elif [[ "$soc" == "msm8996" ]]; then
+    write "${cpuset}foreground/cpus" "0-3"
+    write "${cpuset}foreground/boost/cpus" "2-3"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "2-3"
+    write "${cpuset}top-app/cpus" "0-3"
+
+elif [[ "$soc" == "msm8998" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-2"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+
+elif [[ "$soc" == "msmnile" ]]; then
+    write "${cpuset}foreground/cpus" "0-2,4-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+
+elif [[ "$soc" == "mt6873" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+    write "${cpuset}restricted/cpus" "0-3"
+
+elif [[ "$soc" == "mt6885" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+    write "${cpuset}restricted/cpus" "0-3"
+
+elif [[ "$soc" == "sdm710" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+
+elif [[ "$soc" == "sdm845" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+
+elif [[ "$soc" == "sm6150" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+
+elif [[ "$soc" == "lito" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+
+elif [[ "$soc" == "lahaina" ]]; then
+    write "${cpuset}foreground/cpus" "0-2,4-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+
+elif [[ "$soc" == "exynos5" ]]; then
+    write "${cpuset}foreground/cpus" "0-2,4-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+    write "${cpuset}dex2oat/cpus" "2-7"
+
+elif [[ "$soc" == "trinket" ]]; then
+    write "${cpuset}foreground/cpus" "0-2,4-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+    write "${cpuset}restricted/cpus" "0-3"
+
+elif [[ "$soc" == "kona" ]]; then
+    write "${cpuset}foreground/cpus" "0-2,4-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+fi
 }
 
 boost_latency() {
@@ -2608,124 +2737,124 @@ fi
 
 uclamp_balanced() {
 # Uclamp tweaks
-if [[ -e "${cpuset}top-app/uclamp.max" ]]
+if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
 then
     sysctl -w kernel.sched_util_clamp_min_rt_default=32
     sysctl -w kernel.sched_util_clamp_min=128
 
-    write "${cpuset}top-app/uclamp.max" "max"
-    write "${cpuset}top-app/uclamp.min" "10"
-    write "${cpuset}top-app/uclamp.boosted" "1"
-    write "${cpuset}top-app/uclamp.latency_sensitive" "1"
+    write "${cpuctl}top-app/cpu.uclamp.max" "max"
+    write "${cpuctl}top-app/cpu.uclamp.min" "10"
+    write "${cpuctl}top-app/cpu.uclamp.boosted" "1"
+    write "${cpuctl}top-app/cpu.uclamp.latency_sensitive" "1"
 
-    write "${cpuset}foreground/uclamp.max" "max"
-    write "${cpuset}foreground/uclamp.min" "5"
-    write "${cpuset}foreground/uclamp.boosted" "0"
-    write "${cpuset}foreground/uclamp.latency_sensitive" "0"
+    write "${cpuctl}foreground/cpu.uclamp.max" "max"
+    write "${cpuctl}foreground/cpu.uclamp.min" "5"
+    write "${cpuctl}foreground/cpu.uclamp.boosted" "0"
+    write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "0"
 
-    write "${cpuset}background/uclamp.max" "50"
-    write "${cpuset}background/uclamp.min" "0"
-    write "${cpuset}background/uclamp.boosted" "0"
-    write "${cpuset}background/uclamp.latency_sensitive" "0"
+    write "${cpuctl}background/cpu.uclamp.max" "50"
+    write "${cpuctl}background/cpu.uclamp.min" "0"
+    write "${cpuctl}background/cpu.uclamp.boosted" "0"
+    write "${cpuctl}background/cpu.uclamp.latency_sensitive" "0"
 
-    write "${cpuset}system-background/uclamp.max" "40"
-    write "${cpuset}system-background/uclamp.min" "0"
-    write "${cpuset}system-background/uclamp.boosted" "0"
-    write "${cpuset}system-background/uclamp.latency_sensitive" "0"
-    kmsg "Tweaked cpuset uclamp"
+    write "${cpuctl}system-background/cpu.uclamp.max" "40"
+    write "${cpuctl}system-background/cpu.uclamp.min" "0"
+    write "${cpuctl}system-background/cpu.uclamp.boosted" "0"
+    write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
+    kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
 fi
 }
 
 uclamp_extreme() {
 # Uclamp tweaks
-if [[ -e "${cpuset}top-app/uclamp.max" ]]
+if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
 then
     sysctl -w kernel.sched_util_clamp_min_rt_default=96
     sysctl -w kernel.sched_util_clamp_min=192
 
-    write "${cpuset}top-app/uclamp.max" "max"
-    write "${cpuset}top-app/uclamp.min" "max"
-    write "${cpuset}top-app/uclamp.boosted" "1"
-    write "${cpuset}top-app/uclamp.latency_sensitive" "1"
+    write "${cpuctl}top-app/cpu.uclamp.max" "max"
+    write "${cpuctl}top-app/cpu.uclamp.min" "max"
+    write "${cpuctl}top-app/cpu.uclamp.boosted" "1"
+    write "${cpuctl}top-app/cpu.uclamp.latency_sensitive" "1"
 
-    write "${cpuset}foreground/uclamp.max" "max"
-    write "${cpuset}foreground/uclamp.min" "max"
-    write "${cpuset}foreground/uclamp.boosted" "1"
-    write "${cpuset}foreground/uclamp.latency_sensitive" "1"
+    write "${cpuctl}foreground/cpu.uclamp.max" "max"
+    write "${cpuctl}foreground/cpu.uclamp.min" "max"
+    write "${cpuctl}foreground/cpu.uclamp.boosted" "1"
+    write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "1"
 
-    write "${cpuset}background/uclamp.max" "50"
-    write "${cpuset}background/uclamp.min" "0"
-    write "${cpuset}background/uclamp.boosted" "0"
-    write "${cpuset}background/uclamp.latency_sensitive" "0"
+    write "${cpuctl}background/cpu.uclamp.max" "50"
+    write "${cpuctl}background/cpu.uclamp.min" "0"
+    write "${cpuctl}background/cpu.uclamp.boosted" "0"
+    write "${cpuctl}background/cpu.uclamp.latency_sensitive" "0"
 
-    write "${cpuset}system-background/uclamp.max" "40"
-    write "${cpuset}system-background/uclamp.min" "0"
-    write "${cpuset}system-background/uclamp.boosted" "0"
-    write "${cpuset}system-background/uclamp.latency_sensitive" "0"
-    kmsg "Tweaked cpuset uclamp"
+    write "${cpuctl}system-background/cpu.uclamp.max" "40"
+    write "${cpuctl}system-background/cpu.uclamp.min" "0"
+    write "${cpuctl}system-background/cpu.uclamp.boosted" "0"
+    write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
+    kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
 fi
 }
 
 uclamp_battery() {
 # Uclamp tweaks
-if [[ -e "${cpuset}top-app/uclamp.max" ]]
+if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
 then
     sysctl -w kernel.sched_util_clamp_min_rt_default=16
     sysctl -w kernel.sched_util_clamp_min=128
 
-    write "${cpuset}top-app/uclamp.max" "max"
-    write "${cpuset}top-app/uclamp.min" "5"
-    write "${cpuset}top-app/uclamp.boosted" "1"
-    write "${cpuset}top-app/uclamp.latency_sensitive" "1"
+    write "${cpuctl}top-app/cpu.uclamp.max" "max"
+    write "${cpuctl}top-app/cpu.uclamp.min" "5"
+    write "${cpuctl}top-app/cpu.uclamp.boosted" "1"
+    write "${cpuctl}top-app/cpu.uclamp.latency_sensitive" "1"
 
-    write "${cpuset}foreground/uclamp.max" "max"
-    write "${cpuset}foreground/uclamp.min" "0"
-    write "${cpuset}foreground/uclamp.boosted" "0"
-    write "${cpuset}foreground/uclamp.latency_sensitive" "0"
+    write "${cpuctl}foreground/cpu.uclamp.max" "max"
+    write "${cpuctl}foreground/cpu.uclamp.min" "0"
+    write "${cpuctl}foreground/cpu.uclamp.boosted" "0"
+    write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "0"
 
-    write "${cpuset}background/uclamp.max" "50"
-    write "${cpuset}background/uclamp.min" "0"
-    write "${cpuset}background/uclamp.boosted" "0"
-    write "${cpuset}background/uclamp.latency_sensitive" "0"
+    write "${cpuctl}background/cpu.uclamp.max" "50"
+    write "${cpuctl}background/cpu.uclamp.min" "0"
+    write "${cpuctl}background/cpu.uclamp.boosted" "0"
+    write "${cpuctl}background/cpu.uclamp.latency_sensitive" "0"
 
-    write "${cpuset}system-background/uclamp.max" "40"
-    write "${cpuset}system-background/uclamp.min" "0"
-    write "${cpuset}system-background/uclamp.boosted" "0"
-    write "${cpuset}system-background/uclamp.latency_sensitive" "0"
-    kmsg "Tweaked cpuset uclamp"
+    write "${cpuctl}system-background/cpu.uclamp.max" "40"
+    write "${cpuctl}system-background/cpu.uclamp.min" "0"
+    write "${cpuctl}system-background/cpu.uclamp.boosted" "0"
+    write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
+    kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
 fi
 }
 
 uclamp_gaming() {
 # Uclamp tweaks
-if [[ -e "${cpuset}top-app/uclamp.max" ]]
+if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
 then
     sysctl -w kernel.sched_util_clamp_min_rt_default=96
     sysctl -w kernel.sched_util_clamp_min=192
  
-    write "${cpuset}top-app/uclamp.max" "max"
-    write "${cpuset}top-app/uclamp.min" "max"
-    write "${cpuset}top-app/uclamp.boosted" "1"
-    write "${cpuset}top-app/uclamp.latency_sensitive" "1"
+    write "${cpuctl}top-app/cpu.uclamp.max" "max"
+    write "${cpuctl}top-app/cpu.uclamp.min" "max"
+    write "${cpuctl}top-app/cpu.uclamp.boosted" "1"
+    write "${cpuctl}top-app/cpu.uclamp.latency_sensitive" "1"
 
-    write "${cpuset}foreground/uclamp.max" "max"
-    write "${cpuset}foreground/uclamp.min" "max"
-    write "${cpuset}foreground/uclamp.boosted" "1"
-    write "${cpuset}foreground/uclamp.latency_sensitive" "1"
+    write "${cpuctl}foreground/cpu.uclamp.max" "max"
+    write "${cpuctl}foreground/cpu.uclamp.min" "max"
+    write "${cpuctl}foreground/cpu.uclamp.boosted" "1"
+    write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "1"
 
-    write "${cpuset}background/uclamp.max" "50"
-    write "${cpuset}background/uclamp.min" "0"
-    write "${cpuset}background/uclamp.boosted" "0"
-    write "${cpuset}background/uclamp.latency_sensitive" "0"
+    write "${cpuctl}background/cpu.uclamp.max" "50"
+    write "${cpuctl}background/cpu.uclamp.min" "0"
+    write "${cpuctl}background/cpu.uclamp.boosted" "0"
+    write "${cpuctl}background/cpu.uclamp.latency_sensitive" "0"
 
-    write "${cpuset}system-background/uclamp.max" "40"
-    write "${cpuset}system-background/uclamp.min" "0"
-    write "${cpuset}system-background/uclamp.boosted" "0"
-    write "${cpuset}system-background/uclamp.latency_sensitive" "0"
-    kmsg "Tweaked cpuset uclamp"
+    write "${cpuctl}system-background/cpu.uclamp.max" "40"
+    write "${cpuctl}system-background/cpu.uclamp.min" "0"
+    write "${cpuctl}system-background/cpu.uclamp.boosted" "0"
+    write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
+    kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
 fi
 }
@@ -2925,12 +3054,20 @@ fi
 if [[ "$soc" == "exynos5" ]] && [[ -e "/sys/power/ipa/tdp" ]]; then
 write "/sys/power/ipa/tdp" "4500"
 fi
-if [[ -e "/proc/sys/kernel/sched_migration_fixup" ]]; then
-write "/proc/sys/kernel/sched_migration_fixup" "1"
+if [[ -e "${kernel}sched_migration_fixup" ]]; then
+write "${kernel}sched_migration_fixup" "1"
+fi
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+write "${kernel}sched_enable_power_aware" "1"
+fi
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+write "${kernel}power_aware_timer_migration" "1"
 fi
 
 # Set memory sleep mode to s2idle 
+if [[ -e "/sys/power/mem_sleep" ]]; then
 write "/sys/power/mem_sleep" "s2idle"
+fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3011,12 +3148,20 @@ fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
 write "${kernel}sched_init_task_load" "20"
 fi
-if [[ -e "/proc/sys/kernel/sched_migration_fixup" ]]; then
-write "/proc/sys/kernel/sched_migration_fixup" "1"
+if [[ -e "${kernel}sched_migration_fixup" ]]; then
+write "${kernel}sched_migration_fixup" "1"
+fi
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+write "${kernel}sched_enable_power_aware" "1"
+fi
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+write "${kernel}power_aware_timer_migration" "1"
 fi
 
-# Set memory sleep mode to deep 
+# Set memory sleep mode to deep
+if [[ -e "/sys/power/mem_sleep" ]]; then
 write "/sys/power/mem_sleep" "deep"
+fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3102,18 +3247,20 @@ fi
 if [[ "$soc" == "exynos5" ]] && [[ -e "/sys/power/ipa/tdp" ]]; then
 write "/sys/power/ipa/tdp" "5000"
 fi
-if [[ -e "/proc/sys/kernel/sched_migration_fixup" ]]; then
-write "/proc/sys/kernel/sched_migration_fixup" "1"
+if [[ -e "${kernel}sched_migration_fixup" ]]; then
+write "${kernel}sched_migration_fixup" "1"
 fi
-if [[ -e "/proc/sys/kernel/sched_enable_power_aware" ]]; then
-write "/proc/sys/kernel/sched_enable_power_aware" "1"
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+write "${kernel}sched_enable_power_aware" "1"
 fi
-if [[ -e "/proc/sys/kernel/sched_enable_power_aware" ]]; then
-write "/proc/sys/kernel/power_aware_timer_migration" "1"
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+write "${kernel}power_aware_timer_migration" "1"
 fi
 
-# Set memory sleep mode to s2idle 
+# Set memory sleep mode to s2idle
+if [[ -e "/sys/power/mem_sleep" ]]; then
 write "/sys/power/mem_sleep" "s2idle"
+fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3194,12 +3341,20 @@ fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
 write "${kernel}sched_init_task_load" "15"
 fi
-if [[ -e "/proc/sys/kernel/sched_migration_fixup" ]]; then
-write "/proc/sys/kernel/sched_migration_fixup" "1"
+if [[ -e "${kernel}sched_migration_fixup" ]]; then
+write "${kernel}sched_migration_fixup" "1"
+fi
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+write "${kernel}sched_enable_power_aware" "1"
+fi
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+write "${kernel}power_aware_timer_migration" "1"
 fi
 
-# Set memory sleep mode to deep 
+# Set memory sleep mode to deep
+if [[ -e "/sys/power/mem_sleep" ]]; then
 write "/sys/power/mem_sleep" "deep"
+fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3285,12 +3440,20 @@ fi
 if [[ "$soc" == "exynos5" ]] && [[ -e "/sys/power/ipa/tdp" ]]; then
 write "/sys/power/ipa/tdp" "5000"
 fi
-if [[ -e "/proc/sys/kernel/sched_migration_fixup" ]]; then
-write "/proc/sys/kernel/sched_migration_fixup" "1"
+if [[ -e "${kernel}sched_migration_fixup" ]]; then
+write "${kernel}sched_migration_fixup" "1"
+fi
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+write "${kernel}sched_enable_power_aware" "1"
+fi
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+write "${kernel}power_aware_timer_migration" "1"
 fi
 
 # Set memory sleep mode to s2idle 
+if [[ -e "/sys/power/mem_sleep" ]]; then
 write "/sys/power/mem_sleep" "s2idle"
+fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -4250,9 +4413,6 @@ get_uptime
 
 if [[ "$(find /system -name "sqlite3" -type f)" ]]; then
     get_sql_info
-else
-    sql_ver=Not Present
-    sql_bd_dt=Not Present
 fi
 
 get_cpu_load
@@ -4273,11 +4433,13 @@ elif [[ "$ktsr_prof_en" == "gaming" ]]; then
       thermal_pubg
 fi
 
-if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "battery" ]]; then
     enable_core_ctl
 else
     disable_core_ctl
 fi
+
+configure_cpuset
 
 if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
     enable_devfreq_boost
@@ -4453,6 +4615,8 @@ else
     disable_core_ctl
 fi
 
+configure_cpuset
+
 boost_$(getprop kingauto.prof)
 
 io_$(getprop kingauto.prof)
@@ -4611,6 +4775,8 @@ stune=/dev/stune/
 lmk=/sys/module/lowmemorykiller/
 
 blkio=/dev/blkio/
+
+cpuctl=/dev/cpuctl/
 
 # Latency Profile
 latency() {
