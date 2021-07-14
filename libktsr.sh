@@ -1014,6 +1014,15 @@ elif [[ "$soc" == "msmnile" ]]; then
     kmsg "Tweaked cpusets"
     kmsg3 ""
     
+elif [[ "$soc" == "mt6768" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+    write "${cpuset}restricted/cpus" "0-3"
+    kmsg "Tweaked cpusets"
+    kmsg3 ""
+
 elif [[ "$soc" == "mt6873" ]]; then
     write "${cpuset}foreground/cpus" "0-7"
     write "${cpuset}background/cpus" "0-1"
@@ -3520,6 +3529,7 @@ if [[ -e "/sys/kernel/fp_boost/enabled" ]]; then
 fi
 }
 
+# Credits to helloklf again
 ufs_default() {
 if [[ -d "/sys/class/devfreq/1d84000.ufshc" ]]; then
     write "/sys/class/devfreq/1d84000.ufshc/max_freq" "300000000"
@@ -3658,13 +3668,13 @@ ab=$(((total_ram * 12 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
-if [[ "$efr" -le "18432" ]]; then
+if [[ "$efr" -lt "18432" ]]; then
     efr=18432
 fi
 
 mfr=$((total_ram * 9 / 5))
 
-if [[ "$mfr" -le "3072" ]]; then
+if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
 fi
 
@@ -3680,8 +3690,8 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]] || [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+# Use SSWAP if device do not have more than 3 GB RAM on samsung devices
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3691,12 +3701,14 @@ write "${vm}vfs_cache_pressure" "200"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
-write "${vm}reap_mem_on_sigkill" "1"
-write "${vm}/swap_ratio" "100"
+if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
+    write "${vm}reap_mem_on_sigkill" "1"
+fi
+write "${vm}swap_ratio" "100"
 
 # Tune lmk_minfree
-if [[ -e "${lmk}/parameters/minfree" ]]; then
-    write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+if [[ -e "${lmk}parameters/minfree" ]]; then
+    write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
 fi
 
 # Enable oom_reaper
@@ -3738,14 +3750,14 @@ ab=$(((total_ram * 11 / 100) * 1024 / 4))
 
 mfr=$((total_ram * 8 / 5))
 
-if [[ "$mfr" -le "3072" ]]; then
+if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
 fi
 
 # Extra free kbytes calculated based on min_free_kbytes
 efr=$((mfr * 16 / 5))
 
-if [[ "$efr" -le "18432" ]]; then
+if [[ "$efr" -lt "18432" ]]; then
     efr=18432
 fi
 
@@ -3761,8 +3773,8 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]] || [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+# Use SSWAP if device do not have more than 3 GB RAM on samsung devices
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3772,12 +3784,14 @@ write "${vm}vfs_cache_pressure" "100"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
-write "${vm}reap_mem_on_sigkill" "1"
+if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
+    write "${vm}reap_mem_on_sigkill" "1"
+fi
 write "${vm}swap_ratio" "100"
 
 # Tune lmk_minfree
 if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+    write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
 fi
 
 # Enable oom_reaper
@@ -3819,13 +3833,13 @@ ab=$(((total_ram * 14 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
-if [[ "$efr" -le "18432" ]]; then
+if [[ "$efr" -lt "18432" ]]; then
     efr=18432
 fi
 
 mfr=$((total_ram * 6 / 5))
 
-if [[ "$mfr" -le "3072" ]]; then
+if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
 fi
 
@@ -3841,8 +3855,8 @@ write "${vm}dirty_writeback_centisecs" "1000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]] || [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+# Use SSWAP if device do not have more than 3 GB RAM on samsung devices
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3852,12 +3866,14 @@ write "${vm}vfs_cache_pressure" "150"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] || [[ $total_ram -lt "5000" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
-write "${vm}reap_mem_on_sigkill" "1"
+if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
+    write "${vm}reap_mem_on_sigkill" "1"
+fi
 write "${vm}swap_ratio" "100"
 
 # Tune lmk_minfree
-if [[ -e "${lmk}/parameters/minfree" ]]; then
-    write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+if [[ -e "${lmk}parameters/minfree" ]]; then
+    write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
 fi
 
 # Enable oom_reaper
@@ -3899,13 +3915,13 @@ ab=$(((total_ram * 14 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
-if [[ "$efr" -le "18432" ]]; then
+if [[ "$efr" -lt "18432" ]]; then
     efr=18432
 fi
 
 mfr=$((total_ram * 7 / 5))
 
-if [[ "$mfr" -le "3072" ]]; then
+if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
 fi
 
@@ -3921,8 +3937,8 @@ write "${vm}dirty_writeback_centisecs" "500"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device haven't more than 3 GB RAM
-if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]] || [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+# Use SSWAP if device do not have more than 3 GB RAM on samsung devices
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3932,12 +3948,14 @@ write "${vm}vfs_cache_pressure" "60"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
-write "${vm}reap_mem_on_sigkill" "1"
+if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
+    write "${vm}reap_mem_on_sigkill" "1"
+fi
 write "${vm}swap_ratio" "100"
 
 # Tune lmk_minfree
-if [[ -e "${lmk}/parameters/minfree" ]]; then
-    write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+if [[ -e "${lmk}parameters/minfree" ]]; then
+    write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
 fi
 
 # Enable oom_reaper
@@ -4001,8 +4019,8 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP defaults if device haven't more than 3 GB RAM on exynos SOC's
-if [[ "$exynos" == "true" ]] && [[ "$total_ram" -lt "3000" ]] || [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+# Use SSWAP if device do not have more than 3 GB RAM on samsung devices
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -4012,12 +4030,14 @@ write "${vm}vfs_cache_pressure" "200"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
-write "${vm}reap_mem_on_sigkill" "1"
+if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
+    write "${vm}reap_mem_on_sigkill" "1"
+fi
 write "${vm}swap_ratio" "100"
 
 # Tune lmk_minfree
-if [[ -e "${lmk}/parameters/minfree" ]]; then
-    write "${lmk}/parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+if [[ -e "${lmk}parameters/minfree" ]]; then
+    write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
 fi
 
 # Enable oom_reaper
