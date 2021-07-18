@@ -821,6 +821,7 @@ stop vendor.perfservice 2>/dev/null
 stop traced 2>/dev/null
 stop vendor.cnss_diag 2>/dev/null
 stop vendor.tcpdump 2>/dev/null
+stop statsd 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -rf "/data/system/perfd/default_values"
@@ -2596,6 +2597,11 @@ if [[ -d "$stune" ]]; then
     write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "0"
 
+    write "${stune}nnapi-hal/schedtune.boost" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
+    write "${stune}nnapi-hal/schedtune.sched_boost" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
+    
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
@@ -2609,7 +2615,7 @@ if [[ -d "$stune" ]]; then
 
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
-    kmsg "Tweaked cpuset schedtune"
+    kmsg "Tweaked schedtune settings"
     kmsg3 ""
 fi
 }
@@ -2629,6 +2635,11 @@ then
     write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "0"
 
+    write "${stune}nnapi-hal/schedtune.boost" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
+    write "${stune}nnapi-hal/schedtune.sched_boost" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
+    
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
@@ -2642,7 +2653,7 @@ then
 
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
-    kmsg "Tweaked cpuset schedtune"
+    kmsg "Tweaked schedtune settings"
     kmsg3 ""
 fi
 }
@@ -2662,6 +2673,11 @@ then
     write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "1"
 
+    write "${stune}nnapi-hal/schedtune.boost" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
+    write "${stune}nnapi-hal/schedtune.sched_boost" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
+    
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
@@ -2675,7 +2691,7 @@ then
 
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
-    kmsg "Tweaked cpuset schedtune"
+    kmsg "Tweaked schedtune settings"
     kmsg3 ""
 fi
 }
@@ -2695,6 +2711,11 @@ then
     write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "0"
 
+    write "${stune}nnapi-hal/schedtune.boost" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
+    write "${stune}nnapi-hal/schedtune.sched_boost" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
+    
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
@@ -2708,7 +2729,7 @@ then
 
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
-    kmsg "Tweaked cpuset schedtune"
+    kmsg "Tweaked schedtune settings"
     kmsg3 ""
 fi
 }

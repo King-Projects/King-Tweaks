@@ -175,15 +175,15 @@ elif [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-
       echo "[19] 55 HZ Refresh Rate"
       echo ""
 fi
-if [[ "$(settings get system peak_refresh_rate)" -ne "60" ]]; then
+if [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "60" ]]; then
 echo "[20] 60 HZ Refresh Rate"
 echo ""
 fi
-if [[ "$(settings get system peak_refresh_rate)" -ne "90" ]]; then
+if [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]]; then
 echo "[21] 90 HZ Refresh Rate"
 echo ""
 fi
-if [[ "$(settings get system peak_refresh_rate)" -ne "120" ]]; then
+if [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]]; then
 echo "[22] 120 HZ Refresh Rate"
 echo ""
 fi
@@ -258,44 +258,44 @@ read -r option
                                          ;;
 						
                                           "8")
-                                             settings put global low_power 1
-                                             settings put global low_power_sticky 1
-                                             settings put global app_standby_enabled 1
-                                             settings put global forced_app_standby_enabled 1
-                                             settings put global app_auto_restriction_enabled true
-                                             settings put global forced_app_standby_for_small_battery_enabled 1
+                                             settings put global low_power 1 2>/dev/null
+                                             settings put global low_power_sticky 1 2>/dev/null
+                                             settings put global app_standby_enabled 1 2>/dev/null
+                                             settings put global forced_app_standby_enabled 1 2>/dev/null
+                                             settings put global app_auto_restriction_enabled true 2>/dev/null
+                                             settings put global forced_app_standby_for_small_battery_enabled 1 2>/dev/null
                                              echo "${G}Done!${N}"
                                              sleep 2 
                                              menu
                                              ;;
                         
                                               "9")
-                                                 settings put global low_power 0
-                                                 settings reset global low_power
-                                                 settings put global low_power_sticky 0
-                                                 settings reset global low_power_sticky
-                                                 settings put global app_standby_enabled 1
-                                                 settings reset global app_standby_enabled
-                                                 settings put global forced_app_standby_enabled 0
-                                                 settings reset global forced_app_standby_enabled
-                                                 settings put global app_auto_restriction_enabled false
-                                                 settings reset global app_auto_restriction_enabled
-                                                 settings put global forced_app_standby_for_small_battery_enabled 0
-                                                 settings reset global forced_app_standby_for_small_battery_enabled 1
+                                                 settings put global low_power 0 2>/dev/null
+                                                 settings reset global low_power 2>/dev/null
+                                                 settings put global low_power_sticky 0 2>/dev/null
+                                                 settings reset global low_power_sticky 2>/dev/null
+                                                 settings put global app_standby_enabled 1 2>/dev/null
+                                                 settings reset global app_standby_enabled 2>/dev/null
+                                                 settings put global forced_app_standby_enabled 0 2>/dev/null
+                                                 settings reset global forced_app_standby_enabled 2>/dev/null
+                                                 settings put global app_auto_restriction_enabled false 2>/dev/null
+                                                 settings reset global app_auto_restriction_enabled 2>/dev/null
+                                                 settings put global forced_app_standby_for_small_battery_enabled 0 2>/dev/null
+                                                 settings reset global forced_app_standby_for_small_battery_enabled 1 2>/dev/null
                                                  echo "${G}Done!${N}"
                                                  sleep 2 
                                                  menu
                                                  ;;
                         
                                                  "10")
-                                                     cmd netpolicy set restrict-background true
+                                                     cmd netpolicy set restrict-background true 2>/dev/null
                                                      echo "${G}Done!${N}"
                                                      sleep 2 
                                                      menu
                                                      ;;
                         
                                                       "11")
-                                                          cmd netpolicy set restrict-background false
+                                                          cmd netpolicy set restrict-background false 2>/dev/null
                                                           echo "${G}Done!${N}"
                                                           sleep 2 
                                                           menu
@@ -303,15 +303,15 @@ read -r option
                         
                                                            "12")
                                                                echo "${B}Applying settings...${N}"
-                                                               settings put secure location_mode "0"
-                                                               settings put global assisted_gps_enabled "0"
+                                                               settings put secure location_mode "0" 2>/dev/null
+                                                               settings put global assisted_gps_enabled "0" 2>/dev/null
                                                                echo "${G}Done!${N}"
                                                                sleep 2 
                                                                menu
                                                                ;;
                         
                                                                 "13")
-                                                                     settings put global assisted_gps_enabled "1"
+                                                                     settings put global assisted_gps_enabled "1" 2>/dev/null
                                                                      echo "${G}Done!${N}"
                                                                      sleep 2 
                                                                      menu
@@ -384,40 +384,40 @@ read -r option
                                                       else
                                                           echo "N" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       fi
-                                                      settings put system min_refresh_rate 60
-                                                      settings put system peak_refresh_rate 60
-                                                      settings put system user_refresh_rate 60
-                                                      settings put global oneplus_screen_refresh_rate 1
+                                                      settings put system min_refresh_rate 60 2>/dev/null
+                                                      settings put system peak_refresh_rate 60 2>/dev/null
+                                                      settings put system user_refresh_rate 60 2>/dev/null
+                                                      settings put global oneplus_screen_refresh_rate 1 2>/dev/null
                                                       echo "${G}Done!${N}"
                                                       sleep 2
                                                       menu
                                                       ;;
        
                                                 "21")
-                                                     settings put system min_refresh_rate 90
-                                                     settings put system peak_refresh_rate 90
-                                                     settings put system user_refresh_rate 90
-                                                     settings put global oneplus_screen_refresh_rate 0
+                                                     settings put system min_refresh_rate 90 2>/dev/null
+                                                     settings put system peak_refresh_rate 90 2>/dev/null
+                                                     settings put system user_refresh_rate 90 2>/dev/null
+                                                     settings put global oneplus_screen_refresh_rate 0 2>/dev/null
                                                      echo "${G}Done!${N}"
                                                      sleep 2
                                                      menu
                                                      ;;
 
                                             "22")
-                                                 settings put system min_refresh_rate 120
-                                                 settings put system peak_refresh_rate 120
-                                                 settings put system user_refresh_rate 120
-                                                 settings put global oneplus_screen_refresh_rate 0
+                                                 settings put system min_refresh_rate 120 2>/dev/null
+                                                 settings put system peak_refresh_rate 120 2>/dev/null
+                                                 settings put system user_refresh_rate 120 2>/dev/null
+                                                 settings put global oneplus_screen_refresh_rate 0 2>/dev/null
                                                  echo "${G}Done!${N}"
                                                  sleep 2
                                                  menu
                                                  ;;
 						                      
                                           "23")
-                                               settings reset system min_refresh_rate
-                                               settings reset system peak_refresh_rate
-                                               settings reset system user_refresh_rate
-                                               settings reset global oneplus_screen_refresh_rate
+                                               settings reset system min_refresh_rate 2>/dev/null
+                                               settings reset system peak_refresh_rate 2>/dev/null
+                                               settings reset system user_refresh_rate 2>/dev/null
+                                               settings reset global oneplus_screen_refresh_rate 2>/dev/null
                                                echo "${G}Done!${N}"
                                                sleep 2
                                                menu
