@@ -1121,7 +1121,7 @@ fi
 boost_latency() {
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "20"
+    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
     write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
     kmsg "Tweaked dynamic stune boost"
     kmsg3 ""
@@ -1130,7 +1130,7 @@ fi
 # CAF CPU boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "130"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
     write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
     kmsg "Tweaked CAF CPU input boost"
@@ -1139,7 +1139,7 @@ then
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "156"
+    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "130"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
@@ -1148,7 +1148,7 @@ fi
 boost_balanced() {
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
+    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "5"
     write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
     kmsg "Tweaked dynamic stune boost"
     kmsg3 ""
@@ -1157,7 +1157,7 @@ fi
 # CAF CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "100"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
     write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
     kmsg "Tweaked CAF CPU input boost"
@@ -1166,7 +1166,7 @@ then
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
+    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "100"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
@@ -1176,7 +1176,7 @@ boost_extreme() {
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
     write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
+    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
     kmsg "Tweaked dynamic stune boost"
     kmsg3 ""
 fi
@@ -1184,7 +1184,7 @@ fi
 # CAF CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "420"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
     write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
     kmsg "Tweaked CAF CPU input boost"
@@ -1193,7 +1193,7 @@ then
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "420"
+    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
@@ -1202,7 +1202,7 @@ fi
 boost_battery() {
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
+    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
     write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
     kmsg "Tweaked dynamic stune boost"
     kmsg3 ""
@@ -1211,7 +1211,7 @@ fi
 # CAF CPU Boost
 if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
 then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "80"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
     write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
     kmsg "Tweaked CAF CPU input boost"
@@ -1221,7 +1221,7 @@ fi
 # CPU input boost
 if [[ -e "/sys/module/cpu_input_boost/parameters/input_boost_duration" ]]
 then
-    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "80"
+    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "64"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
@@ -1231,7 +1231,7 @@ boost_gaming() {
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
     write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1500"
+    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
     kmsg "Tweaked dynamic stune boost"
     kmsg3 ""
 fi
@@ -1239,7 +1239,7 @@ fi
 # CAF CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "420"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
     write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
     kmsg "Tweaked CAF CPU input boost"
@@ -2607,7 +2607,7 @@ if [[ -d "$stune" ]]; then
     write "${stune}rt/schedtune.sched_boost" "0"
     write "${stune}rt/schedtune.prefer_perf" "0"
 
-    write "${stune}top-app/schedtune.boost" "15"
+    write "${stune}top-app/schedtune.boost" "10"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "0"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
@@ -2645,7 +2645,7 @@ then
     write "${stune}rt/schedtune.sched_boost" "0"
     write "${stune}rt/schedtune.prefer_perf" "0"
 
-    write "${stune}top-app/schedtune.boost" "10"
+    write "${stune}top-app/schedtune.boost" "5"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "0"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
@@ -2692,6 +2692,38 @@ then
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
     kmsg "Tweaked schedtune settings"
+    kmsg3 ""
+fi
+}
+
+schedtune_battery() {
+# Schedtune tweaks
+if [[ -d "$stune" ]]
+then
+    write "${stune}background/schedtune.boost" "0"
+    write "${stune}background/schedtune.prefer_idle" "0"
+    write "${stune}background/schedtune.sched_boost" "0"
+    write "${stune}background/schedtune.prefer_perf" "0"
+
+    write "${stune}foreground/schedtune.boost" "0"
+    write "${stune}foreground/schedtune.prefer_idle" "0"
+    write "${stune}foreground/schedtune.sched_boost" "0"
+    write "${stune}foreground/schedtune.prefer_perf" "0"
+
+    write "${stune}rt/schedtune.boost" "0"
+    write "${stune}rt/schedtune.prefer_idle" "0"
+    write "${stune}rt/schedtune.sched_boost" "0"
+    write "${stune}rt/schedtune.prefer_perf" "0"
+
+    write "${stune}top-app/schedtune.boost" "1"
+    write "${stune}top-app/schedtune.prefer_idle" "1"
+    write "${stune}top-app/schedtune.sched_boost" "0"
+    write "${stune}top-app/schedtune.sched_boost_no_override" "1"
+    write "${stune}top-app/schedtune.prefer_perf" "1"
+
+    write "${stune}schedtune.boost" "0"
+    write "${stune}schedtune.prefer_idle" "0"
+    kmsg "Tweaked cpuset schedtune"
     kmsg3 ""
 fi
 }
@@ -2760,39 +2792,7 @@ then
     write "${cpuset}system-background/uclamp.min" "0"
     write "${cpuset}system-background/uclamp.boosted" "0"
     write "${cpuset}system-background/uclamp.latency_sensitive" "0"
-    kmsg "Tweaked cpuset uclamp"
-    kmsg3 ""
-fi
-}
-
-schedtune_battery() {
-# Schedtune tweaks
-if [[ -d "$stune" ]]
-then
-    write "${stune}background/schedtune.boost" "0"
-    write "${stune}background/schedtune.prefer_idle" "0"
-    write "${stune}background/schedtune.sched_boost" "0"
-    write "${stune}background/schedtune.prefer_perf" "0"
-
-    write "${stune}foreground/schedtune.boost" "0"
-    write "${stune}foreground/schedtune.prefer_idle" "0"
-    write "${stune}foreground/schedtune.sched_boost" "0"
-    write "${stune}foreground/schedtune.prefer_perf" "0"
-
-    write "${stune}rt/schedtune.boost" "0"
-    write "${stune}rt/schedtune.prefer_idle" "0"
-    write "${stune}rt/schedtune.sched_boost" "0"
-    write "${stune}rt/schedtune.prefer_perf" "0"
-
-    write "${stune}top-app/schedtune.boost" "10"
-    write "${stune}top-app/schedtune.prefer_idle" "1"
-    write "${stune}top-app/schedtune.sched_boost" "0"
-    write "${stune}top-app/schedtune.sched_boost_no_override" "1"
-    write "${stune}top-app/schedtune.prefer_perf" "1"
-
-    write "${stune}schedtune.boost" "0"
-    write "${stune}schedtune.prefer_idle" "0"
-    kmsg "Tweaked cpuset schedtune"
+    kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
 fi
 }
