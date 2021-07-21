@@ -1248,7 +1248,7 @@ then
 # CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
-    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "420"
+    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
@@ -1274,7 +1274,7 @@ do
     write "${queue}iostats" 0
     write "${queue}rotational" 0
     write "${queue}read_ahead_kb" 32
-    write "${queue}nomerges" 0
+    write "${queue}nomerges" 1
     write "${queue}rq_affinity" 2
     write "${queue}nr_requests" 16
 done
@@ -1303,8 +1303,8 @@ do
     write "${queue}iostats" 0
     write "${queue}rotational" 0
     write "${queue}read_ahead_kb" 64
-    write "${queue}nomerges" 1
-    write "${queue}rq_affinity" 2
+    write "${queue}nomerges" 0
+    write "${queue}rq_affinity" 1
     write "${queue}nr_requests" 128
 done
 
@@ -1342,7 +1342,7 @@ kmsg3 ""
 }
 
 io_battery() {
-# I/O Scheduler Tweaks
+# I/O Scheduler tweaks
 for queue in /sys/block/*/queue/
 do
 
@@ -2710,6 +2710,11 @@ then
     write "${stune}foreground/schedtune.sched_boost" "0"
     write "${stune}foreground/schedtune.prefer_perf" "0"
 
+    write "${stune}nnapi-hal/schedtune.boost" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
+    write "${stune}nnapi-hal/schedtune.sched_boost" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
+    
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
@@ -2723,7 +2728,7 @@ then
 
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
-    kmsg "Tweaked cpuset schedtune"
+    kmsg "Tweaked schedtune settings"
     kmsg3 ""
 fi
 }
@@ -4549,7 +4554,7 @@ else
     disable_ppm
 fi
 
-if [[ "$ktsr_prof_en" != "extreme" ]] || [[ "$ktsr_prof_en" != "latency" ]] || [[ "$ktsr_prof_en" != "gaming" ]]; then
+if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]]; then
     cpu_clk_default
 else
     cpu_clk_max
@@ -4595,7 +4600,7 @@ fi
 
 vm_lmk_$ktsr_prof_en
 
-if [[ "$ktsr_prof_en" != "extreme" ]] || [[ "$ktsr_prof_en" != "gaming" ]]; then
+if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]]; then
     ppm_policy_default
 
 elif [[ "$ktsr_prof_en" == "extreme" ]]; then
@@ -4632,7 +4637,7 @@ else
     disable_kernel_batt_saver
 fi
 
-if [[ "$ktsr_prof_en" != "battery" ]]; then
+if [[ ! "$ktsr_prof_en" == "battery" ]]; then
     enable_hp_audio
 else
     disable_hp_audio
@@ -4644,7 +4649,7 @@ else
     disable_lpm
 fi
 
-if [[ "$ktsr_prof_en" != "extreme" ]] || [[ "$ktsr_prof_en" != "gaming" ]]; then
+if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]]; then
     enable_pm2_idle_mode
 else
     disable_pm2_idle_mode
@@ -4713,7 +4718,7 @@ else
     misc_cpu_max_pwr
 fi
 
-if [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
+if [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
     enable_ppm
 else
     disable_ppm
@@ -4765,7 +4770,7 @@ fi
 
 vm_lmk_$(getprop kingauto.prof)
 
-if [[ "$(getprop kingauto.prof)" != "extreme" ]] || [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
+if [[ ! "$(getprop kingauto.prof)" == "extreme" ]] && [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
     ppm_policy_default
 
 elif [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
@@ -4802,7 +4807,7 @@ else
     disable_kernel_batt_saver
 fi
 
-if [[ "$(getprop kingauto.prof)" != "battery" ]]; then
+if [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
     enable_hp_audio
 else
     disable_hp_audio
@@ -4814,7 +4819,7 @@ else
     disable_lpm
 fi
 
-if [[ "$(getprop kingauto.prof)" != "extreme" ]] || [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
+if [[ ! "$(getprop kingauto.prof)" == "extreme" ]] && [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
     enable_pm2_idle_mode
 else
     disable_pm2_idle_mode
