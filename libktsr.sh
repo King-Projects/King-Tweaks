@@ -4504,11 +4504,8 @@ stop_services
 if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
     thermal_default
 
-elif [[ "$ktsr_prof_en" == "extreme" ]]; then
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
       thermal_dynamic
-
-elif [[ "$ktsr_prof_en" == "gaming" ]]; then
-      thermal_pubg
 fi
 
 if [[ "$ktsr_prof_en" == "battery" ]]; then
@@ -4674,11 +4671,8 @@ stop_services
 if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     thermal_default
 
-elif [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+elif [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
       thermal_dynamic
-
-elif [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-      thermal_pubg
 fi
 
 if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
