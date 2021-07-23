@@ -121,53 +121,53 @@ get_gpu_dir() {
 for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
  do
    if [[ -d "$gpul" ]]; then
-   gpu=$gpul
-   qcom=true
-   fi
-done
+       gpu=$gpul
+       qcom=true
+     fi
+ done
     
      for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
      do
        if [[ -d "$gpul1" ]]; then
-       gpu=$gpul1
-       qcom=true
-       fi
-   done
+           gpu=$gpul1
+           qcom=true
+         fi
+     done
        
       for gpul2 in /sys/devices/*.mali
       do
         if [[ -d "$gpul2" ]]; then
-        gpu=$gpul2
-        fi
-    done
+            gpu=$gpul2
+          fi
+      done
          
        for gpul3 in /sys/devices/platform/*.gpu
        do
          if [[ -d "$gpul3" ]]; then
-         gpu=$gpul3
-         fi
-     done
+             gpu=$gpul3
+           fi
+       done
        
          for gpul4 in /sys/devices/platform/mali-*.0
          do
            if [[ -d "$gpul4" ]]; then
-           gpu=$gpul4
-           fi
-       done
+               gpu=$gpul4
+             fi
+         done
            
            for gpul5 in /sys/devices/platform/*.mali
            do
              if [[ -d "$gpul5" ]]; then
-             gpu=$gpul5
-             fi
-         done
+                 gpu=$gpul5
+               fi
+           done
                  
              for gpul6 in /sys/class/misc/mali*/device/devfreq/gpufreq
              do
                if [[ -d "$gpul6" ]]; then
-               gpu=$gpul6
-               fi
-           done
+                   gpu=$gpul6
+                 fi
+             done
              
               for gpul7 in /sys/class/misc/mali*/device/devfreq/*.gpu
               do
@@ -179,9 +179,9 @@ done
                for gpul8 in /sys/devices/platform/*.mali/misc/mali0
                do
                  if [[ -d "$gpul8" ]]; then
-                 gpu=$gpul8
-                 fi
-             done
+                     gpu=$gpul8
+                   fi
+               done
 
                if [[ -d "/sys/class/kgsl/kgsl-3d0" ]]; then
                    gpu="/sys/class/kgsl/kgsl-3d0"
@@ -438,7 +438,7 @@ do
         cpu_sched=HMP
   else
       cpu_sched=Unknown
-  fi
+    fi
 done
 }
 
@@ -1113,6 +1113,15 @@ elif [[ "$soc" == "kona" ]]; then
     write "${cpuset}top-app/cpus" "0-7"
     kmsg "Tweaked cpusets"
     kmsg3 ""
+    
+elif [[ "$soc" == "universal9820" ]]; then
+      write "${cpuset}foreground/cpus" "0-2,4-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}dexopt/cpus" "0-3,6-7"
+      write "${cpuset}restricted/cpus" "0-3"
 fi
 }
 
@@ -2629,6 +2638,22 @@ then
 fi
 }
 
+disable_spd_freqs() {
+if [[ -e "/sys/module/exynos_acme/parameters/enable_suspend_freqs" ]]; then
+    write "/sys/module/exynos_acme/parameters/enable_suspend_freqs" "N"
+    kmsg "Disabled suspend frequencies"
+    kmsg3 ""
+fi
+}
+
+configure_pwr_spd() {
+if [[ -e "/sys/kernel/power_suspend/power_suspend_mode" ]]; then
+    write "/sys/kernel/power_suspend/power_suspend_mode" "3"
+    kmsg "Tweaked power suspend mode"
+    kmsg3 ""
+fi
+}
+
 schedtune_latency() {
 # Schedtune tweaks
 if [[ -d "$stune" ]]; then
@@ -2636,31 +2661,47 @@ if [[ -d "$stune" ]]; then
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
     write "${stune}background/schedtune.prefer_perf" "0"
-
+    write "${stune}background/schedtune.util_est_en" "0"
+    write "${stune}background/schedtune.ontime_en" "0"
+    
     write "${stune}foreground/schedtune.boost" "0"
     write "${stune}foreground/schedtune.prefer_idle" "0"
     write "${stune}foreground/schedtune.sched_boost" "0"
     write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "0"
-
+    write "${stune}foreground/schedtune.util_est_en" "0"
+    write "${stune}foreground/schedtune.ontime_en" "0"
+    
     write "${stune}nnapi-hal/schedtune.boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
     write "${stune}nnapi-hal/schedtune.sched_boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
+    write "${stune}nnapi-hal/schedtune.util_est_en" "0"
+    write "${stune}nnapi-hal/schedtune.ontime_en" "0"
     
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
     write "${stune}rt/schedtune.prefer_perf" "0"
-
+    write "${stune}rt/schedtune.util_est_en" "0"
+    write "${stune}rt/schedtune.ontime_en" "0"
+    
     write "${stune}top-app/schedtune.boost" "10"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "0"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
     write "${stune}top-app/schedtune.prefer_perf" "1"
-
+    write "${stune}top-app/schedtune.util_est_en" "1"
+    write "${stune}top-app/schedtune.ontime_en" "1"
+    
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
+    write "${stune}schedtune.sched_boost" "0"
+    write "${stune}schedtune.sched_boost_no_override" "0"
+    write "${stune}schedtune.prefer_perf" "0"
+    write "${stune}schedtune.util_est_en" "0"
+    write "${stune}schedtune.ontime_en" "0"
+    
     kmsg "Tweaked schedtune settings"
     kmsg3 ""
 fi
@@ -2674,31 +2715,47 @@ then
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
     write "${stune}background/schedtune.prefer_perf" "0"
-
+    write "${stune}background/schedtune.util_est_en" "0"
+    write "${stune}background/schedtune.ontime_en" "0"
+    
     write "${stune}foreground/schedtune.boost" "0"
     write "${stune}foreground/schedtune.prefer_idle" "0"
     write "${stune}foreground/schedtune.sched_boost" "0"
     write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "0"
-
+    write "${stune}foreground/schedtune.util_est_en" "0"
+    write "${stune}foreground/schedtune.ontime_en" "0"
+    
     write "${stune}nnapi-hal/schedtune.boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
     write "${stune}nnapi-hal/schedtune.sched_boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
+    write "${stune}nnapi-hal/schedtune.util_est_en" "0"
+    write "${stune}nnapi-hal/schedtune.ontime_en" "0"
     
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
     write "${stune}rt/schedtune.prefer_perf" "0"
-
+    write "${stune}rt/schedtune.util_est_en" "0"
+    write "${stune}rt/schedtune.ontime_en" "0"
+    
     write "${stune}top-app/schedtune.boost" "5"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "0"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
     write "${stune}top-app/schedtune.prefer_perf" "1"
-
+    write "${stune}top-app/schedtune.util_est_en" "1"
+    write "${stune}top-app/schedtune.ontime_en" "1"
+    
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
+    write "${stune}schedtune.sched_boost" "0"
+    write "${stune}schedtune.sched_boost_no_override" "0"
+    write "${stune}schedtune.prefer_perf" "0"
+    write "${stune}schedtune.util_est_en" "0"
+    write "${stune}schedtune.ontime_en" "0"
+    
     kmsg "Tweaked schedtune settings"
     kmsg3 ""
 fi
@@ -2712,31 +2769,47 @@ then
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
     write "${stune}background/schedtune.prefer_perf" "0"
-
+    write "${stune}background/schedtune.util_est_en" "0"
+    write "${stune}background/schedtune.ontime_en" "0"
+    
     write "${stune}foreground/schedtune.boost" "50"
     write "${stune}foreground/schedtune.prefer_idle" "1"
     write "${stune}foreground/schedtune.sched_boost" "15"
     write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "1"
-
+    write "${stune}foreground/schedtune.util_est_en" "1"
+    write "${stune}foreground/schedtune.ontime_en" "1"
+    
     write "${stune}nnapi-hal/schedtune.boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
     write "${stune}nnapi-hal/schedtune.sched_boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
+    write "${stune}nnapi-hal/schedtune.util_est_en" "0"
+    write "${stune}nnapi-hal/schedtune.ontime_en" "0"
     
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
     write "${stune}rt/schedtune.prefer_perf" "0"
-
+    write "${stune}rt/schedtune.util_est_en" "0"
+    write "${stune}rt/schedtune.ontime_en" "0"
+    
     write "${stune}top-app/schedtune.boost" "50"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "15"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
     write "${stune}top-app/schedtune.prefer_perf" "1"
-
+    write "${stune}top-app/schedtune.util_est_en" "1"
+    write "${stune}top-app/schedtune.ontime_en" "1"
+    
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
+    write "${stune}schedtune.sched_boost" "0"
+    write "${stune}schedtune.sched_boost_no_override" "0"
+    write "${stune}schedtune.prefer_perf" "0"
+    write "${stune}schedtune.util_est_en" "0"
+    write "${stune}schedtune.ontime_en" "0"
+    
     kmsg "Tweaked schedtune settings"
     kmsg3 ""
 fi
@@ -2774,6 +2847,12 @@ then
 
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
+    write "${stune}schedtune.sched_boost" "0"
+    write "${stune}schedtune.sched_boost_no_override" "0"
+    write "${stune}schedtune.prefer_perf" "0"
+    write "${stune}schedtune.util_est_en" "0"
+    write "${stune}schedtune.ontime_en" "0"
+    
     kmsg "Tweaked schedtune settings"
     kmsg3 ""
 fi
@@ -2787,31 +2866,47 @@ then
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
     write "${stune}background/schedtune.prefer_perf" "0"
-
+    write "${stune}foreground/schedtune.util_est_en" "1"
+    write "${stune}foreground/schedtune.ontime_en" "1"
+    
     write "${stune}foreground/schedtune.boost" "50"
     write "${stune}foreground/schedtune.prefer_idle" "1"
     write "${stune}foreground/schedtune.sched_boost" "15"
     write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "0"
-
+    write "${stune}foreground/schedtune.util_est_en" "1"
+    write "${stune}foreground/schedtune.ontime_en" "1"
+    
     write "${stune}nnapi-hal/schedtune.boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
     write "${stune}nnapi-hal/schedtune.sched_boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
+    write "${stune}nnapi-hal/schedtune.util_est_en" "0"
+    write "${stune}nnapi-hal/schedtune.ontime_en" "0"
     
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
     write "${stune}rt/schedtune.prefer_perf" "0"
-
+    write "${stune}rt/schedtune.util_est_en" "0"
+    write "${stune}rt/schedtune.ontime_en" "0"
+    
     write "${stune}top-app/schedtune.boost" "50"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "15"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
     write "${stune}top-app/schedtune.prefer_perf" "1"
-
+    write "${stune}top-app/schedtune.util_est_en" "1"
+    write "${stune}top-app/schedtune.ontime_en" "1"
+    
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
+    write "${stune}schedtune.sched_boost" "0"
+    write "${stune}schedtune.sched_boost_no_override" "0"
+    write "${stune}schedtune.prefer_perf" "0"
+    write "${stune}schedtune.util_est_en" "0"
+    write "${stune}schedtune.ontime_en" "0"
+    
     kmsg "Tweaked schedtune settings"
     kmsg3 ""
 fi
@@ -2819,30 +2914,30 @@ fi
 
 uclamp_latency() {
 # Uclamp tweaks
-if [[ -e "${cpuset}top-app/uclamp.max" ]]
+if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
 then
     sysctl -w kernel.sched_util_clamp_min_rt_default=16
     sysctl -w kernel.sched_util_clamp_min=64
 
-    write "${cpuset}top-app/uclamp.max" "max"
-    write "${cpuset}top-app/uclamp.min" "20"
-    write "${cpuset}top-app/uclamp.boosted" "1"
-    write "${cpuset}top-app/uclamp.latency_sensitive" "1"
+    write "${cpuctl}top-app/cpu.uclamp.max" "max"
+    write "${cpuctl}top-app/cpu.uclamp.min" "20"
+    write "${cpuctl}top-app/cpu.uclamp.boosted" "1"
+    write "${cpuctl}top-app/cpu.uclamp.latency_sensitive" "1"
 
-    write "${cpuset}foreground/uclamp.max" "max"
-    write "${cpuset}foreground/uclamp.min" "10"
-    write "${cpuset}foreground/uclamp.boosted" "0"
-    write "${cpuset}foreground/uclamp.latency_sensitive" "0"
+    write "${cpuctl}foreground/cpu.uclamp.max" "max"
+    write "${cpuctl}foreground/cpu.uclamp.min" "10"
+    write "${cpuctl}foreground/cpu.uclamp.boosted" "0"
+    write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "0"
 
-    write "${cpuset}background/uclamp.max" "50"
-    write "${cpuset}background/uclamp.min" "0"
-    write "${cpuset}background/uclamp.boosted" "0"
-    write "${cpuset}background/uclamp.latency_sensitive" "0"
+    write "${cpuctl}background/cpu.uclamp.max" "50"
+    write "${cpuctl}background/cpu.uclamp.min" "0"
+    write "${cpuctl}background/cpu.uclamp.boosted" "0"
+    write "${cpuctl}background/cpu.uclamp.latency_sensitive" "0"
 
-    write "${cpuset}system-background/uclamp.max" "40"
-    write "${cpuset}system-background/uclamp.min" "0"
-    write "${cpuset}system-background/uclamp.boosted" "0"
-    write "${cpuset}system-background/uclamp.latency_sensitive" "0"
+    write "${cpuctl}system-background/cpu.uclamp.max" "40"
+    write "${cpuctl}system-background/cpu.uclamp.min" "0"
+    write "${cpuctl}system-background/cpu.uclamp.boosted" "0"
+    write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
 fi
@@ -3176,6 +3271,9 @@ fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
     write "${kernel}power_aware_timer_migration" "1"
 fi
+if [[ -e "${kernel}sched_energy_aware" ]]; then
+    write "${kernel}sched_energy_aware" "1"
+fi
 
 # Set memory sleep mode to s2idle 
 if [[ -e "/sys/power/mem_sleep" ]]; then
@@ -3269,6 +3367,9 @@ if [[ -e "${kernel}sched_enable_power_aware" ]]; then
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
     write "${kernel}power_aware_timer_migration" "1"
+fi
+if [[ -e "${kernel}sched_energy_aware" ]]; then
+    write "${kernel}sched_energy_aware" "1"
 fi
 
 # Set memory sleep mode to deep
@@ -3369,6 +3470,9 @@ fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
     write "${kernel}power_aware_timer_migration" "1"
 fi
+if [[ -e "${kernel}sched_energy_aware" ]]; then
+    write "${kernel}sched_energy_aware" "1"
+fi
 
 # Set memory sleep mode to s2idle
 if [[ -e "/sys/power/mem_sleep" ]]; then
@@ -3462,6 +3566,9 @@ if [[ -e "${kernel}sched_enable_power_aware" ]]; then
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
     write "${kernel}power_aware_timer_migration" "1"
+fi
+if [[ -e "${kernel}sched_energy_aware" ]]; then
+    write "${kernel}sched_energy_aware" "1"
 fi
 
 # Set memory sleep mode to deep
@@ -3561,6 +3668,9 @@ if [[ -e "${kernel}sched_enable_power_aware" ]]; then
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
     write "${kernel}power_aware_timer_migration" "1"
+fi
+if [[ -e "${kernel}sched_energy_aware" ]]; then
+    write "${kernel}sched_energy_aware" "1"
 fi
 
 # Set memory sleep mode to s2idle 
@@ -4705,6 +4815,10 @@ fi
 enable_usb_fast_chrg
 
 enable_sam_fast_chrg
+
+disable_spd_freqs
+
+configure_pwr_spd
 }
 
 apply_all_auto() {
@@ -4872,6 +4986,10 @@ fi
 enable_usb_fast_chrg
 
 enable_sam_fast_chrg
+
+disable_spd_freqs
+
+configure_pwr_spd
 }
 
 ###############################

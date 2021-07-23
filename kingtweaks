@@ -305,7 +305,7 @@ else
     toast
 fi
      	  
-    killall -9 kingauto
+    killall -9 kingauto >/dev/null 2>&1
     balanced
 	 	
   if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -375,7 +375,7 @@ else
     toast
 fi
      	   
-      killall -9 kingauto
+      killall -9 kingauto >/dev/null 2>&1
 	  extreme
 	 		 
       if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -445,7 +445,7 @@ else
     toast
 fi
      	
-           killall -9 kingauto
+           killall -9 kingauto >/dev/null 2>&1
 	 	  battery
 	 			
          if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -515,7 +515,7 @@ else
     toast
 fi
          
-              killall -9 kingauto
+              killall -9 kingauto >/dev/null 2>&1
 	 	     gaming
 	 				
               if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -585,7 +585,7 @@ else
     toast
 fi
          
-                 killall -9 kingauto
+                 killall -9 kingauto >/dev/null 2>&1
 	 			latency
 	 				
                  if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
