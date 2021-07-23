@@ -12,7 +12,6 @@ KDBG=/sdcard/KTSR/KTSR_DBG.log
 # Log in white and continue (unnecessary)
 kmsg() {
 	echo -e "[*] $@" >> "$KLOG"
-	echo -e "[*] $@"
 }
 
 kmsg1() {
@@ -27,47 +26,46 @@ kmsg2() {
 
 kmsg3() {
 	echo -e "$@" >> "$KLOG"
-	echo -e "$@"
 }
 
 toast() {
-	am start -a android.intent.action.MAIN -e toasttext "Applying $ktsr_prof_en profile..." -n bellavita.toast/.MainActivity
+	am start -a android.intent.action.MAIN -e toasttext "Applying $ktsr_prof_en profile..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 	
 toast_1() {
-	am start -a android.intent.action.MAIN -e toasttext "$ktsr_prof_en profile applied" -n bellavita.toast/.MainActivity
+	am start -a android.intent.action.MAIN -e toasttext "$ktsr_prof_en profile applied" -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
 toast_pt() {
-	am start -a android.intent.action.MAIN -e toasttext "Aplicando perfil $ktsr_prof_pt..." -n bellavita.toast/.MainActivity
+	am start -a android.intent.action.MAIN -e toasttext "Aplicando perfil $ktsr_prof_pt..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
 toast_pt_1() {
-	am start -a android.intent.action.MAIN -e toasttext "Perfil $ktsr_prof_pt aplicado" -n bellavita.toast/.MainActivity
+	am start -a android.intent.action.MAIN -e toasttext "Perfil $ktsr_prof_pt aplicado" -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
 toast_tr() {
-	am start -a android.intent.action.MAIN -e toasttext "$ktsr_prof_tr profili uygulanıyor..." -n bellavita.toast/.MainActivity
+	am start -a android.intent.action.MAIN -e toasttext "$ktsr_prof_tr profili uygulanıyor..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
 toast_tr_1() {
-	am start -a android.intent.action.MAIN -e toasttext "$ktsr_prof_tr profili uygulandı" -n bellavita.toast/.MainActivity
+	am start -a android.intent.action.MAIN -e toasttext "$ktsr_prof_tr profili uygulandı" -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
 toast_in() {
-	am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil $ktsr_prof_in..." -n bellavita.toast/.MainActivity
+	am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil $ktsr_prof_in..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
 toast_in_1() {
-	am start -a android.intent.action.MAIN -e toasttext "Profil $ktsr_prof_in terpakai" -n bellavita.toast/.MainActivity
+	am start -a android.intent.action.MAIN -e toasttext "Profil $ktsr_prof_in terpakai" -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
 toast_fr() {
-	am start -a android.intent.action.MAIN -e toasttext "Chargement du profil $ktsr_prof_tr..." -n bellavita.toast/.MainActivity
+	am start -a android.intent.action.MAIN -e toasttext "Chargement du profil $ktsr_prof_tr..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
 toast_fr_1() {
-	am start -a android.intent.action.MAIN -e toasttext "Profil $ktsr_prof_fr chargé" -n bellavita.toast/.MainActivity
+	am start -a android.intent.action.MAIN -e toasttext "Profil $ktsr_prof_fr chargé" -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
 write() {
@@ -696,11 +694,11 @@ sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 }
 
 get_sql_info() {
-    # Fetch SQLite version
-    sql_ver=$(sqlite3 -version | awk '{print $1}')
+# Fetch SQLite version
+sql_ver=$(sqlite3 -version | awk '{print $1}')
 
-    # Fetch SQLite build date
-    sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}')
+# Fetch SQLite build date
+sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}')
 }
 
 get_cpu_load() {
@@ -1407,7 +1405,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *schedutil* *interactive*
+	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1418,16 +1416,28 @@ do
 	done
 done
 
-# Apply governor specific tunables for schedutil
-for governor in $(find /sys/devices/system/cpu/ -name *schedutil* -type d)
+# Apply governor specific tunables for schedutil, or it's modifications
+for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
-   write "$governor/up_rate_limit_us" "1000"
-   write "$governor/down_rate_limit_us" "1000"
-   write "$governor/pl" "1"
-   write "$governor/iowait_boost_enable" "1"
-   write "$governor/rate_limit_us" "5000"
-   write "$governor/hispeed_load" "89"
-   write "$governor/hispeed_freq" "$cpu_max_freq"
+    write "$governor/up_rate_limit_us" "1000"
+    write "$governor/down_rate_limit_us" "1000"
+    write "$governor/pl" "1"
+    write "$governor/iowait_boost_enable" "1"
+    write "$governor/rate_limit_us" "5000"
+    write "$governor/hispeed_load" "89"
+    write "$governor/hispeed_freq" "$cpu_max_freq"
+done
+
+# Apply governor specific tunables for schedutil, or it's modifications
+for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
+do
+    write "$governor/up_rate_limit_us" "1000"
+    write "$governor/down_rate_limit_us" "1000"
+    write "$governor/pl" "1"
+    write "$governor/iowait_boost_enable" "1"
+    write "$governor/rate_limit_us" "5000"
+    write "$governor/hispeed_load" "89"
+    write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
 # Apply governor specific tunables for interactive
@@ -1459,7 +1469,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *schedutil* *interactive*
+	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1470,13 +1480,25 @@ do
 	done
 done
 
-# Apply governor specific tunables for schedutil
-for governor in $(find /sys/devices/system/cpu/ -name *schedutil* -type d)
+# Apply governor specific tunables for schedutil, or it's modifications
+for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
     write "$governor/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
     write "$governor/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
     write "$governor/pl" "1"
-    write "$governor/iowait_boost_enable" "1"
+    write "$governor/iowait_boost_enable" "0"
+    write "$governor/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
+    write "$governor/hispeed_load" "89"
+    write "$governor/hispeed_freq" "$cpu_max_freq"
+done
+
+# Apply governor specific tunables for schedutil, or it's modifications
+for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
+do
+    write "$governor/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
+    write "$governor/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
+    write "$governor/pl" "1"
+    write "$governor/iowait_boost_enable" "0"
     write "$governor/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
     write "$governor/hispeed_load" "89"
     write "$governor/hispeed_freq" "$cpu_max_freq"
@@ -1511,7 +1533,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *schedutil* *interactive*
+	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1522,8 +1544,8 @@ do
 	done
 done
 
-# Apply governor specific tunables for schedutil
-for governor in $(find /sys/devices/system/cpu/ -name *schedutil* -type d)
+# Apply governor specific tunables for schedutil, or it's modifications
+for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
     write "$governor/up_rate_limit_us" "0"
     write "$governor/down_rate_limit_us" "0"
@@ -1563,7 +1585,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *schedutil* *interactive*
+	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1574,13 +1596,25 @@ do
 	done
 done
 
-# Apply governor specific tunables for schedutil
-for governor in $(find /sys/devices/system/cpu/ -name *schedutil* -type d)
+# Apply governor specific tunables for schedutil, or it's modifications
+for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
     write "$governor/up_rate_limit_us" "50000"
     write "$governor/down_rate_limit_us" "24000"
     write "$governor/pl" "1"
-    write "$governor/iowait_boost_enable" "1"
+    write "$governor/iowait_boost_enable" "0"
+    write "$governor/rate_limit_us" "50000"
+    write "$governor/hispeed_load" "99"
+    write "$governor/hispeed_freq" "$cpu_max_freq"
+done
+
+# Apply governor specific tunables for schedutil, or it's modifications
+for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
+do
+    write "$governor/up_rate_limit_us" "50000"
+    write "$governor/down_rate_limit_us" "24000"
+    write "$governor/pl" "1"
+    write "$governor/iowait_boost_enable" "0"
     write "$governor/rate_limit_us" "50000"
     write "$governor/hispeed_load" "99"
     write "$governor/hispeed_freq" "$cpu_max_freq"
@@ -1615,7 +1649,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in *schedutil* *interactive*
+	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1626,8 +1660,20 @@ do
 	done
 done
 
-# Apply governor specific tunables for schedutil
-for governor in $(find /sys/devices/system/cpu/ -name *schedutil* -type d)
+# Apply governor specific tunables for schedutil, or it's modifications
+for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
+do
+     write "$governor/up_rate_limit_us" "0"
+     write "$governor/down_rate_limit_us" "0"
+     write "$governor/pl" "1"
+     write "$governor/iowait_boost_enable" "1"
+     write "$governor/rate_limit_us" "0"
+     write "$governor/hispeed_load" "80"
+     write "$governor/hispeed_freq" "$cpu_max_freq"
+done
+
+# Apply governor specific tunables for schedutil, or it's modifications
+for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
      write "$governor/up_rate_limit_us" "0"
      write "$governor/down_rate_limit_us" "0"
@@ -3107,33 +3153,33 @@ if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
 fi
 if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-write "${kernel}sched_walt_rotate_big_tasks" "1"
+    write "${kernel}sched_walt_rotate_big_tasks" "1"
 fi
 if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 fi
 if [[ -e "${kernel}sched_boost_top_app" ]]; then
-write "${kernel}sched_boost_top_app" "1"
+    write "${kernel}sched_boost_top_app" "1"
 fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
-write "${kernel}sched_init_task_load" "25"
+    write "${kernel}sched_init_task_load" "25"
 fi
 if [[ "$soc" == "exynos5" ]] && [[ -e "/sys/power/ipa/tdp" ]]; then
-write "/sys/power/ipa/tdp" "4500"
+    write "/sys/power/ipa/tdp" "4500"
 fi
 if [[ -e "${kernel}sched_migration_fixup" ]]; then
-write "${kernel}sched_migration_fixup" "1"
+    write "${kernel}sched_migration_fixup" "1"
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-write "${kernel}sched_enable_power_aware" "1"
+    write "${kernel}sched_enable_power_aware" "1"
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-write "${kernel}power_aware_timer_migration" "1"
+    write "${kernel}power_aware_timer_migration" "1"
 fi
 
 # Set memory sleep mode to s2idle 
 if [[ -e "/sys/power/mem_sleep" ]]; then
-write "/sys/power/mem_sleep" "s2idle"
+    write "/sys/power/mem_sleep" "s2idle"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -3204,30 +3250,30 @@ if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
 fi
 if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-write "${kernel}sched_walt_rotate_big_tasks" "1"
+    write "${kernel}sched_walt_rotate_big_tasks" "1"
 fi
 if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 fi
 if [[ -e "${kernel}sched_boost_top_app" ]]; then
-write "${kernel}sched_boost_top_app" "1"
+    write "${kernel}sched_boost_top_app" "1"
 fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
-write "${kernel}sched_init_task_load" "20"
+    write "${kernel}sched_init_task_load" "20"
 fi
 if [[ -e "${kernel}sched_migration_fixup" ]]; then
-write "${kernel}sched_migration_fixup" "1"
+    write "${kernel}sched_migration_fixup" "1"
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-write "${kernel}sched_enable_power_aware" "1"
+    write "${kernel}sched_enable_power_aware" "1"
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-write "${kernel}power_aware_timer_migration" "1"
+    write "${kernel}power_aware_timer_migration" "1"
 fi
 
 # Set memory sleep mode to deep
 if [[ -e "/sys/power/mem_sleep" ]]; then
-write "/sys/power/mem_sleep" "deep"
+    write "/sys/power/mem_sleep" "deep"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -3300,33 +3346,33 @@ if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
 fi
 if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-write "${kernel}sched_walt_rotate_big_tasks" "1"
+    write "${kernel}sched_walt_rotate_big_tasks" "1"
 fi
 if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 fi
 if [[ -e "${kernel}sched_boost_top_app" ]]; then
-write "${kernel}sched_boost_top_app" "1"
+    write "${kernel}sched_boost_top_app" "1"
 fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
-write "${kernel}sched_init_task_load" "30"
+    write "${kernel}sched_init_task_load" "30"
 fi
 if [[ "$soc" == "exynos5" ]] && [[ -e "/sys/power/ipa/tdp" ]]; then
-write "/sys/power/ipa/tdp" "5000"
+    write "/sys/power/ipa/tdp" "5000"
 fi
 if [[ -e "${kernel}sched_migration_fixup" ]]; then
-write "${kernel}sched_migration_fixup" "1"
+    write "${kernel}sched_migration_fixup" "1"
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-write "${kernel}sched_enable_power_aware" "1"
+    write "${kernel}sched_enable_power_aware" "1"
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-write "${kernel}power_aware_timer_migration" "1"
+    write "${kernel}power_aware_timer_migration" "1"
 fi
 
 # Set memory sleep mode to s2idle
 if [[ -e "/sys/power/mem_sleep" ]]; then
-write "/sys/power/mem_sleep" "s2idle"
+    write "/sys/power/mem_sleep" "s2idle"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -3397,25 +3443,25 @@ if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
 fi
 if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-write "${kernel}sched_walt_rotate_big_tasks" "1"
+    write "${kernel}sched_walt_rotate_big_tasks" "1"
 fi
 if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 fi
 if [[ -e "${kernel}sched_boost_top_app" ]]; then
-write "${kernel}sched_boost_top_app" "1"
+    write "${kernel}sched_boost_top_app" "1"
 fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
-write "${kernel}sched_init_task_load" "15"
+    write "${kernel}sched_init_task_load" "15"
 fi
 if [[ -e "${kernel}sched_migration_fixup" ]]; then
-write "${kernel}sched_migration_fixup" "1"
+    write "${kernel}sched_migration_fixup" "1"
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-write "${kernel}sched_enable_power_aware" "1"
+    write "${kernel}sched_enable_power_aware" "1"
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-write "${kernel}power_aware_timer_migration" "1"
+    write "${kernel}power_aware_timer_migration" "1"
 fi
 
 # Set memory sleep mode to deep
@@ -3493,33 +3539,33 @@ if [[ -e "/sys/power/little_thermal_temp" ]]; then
     write "/sys/power/little_thermal_temp" "90"
 fi
 if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-write "${kernel}sched_walt_rotate_big_tasks" "1"
+    write "${kernel}sched_walt_rotate_big_tasks" "1"
 fi
 if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 fi
 if [[ -e "${kernel}sched_boost_top_app" ]]; then
-write "${kernel}sched_boost_top_app" "1"
+    write "${kernel}sched_boost_top_app" "1"
 fi
 if [[ -e "${kernel}sched_init_task_load" ]]; then
-write "${kernel}sched_init_task_load" "30"
+    write "${kernel}sched_init_task_load" "30"
 fi
 if [[ "$soc" == "exynos5" ]] && [[ -e "/sys/power/ipa/tdp" ]]; then
-write "/sys/power/ipa/tdp" "5000"
+    write "/sys/power/ipa/tdp" "5000"
 fi
 if [[ -e "${kernel}sched_migration_fixup" ]]; then
-write "${kernel}sched_migration_fixup" "1"
+    write "${kernel}sched_migration_fixup" "1"
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-write "${kernel}sched_enable_power_aware" "1"
+    write "${kernel}sched_enable_power_aware" "1"
 fi
 if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-write "${kernel}power_aware_timer_migration" "1"
+    write "${kernel}power_aware_timer_migration" "1"
 fi
 
 # Set memory sleep mode to s2idle 
 if [[ -e "/sys/power/mem_sleep" ]]; then
-write "/sys/power/mem_sleep" "s2idle"
+    write "/sys/power/mem_sleep" "s2idle"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -4404,8 +4450,6 @@ check_qcom
 if [[ "$qcom" != "true" ]] && [[ "$exynos" != "true" ]]; then
     check_ppm_support
 fi
-
-is_samsung
 
 if [[ "$qcom" == "true" ]]; then
     define_gpu_pl
