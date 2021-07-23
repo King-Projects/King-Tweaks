@@ -1261,7 +1261,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid fiops bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
+	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1290,7 +1290,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid fiops bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
+	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1348,7 +1348,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid fiops bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
+	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1377,7 +1377,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid fiops bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
+	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -3799,8 +3799,8 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device do not have more than 3 GB RAM on samsung devices
-if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+# Use SSWAP if device do not have more than 5 GB RAM on samsung devices
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3881,8 +3881,8 @@ write "${vm}dirty_writeback_centisecs" "1000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device do not have more than 3 GB RAM on samsung devices
-if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+# Use SSWAP if device do not have more than 5 GB RAM on samsung devices
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3963,8 +3963,8 @@ write "${vm}dirty_writeback_centisecs" "500"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device do not have more than 3 GB RAM on samsung devices
-if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+# Use SSWAP if device do not have more than 5 GB RAM on samsung devices
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -4045,7 +4045,7 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device do not have more than 4 GB RAM on samsung devices
+# Use SSWAP if device do not have more than 5 GB RAM on samsung devices
 if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "${vm}swappiness" "150"
 else
