@@ -267,7 +267,7 @@ then
     toast_fr_1
 
 else
-	toast1
+	toast_1
 fi
 ;;
 	 
@@ -337,7 +337,7 @@ then
     toast_fr_1
 
 else
-	toast1
+	toast_1
 fi
   ;;
 	
@@ -407,7 +407,7 @@ then
     toast_fr_1
 
 else
-	toast1
+	toast_1
 fi
 	  ;;
 	 		
@@ -477,7 +477,7 @@ then
     toast_fr_1
 
 else
-	toast1
+	toast_1
 fi
 	 	;;
 
@@ -547,7 +547,7 @@ then
     toast_fr_1
 
 else
-	toast1
+	toast_1
 fi
 	      	;;
 	 	
@@ -617,7 +617,7 @@ fi
                     toast_fr_1
                 
                 else
-                    toast1
+                    toast_1
                 fi
                 ;;
             esac

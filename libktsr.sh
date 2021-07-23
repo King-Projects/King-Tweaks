@@ -1270,13 +1270,13 @@ do
 		fi
 	done
 	
-    write "${queue}add_random" 0
-    write "${queue}iostats" 0
-    write "${queue}rotational" 0
-    write "${queue}read_ahead_kb" 32
-    write "${queue}nomerges" 1
-    write "${queue}rq_affinity" 2
-    write "${queue}nr_requests" 16
+    write "${queue}add_random" "0"
+    write "${queue}iostats" "0"
+    write "${queue}rotational" "0"
+    write "${queue}read_ahead_kb" "32"
+    write "${queue}nomerges" "1"
+    write "${queue}rq_affinity" "2"
+    write "${queue}nr_requests" "16"
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -1299,13 +1299,13 @@ do
 		fi
 	done
 	
-    write "${queue}add_random" 0
-    write "${queue}iostats" 0
-    write "${queue}rotational" 0
-    write "${queue}read_ahead_kb" 64
-    write "${queue}nomerges" 0
-    write "${queue}rq_affinity" 1
-    write "${queue}nr_requests" 128
+    write "${queue}add_random" "0"
+    write "${queue}iostats" "0"
+    write "${queue}rotational" "0"
+    write "${queue}read_ahead_kb" "64"
+    write "${queue}nomerges" "0"
+    write "${queue}rq_affinity" "1"
+    write "${queue}nr_requests" "128"
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -1319,7 +1319,7 @@ do
 
     # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid fiops bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
+	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1328,13 +1328,13 @@ do
 		fi
 	done
 	
-   write "${queue}add_random" 0
-   write "${queue}iostats" 0
-   write "${queue}rotational" 0
-   write "${queue}read_ahead_kb" 512
-   write "${queue}nomerges" 2
-   write "${queue}rq_affinity" 2
-   write "${queue}nr_requests" 256
+   write "${queue}add_random" "0"
+   write "${queue}iostats" "0"
+   write "${queue}rotational" "0"
+   write "${queue}read_ahead_kb" "512"
+   write "${queue}nomerges" "2"
+   write "${queue}rq_affinity" "2"
+   write "${queue}nr_requests" "256"
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -1357,13 +1357,13 @@ do
 		fi
 	done
 	
-    write "${queue}add_random" 0
-    write "${queue}iostats" 0
-    write "${queue}rotational" 0
-    write "${queue}read_ahead_kb" 64
-    write "${queue}nomerges" 0
-    write "${queue}rq_affinity" 0
-    write "${queue}nr_requests" 512
+    write "${queue}add_random" "0"
+    write "${queue}iostats" "0"
+    write "${queue}rotational" "0"
+    write "${queue}read_ahead_kb" "64"
+    write "${queue}nomerges" "0"
+    write "${queue}rq_affinity" "0"
+    write "${queue}nr_requests" "512"
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -1386,13 +1386,13 @@ do
 		fi
 	done
 	
-    write "${queue}add_random" 0
-    write "${queue}iostats" 0
-    write "${queue}rotational" 0
-    write "${queue}read_ahead_kb" 512
-    write "${queue}nomerges" 2
-    write "${queue}rq_affinity" 2
-    write "${queue}nr_requests" 256
+    write "${queue}add_random" "0"
+    write "${queue}iostats" "0"
+    write "${queue}rotational" "0"
+    write "${queue}read_ahead_kb" "512"
+    write "${queue}nomerges" "2"
+    write "${queue}rq_affinity" "2"
+    write "${queue}nr_requests" "256"
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -1407,7 +1407,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in schedutil interactive
+	for governor in *schedutil* *interactive*
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1419,7 +1419,7 @@ do
 done
 
 # Apply governor specific tunables for schedutil
-find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
+for governor in $(find /sys/devices/system/cpu/ -name *schedutil* -type d)
 do
    write "$governor/up_rate_limit_us" "1000"
    write "$governor/down_rate_limit_us" "1000"
@@ -1431,7 +1431,7 @@ do
 done
 
 # Apply governor specific tunables for interactive
-find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
+for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
     write "$governor/timer_rate" "1000"
     write "$governor/boost" "0"
@@ -1459,7 +1459,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in schedutil interactive
+	for governor in *schedutil* *interactive*
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1471,7 +1471,7 @@ do
 done
 
 # Apply governor specific tunables for schedutil
-find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
+for governor in $(find /sys/devices/system/cpu/ -name *schedutil* -type d)
 do
     write "$governor/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
     write "$governor/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
@@ -1483,7 +1483,7 @@ do
 done
 
 # Apply governor specific tunables for interactive
-find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
+for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
     write "$governor/timer_rate" "42000"
     write "$governor/boost" "0"
@@ -1511,7 +1511,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in schedutil interactive
+	for governor in *schedutil* *interactive*
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1523,7 +1523,7 @@ do
 done
 
 # Apply governor specific tunables for schedutil
-find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
+for governor in $(find /sys/devices/system/cpu/ -name *schedutil* -type d)
 do
     write "$governor/up_rate_limit_us" "0"
     write "$governor/down_rate_limit_us" "0"
@@ -1535,7 +1535,7 @@ do
 done
 
 # Apply governor specific tunables for interactive
-find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
+for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
     write "$governor/timer_rate" "0"
     write "$governor/boost" "1"
@@ -1563,7 +1563,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in schedutil interactive
+	for governor in *schedutil* *interactive*
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1575,7 +1575,7 @@ do
 done
 
 # Apply governor specific tunables for schedutil
-find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
+for governor in $(find /sys/devices/system/cpu/ -name *schedutil* -type d)
 do
     write "$governor/up_rate_limit_us" "50000"
     write "$governor/down_rate_limit_us" "24000"
@@ -1587,7 +1587,7 @@ do
 done
 
 # Apply governor specific tunables for interactive
-find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
+for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
     write "$governor/timer_rate" "50000"
     write "$governor/boost" "0"
@@ -1615,7 +1615,7 @@ do
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in schedutil interactive
+	for governor in *schedutil* *interactive*
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "$avail_govs" == *"$governor"* ]]
@@ -1627,7 +1627,7 @@ do
 done
 
 # Apply governor specific tunables for schedutil
-find /sys/devices/system/cpu/ -name schedutil -type d | while IFS= read -r governor
+for governor in $(find /sys/devices/system/cpu/ -name *schedutil* -type d)
 do
      write "$governor/up_rate_limit_us" "0"
      write "$governor/down_rate_limit_us" "0"
@@ -1639,7 +1639,7 @@ do
 done
 
 # Apply governor specific tunables for interactive
-find /sys/devices/system/cpu/ -name interactive -type d | while IFS= read -r governor
+for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
      write "$governor/timer_rate" "0"
      write "$governor/boost" "1"
@@ -2508,7 +2508,7 @@ set_volt() {
     fi
 }
 
-# Change voltage on exynos, credits to helloklf
+# Change voltage on exynos 5 series, credits to helloklf
 volt_exynos5() {
         cluster0="/sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster0_volt_table"
         cluster1="/sys/devices/system/cpu/cpufreq/mp-cpufreq/cluster1_volt_table"
@@ -4045,8 +4045,8 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device do not have more than 3 GB RAM on samsung devices
-if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "3000" ]]; then
+# Use SSWAP if device do not have more than 4 GB RAM on samsung devices
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -4545,7 +4545,7 @@ else
     misc_cpu_max_pwr
 fi
 
-if [[ "$ktsr_prof_en" != "gaming" ]]; then
+if [[ ! "$ktsr_prof_en" == "gaming" ]]; then
     enable_ppm
 else
     disable_ppm
