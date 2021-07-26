@@ -73,22 +73,21 @@ write() {
 	if [[ ! -f "$1" ]]; then
 	    kmsg2 "$1 doesn't exist, skipping..."
         return 1
-     fi
+    fi
 
 	# Fetch the current key value
-	local curval=$(cat "$1" 2> /dev/null)
+    curval=$(cat "$1" 2>/dev/null)
 	
 	# Bail out if value is already set
 	if [[ "$curval" == "$2" ]]; then
-	    kmsg1 "$1 is already set to $2, skipping..."
 	    return 0
 	fi
 
 	# Make file writable in case it is not already
-	chmod +w "$1" 2> /dev/null
+	chmod +w "$1" 2>/dev/null
 
 	# Write the new value and bail if there's an error
-	if ! echo "$2" > "$1" 2> /dev/null
+	if ! echo "$2" > "$1" 2>/dev/null
 	then
 	    kmsg2 "Failed: $1 -> $2"
 		return 1
@@ -119,12 +118,12 @@ SCHED_TASKS_THROUGHPUT="6"
 # Fetch GPU directories
 get_gpu_dir() {
 for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
- do
-   if [[ -d "$gpul" ]]; then
-       gpu=$gpul
-       qcom=true
-     fi
- done
+do
+  if [[ -d "$gpul" ]]; then
+      gpu=$gpul
+      qcom=true
+    fi
+done
     
      for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
      do
@@ -172,9 +171,9 @@ for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0
               for gpul7 in /sys/class/misc/mali*/device/devfreq/*.gpu
               do
                 if [[ -d "$gpul7" ]]; then
-                gpu=$gpul7
-                fi
-            done
+                    gpu=$gpul7
+                  fi
+              done
 
                for gpul8 in /sys/devices/platform/*.mali/misc/mali0
                do
@@ -408,7 +407,7 @@ root=$(su -v)
 
 is_exynos() {
 # Detect if we're running on a exynos powered device
-if [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]]; then
+if [[ "$(getprop ro.boot.hardware | grep -q exynos)" ]] || [[ "$(getprop ro.board.platform | grep -q universal)" ]] || [[ "$(getprop ro.product.board | grep -q universal)" ]]; then
     exynos=true
     mtk=false
     qcom=false
@@ -419,7 +418,7 @@ fi
 
 is_mtk() { 
 # Detect if we're running on a mediatek powered device              
-if [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]]; then
+if [[ "$(getprop ro.board.platform | grep -q mt)" ]] || [[ "$(getprop ro.product.board | grep -q mt)" ]] || [[ "$(getprop ro.hardware | grep -q mt)" ]] || [[ "$(getprop ro.boot.hardware | grep -q mt)" ]]; then
     mtk=true
     exynos=false
     qcom=false
@@ -432,9 +431,9 @@ detect_cpu_sched() {
 # Fetch the CPU scheduling type
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-  if [[ "$(cat "$cpu"/scaling_available_governors | grep 'sched')" ]]; then
+  if [[ "$(cat "$cpu"/scaling_available_governors | grep -q 'sched')" ]] || [[ "$(cat "$cpu"/scaling_available_governors | grep -q 'util')" ]]; then
       cpu_sched=EAS
-  elif [[ "$(cat "$cpu"/scaling_available_governors | grep 'interactive')" ]]; then
+  elif [[ "$(cat "$cpu"/scaling_available_governors | grep -q 'interactive')" ]]; then
         cpu_sched=HMP
   else
       cpu_sched=Unknown
@@ -455,7 +454,7 @@ get_ram_info() {
 total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
 
 # Fetch the amount of available RAM
-avail_ram=$(busybox free -m | grep Mem: | awk '{print $7}')
+avail_ram=$(busybox free -m | grep -q Mem: | awk '{print $7}')
 }
 
 get_batt_pctg() {               
@@ -469,16 +468,16 @@ fi
 
 get_ktsr_info() {
 # Fetch KTSR version
-build_ver=$(cat $MODPATH/module.prop | grep version= | sed "s/version=//")
+build_ver=$(cat $MODPATH/module.prop | grep -q version= | sed "s/version=//")
 
 # Fetch KTSR build type
-build_tp=$(cat $MODPATH/ktsr.prop | grep buildtype= | sed "s/buildtype=//")
+build_tp=$(cat $MODPATH/ktsr.prop | grep -q buildtype= | sed "s/buildtype=//")
 
 # Fetch KTSR build date
-build_dt=$(cat $MODPATH/ktsr.prop | grep builddate= | sed "s/builddate=//")
+build_dt=$(cat $MODPATH/ktsr.prop | grep -q builddate= | sed "s/builddate=//")
 
 # Fetch KTSR build codename
-build_cdn=$(cat $MODPATH/ktsr.prop | grep codename= | sed "s/codename=//")
+build_cdn=$(cat $MODPATH/ktsr.prop | grep -q codename= | sed "s/codename=//")
 }
 
 get_batt_tmp() {
@@ -524,10 +523,10 @@ get_max_rr() {
 rr=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
 
 if [[ -z "$rr" ]]; then
-    rr=$(dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
+    rr=$(dumpsys display | grep -q refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 
 elif [[ -z "$rr" ]]; then
-      rr=$(dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
+      rr=$(dumpsys display | grep -q FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 fi
 }
 
@@ -599,7 +598,7 @@ get_batt_cpct() {
 batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
 
 if [[ "$batt_cpct" == "" ]]; then
-    batt_cpct=$(dumpsys batterystats | grep Capacity: | awk '{print $2}' | cut -d "," -f 1)
+    batt_cpct=$(dumpsys batterystats | grep -q Capacity: | awk '{print $2}' | cut -d "," -f 1)
 fi
                
 if [[ "$batt_cpct" -gt "1000000" ]]; then
@@ -675,7 +674,7 @@ dvc_brnd=$(getprop ro.product.brand)
 
 check_one_ui() {
 # Check if we're running on OneUI
-if [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]]; then
+if [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep -q Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]]; then
     one_ui=true
     samsung=true
 else
@@ -825,41 +824,29 @@ if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -rf "/data/system/perfd/default_values"
 fi
 
-kmsg "Disabled perf, mpdecision and few debug services"
+kmsg "Disabled perfd, mpdecision and few debug services"
 kmsg3 ""
 }
 
-thermal_default() {
+config_thermal() {
 # Configure thermal profile
-if [[ -e "/sys/class/thermal/thermal_message" ]]; then
+if [[ -e "/sys/class/thermal/thermal_message" ]] && [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "latency" ]]; then
     write "/sys/class/thermal/thermal_message/sconfig" "0"
     kmsg "Tweaked thermal profile"
     kmsg3 ""
-fi
-}
 
-thermal_dynamic() {
-# Configure thermal profile
-if [[ -e "/sys/class/thermal/thermal_message" ]]; then
+elif [[ -e "/sys/class/thermal/thermal_message" ]] && [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
     write "/sys/class/thermal/thermal_message/sconfig" "10"
     kmsg "Tweaked thermal profile"
     kmsg3 ""
 fi
 }
 
-thermal_pubg() {
-# Configure thermal profile
-if [[ -e "/sys/class/thermal/thermal_message" ]]; then
-    write "/sys/class/thermal/thermal_message/sconfig" "13"
-    kmsg "Tweaked thermal profile"
-    kmsg3 ""
-fi
-}
-
-disable_core_ctl() {
-for corectl in /sys/devices/system/cpu/cpu*/core_ctl
-do
-  if [[ -e "${corectl}/enable" ]]
+config_core_ctl() {
+if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "latency" ]]; then
+ for corectl in /sys/devices/system/cpu/cpu*/core_ctl
+ do
+   if [[ -e "${corectl}/enable" ]]
   then
       write "${corectl}/enable" "0"
 
@@ -904,9 +891,9 @@ fi
 
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
-}
+fi
 
-enable_core_ctl() {
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
   if [[ -e "${corectl}/enable" ]]
@@ -954,10 +941,11 @@ fi
 
 kmsg "Enabled core control & CPU hotplug"
 kmsg3 ""
+fi
 }
 
-# Most of these are based from helloklf (GitHub) vtools, credits to him.
-configure_cpuset() {
+# Some of these are based from helloklf (GitHub) vtools, credits to him.
+config_cpuset() {
 if [[ "$soc" == "msm8937" ]]; then
     write "${cpuset}foreground/cpus" "0-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
@@ -1091,7 +1079,7 @@ elif [[ "$soc" == "exynos5" ]]; then
     write "${cpuset}background/cpus" "0-1"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
-    write "${cpuset}dex2oat/cpus" "2-7"
+    write "${cpuset}dex2oat/cpus" "0-3,6-7"
     kmsg "Tweaked cpusets"
     kmsg3 ""
     
@@ -1125,14 +1113,15 @@ elif [[ "$soc" == "universal9820" ]]; then
 fi
 }
 
-boost_latency() {
-if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
-then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
-    kmsg "Tweaked dynamic stune boost"
-    kmsg3 ""
-fi
+config_boost() {
+if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
+    if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
+    then
+        write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
+        write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+        kmsg "Tweaked dynamic stune boost"
+        kmsg3 ""
+    fi
 
 # CAF CPU boost
 if [[ -d "/sys/module/cpu_boost" ]]
@@ -1150,18 +1139,16 @@ then
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
-}
 
-boost_balanced() {
-if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
-then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "5"
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
-    kmsg "Tweaked dynamic stune boost"
-    kmsg3 ""
-fi
+elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
+    if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
+    then
+        write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "5"
+        write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+        kmsg "Tweaked dynamic stune boost"
+        kmsg3 ""
+    fi
 
-# CAF CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
     write "/sys/module/cpu_boost/parameters/input_boost_ms" "100"
@@ -1170,25 +1157,22 @@ then
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 
-# CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
     write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "100"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
-}
 
-boost_extreme() {
-if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
-then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
-    kmsg "Tweaked dynamic stune boost"
-    kmsg3 ""
-fi
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+    if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
+    then
+        write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
+        write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+        kmsg "Tweaked dynamic stune boost"
+        kmsg3 ""
+    fi
 
-# CAF CPU Boost
 if [[ -d "/sys/module/cpu_boost" ]]
 then
     write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
@@ -1197,25 +1181,22 @@ then
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 
-# CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
     write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
-}
 
-boost_battery() {
-if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
-then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
-    kmsg "Tweaked dynamic stune boost"
-    kmsg3 ""
-fi
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+    if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
+    then
+        write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
+        write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+        kmsg "Tweaked dynamic stune boost"
+        kmsg3 ""
+    fi
 
-# CAF CPU Boost
 if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
 then
     write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
@@ -1225,25 +1206,46 @@ then
     kmsg3 ""
 fi
 
-# CPU input boost
 if [[ -e "/sys/module/cpu_input_boost/parameters/input_boost_duration" ]]
 then
     write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "64"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
-}
 
-boost_gaming() {
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
 then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
+    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
     write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
     kmsg "Tweaked dynamic stune boost"
     kmsg3 ""
 fi
 
-# CAF CPU Boost
+if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
+then
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
+    write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+    write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+    kmsg "Tweaked CAF CPU input boost"
+    kmsg3 ""
+fi
+
+if [[ -e "/sys/module/cpu_input_boost/parameters/input_boost_duration" ]]
+then
+    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "64"
+    kmsg "Tweaked CPU input boost"
+    kmsg3 ""
+fi
+
+elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+    if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
+    then
+        write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
+        write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+        kmsg "Tweaked dynamic stune boost"
+        kmsg3 ""
+    fi
+
 if [[ -d "/sys/module/cpu_boost" ]]
 then
     write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
@@ -1252,30 +1254,32 @@ then
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 
-# CPU input boost
 elif [[ -d "/sys/module/cpu_input_boost" ]]
 then
     write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
+fi
 }
 
-io_latency() {
+config_io() {
 # I/O Scheduler tweaks
-for queue in /sys/block/*/queue/
-do
+if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
+   for queue in /sys/block/*/queue/
+   do
 
-    # Choose the first governor available
-	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
-	do
+     # Choose the first governor available
+	 avail_scheds="$(cat "$queue/scheduler")"
+
+	  for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline cfq noop none
+	  do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
 			write "$queue/scheduler" "$sched"
 			break
-		fi
-	done
+		  fi
+	  done
 	
     write "${queue}add_random" "0"
     write "${queue}iostats" "0"
@@ -1288,16 +1292,14 @@ done
 
 kmsg "Tweaked I/O scheduler"
 kmsg3 ""
-}
 
-io_balanced() {
-# I/O Scheduler tweaks
-for queue in /sys/block/*/queue/
-do
+elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
+  for queue in /sys/block/*/queue/
+  do
 
-    # Choose the first governor available
 	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
+
+	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
@@ -1317,75 +1319,15 @@ done
 
 kmsg "Tweaked I/O scheduler"
 kmsg3 ""
-}
 
-io_extreme() {
-# I/O Scheduler tweaks
-for queue in /sys/block/*/queue/
-do
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+    for queue in /sys/block/*/queue/
+    do
 
-    # Choose the first governor available
-	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
-	do
-		if [[ "$avail_scheds" == *"$sched"* ]]
-		then
-			write "$queue/scheduler" "$sched"
-			break
-		fi
-	done
-	
-   write "${queue}add_random" "0"
-   write "${queue}iostats" "0"
-   write "${queue}rotational" "0"
-   write "${queue}read_ahead_kb" "512"
-   write "${queue}nomerges" "2"
-   write "${queue}rq_affinity" "2"
-   write "${queue}nr_requests" "256"
-done
+	  avail_scheds="$(cat "$queue/scheduler")"
 
-kmsg "Tweaked I/O scheduler"
-kmsg3 ""
-}
-
-io_battery() {
-# I/O Scheduler tweaks
-for queue in /sys/block/*/queue/
-do
-
-    # Choose the first governor available
-	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
-	do
-		if [[ "$avail_scheds" == *"$sched"* ]]
-		then
-			write "$queue/scheduler" "$sched"
-			break
-		fi
-	done
-	
-    write "${queue}add_random" "0"
-    write "${queue}iostats" "0"
-    write "${queue}rotational" "0"
-    write "${queue}read_ahead_kb" "64"
-    write "${queue}nomerges" "0"
-    write "${queue}rq_affinity" "0"
-    write "${queue}nr_requests" "512"
-done
-
-kmsg "Tweaked I/O scheduler"
-kmsg3 ""
-}
-
-io_gaming() {
-# I/O Scheduler tweaks
-for queue in /sys/block/*/queue/
-do
-
-    # Choose the first governor available
-	avail_scheds="$(cat "$queue/scheduler")"
-	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline kyber cfq noop none
-	do
+	  for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline cfq noop none
+	  do
 		if [[ "$avail_scheds" == *"$sched"* ]]
 		then
 			write "$queue/scheduler" "$sched"
@@ -1404,23 +1346,78 @@ done
 
 kmsg "Tweaked I/O scheduler"
 kmsg3 ""
+
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+   for queue in /sys/block/*/queue/
+   do
+
+	 avail_scheds="$(cat "$queue/scheduler")"
+
+	  for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline cfq noop none
+	  do
+		if [[ "$avail_scheds" == *"$sched"* ]]
+		then
+			write "$queue/scheduler" "$sched"
+			break
+		fi
+	done
+	
+    write "${queue}add_random" "0"
+    write "${queue}iostats" "0"
+    write "${queue}rotational" "0"
+    write "${queue}read_ahead_kb" "64"
+    write "${queue}nomerges" "0"
+    write "${queue}rq_affinity" "0"
+    write "${queue}nr_requests" "512"
+done
+
+kmsg "Tweaked I/O scheduler"
+kmsg3 ""
+
+elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+    for queue in /sys/block/*/queue/
+    do
+
+	  avail_scheds="$(cat "$queue/scheduler")"
+
+	  for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety mq-deadline cfq noop none
+	  do
+		if [[ "$avail_scheds" == *"$sched"* ]]
+		then
+			write "$queue/scheduler" "$sched"
+			break
+		fi
+	done
+	
+    write "${queue}add_random" "0"
+    write "${queue}iostats" "0"
+    write "${queue}rotational" "0"
+    write "${queue}read_ahead_kb" "512"
+    write "${queue}nomerges" "2"
+    write "${queue}rq_affinity" "2"
+    write "${queue}nr_requests" "256"
+done
+
+kmsg "Tweaked I/O scheduler"
+kmsg3 ""
+fi
 }
 
-cpu_latency() {
+config_cpu_latency() {
 # CPU tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq
-do
+  for cpu in /sys/devices/system/cpu/cpu*/cpufreq
+  do
 	# Fetch the available governors from the CPU
 	avail_govs="$(cat "$cpu/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-		# Once a matching governor is found, set it and break for this CPU
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$cpu/scaling_governor" "$governor"
-			break
+      # Once a matching governor is found, set it and break for this CPU
+	  if [[ "$avail_govs" == *"$governor"* ]]
+	  then
+		  write "$cpu/scaling_governor" "$governor"
+		  break
 		fi
 	done
 done
@@ -1470,26 +1467,21 @@ do
 done
 }
 
-cpu_balanced() {
-# CPU tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq
-do
-	# Fetch the available governors from the CPU
-	avail_govs="$(cat "$cpu/scaling_available_governors")"
+config_cpu_balanced() {
+   for cpu in /sys/devices/system/cpu/cpu*/cpufreq
+   do
+	 avail_govs="$(cat "$cpu/scaling_available_governors")"
 
-	# Attempt to set the governor in this order
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-		# Once a matching governor is found, set it and break for this CPU
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$cpu/scaling_governor" "$governor"
-			break
+	  if [[ "$avail_govs" == *"$governor"* ]]
+	  then
+		  write "$cpu/scaling_governor" "$governor"
+		  break
 		fi
 	done
 done
 
-# Apply governor specific tunables for schedutil, or it's modifications
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
     write "$governor/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
@@ -1501,7 +1493,6 @@ do
     write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-# Apply governor specific tunables for schedutil, or it's modifications
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
     write "$governor/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
@@ -1513,7 +1504,6 @@ do
     write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-# Apply governor specific tunables for interactive
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
     write "$governor/timer_rate" "42000"
@@ -1535,25 +1525,21 @@ do
 done
 }
 
-cpu_extreme() {
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq
-do
-	# Fetch the available governors from the CPU
-	avail_govs="$(cat "$cpu/scaling_available_governors")"
+config_cpu_extreme() {
+   for cpu in /sys/devices/system/cpu/cpu*/cpufreq
+   do
+	 avail_govs="$(cat "$cpu/scaling_available_governors")"
 
-	# Attempt to set the governor in this order
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-		# Once a matching governor is found, set it and break for this CPU
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$cpu/scaling_governor" "$governor"
-			break
+	  if [[ "$avail_govs" == *"$governor"* ]]
+	  then
+		  write "$cpu/scaling_governor" "$governor"
+		  break
 		fi
 	done
 done
 
-# Apply governor specific tunables for schedutil, or it's modifications
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
     write "$governor/up_rate_limit_us" "0"
@@ -1565,7 +1551,6 @@ do
     write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-# Apply governor specific tunables for interactive
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
     write "$governor/timer_rate" "0"
@@ -1586,26 +1571,21 @@ do
 done
 }
 
-cpu_battery() {
-# CPU tweaks
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq
-do
-	# Fetch the available governors from the CPU
-	avail_govs="$(cat "$cpu/scaling_available_governors")"
+config_cpu_battery() {
+   for cpu in /sys/devices/system/cpu/cpu*/cpufreq
+   do
+	 avail_govs="$(cat "$cpu/scaling_available_governors")"
 
-	# Attempt to set the governor in this order
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
-	do
-		# Once a matching governor is found, set it and break for this CPU
+	  for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	  do
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$cpu/scaling_governor" "$governor"
 			break
-		fi
-	done
+		 fi
+	 done
 done
 
-# Apply governor specific tunables for schedutil, or it's modifications
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
     write "$governor/up_rate_limit_us" "50000"
@@ -1617,7 +1597,6 @@ do
     write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-# Apply governor specific tunables for schedutil, or it's modifications
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
     write "$governor/up_rate_limit_us" "50000"
@@ -1629,7 +1608,6 @@ do
     write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-# Apply governor specific tunables for interactive
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
     write "$governor/timer_rate" "50000"
@@ -1651,16 +1629,13 @@ do
 done
 }
 
-cpu_gaming() {
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq
-do
-	# Fetch the available governors from the CPU
-	avail_govs="$(cat "$cpu/scaling_available_governors")"
+config_cpu_gaming() {
+   for cpu in /sys/devices/system/cpu/cpu*/cpufreq
+   do
+	 avail_govs="$(cat "$cpu/scaling_available_governors")"
 
-	# Attempt to set the governor in this order
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
-	do
-		# Once a matching governor is found, set it and break for this CPU
+	  for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	  do
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$cpu/scaling_governor" "$governor"
@@ -1669,7 +1644,6 @@ do
 	done
 done
 
-# Apply governor specific tunables for schedutil, or it's modifications
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
      write "$governor/up_rate_limit_us" "0"
@@ -1681,7 +1655,6 @@ do
      write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-# Apply governor specific tunables for schedutil, or it's modifications
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
      write "$governor/up_rate_limit_us" "0"
@@ -1693,7 +1666,6 @@ do
      write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-# Apply governor specific tunables for interactive
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
      write "$governor/timer_rate" "0"
@@ -1714,10 +1686,11 @@ do
 done
 }
 
-misc_cpu_default() {
-if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
-    write "/proc/cpufreq/cpufreq_power_mode" "0"
-fi
+config_misc_cpu() {
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
+  if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
+      write "/proc/cpufreq/cpufreq_power_mode" "0"
+  fi
 
 if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
     write "/proc/cpufreq/cpufreq_cci_mode" "0"
@@ -1726,12 +1699,11 @@ fi
 if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
     write "/proc/cpufreq/cpufreq_stress_test" "0"
 fi
-}
 
-misc_cpu_max_pwr() {
-if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
-    write "/proc/cpufreq/cpufreq_power_mode" "3"
-fi
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+   if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
+       write "/proc/cpufreq/cpufreq_power_mode" "3"
+   fi
 
 if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
     write "/proc/cpufreq/cpufreq_cci_mode" "1"
@@ -1740,12 +1712,11 @@ fi
 if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
     write "/proc/cpufreq/cpufreq_stress_test" "1"
 fi
-}
 
-misc_cpu_pwr_saving() {
-if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
-    write "/proc/cpufreq/cpufreq_power_mode" "1"
-fi
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+   if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
+       write "/proc/cpufreq/cpufreq_power_mode" "1"
+   fi
 
 if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
     write "/proc/cpufreq/cpufreq_cci_mode" "0"
@@ -1753,6 +1724,7 @@ fi
 
 if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
     write "/proc/cpufreq/cpufreq_stress_test" "0"
+fi
 fi
 }
 
@@ -1762,33 +1734,34 @@ for i in 0 1 2 3 4 5 6 7 8 9; do
 done
 }
 
-enable_ppm() {
-[[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
-kmsg "Tweaked CPU parameters"
-kmsg3 ""
-}
+config_ppm() {
+if [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+    [[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
+     kmsg "Tweaked CPU parameters"
+     kmsg3 ""
 
-disable_ppm() {
-[[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "0"
-kmsg "Tweaked CPU parameters"
-kmsg3 ""
-}
-
-hmp_balanced() {
-if [[ -e "/sys/kernel/hmp" ]]; then
-    write "/sys/kernel/hmp/boost" "0"
-    write "/sys/kernel/hmp/down_compensation_enabled" "1"
-    write "/sys/kernel/hmp/family_boost" "0"
-    write "/sys/kernel/hmp/semiboost" "0"
-    write "/sys/kernel/hmp/up_threshold" "575"
-    write "/sys/kernel/hmp/down_threshold" "256"
-    kmsg "Tweaked HMP parameters"
-    kmsg3 ""
+elif [[ ! "$ktsr_prof_en" != "gaming" ]] || [[ ! "$(getprop kingauto.prof)" != "gaming" ]]; then
+      [[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "0"
+       kmsg "Tweaked CPU parameters"
+       kmsg3 ""
 fi
 }
 
-hmp_extreme() {
-if [[ -e "/sys/kernel/hmp" ]]; then
+config_hmp() {
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
+    if [[ -e "/sys/kernel/hmp" ]]; then
+        write "/sys/kernel/hmp/boost" "0"
+        write "/sys/kernel/hmp/down_compensation_enabled" "1"
+        write "/sys/kernel/hmp/family_boost" "0"
+        write "/sys/kernel/hmp/semiboost" "0"
+        write "/sys/kernel/hmp/up_threshold" "575"
+        write "/sys/kernel/hmp/down_threshold" "256"
+        kmsg "Tweaked HMP parameters"
+        kmsg3 ""
+    fi
+
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+   if [[ -e "/sys/kernel/hmp" ]]; then
     write "/sys/kernel/hmp/boost" "1"
     write "/sys/kernel/hmp/down_compensation_enabled" "1"
     write "/sys/kernel/hmp/family_boost" "1"
@@ -1797,11 +1770,10 @@ if [[ -e "/sys/kernel/hmp" ]]; then
     write "/sys/kernel/hmp/down_threshold" "180"
     kmsg "Tweaked HMP parameters"
     kmsg3 ""
-fi
-}
+   fi
 
-hmp_battery() {
-if [[ -e "/sys/kernel/hmp" ]]; then
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+   if [[ -e "/sys/kernel/hmp" ]]; then
     write "/sys/kernel/hmp/boost" "0"
     write "/sys/kernel/hmp/down_compensation_enabled" "1"
     write "/sys/kernel/hmp/family_boost" "0"
@@ -1810,11 +1782,10 @@ if [[ -e "/sys/kernel/hmp" ]]; then
     write "/sys/kernel/hmp/down_threshold" "303"
     kmsg "Tweaked HMP parameters"
     kmsg3 ""
-fi
-}
+   fi
 
-hmp_gaming() {
-if [[ -e "/sys/kernel/hmp" ]]; then
+elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+   if [[ -e "/sys/kernel/hmp" ]]; then
     write "/sys/kernel/hmp/boost" "1"
     write "/sys/kernel/hmp/down_compensation_enabled" "1"
     write "/sys/kernel/hmp/family_boost" "1"
@@ -1823,21 +1794,23 @@ if [[ -e "/sys/kernel/hmp" ]]; then
     write "/sys/kernel/hmp/down_threshold" "125"
     kmsg "Tweaked HMP parameters"
     kmsg3 ""
+   fi
 fi
 }
 
-gpu_latency() {
+config_gpu() {
 # GPU tweaks
 
+if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
 	# Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
 	# Attempt to set the governor in this order
 	for governor in msm-adreno-tz simple_ondemand ondemand
 	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
+	  # Once a matching governor is found, set it and break
+	  if [[ "$avail_govs" == *"$governor"* ]]
+	  then
 			write "$gpu/devfreq/governor" "$governor"
 			break
 		fi
@@ -1870,39 +1843,39 @@ gpu_latency() {
 			break
 		fi
 	done
-	
-if [[ "$qcom" == "true" ]]; then
-    write "$gpu/throttling" "1"
-    write "$gpu/thermal_pwrlevel" "$gpu_calc_thrtl"
-    write "$gpu/devfreq/adrenoboost" "0"
-    write "$gpu/force_no_nap" "0"
-    write "$gpu/bus_split" "1"
-    write "$gpu/devfreq/max_freq" "$gpu_max_freq"
-    write "$gpu/devfreq/min_freq" "$gpu_min_freq"
-    write "$gpu/default_pwrlevel" "$((gpu_min_pl - 1))"
-    write "$gpu/force_bus_on" "0"
-    write "$gpu/force_clk_on" "0"
-    write "$gpu/force_rail_on" "0"
-    write "$gpu/idle_timer" "90"
-    write "$gpu/pwrnap" "1"
-else
-    [[ "$one_ui" == "false" ]] && write "$gpu/dvfs" "1"
-     write "$gpui/gpu_min_clock" "$gpu_min"
-     write "$gpu/highspeed_clock" "$gpu_max_freq"
-     write "$gpu/highspeed_load" "80"
-     write "$gpu/highspeed_delay" "0"
-     write "$gpu/power_policy" "coarse_demand"
-     write "$gpui/boost" "0"
-     write "$gpug/mali_touch_boost_level" "0"
-     write "$gpu/max_freq" "$gpu_max_freq"
-     write "$gpu/min_freq" "$gpu_min_freq"
-     write "$gpu/tmu" "1"
-     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "1"
-     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "60"
-     write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "40"
-     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "50"
-     write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "30"
-fi
+
+  if [[ "$qcom" == "true" ]]; then
+      write "$gpu/throttling" "1"
+      write "$gpu/thermal_pwrlevel" "$gpu_calc_thrtl"
+      write "$gpu/devfreq/adrenoboost" "0"
+      write "$gpu/force_no_nap" "0"
+      write "$gpu/bus_split" "1"
+      write "$gpu/devfreq/max_freq" "$gpu_max_freq"
+      write "$gpu/devfreq/min_freq" "$gpu_min_freq"
+      write "$gpu/default_pwrlevel" "$((gpu_min_pl - 1))"
+      write "$gpu/force_bus_on" "0"
+      write "$gpu/force_clk_on" "0"
+      write "$gpu/force_rail_on" "0"
+      write "$gpu/idle_timer" "90"
+      write "$gpu/pwrnap" "1"
+  else
+      [[ "$one_ui" == "false" ]] && write "$gpu/dvfs" "1"
+       write "$gpui/gpu_min_clock" "$gpu_min"
+       write "$gpu/highspeed_clock" "$gpu_max_freq"
+       write "$gpu/highspeed_load" "80"
+       write "$gpu/highspeed_delay" "0"
+       write "$gpu/power_policy" "coarse_demand"
+       write "$gpui/boost" "0"
+       write "$gpug/mali_touch_boost_level" "0"
+       write "$gpu/max_freq" "$gpu_max_freq"
+       write "$gpu/min_freq" "$gpu_min_freq"
+       write "$gpu/tmu" "1"
+       write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync "1"
+       write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_upthreshold "60"
+       write "$gpu"/devfreq/gpufreq/mali_ondemand/vsync_downdifferential "40"
+       write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "50"
+       write "$gpu"/devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "30"
+  fi
 
 if [[ -d "/sys/modules/ged/" ]]
 then
@@ -1960,18 +1933,12 @@ fi
 
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
-}
 
-gpu_balanced() {
-# GPU tweaks
+elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
+	  avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
-
-	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz simple_ondemand ondemand
-	do
-		# Once a matching governor is found, set it and break
+	  for governor in msm-adreno-tz simple_ondemand ondemand
+	  do
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpu/devfreq/governor" "$governor"
@@ -1979,13 +1946,10 @@ gpu_balanced() {
 		fi
 	done
 	
-	# Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	# Attempt to set the governor in this order
 	for governor in Interactive Dynamic Static ondemand
 	do
-		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpui/gpu_governor" "$governor"
@@ -1993,13 +1957,10 @@ gpu_balanced() {
 		fi
 	done
 	
-    # Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpu/available_governors")"
 
-	# Attempt to set the governor in this order
 	for governor in Interactive Dynamic Static ondemand
 	do
-		# Once a matching governor is found, set it and break
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpu/governor" "$governor"
@@ -2076,7 +2037,6 @@ then
     write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
 fi
 
-# Tweak some mali parameters
 if [[ -d "/proc/mali/" ]] 
 then
      [[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "1"
@@ -2095,7 +2055,6 @@ then
     write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "3500"
 fi
 
-# Enable and tweak adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
      write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
@@ -2108,18 +2067,12 @@ fi
 
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
-}
 
-gpu_extreme() {
-# GPU tweaks
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+	  avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
-
-	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz simple_ondemand ondemand
-	do
-		# Once a matching governor is found, set it and break
+	  for governor in msm-adreno-tz simple_ondemand ondemand
+	  do
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpu/devfreq/governor" "$governor"
@@ -2127,33 +2080,27 @@ gpu_extreme() {
 		fi
 	done
 	
-	# Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	# Attempt to set the governor in this order
 	for governor in Booster Interactive Dynamic Static ondemand
 	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpui/gpu_governor" "$governor"
-			break
-		fi
-	done
+	  if [[ "$avail_govs" == *"$governor"* ]]
+	      then
+			  write "$gpui/gpu_governor" "$governor"
+			  break
+		   fi
+	   done
 
-    # Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpu/available_governors")"
 
-	# Attempt to set the governor in this order
 	for governor in Interactive Dynamic Static ondemand
 	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpu/governor" "$governor"
-			break
-		fi
-	done
+	  if [[ "$avail_govs" == *"$governor"* ]]
+		  then
+			  write "$gpu/governor" "$governor"
+			  break
+		   fi
+	   done
 
 if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "0"
@@ -2254,18 +2201,12 @@ fi
 
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
-}
 
-gpu_battery() {
-# GPU tweaks
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+      avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
-
-	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz simple_ondemand ondemand
-	do
-		# Once a matching governor is found, set it and break
+	  for governor in msm-adreno-tz simple_ondemand ondemand
+	  do
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpu/devfreq/governor" "$governor"
@@ -2273,28 +2214,22 @@ gpu_battery() {
 		fi
 	done
 	
-	# Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	# Attempt to set the governor in this order
 	for governor in Interactive Static ondemand
 	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
+      if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpui/gpu_governor" "$governor"
 			break
 		fi
 	done
 
-    # Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpu/available_governors")"
 
-	# Attempt to set the governor in this order
 	for governor in Interactive Dynamic Static ondemand
 	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
+	  if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpu/governor" "$governor"
 			break
@@ -2402,18 +2337,12 @@ fi
 
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
-}
 
-gpu_gaming() {
-# GPU tweaks
+elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+	  avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
-
-	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz simple_ondemand ondemand
-	do
-		# Once a matching governor is found, set it and break
+	  for governor in msm-adreno-tz simple_ondemand ondemand
+	  do
 		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpu/devfreq/governor" "$governor"
@@ -2421,28 +2350,22 @@ gpu_gaming() {
 		fi
 	done
 	
-	# Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	# Attempt to set the governor in this order
 	for governor in Booster Interactive Dynamic Static
 	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
+      if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpui/gpu_governor" "$governor"
 			break
 		fi
 	done
 
-    # Fetch the available governors from the GPU
 	avail_govs="$(cat "$gpu/available_governors")"
 
-	# Attempt to set the governor in this order
 	for governor in Interactive Dynamic Static ondemand
 	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
+      if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpu/governor" "$governor"
 			break
@@ -2519,7 +2442,6 @@ then
     write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
 fi
 
-# Tweak some other mali parameters
 if [[ -d "/proc/mali/" ]] 
 then
      [[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "0"
@@ -2538,7 +2460,6 @@ then
     write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "1000"
 fi
 
-# Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
     write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
@@ -2548,6 +2469,7 @@ fi
 
 kmsg "Tweaked GPU parameters"
 kmsg3 ""
+fi
 }
 
 set_volt() {
@@ -2555,10 +2477,9 @@ set_volt() {
     freq=$2
     volt=$3
     if [[ -f "$cluster" ]]; then
-        valid="$(cat $cluster | grep "$freq")"
-        if [[ -n "$valid" ]] && [[ ! -z "$valid" ]]; then
-            echo "$freq $volt"
-            echo "$freq $volt" > "$cluster"
+        valid="$(cat "$cluster" | grep -q "$freq")"
+        if [[ -n "$valid" ]]; then
+            write "$cluster" "$freq $volt"
         fi
     fi
 }
@@ -2614,7 +2535,7 @@ volt_exynos5() {
         set_volt "$cluster0" "130000 " "512500"
 
         gpu_volt_table="/sys/devices/14ac0000.mali/volt_table"
-        chmod 0755 "$gpu_volt_table"
+
         set_volt "$gpu_volt_table" "806 " "737500"
         set_volt "$gpu_volt_table" "728 " "725000"
         set_volt "$gpu_volt_table" "702 " "718750"
@@ -2625,7 +2546,7 @@ volt_exynos5() {
         set_volt "$gpu_volt_table" "338 " "575000"
         set_volt "$gpu_volt_table" "260 " "568750"
         
-        kmsg3 "Tweaked CPU / GPU voltage"
+        kmsg3 "Tweaked CPU / GPU voltages"
         kmsg ""
 }
 
@@ -2646,7 +2567,7 @@ if [[ -e "/sys/module/exynos_acme/parameters/enable_suspend_freqs" ]]; then
 fi
 }
 
-configure_pwr_spd() {
+config_pwr_spd() {
 if [[ -e "/sys/kernel/power_suspend/power_suspend_mode" ]]; then
     write "/sys/kernel/power_suspend/power_suspend_mode" "3"
     kmsg "Tweaked power suspend mode"
@@ -2654,9 +2575,10 @@ if [[ -e "/sys/kernel/power_suspend/power_suspend_mode" ]]; then
 fi
 }
 
-schedtune_latency() {
+config_schedtune() {
 # Schedtune tweaks
-if [[ -d "$stune" ]]; then
+if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
+  if [[ -d "$stune" ]]; then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2702,15 +2624,13 @@ if [[ -d "$stune" ]]; then
     write "${stune}schedtune.util_est_en" "0"
     write "${stune}schedtune.ontime_en" "0"
     
-    kmsg "Tweaked schedtune settings"
+    kmsg "Tweaked schedtune parameters"
     kmsg3 ""
-fi
-}
+  fi
 
-schedtune_balanced() {
-# Schedtune tweaks
-if [[ -d "$stune" ]]
-then
+elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
+    if [[ -d "$stune" ]]
+    then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2756,15 +2676,13 @@ then
     write "${stune}schedtune.util_est_en" "0"
     write "${stune}schedtune.ontime_en" "0"
     
-    kmsg "Tweaked schedtune settings"
+    kmsg "Tweaked schedtune parameters"
     kmsg3 ""
-fi
-}
+    fi
 
-schedtune_extreme() {
-# Schedtune tweaks
-if [[ -d "$stune" ]]
-then
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+    if [[ -d "$stune" ]]
+    then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2810,15 +2728,13 @@ then
     write "${stune}schedtune.util_est_en" "0"
     write "${stune}schedtune.ontime_en" "0"
     
-    kmsg "Tweaked schedtune settings"
+    kmsg "Tweaked schedtune parameters"
     kmsg3 ""
-fi
-}
+    fi
 
-schedtune_battery() {
-# Schedtune tweaks
-if [[ -d "$stune" ]]
-then
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+   if [[ -d "$stune" ]]
+   then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2853,15 +2769,13 @@ then
     write "${stune}schedtune.util_est_en" "0"
     write "${stune}schedtune.ontime_en" "0"
     
-    kmsg "Tweaked schedtune settings"
+    kmsg "Tweaked schedtune parameters"
     kmsg3 ""
-fi
-}
+   fi
 
-schedtune_gaming() {
-# Schedtune tweaks
-if [[ -d "$stune" ]]
-then
+elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+   if [[ -d "$stune" ]]
+   then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2907,15 +2821,16 @@ then
     write "${stune}schedtune.util_est_en" "0"
     write "${stune}schedtune.ontime_en" "0"
     
-    kmsg "Tweaked schedtune settings"
+    kmsg "Tweaked schedtune parameters"
     kmsg3 ""
+  fi
 fi
 }
 
-uclamp_latency() {
-# Uclamp tweaks
-if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
-then
+config_uclamp() {
+if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
+  if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
+  then
     sysctl -w kernel.sched_util_clamp_min_rt_default=16
     sysctl -w kernel.sched_util_clamp_min=64
 
@@ -2941,12 +2856,10 @@ then
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
 fi
-}
 
-uclamp_balanced() {
-# Uclamp tweaks
-if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
-then
+elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
+   if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
+   then
     sysctl -w kernel.sched_util_clamp_min_rt_default=32
     sysctl -w kernel.sched_util_clamp_min=128
 
@@ -2972,12 +2885,10 @@ then
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
 fi
-}
 
-uclamp_extreme() {
-# Uclamp tweaks
-if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
-then
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+   if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
+   then
     sysctl -w kernel.sched_util_clamp_min_rt_default=96
     sysctl -w kernel.sched_util_clamp_min=192
 
@@ -3002,11 +2913,9 @@ then
     write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
-fi
-}
+   fi
 
-uclamp_battery() {
-# Uclamp tweaks
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
 then
     sysctl -w kernel.sched_util_clamp_min_rt_default=16
@@ -3034,12 +2943,10 @@ then
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
 fi
-}
 
-uclamp_gaming() {
-# Uclamp tweaks
-if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
-then
+elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+   if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
+   then
     sysctl -w kernel.sched_util_clamp_min_rt_default=96
     sysctl -w kernel.sched_util_clamp_min=192
  
@@ -3064,10 +2971,11 @@ then
     write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
+  fi
 fi
 }
 
-configure_blkio() {
+config_blkio() {
 # Block tweaks
 if [[ -d "$blkio" ]]; then
     write "${blkio}blkio.weight" "1000"
@@ -3079,7 +2987,7 @@ if [[ -d "$blkio" ]]; then
 fi
 }
 
-configure_fs() {
+config_fs() {
 # FS tweaks
 if [[ -d "/proc/sys/fs" ]]
 then
@@ -3094,8 +3002,7 @@ then
 fi
 }
 
-configure_dyn_fsync() {
-# Enable dynamic_fsync
+config_dyn_fsync() {
 if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]
 then
     write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
@@ -3104,68 +3011,62 @@ then
 fi
 }
 
-sched_ft_latency() {
+config_sched_ft() {
 # Scheduler features
-if [[ -e "/sys/kernel/debug/sched_features" ]]
-then
+if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
+  if [[ -e "/sys/kernel/debug/sched_features" ]]
+  then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
     write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
     write "/sys/kernel/debug/sched_features" "UTIL_EST"
     [[ "$cpu_sched" == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
      kmsg "Tweaked scheduler features"
      kmsg3 ""
-fi
-}
+  fi
 
-sched_ft_balanced() {
-# Scheduler features
-if [[ -e "/sys/kernel/debug/sched_features" ]]
-then
+elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
+   if [[ -e "/sys/kernel/debug/sched_features" ]]
+   then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
     write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
     write "/sys/kernel/debug/sched_features" "UTIL_EST"
     [[ "$cpu_sched" == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
     kmsg "Tweaked scheduler features"
     kmsg3 ""
-fi
-}
+   fi
 
-sched_ft_extreme() {
-# Scheduler features
-if [[ -e "/sys/kernel/debug/sched_features" ]]
-then
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+   if [[ -e "/sys/kernel/debug/sched_features" ]]
+   then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
     write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
     write "/sys/kernel/debug/sched_features" "UTIL_EST"
     [[ "$cpu_sched" == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
     kmsg "Tweaked scheduler features"
     kmsg3 ""
-fi
-}
+   fi
 
-sched_ft_battery() {
-# Scheduler features
-if [[ -e "/sys/kernel/debug/sched_features" ]]
-then
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+   if [[ -e "/sys/kernel/debug/sched_features" ]]
+   then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
     write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
     write "/sys/kernel/debug/sched_features" "UTIL_EST"
     [[ "$cpu_sched" == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
     kmsg "Tweaked scheduler features"
     kmsg3 ""
-fi
-}
+   fi
 
-sched_ft_gaming() {
-# Scheduler features
-if [[ -e "/sys/kernel/debug/sched_features" ]]
-then
+elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+   if [[ -e "/sys/kernel/debug/sched_features" ]]
+   then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
     write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
     write "/sys/kernel/debug/sched_features" "UTIL_EST"
     [[ "$cpu_sched" == "EAS" ]] && write "/sys/kernel/debug/sched_features" "EAS_PREFER_IDLE"
     kmsg "Tweaked scheduler features"
     kmsg3 ""
+   fi
 fi
 }
 
@@ -3187,7 +3088,8 @@ elif [[ -e "/sys/module/mmc_core/parameters/crc" ]]; then
 fi
 }
 
-sched_latency() {
+config_sched() {
+if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
 # Tweak some kernel settings to improve overall performance
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
     write "${kernel}sched_child_runs_first" "1"
@@ -3274,6 +3176,7 @@ fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
+write "/proc/sys/kernel/printk" "0 0 0 0"
 
 # Set memory sleep mode to s2idle 
 if [[ -e "/sys/power/mem_sleep" ]]; then
@@ -3282,10 +3185,8 @@ fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
-}
 
-sched_balanced() {
-# Tweak some kernel settings to improve overall performance
+elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
     write "${kernel}sched_child_runs_first" "1"
 fi
@@ -3371,18 +3272,16 @@ fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
+write "/proc/sys/kernel/printk" "0 0 0 0"
 
-# Set memory sleep mode to deep
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "deep"
 fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
-}
 
-sched_extreme() {
-# Tweak some kernel settings to improve overall performance.
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
     write "${kernel}sched_child_runs_first" "0"
 fi
@@ -3473,18 +3372,16 @@ fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
+write "/proc/sys/kernel/printk" "0 0 0 0"
 
-# Set memory sleep mode to s2idle
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
 fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
-}
 
-sched_battery() {
-# Tweak some kernel settings to improve overall performance.
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
     write "${kernel}sched_child_runs_first" "0"
 fi
@@ -3570,18 +3467,16 @@ fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
+write "/proc/sys/kernel/printk" "0 0 0 0"
 
-# Set memory sleep mode to deep
 if [[ -e "/sys/power/mem_sleep" ]]; then
 write "/sys/power/mem_sleep" "deep"
 fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
-}
 
-sched_gaming() {
-# Tweak some kernel settings to improve overall performance.
+elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
     write "${kernel}sched_child_runs_first" "0"
 fi
@@ -3672,12 +3567,13 @@ fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
+write "/proc/sys/kernel/printk" "0 0 0 0"
 
 # Set memory sleep mode to s2idle 
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
 fi
-
+fi
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
 }
@@ -3840,7 +3736,8 @@ then
 fi
 }
 
-vm_lmk_latency() {
+config_vm_lmk() {
+if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
 fr=$(((total_ram * 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 4 / 100) * 1024 / 4))
@@ -3920,9 +3817,8 @@ fi
 
 kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 kmsg3 ""
-}
 
-vm_lmk_balanced() {
+elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
 fr=$(((total_ram * 5 / 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 5 / 100) * 1024 / 4))
@@ -4003,9 +3899,8 @@ fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
-}
 
-vm_lmk_extreme() {
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
 fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 5 / 100) * 1024 / 4))
@@ -4085,9 +3980,8 @@ fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
-}
 
-vm_lmk_battery() {
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 fr=$(((total_ram * 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 4 / 100) * 1024 / 4))
@@ -4167,15 +4061,14 @@ fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
-}
 
-vm_lmk_gaming() {
-fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
+elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+fr=$(((total_ram * 4 / 100) * 1024 / 4))
 bg=$(((total_ram * 2 / 100) * 1024 / 4))
 et=$(((total_ram * 4 / 100) * 1024 / 4))
-mr=$(((total_ram * 7 / 100) * 1024 / 4))
+mr=$(((total_ram * 6 / 100) * 1024 / 4))
 cd=$(((total_ram * 11 / 100) * 1024 / 4))
-ab=$(((total_ram * 13 / 100) * 1024 / 4))
+ab=$(((total_ram * 12 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
@@ -4249,6 +4142,7 @@ fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
+fi
 }
 
 disable_msm_thermal() {
@@ -4366,7 +4260,7 @@ then
 fi
 }
 
-configure_tcp() {
+config_tcp() {
 # Fetch the available TCP congestion control 
 avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 	
@@ -4425,31 +4319,23 @@ then
 fi
 }
 
-enable_hp_audio() {
-# Enable high performance audio
-for hpm in /sys/module/snd_soc_wcd*
-do
-  if [[ -e "$hpm" ]]
-  then
-      write "${hpm}/parameters/high_perf_mode" "1"
+enable_hp_snd() {
+for i in high_perf_mode cpe_debug_mode impedance_detect_en; do
+  for o in $(find /sys/module -name "$i" -type f); do
+      write "$o" "1"
       kmsg "Enabled high performance audio"
       kmsg3 ""
-      break
-   fi
+  done
 done
 }
 
-disable_hp_audio() {
-# Disable high performance audio
-for hpm in /sys/module/snd_soc_wcd*
-do
-  if [[ -e "$hpm" ]]
-  then
-      write "${hpm}/parameters/high_perf_mode" "0"
+disable_hp_snd() {
+for i in high_perf_mode cpe_debug_mode impedance_detect_en; do
+  for o in $(find /sys/module -name "$i" -type f); do
+      write "$o" "0"
       kmsg "Disabled high performance audio"
       kmsg3 ""
-      break
-   fi
+  done
 done
 }
 
@@ -4464,7 +4350,7 @@ do
       write "/sys/module/lpm_levels/parameters/sleep_disabled" "N"
       write "${lpm}idle_enabled" "Y"
       write "${lpm}suspend_enabled" "Y"
-   fi
+    fi
 done
 
 kmsg "Enabled LPM"
@@ -4482,7 +4368,7 @@ do
       write "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
       write "${lpm}idle_enabled" "N"
       write "${lpm}suspend_enabled" "N"
-   fi
+    fi
 done
 
 kmsg "Disabled LPM"
@@ -4542,6 +4428,21 @@ then
     kmsg "Enabled fast charging on Samsung devices"
     kmsg3 ""
 fi
+}
+
+disable_debug() {
+# Disable debugging / logging
+for i in *debug* edac_mc_log_ce enable_event_log log_ecn_error snapshot_crashdumper; do
+  for o in $(find /sys/ -name "$i" -type f); do
+    write "0" "$o"
+ if [[ "$o" == "/sys/module/spurious/parameters/noirqdebug" ]]; then
+     write "1" "$o"
+ fi
+   done
+       done
+
+kmsg "Disabled misc debugging"
+kmsg3 ""
 }
 
 get_all() {
@@ -4655,20 +4556,11 @@ print_info
 
 stop_services
 
-if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
-    thermal_default
+config_thermal
 
-elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
-      thermal_dynamic
-fi
+config_core_ctl
 
-if [[ "$ktsr_prof_en" == "battery" ]]; then
-    enable_core_ctl
-else
-    disable_core_ctl
-fi
-
-configure_cpuset
+config_cpuset
 
 if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
     enable_devfreq_boost
@@ -4676,11 +4568,11 @@ else
     disable_devfreq_boost
 fi
 
-boost_$ktsr_prof_en
+config_boost
 
-io_$ktsr_prof_en
+config_io
 
-cpu_$ktsr_prof_en
+config_cpu_$ktsr_prof_en
 
 if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
     enable_kvb
@@ -4690,14 +4582,7 @@ fi
 
 bring_all_cores
 
-if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "balanced" ]]; then
-    misc_cpu_default
-
-elif [[ "$ktsr_prof_en" == "battery" ]]; then
-      misc_cpu_pwr_saving
-else
-    misc_cpu_max_pwr
-fi
+config_misc_cpu
 
 if [[ ! "$ktsr_prof_en" == "gaming" ]]; then
     enable_ppm
@@ -4711,45 +4596,39 @@ else
     cpu_clk_max
 fi
 
-hmp_$ktsr_prof_en
+config_hmp
 
-gpu_$ktsr_prof_en
+config_gpu
 
 if [[ "$soc" == "exynos5" ]]; then
     volt_exynos5
 fi
 
-schedtune_$ktsr_prof_en
+config_schedtune
 
-uclamp_$ktsr_prof_en
-
-configure_fs
-
-configure_dyn_fsync
-
-sched_ft_$ktsr_prof_en
+config_sched_ft
 
 disable_crc
 
-sched_$ktsr_prof_en
+config_sched
 
 enable_fp_boost
 
-uclamp_$ktsr_prof_en
+config_uclamp
 
-configure_blkio
+config_blkio
 
-configure_fs
+config_fs
 
-configure_dyn_fsync
+config_dyn_fsync
 
-if [[ "$ktsr_prof_en" != "battery" ]]; then
+if [[ ! "$ktsr_prof_en" == "battery" ]]; then
     ufs_default
 else
     ufs_pwr_saving
 fi
 
-vm_lmk_$ktsr_prof_en
+config_vm_lmk
 
 if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]]; then
     ppm_policy_default
@@ -4780,7 +4659,7 @@ else
     disable_tb
 fi
 
-configure_tcp
+config_tcp
 
 if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
     enable_kernel_batt_saver
@@ -4789,9 +4668,9 @@ else
 fi
 
 if [[ ! "$ktsr_prof_en" == "battery" ]]; then
-    enable_hp_audio
+    enable_hp_snd
 else
-    disable_hp_audio
+    disable_hp_snd
 fi
 
 if [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]]; then
@@ -4818,7 +4697,9 @@ enable_sam_fast_chrg
 
 disable_spd_freqs
 
-configure_pwr_spd
+config_pwr_spd
+
+disable_debug
 }
 
 apply_all_auto() {
@@ -4826,12 +4707,11 @@ print_info
 
 stop_services
 
-if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    thermal_default
+config_thermal
 
-elif [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-      thermal_dynamic
-fi
+config_core_ctl
+
+config_cpuset
 
 if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
     enable_devfreq_boost
@@ -4839,19 +4719,11 @@ else
     disable_devfreq_boost
 fi
 
-if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    enable_core_ctl
-else
-    disable_core_ctl
-fi
+config_boost
 
-configure_cpuset
+config_io
 
-boost_$(getprop kingauto.prof)
-
-io_$(getprop kingauto.prof)
-
-cpu_$(getprop kingauto.prof)
+config_cpu_$(getprop kingauto.prof)
 
 if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
     enable_kvb
@@ -4861,14 +4733,7 @@ fi
 
 bring_all_cores
 
-if [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
-    misc_cpu_default
-
-elif [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-      misc_cpu_pwr_saving
-else
-    misc_cpu_max_pwr
-fi
+config_misc_cpu
 
 if [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
     enable_ppm
@@ -4876,51 +4741,45 @@ else
     disable_ppm
 fi
 
-if [[ "$(getprop kingauto.prof)" != "extreme" ]] || [[ "$(getprop kingauto.prof)" != "latency" ]] || [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
+if [[ ! "$(getprop kingauto.prof)" == "extreme" ]] || [[ ! "$(getprop kingauto.prof)" == "latency" ]] || [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
     cpu_clk_default
 else
     cpu_clk_max
 fi
 
-hmp_$(getprop kingauto.prof)
+config_hmp
 
-gpu_$(getprop kingauto.prof)
+config_gpu
 
 if [[ "$soc" == "exynos5" ]]; then
     volt_exynos5
 fi
 
-schedtune_$(getprop kingauto.prof)
+config_schedtune
 
-uclamp_$(getprop kingauto.prof)
+config_uclamp
 
-configure_fs
-
-configure_dyn_fsync
-
-sched_ft_$(getprop kingauto.prof)
+config_sched_ft
 
 disable_crc
 
-sched_$(getprop kingauto.prof)
+config_sched
 
 enable_fp_boost
 
-uclamp_$(getprop kingauto.prof)
+config_blkio
 
-configure_blkio
+config_fs
 
-configure_fs
+config_dyn_fsync
 
-configure_dyn_fsync
-
-if [[ "$(getprop kingauto.prof)" != "battery" ]]; then
+if [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
     ufs_default
 else
     ufs_pwr_saving
 fi
 
-vm_lmk_$(getprop kingauto.prof)
+config_vm_lmk
 
 if [[ ! "$(getprop kingauto.prof)" == "extreme" ]] && [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
     ppm_policy_default
@@ -4951,18 +4810,18 @@ else
     disable_tb
 fi
 
-configure_tcp
+config_tcp
 
-if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     enable_kernel_batt_saver
 else
     disable_kernel_batt_saver
 fi
 
 if [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
-    enable_hp_audio
+    enable_hp_snd
 else
-    disable_hp_audio
+    disable_hp_snd
 fi
 
 if [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
@@ -4989,7 +4848,9 @@ enable_sam_fast_chrg
 
 disable_spd_freqs
 
-configure_pwr_spd
+config_pwr_spd
+
+disable_debug
 }
 
 ###############################
