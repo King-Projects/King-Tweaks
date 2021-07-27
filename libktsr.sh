@@ -843,7 +843,7 @@ fi
 }
 
 config_core_ctl() {
-if [[ ! "$ktsr_prof_en" == "balanced" ]] || [[ ! "$ktsr_prof_en" == "battery" ]] || [[ ! "$(getprop kingauto.prof)" == "balanced" ]] || [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
  for corectl in /sys/devices/system/cpu/cpu*/core_ctl
  do
    if [[ -e "${corectl}/enable" ]]
@@ -892,7 +892,7 @@ fi
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
 
-elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
   if [[ -e "${corectl}/enable" ]]
@@ -4746,7 +4746,7 @@ kmsg "Applying automatic profile"
 kmsg3 ""
 
 sync
-kingauto
+kingauto &
 	
 kmsg "Applied automatic profile"
 kmsg3 ""

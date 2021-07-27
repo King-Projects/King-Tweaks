@@ -302,6 +302,7 @@ else
 fi
      	  
     killall -9 kingauto >/dev/null 2>&1
+    setprop kingauto.prof null
     balanced
 	 	
   if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -372,6 +373,7 @@ else
 fi
      	   
       killall -9 kingauto >/dev/null 2>&1
+      setprop kingauto.prof null
 	  extreme
 	 		 
       if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -442,6 +444,7 @@ else
 fi
      	
            killall -9 kingauto >/dev/null 2>&1
+           setprop kingauto.prof null
 	 	  battery
 	 			
          if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -512,6 +515,7 @@ else
 fi
          
               killall -9 kingauto >/dev/null 2>&1
+              setprop kingauto.prof null
 	 	     gaming
 	 				
               if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
@@ -582,6 +586,7 @@ else
 fi
          
                  killall -9 kingauto >/dev/null 2>&1
+                 setprop kingauto.prof null
 	 			latency
 	 				
                  if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
