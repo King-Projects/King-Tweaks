@@ -891,9 +891,8 @@ fi
 
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
-fi
 
-if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
   if [[ -e "${corectl}/enable" ]]
