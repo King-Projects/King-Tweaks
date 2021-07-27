@@ -1734,7 +1734,7 @@ done
 }
 
 config_ppm() {
-if [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
     [[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
      kmsg "Tweaked CPU parameters"
      kmsg3 ""
@@ -2545,8 +2545,8 @@ volt_exynos5() {
         set_volt "$gpu_volt_table" "338 " "575000"
         set_volt "$gpu_volt_table" "260 " "568750"
         
-        kmsg3 "Tweaked CPU / GPU voltages"
-        kmsg ""
+        kmsg "Tweaked CPU / GPU voltages"
+        kmsg3 ""
 }
 
 disable_crypto_tests() {
@@ -4329,7 +4329,7 @@ done
 }
 
 disable_hp_snd() {
-for i in high_perf_mode cpe_debug_mode impedance_detect_en; do
+for i in high_perf_mode impedance_detect_en; do
   for o in $(find /sys/module -name "$i" -type f); do
       write "$o" "0"
       kmsg "Disabled high performance audio"
@@ -4571,7 +4571,7 @@ config_boost
 
 config_io
 
-if [[ ! "$ktsr_prof_en" == "automatic" ]]; then
+if [[ "$(getprop kingauto.prof)" == "null" ]]; then
     config_cpu_$ktsr_prof_en
 else
     config_cpu_$(getprop kingauto.prof)
@@ -4589,7 +4589,7 @@ config_misc_cpu
 
 config_ppm
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ ! "$(getprop kingauto.prof)" == "extreme" ]] || [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]]; then
     cpu_clk_default
 else
     cpu_clk_max
@@ -4621,7 +4621,7 @@ config_fs
 
 config_dyn_fsync
 
-if [[ ! "$ktsr_prof_en" == "battery" ]] || [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
     ufs_default
 else
     ufs_pwr_saving
@@ -4629,7 +4629,7 @@ fi
 
 config_vm_lmk
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
     ppm_policy_default
 
 elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
@@ -4666,19 +4666,19 @@ else
     disable_kernel_batt_saver
 fi
 
-if [[ ! "$ktsr_prof_en" == "battery" ]] || [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
     enable_hp_snd
 else
     disable_hp_snd
 fi
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] || [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ ! "$(getprop kingauto.prof)" == "extreme" ]] || [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
     enable_lpm
 else
     disable_lpm
 fi
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]] && [[ ! "$(getprop kingauto.prof)" == "extreme" ]] && [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
     enable_pm2_idle_mode
 else
     disable_pm2_idle_mode
