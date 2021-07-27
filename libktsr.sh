@@ -1802,8 +1802,9 @@ config_gpu() {
 # GPU tweaks
 
 if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+	if [[ "$qcom" == "true" ]]; then
+        # Fetch the available governors from the GPU
+	    avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
 	# Attempt to set the governor in this order
 	for governor in msm-adreno-tz simple_ondemand ondemand
@@ -1816,22 +1817,20 @@ if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "laten
 		fi
 	done
 	
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpui/gpu_available_governor")"
-
-	# Attempt to set the governor in this order
+	elif [[ "$exynos" == "true" ]]; then
+	      avail_govs="$(cat "$gpui/gpu_available_governor")"
+	      
 	for governor in Interactive Dynamic Static ondemand
 	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpui/gpu_governor" "$governor"
-			break
-		fi
+	  if [[ "$avail_govs" == *"$governor"* ]]
+	  then
+	      write "$gpui/gpu_governor" "$governor"
+	      break
+	    fi
 	done
 	
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/available_governors")"
+	elif [[ "$mtk" == "true" ]]; then
+	      avail_govs="$(cat "$gpu/available_governors")"
 
 	# Attempt to set the governor in this order
 	for governor in Interactive Dynamic Static ondemand
@@ -1841,8 +1840,9 @@ if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "laten
 		then
 			write "$gpu/governor" "$governor"
 			break
-		fi
-	done
+		  fi
+	  done
+    fi
 
   if [[ "$qcom" == "true" ]]; then
       write "$gpu/throttling" "1"
@@ -2073,7 +2073,8 @@ kmsg "Tweaked GPU parameters"
 kmsg3 ""
 
 elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
-	  avail_govs="$(cat "$gpu/devfreq/available_governors")"
+	  if [[ "$qcom" == "true" ]]; then
+          avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
 	  for governor in msm-adreno-tz simple_ondemand ondemand
 	  do
@@ -2084,27 +2085,30 @@ elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "ext
 		fi
 	done
 	
-	avail_govs="$(cat "$gpui/gpu_available_governor")"
-
-	for governor in Booster Interactive Dynamic Static ondemand
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	      then
-			  write "$gpui/gpu_governor" "$governor"
-			  break
-		   fi
-	   done
-
-	avail_govs="$(cat "$gpu/available_governors")"
+	elif [[ "$exynos" == "true" ]]; then
+	      avail_govs="$(cat "$gpui/gpu_available_governor")"
 
 	for governor in Interactive Dynamic Static ondemand
 	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-		  then
-			  write "$gpu/governor" "$governor"
-			  break
-		   fi
-	   done
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpui/gpu_governor" "$governor"
+			break
+		fi
+	done
+	
+	elif [[ "$mtk" == "true" ]]; then
+	      avail_govs="$(cat "$gpu/available_governors")"
+
+	for governor in Interactive Dynamic Static ondemand
+	do
+		if [[ "$avail_govs" == *"$governor"* ]]
+		then
+			write "$gpu/governor" "$governor"
+			break
+		  fi
+	  done
+	fi
 
 if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "0"
@@ -2205,7 +2209,8 @@ kmsg "Tweaked GPU parameters"
 kmsg3 ""
 
 elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-      avail_govs="$(cat "$gpu/devfreq/available_governors")"
+      if [[ "$qcom" == "true" ]]; then
+          avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
 	  for governor in msm-adreno-tz simple_ondemand ondemand
 	  do
@@ -2216,27 +2221,30 @@ elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "bat
 		fi
 	done
 	
-	avail_govs="$(cat "$gpui/gpu_available_governor")"
+	elif [[ "$exynos" == "true" ]]; then
+	      avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	for governor in Interactive Static ondemand
+	for governor in Interactive Dynamic Static ondemand
 	do
-      if [[ "$avail_govs" == *"$governor"* ]]
+		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpui/gpu_governor" "$governor"
 			break
 		fi
 	done
-
-	avail_govs="$(cat "$gpu/available_governors")"
+	
+	elif [[ "$mtk" == "true" ]]; then
+	      avail_govs="$(cat "$gpu/available_governors")"
 
 	for governor in Interactive Dynamic Static ondemand
 	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
+		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpu/governor" "$governor"
 			break
-		fi
-	done
+		  fi
+	  done
+	fi
 
 if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "1"
@@ -2341,7 +2349,8 @@ kmsg "Tweaked GPU parameters"
 kmsg3 ""
 
 elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-	  avail_govs="$(cat "$gpu/devfreq/available_governors")"
+	  if [[ "$qcom" == "true" ]]; then
+          avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
 	  for governor in msm-adreno-tz simple_ondemand ondemand
 	  do
@@ -2352,27 +2361,30 @@ elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gami
 		fi
 	done
 	
-	avail_govs="$(cat "$gpui/gpu_available_governor")"
+	elif [[ "$exynos" == "true" ]]; then
+	      avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	for governor in Booster Interactive Dynamic Static
+	for governor in Interactive Dynamic Static ondemand
 	do
-      if [[ "$avail_govs" == *"$governor"* ]]
+		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpui/gpu_governor" "$governor"
 			break
 		fi
 	done
-
-	avail_govs="$(cat "$gpu/available_governors")"
+	
+	elif [[ "$mtk" == "true" ]]; then
+	      avail_govs="$(cat "$gpu/available_governors")"
 
 	for governor in Interactive Dynamic Static ondemand
 	do
-      if [[ "$avail_govs" == *"$governor"* ]]
+		if [[ "$avail_govs" == *"$governor"* ]]
 		then
 			write "$gpu/governor" "$governor"
 			break
-		fi
-	done
+		  fi
+	  done
+	fi
 
 if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "0"
