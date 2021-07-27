@@ -1213,30 +1213,6 @@ then
     kmsg3 ""
 fi
 
-if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
-then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
-    kmsg "Tweaked dynamic stune boost"
-    kmsg3 ""
-fi
-
-if [[ -e "/sys/module/cpu_boost/parameters/input_boost_ms" ]]
-then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
-    write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-    write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
-    kmsg "Tweaked CAF CPU input boost"
-    kmsg3 ""
-fi
-
-if [[ -e "/sys/module/cpu_input_boost/parameters/input_boost_duration" ]]
-then
-    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "64"
-    kmsg "Tweaked CPU input boost"
-    kmsg3 ""
-fi
-
 elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
     if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]
     then
