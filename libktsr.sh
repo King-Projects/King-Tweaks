@@ -498,7 +498,7 @@ batt_tmp=$((batt_tmp / 10))
 
 get_gpu_mdl() {
 # Fetch GPU model
-if [[ "$exynos" == "true" ]] || [[ $mtk == "true" ]]; then
+if [[ "$exynos" == "true" ]] || [[ "$mtk" == "true" ]]; then
     gpu_mdl=$(cat $gpu/gpuinfo | awk '{print $1}')
 
 elif [[ "$qcom" == "true" ]]; then
@@ -2549,11 +2549,11 @@ volt_exynos5() {
         kmsg ""
 }
 
-disable_crypto_tests(){
+disable_crypto_tests() {
 if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]
 then
     write "/sys/module/cryptomgr/parameters/notests" "Y"
-    kmsg "Disabled forced cryptography tests"
+    kmsg "Disabled cryptography tests"
     kmsg3 ""
 fi
 }
@@ -3740,9 +3740,9 @@ if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "laten
 fr=$(((total_ram * 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 4 / 100) * 1024 / 4))
-mr=$(((total_ram * 6 / 100) * 1024 / 4))
+mr=$(((total_ram * 7 / 100) * 1024 / 4))
 cd=$(((total_ram * 9 / 100) * 1024 / 4))
-ab=$(((total_ram * 12 / 100) * 1024 / 4))
+ab=$(((total_ram * 11 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
@@ -3901,11 +3901,11 @@ kmsg3 ""
 
 elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
 fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
-bg=$(((total_ram * 3 / 100) * 1024 / 4))
-et=$(((total_ram * 5 / 100) * 1024 / 4))
+bg=$(((total_ram * 4 / 100) * 1024 / 4))
+et=$(((total_ram * 6 / 100) * 1024 / 4))
 mr=$(((total_ram * 7 / 100) * 1024 / 4))
 cd=$(((total_ram * 11 / 100) * 1024 / 4))
-ab=$(((total_ram * 14 / 100) * 1024 / 4))
+ab=$(((total_ram * 13 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
@@ -3981,9 +3981,9 @@ kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
 
 elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-fr=$(((total_ram * 2 / 100) * 1024 / 4))
-bg=$(((total_ram * 3 / 100) * 1024 / 4))
-et=$(((total_ram * 4 / 100) * 1024 / 4))
+fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
+bg=$(((total_ram * 5 / 100) * 1024 / 4))
+et=$(((total_ram * 7 / 100) * 1024 / 4))
 mr=$(((total_ram * 8 / 100) * 1024 / 4))
 cd=$(((total_ram * 12 / 100) * 1024 / 4))
 ab=$(((total_ram * 14 / 100) * 1024 / 4))
@@ -4062,12 +4062,12 @@ kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
 
 elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-fr=$(((total_ram * 4 / 100) * 1024 / 4))
-bg=$(((total_ram * 2 / 100) * 1024 / 4))
-et=$(((total_ram * 4 / 100) * 1024 / 4))
-mr=$(((total_ram * 6 / 100) * 1024 / 4))
+fr=$(((total_ram * 4 / 2 / 100) * 1024 / 4))
+bg=$(((total_ram * 5 / 100) * 1024 / 4))
+et=$(((total_ram * 7 / 100) * 1024 / 4))
+mr=$(((total_ram * 9 / 100) * 1024 / 4))
 cd=$(((total_ram * 11 / 100) * 1024 / 4))
-ab=$(((total_ram * 12 / 100) * 1024 / 4))
+ab=$(((total_ram * 13 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
@@ -4319,7 +4319,7 @@ fi
 }
 
 enable_hp_snd() {
-for i in high_perf_mode cpe_debug_mode impedance_detect_en; do
+for i in high_perf_mode impedance_detect_en; do
   for o in $(find /sys/module -name "$i" -type f); do
       write "$o" "1"
       kmsg "Enabled high performance audio"
@@ -4431,7 +4431,7 @@ fi
 
 disable_debug() {
 # Disable debugging / logging
-for i in *debug* edac_mc_log_ce enable_event_log log_ecn_error snapshot_crashdumper; do
+for i in *debug* edac_mc_log_ce enable_event_log log_level* log_ecn_error snapshot_crashdumper; do
   for o in $(find /sys/ -name "$i" -type f); do
     write "$o" "0" 
  if [[ "$o" == "/sys/module/spurious/parameters/noirqdebug" ]]; then
