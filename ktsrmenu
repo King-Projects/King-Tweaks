@@ -110,7 +110,7 @@ echo "******************************************"
 echo "* KTSR (Alt.) Profile Controller & Misc. *"
 echo "******************************************"
 echo ""
-echo "Version: v1.5.5-beta-r6"
+echo "Version: v1.5.6-beta-r6"
 echo ""
 echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 echo ""
@@ -484,11 +484,12 @@ read -r option
                         echo "Supported options:"
                         echo "-p [profile] [value from 1 to 6] [change between profiles without the terminal GUI]"
                         echo "-t [thermal] [enable / disable thermal services according to your actual state without the terminal GUI]"
+                        echo "-f [free ram] [value from 1 to 3] [Higher value means more agressive]"
                         echo "-h [help] [show this message]"
                         exit
                         }
 						
-						while getopts ":p:th:" opt; do
+						while getopts ":p:f:th:" opt; do
 						case "${opt}" in
 						
 						p) 
@@ -523,6 +524,38 @@ read -r option
 						     fi
 						     ;;
 						
+						     f)
+						     if [[ "$2" == "1" ]]; then
+						         sync
+						         echo "3" > /proc/sys/vm/drop_caches
+						         echo "${G}Done!${N}"
+						         sleep 2
+						     
+                             elif [[ "$2" == "2" ]]; then
+                                   sync
+                                   echo "3" > /proc/sys/vm/drop_caches
+                                   am kill-all
+                                   echo "${G}Done!${N}"
+                                   sleep 3
+                             
+                             elif [[ "$2" == "3" ]]; then
+                                   sync
+                                   echo "3" > /proc/sys/vm/drop_caches
+                                   am kill-all
+                                   sleep 3
+                                   while IFS= read -r pkgnm; do
+                                   if [[ ! "$pkgnm" == "com.termux" ]] && [[ ! "$pkgnm" == "jackpal.androidterm" ]] && [[ ! "$pkgnm" == "yarolegovich.materialterminal" ]] && [[ ! "$pkgnm" == "com.google.android.inputmethod.latin" ]] && [[ ! "$pkgnm" == "com.termoneplus" ]]; then
+                                   am force-stop "$pkgnm"
+                                   fi
+                                   done <<< "$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
+                                   echo "${G}Done!${N}"
+                                   sleep 2
+
+                             else
+                                 help_me
+                             fi
+                             ;;
+
 					      h | *) help_me
 						  ;;
 					 esac                             
