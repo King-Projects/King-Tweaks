@@ -206,7 +206,7 @@ read -r option
 		case $option in
 			"1")
 				echo "${B}Applying profile...${N}"
-				setprop persist.kingtweaks.mode "1" 2>/dev/null
+				setprop persist.king.tweaks.prof "1" 2>/dev/null
                 echo "${G}Done!${N}"
 				sleep 2 
                 menu
@@ -214,7 +214,7 @@ read -r option
 				
 						"2")
 						echo "${B}Applying profile...${N}"
-						setprop persist.kingtweaks.mode "2" 2>/dev/null
+						setprop persist.king.tweaks.prof "2" 2>/dev/null
 						echo "${G}Done!"
                         sleep 2 
                         menu
@@ -222,13 +222,13 @@ read -r option
 						
 						 "3")
 						    echo "${B}Applying profile...${N}"
-						    setprop persist.kingtweaks.mode "3" 2>/dev/null
+						    setprop persist.king.tweaks.prof "3" 2>/dev/null
                             echo "${G}Done!${N}"
 						    ;;
 						
 						     "4")
 						        echo "${B}Applying profile...${N}"
-						        setprop persist.kingtweaks.mode "4" 2>/dev/null
+						        setprop persist.king.tweaks.prof "4" 2>/dev/null
 						        echo "${G}Done!${N}"
                                 sleep 2 
                                 menu
@@ -236,7 +236,7 @@ read -r option
 						
 						         "5")
 						            echo "${B}Applying profile...${N}"
-						            setprop persist.kingtweaks.mode "5" 2>/dev/null
+						            setprop persist.king.tweaks.prof "5" 2>/dev/null
 						            echo "${G}Done!${N}"
                                     sleep 2 
                                     menu
@@ -244,7 +244,7 @@ read -r option
 						
 						           "6")
 						              echo "${B}Applying profile...${N}"
-						              setprop persist.kingtweaks.mode "6" 2>/dev/null
+						              setprop persist.king.tweaks.prof "6" 2>/dev/null
 						              echo "${G}Done!${N}"
                                       sleep 2 
                                       menu
@@ -493,7 +493,7 @@ read -r option
 						
 						p) 
 						 echo "${B}Applying profile...${N}"
-						 setprop persist.kingtweaks.mode "$2" 2>/dev/null
+						 setprop persist.king.tweaks.prof "$2" 2>/dev/null
 						 echo "${G}Done!${N}"
                          ;;
 						

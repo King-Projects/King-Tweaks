@@ -16,7 +16,7 @@ toptcdir=/dev/cpuset/top-app/tasks
 
 # Get screen state (ON | OFF)
 get_scrn_state() {
-	scrn_state=$(dumpsys power | grep -q state=O | cut -d "=" -f 2)
+	scrn_state=$(dumpsys power | grep state=O | cut -d "=" -f 2)
 	if [[ "$scrn_state" == "ON" ]]; then 
 	    scrn_on=1
 	else 
