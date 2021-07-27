@@ -407,7 +407,7 @@ root=$(su -v)
 
 is_exynos() {
 # Detect if we're running on a exynos powered device
-if [[ "$(getprop ro.boot.hardware | grep -q exynos)" ]] || [[ "$(getprop ro.board.platform | grep -q universal)" ]] || [[ "$(getprop ro.product.board | grep -q universal)" ]]; then
+if [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]]; then
     exynos=true
     mtk=false
     qcom=false
@@ -418,7 +418,7 @@ fi
 
 is_mtk() { 
 # Detect if we're running on a mediatek powered device              
-if [[ "$(getprop ro.board.platform | grep -q mt)" ]] || [[ "$(getprop ro.product.board | grep -q mt)" ]] || [[ "$(getprop ro.hardware | grep -q mt)" ]] || [[ "$(getprop ro.boot.hardware | grep -q mt)" ]]; then
+if [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]]; then
     mtk=true
     exynos=false
     qcom=false
@@ -431,9 +431,9 @@ detect_cpu_sched() {
 # Fetch the CPU scheduling type
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-  if [[ "$(cat "$cpu"/scaling_available_governors | grep -q 'sched')" ]] || [[ "$(cat "$cpu"/scaling_available_governors | grep -q 'util')" ]]; then
+  if [[ "$(cat "$cpu"/scaling_available_governors | grep 'sched')" ]] || [[ "$(cat "$cpu"/scaling_available_governors | grep 'util')" ]]; then
       cpu_sched=EAS
-  elif [[ "$(cat "$cpu"/scaling_available_governors | grep -q 'interactive')" ]]; then
+  elif [[ "$(cat "$cpu"/scaling_available_governors | grep 'interactive')" ]]; then
         cpu_sched=HMP
   else
       cpu_sched=Unknown
@@ -454,7 +454,7 @@ get_ram_info() {
 total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
 
 # Fetch the amount of available RAM
-avail_ram=$(busybox free -m | grep -q Mem: | awk '{print $7}')
+avail_ram=$(busybox free -m | grep Mem: | awk '{print $7}')
 }
 
 get_batt_pctg() {               
@@ -468,16 +468,16 @@ fi
 
 get_ktsr_info() {
 # Fetch KTSR version
-build_ver=$(cat $MODPATH/module.prop | grep -q version= | sed "s/version=//")
+build_ver=$(cat $MODPATH/module.prop | grep version= | sed "s/version=//")
 
 # Fetch KTSR build type
-build_tp=$(cat $MODPATH/ktsr.prop | grep -q buildtype= | sed "s/buildtype=//")
+build_tp=$(cat $MODPATH/ktsr.prop | grep buildtype= | sed "s/buildtype=//")
 
 # Fetch KTSR build date
-build_dt=$(cat $MODPATH/ktsr.prop | grep -q builddate= | sed "s/builddate=//")
+build_dt=$(cat $MODPATH/ktsr.prop | grep builddate= | sed "s/builddate=//")
 
 # Fetch KTSR build codename
-build_cdn=$(cat $MODPATH/ktsr.prop | grep -q codename= | sed "s/codename=//")
+build_cdn=$(cat $MODPATH/ktsr.prop | grep codename= | sed "s/codename=//")
 }
 
 get_batt_tmp() {
@@ -523,10 +523,10 @@ get_max_rr() {
 rr=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
 
 if [[ -z "$rr" ]]; then
-    rr=$(dumpsys display | grep -q refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
+    rr=$(dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 
 elif [[ -z "$rr" ]]; then
-      rr=$(dumpsys display | grep -q FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
+      rr=$(dumpsys display | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 fi
 }
 
@@ -598,7 +598,7 @@ get_batt_cpct() {
 batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
 
 if [[ "$batt_cpct" == "" ]]; then
-    batt_cpct=$(dumpsys batterystats | grep -q Capacity: | awk '{print $2}' | cut -d "," -f 1)
+    batt_cpct=$(dumpsys batterystats | grep Capacity: | awk '{print $2}' | cut -d "," -f 1)
 fi
                
 if [[ "$batt_cpct" -gt "1000000" ]]; then
@@ -674,7 +674,7 @@ dvc_brnd=$(getprop ro.product.brand)
 
 check_one_ui() {
 # Check if we're running on OneUI
-if [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep -q Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]]; then
+if [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]]; then
     one_ui=true
     samsung=true
 else
@@ -2476,7 +2476,7 @@ set_volt() {
     freq=$2
     volt=$3
     if [[ -f "$cluster" ]]; then
-        valid="$(cat "$cluster" | grep -q "$freq")"
+        valid="$(cat "$cluster" | grep "$freq")"
         if [[ -n "$valid" ]]; then
             write "$cluster" "$freq $volt"
         fi
