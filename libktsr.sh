@@ -1794,47 +1794,45 @@ fi
 gpu_latency() {
 # GPU tweaks
 
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+    if [[ "$qcom" == "true" ]]; then
+        # Fetch the available governors from the GPU
+	    avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
-	# Attempt to set the governor in this order
-	for governor in msm-adreno-tz simple_ondemand ondemand
-	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpu/devfreq/governor" "$governor"
-			break
-		fi
-	done
+	    # Attempt to set the governor in this order
+	    for governor in msm-adreno-tz simple_ondemand ondemand
+	    do
+		  # Once a matching governor is found, set it and break
+		  if [[ "$avail_govs" == *"$governor"* ]]
+		  then
+			  write "$gpu/devfreq/governor" "$governor"
+			  break
+		    fi
+	    done
 	
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpui/gpu_available_governor")"
+    elif [[ "$exynos" == "true" ]]; then
+	      avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	# Attempt to set the governor in this order
-	for governor in Interactive Dynamic Static ondemand
-	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpui/gpu_governor" "$governor"
-			break
-		fi
-	done
+	      for governor in Interactive Dynamic Static ondemand
+	      do
+		    if [[ "$avail_govs" == *"$governor"* ]]
+		    then
+			    write "$gpui/gpu_governor" "$governor"
+			    break
+		      fi
+	      done
 	
-	# Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/available_governors")"
+	elif [[ "$mtk" == "true" ]]; then
+	      avail_govs="$(cat "$gpu/available_governors")"
 
-	# Attempt to set the governor in this order
-	for governor in Interactive Dynamic Static ondemand
-	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpu/governor" "$governor"
-			break
-		fi
-	done
+	      for governor in Interactive Dynamic Static ondemand
+	      do
+		    if [[ "$avail_govs" == *"$governor"* ]]
+		    then
+			    write "$gpu/governor" "$governor"
+			    break
+	          fi
+          done
+        fi
 	
 if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "1"
@@ -1935,41 +1933,42 @@ kmsg3 ""
 }
 
 gpu_balanced() {
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
+	if [[ "$qcom" == "true" ]]; then
+	    avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
-	for governor in msm-adreno-tz simple_ondemand ondemand
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	  then
-		  write "$gpu/devfreq/governor" "$governor"
-		  break
-		fi
-	done
+	    for governor in msm-adreno-tz simple_ondemand ondemand
+	    do
+		  if [[ "$avail_govs" == *"$governor"* ]]
+		  then
+			  write "$gpu/devfreq/governor" "$governor"
+			  break
+		    fi
+	    done
 	
-	avail_govs="$(cat "$gpui/gpu_available_governor")"
+    elif [[ "$exynos" == "true" ]]; then
+	      avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	for governor in Interactive Dynamic Static ondemand
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	  then
-		  write "$gpui/gpu_governor" "$governor"
-		  break
-		fi
-	done
+	      for governor in Interactive Dynamic Static ondemand
+	      do
+		    if [[ "$avail_govs" == *"$governor"* ]]
+		    then
+			    write "$gpui/gpu_governor" "$governor"
+			    break
+		      fi
+	      done
 	
-    # Fetch the available governors from the GPU
-	avail_govs="$(cat "$gpu/available_governors")"
+	elif [[ "$mtk" == "true" ]]; then
+	      avail_govs="$(cat "$gpu/available_governors")"
 
-	# Attempt to set the governor in this order
-	for governor in Interactive Dynamic Static ondemand
-	do
-		# Once a matching governor is found, set it and break
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpu/governor" "$governor"
-			break
-		fi
-	done
+	      for governor in Interactive Dynamic Static ondemand
+	      do
+		    if [[ "$avail_govs" == *"$governor"* ]]
+		    then
+			    write "$gpu/governor" "$governor"
+			    break
+	          fi
+          done
+        fi
 
 if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "1"
@@ -2073,40 +2072,45 @@ kmsg3 ""
 }
 
 gpu_extreme() {
-# GPU tweaks
+    if [[ "$qcom" == "true" ]]; then
+        # Fetch the available governors from the GPU
+	    avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
-	avail_govs="$(cat "$gpu/devfreq/available_governors")"
-
-	for governor in msm-adreno-tz simple_ondemand ondemand
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	  then
-		  write "$gpu/devfreq/governor" "$governor"
-		  break
-		fi
-	done
+	    # Attempt to set the governor in this order
+	    for governor in msm-adreno-tz simple_ondemand ondemand
+	    do
+		  # Once a matching governor is found, set it and break
+		  if [[ "$avail_govs" == *"$governor"* ]]
+		  then
+			  write "$gpu/devfreq/governor" "$governor"
+			  break
+		    fi
+	    done
 	
-	avail_govs="$(cat "$gpui/gpu_available_governor")"
+    elif [[ "$exynos" == "true" ]]; then
+	      avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	for governor in Booster Interactive Dynamic Static ondemand
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	  then
-		  write "$gpui/gpu_governor" "$governor"
-	      break
-		fi
-	done
+	      for governor in Booster Interactive Dynamic Static ondemand
+	      do
+		    if [[ "$avail_govs" == *"$governor"* ]]
+		    then
+			    write "$gpui/gpu_governor" "$governor"
+			    break
+		      fi
+	      done
+	
+	elif [[ "$mtk" == "true" ]]; then
+	      avail_govs="$(cat "$gpu/available_governors")"
 
-	avail_govs="$(cat "$gpu/available_governors")"
-
-	for governor in Interactive Dynamic Static ondemand
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	  then
-		  write "$gpu/governor" "$governor"
-		  break
-		fi
-	done
+	      for governor in Booster Interactive Dynamic Static ondemand
+	      do
+		    if [[ "$avail_govs" == *"$governor"* ]]
+		    then
+			    write "$gpu/governor" "$governor"
+			    break
+	          fi
+          done
+        fi
 
 if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "0"
@@ -2208,39 +2212,42 @@ kmsg3 ""
 }
 
 gpu_battery() {
-
-    avail_govs="$(cat "$gpu/devfreq/available_governors")"
-
-	for governor in msm-adreno-tz simple_ondemand ondemand
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	  then
-		  write "$gpu/devfreq/governor" "$governor"
-		  break
-		fi
-	done
+    if [[ "$qcom" == "true" ]]; then
+	    avail_govs="$(cat "$gpu/devfreq/available_governors")"
+	    
+	    for governor in msm-adreno-tz simple_ondemand ondemand
+	    do
+		  if [[ "$avail_govs" == *"$governor"* ]]
+		  then
+			  write "$gpu/devfreq/governor" "$governor"
+			  break
+		    fi
+	    done
 	
-	avail_govs="$(cat "$gpui/gpu_available_governor")"
+    elif [[ "$exynos" == "true" ]]; then
+	      avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	for governor in Interactive Static ondemand
-	do
-		if [[ "$avail_govs" == *"$governor"* ]]
-		then
-			write "$gpui/gpu_governor" "$governor"
-			break
-		fi
-	done
+	      for governor in Interactive Dynamic Static ondemand
+	      do
+		    if [[ "$avail_govs" == *"$governor"* ]]
+		    then
+			    write "$gpui/gpu_governor" "$governor"
+			    break
+		      fi
+	      done
+	
+	elif [[ "$mtk" == "true" ]]; then
+	      avail_govs="$(cat "$gpu/available_governors")"
 
-	avail_govs="$(cat "$gpu/available_governors")"
-
-	for governor in Interactive Dynamic Static ondemand
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	  then
-		  write "$gpu/governor" "$governor"
-		  break
-		fi
-	done
+	      for governor in Interactive Dynamic Static ondemand
+	      do
+		    if [[ "$avail_govs" == *"$governor"* ]]
+		    then
+			    write "$gpu/governor" "$governor"
+			    break
+	          fi
+          done
+        fi
 
 if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "1"
@@ -2344,39 +2351,45 @@ kmsg3 ""
 }
 
 gpu_gaming() {
+	if [[ "$qcom" == "true" ]]; then
+        # Fetch the available governors from the GPU
+	    avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
-avail_govs="$(cat "$gpu/devfreq/available_governors")"
-
-	for governor in msm-adreno-tz simple_ondemand ondemand
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	  then
-		  write "$gpu/devfreq/governor" "$governor"
-	      break
-		fi
-	done
+	    # Attempt to set the governor in this order
+	    for governor in msm-adreno-tz simple_ondemand ondemand
+	    do
+		  # Once a matching governor is found, set it and break
+		  if [[ "$avail_govs" == *"$governor"* ]]
+		  then
+			  write "$gpu/devfreq/governor" "$governor"
+			  break
+		    fi
+	    done
 	
-	avail_govs="$(cat "$gpui/gpu_available_governor")"
+    elif [[ "$exynos" == "true" ]]; then
+	      avail_govs="$(cat "$gpui/gpu_available_governor")"
 
-	for governor in Booster Interactive Dynamic Static
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	  then
-		  write "$gpui/gpu_governor" "$governor"
-		  break
-		fi
-	done
+	      for governor in Booster Interactive Dynamic Static ondemand
+	      do
+		    if [[ "$avail_govs" == *"$governor"* ]]
+		    then
+			    write "$gpui/gpu_governor" "$governor"
+			    break
+		      fi
+	      done
+	
+	elif [[ "$mtk" == "true" ]]; then
+	      avail_govs="$(cat "$gpu/available_governors")"
 
-	avail_govs="$(cat "$gpu/available_governors")"
-
-	for governor in Interactive Dynamic Static ondemand
-	do
-	  if [[ "$avail_govs" == *"$governor"* ]]
-	  then
-		  write "$gpu/governor" "$governor"
-		  break
-		fi
-	done
+	      for governor in Booster Interactive Dynamic Static ondemand
+	      do
+		    if [[ "$avail_govs" == *"$governor"* ]]
+		    then
+			    write "$gpu/governor" "$governor"
+			    break
+	          fi
+          done
+        fi
 
 if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "0"
