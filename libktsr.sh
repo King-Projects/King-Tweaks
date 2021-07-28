@@ -4139,17 +4139,15 @@ fi
 }
 
 enable_pewq() {
-# Enable CPU power efficient workqueue
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
-    write "/sys/module/workqueue/parameters/power_efficient" "N"
-    kmsg "Disabled CPU power efficient workqueue"
+    write "/sys/module/workqueue/parameters/power_efficient" "Y"
+    kmsg "Enabled CPU power efficient workqueue"
     kmsg3 ""
 fi
 }
 
 disable_pewq() {
-# Disable CPU power efficient workqueue
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]
 then 
     write "/sys/module/workqueue/parameters/power_efficient" "N"
