@@ -29,12 +29,12 @@ mount -o remount,rw /cache 2>/dev/null
 mount -o rw,remount /cache 2>/dev/null
 
 # Logs should go in this file
-LOG=/sdcard/KTSR/"$ID"-CLI.log
-oldLOG=/data/local/tmp/"$ID"-CLI-old.log
+LOG=/data/local/tmp/"$ID".log
+oldLOG=/data/local/tmp/"$ID"-old.log
 
 # Verbose output goes here
-VERLOG=/sdcard/KTSR/"$ID"-CLI-verbose.log
-oldVERLOG=/sdcard/KTSR/"$ID"-CLI-verbose-old.log
+VERLOG=/data/local/tmp/"$ID"-verbose.log
+oldVERLOG=/data/local/tmp/"$ID"-verbose-old.log
 stdoutLOG="$MODDIR"/logs/"$ID"-STDOUT.log
 oldstdoutLOG="$MODDIR"/logs/"$ID"-STDOUT-old.log
 
@@ -47,7 +47,7 @@ mv -f "$VERLOG" "$oldVERLOG" 2>/dev/null; mv -f "$LOG" "$oldLOG" 2>/dev/null; mv
 
 set -x 2>"$VERLOG"
 
-ktsr_prof=$(getprop persist.king.tweaks.prof)
+ktsr_prof=$(getprop persist.kingtweaks.mode)
  	
 case "$ktsr_prof" in
 
@@ -110,7 +110,11 @@ echo "******************************************"
 echo "* KTSR (Alt.) Profile Controller & Misc. *"
 echo "******************************************"
 echo ""
+<<<<<<< HEAD
 echo "Version: v1.5.6-beta-r6"
+=======
+echo "Version: v1.5.3-beta-r5"
+>>>>>>> parent of ed1f091 (Many improvements, changes and fixes)
 echo ""
 echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 echo ""

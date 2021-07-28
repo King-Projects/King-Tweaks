@@ -42,5 +42,5 @@ rm -rf \
 /sdcard/DkMiBrowserDemo \
 /sdcard/.xlDownload \
 
-# always return success, even if any removal fails
+# always return success, even if any command fail
 exit 0
