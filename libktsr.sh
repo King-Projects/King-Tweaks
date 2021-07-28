@@ -4560,8 +4560,6 @@ gpu_"$ktsr_prof_en"
 
 schedtune_"$ktsr_prof_en"
 
-uclamp_"$ktsr_prof_en"
-
 sched_ft_"$ktsr_prof_en"
 
 disable_crc
@@ -4573,6 +4571,8 @@ enable_fp_boost
 uclamp_"$ktsr_prof_en"
 
 config_blkio
+
+config_fs
 
 config_dyn_fsync
 
@@ -4724,10 +4724,6 @@ hmp_$(getprop kingauto.prof)
 gpu_$(getprop kingauto.prof)
 
 schedtune_$(getprop kingauto.prof)
-
-uclamp_$(getprop kingauto.prof)
-
-config_dyn_fsync
 
 sched_ft_$(getprop kingauto.prof)
 
