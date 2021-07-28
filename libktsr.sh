@@ -3373,7 +3373,7 @@ fi
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
 
-elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+elif [[ "$ktsr_prof_en" == "battery" ]] || [[ [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
     write "${kernel}sched_child_runs_first" "0"
 fi
