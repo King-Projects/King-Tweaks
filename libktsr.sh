@@ -809,7 +809,7 @@ for v in 0 1 2 3 4; do
 done
 
 stop perfd 2>/dev/null
-if [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "battery" ]]; then
     start mpdecision 2>/dev/null
 else
     stop mpdecision 2>/dev/null
@@ -830,12 +830,12 @@ kmsg3 ""
 
 config_thermal() {
 # Configure thermal profile
-if [[ -e "/sys/class/thermal/thermal_message" ]] && [[ ! "$ktsr_prof_en" == "extreme" ]] || [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ ! "$(getprop kingauto.prof)" == "extreme" ]] || [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ -e "/sys/class/thermal/thermal_message" ]] && [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "latency" ]]; then
     write "/sys/class/thermal/thermal_message/sconfig" "0"
     kmsg "Tweaked thermal profile"
     kmsg3 ""
 
-elif [[ -e "/sys/class/thermal/thermal_message" ]] && [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+elif [[ -e "/sys/class/thermal/thermal_message" ]] && [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
     write "/sys/class/thermal/thermal_message/sconfig" "10"
     kmsg "Tweaked thermal profile"
     kmsg3 ""
@@ -843,7 +843,11 @@ fi
 }
 
 config_core_ctl() {
+<<<<<<< HEAD
 if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
+=======
+if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "latency" ]]; then
+>>>>>>> parent of 72b2fd0 (Unify other parameters and misc fixes)
  for corectl in /sys/devices/system/cpu/cpu*/core_ctl
  do
    if [[ -e "${corectl}/enable" ]]
@@ -895,6 +899,7 @@ fi
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 =======
 if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
@@ -902,6 +907,9 @@ if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || 
 =======
 if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 >>>>>>> parent of b210f84 (Minor fixup)
+=======
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
+>>>>>>> parent of 72b2fd0 (Unify other parameters and misc fixes)
 for corectl in /sys/devices/system/cpu/cpu*/core_ctl
 do
   if [[ -e "${corectl}/enable" ]]
@@ -1684,7 +1692,7 @@ if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
     write "/proc/cpufreq/cpufreq_stress_test" "0"
 fi
 
-elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
    if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
        write "/proc/cpufreq/cpufreq_power_mode" "3"
    fi
@@ -1719,12 +1727,12 @@ done
 }
 
 config_ppm() {
-if [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
     [[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "1"
      kmsg "Tweaked CPU parameters"
      kmsg3 ""
 
-elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+elif [[ ! "$ktsr_prof_en" != "gaming" ]] || [[ ! "$(getprop kingauto.prof)" != "gaming" ]]; then
       [[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "0"
        kmsg "Tweaked CPU parameters"
        kmsg3 ""
@@ -4418,9 +4426,9 @@ disable_debug() {
 # Disable debugging / logging
 for i in *debug* edac_mc_log_ce enable_event_log log_ecn_error snapshot_crashdumper; do
   for o in $(find /sys/ -name "$i" -type f); do
-    write "$o" "0" 
+    write "0" "$o"
  if [[ "$o" == "/sys/module/spurious/parameters/noirqdebug" ]]; then
-     write "$o" "1" 
+     write "1" "$o"
  fi
    done
        done
@@ -4546,7 +4554,7 @@ config_core_ctl
 
 config_cpuset
 
-if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
     enable_devfreq_boost
 else
     disable_devfreq_boost
@@ -4556,13 +4564,9 @@ config_boost
 
 config_io
 
-if [[ ! "$ktsr_prof_en" == "automatic" ]]; then
-    config_cpu_$ktsr_prof_en
-else
-    config_cpu_$(getprop kingauto.prof)
-fi
+config_cpu_$ktsr_prof_en
 
-if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
     enable_kvb
 else
     disable_kvb
@@ -4572,9 +4576,13 @@ bring_all_cores
 
 config_misc_cpu
 
-config_ppm
+if [[ ! "$ktsr_prof_en" == "gaming" ]]; then
+    enable_ppm
+else
+    disable_ppm
+fi
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ ! "$(getprop kingauto.prof)" == "extreme" ]] || [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]]; then
     cpu_clk_default
 else
     cpu_clk_max
@@ -4606,7 +4614,7 @@ config_fs
 
 config_dyn_fsync
 
-if [[ ! "$ktsr_prof_en" == "battery" ]] || [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ ! "$ktsr_prof_en" == "battery" ]]; then
     ufs_default
 else
     ufs_pwr_saving
@@ -4614,22 +4622,22 @@ fi
 
 config_vm_lmk
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]]; then
     ppm_policy_default
 
-elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+elif [[ "$ktsr_prof_en" == "extreme" ]]; then
       ppm_policy_max
 fi
 
 disable_msm_thermal
 
-if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
     enable_pewq
 else
     disable_pewq
 fi
 
-if [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "battery" ]]; then
     enable_mcps
 else
     disable_mcps
@@ -4637,7 +4645,7 @@ fi
 
 fix_dt2w
 
-if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
     enable_tb
 else
     disable_tb
@@ -4645,31 +4653,182 @@ fi
 
 config_tcp
 
-if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
     enable_kernel_batt_saver
 else
     disable_kernel_batt_saver
 fi
 
-if [[ ! "$ktsr_prof_en" == "battery" ]] || [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ ! "$ktsr_prof_en" == "battery" ]]; then
     enable_hp_snd
 else
     disable_hp_snd
 fi
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] || [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ ! "$(getprop kingauto.prof)" == "extreme" ]] || [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]]; then
     enable_lpm
 else
     disable_lpm
 fi
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]] && [[ ! "$(getprop kingauto.prof)" == "extreme" ]] && [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]]; then
     enable_pm2_idle_mode
 else
     disable_pm2_idle_mode
 fi
 
-if [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "battery" ]]; then
+    enable_lcd_prdc
+else
+    disable_lcd_prdc
+fi
+
+enable_usb_fast_chrg
+
+enable_sam_fast_chrg
+
+disable_spd_freqs
+
+config_pwr_spd
+
+disable_debug
+}
+
+apply_all_auto() {
+print_info
+
+stop_services
+
+config_thermal
+
+config_core_ctl
+
+config_cpuset
+
+if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+    enable_devfreq_boost
+else
+    disable_devfreq_boost
+fi
+
+config_boost
+
+config_io
+
+config_cpu_$(getprop kingauto.prof)
+
+if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+    enable_kvb
+else
+    disable_kvb
+fi
+
+bring_all_cores
+
+config_misc_cpu
+
+if [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+    enable_ppm
+else
+    disable_ppm
+fi
+
+if [[ ! "$(getprop kingauto.prof)" == "extreme" ]] || [[ ! "$(getprop kingauto.prof)" == "latency" ]] || [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+    cpu_clk_default
+else
+    cpu_clk_max
+fi
+
+config_hmp
+
+config_gpu
+
+if [[ "$soc" == "exynos5" ]]; then
+    volt_exynos5
+fi
+
+config_schedtune
+
+config_uclamp
+
+config_sched_ft
+
+disable_crc
+
+config_sched
+
+enable_fp_boost
+
+config_blkio
+
+config_fs
+
+config_dyn_fsync
+
+if [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
+    ufs_default
+else
+    ufs_pwr_saving
+fi
+
+config_vm_lmk
+
+if [[ ! "$(getprop kingauto.prof)" == "extreme" ]] && [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+    ppm_policy_default
+
+elif [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
+      ppm_policy_max
+fi
+
+disable_msm_thermal
+
+if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+    enable_pewq
+else
+    disable_pewq
+fi
+
+if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+    enable_mcps
+else
+    disable_mcps
+fi
+
+fix_dt2w
+
+if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+    enable_tb
+else
+    disable_tb
+fi
+
+config_tcp
+
+if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+    enable_kernel_batt_saver
+else
+    disable_kernel_batt_saver
+fi
+
+if [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
+    enable_hp_snd
+else
+    disable_hp_snd
+fi
+
+if [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
+    enable_lpm
+else
+    disable_lpm
+fi
+
+if [[ ! "$(getprop kingauto.prof)" == "extreme" ]] && [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+    enable_pm2_idle_mode
+else
+    disable_pm2_idle_mode
+fi
+
+if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     enable_lcd_prdc
 else
     disable_lcd_prdc

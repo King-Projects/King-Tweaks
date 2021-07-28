@@ -33,7 +33,7 @@ for gpid in $(pgrep -f netease) $(pgrep -f tipsworks) $(pgrep -f studiowildcard)
       kmsg "User is playing, applied gaming profile"
       setprop kingauto.prof gaming
       get_all
-      apply_all
+      apply_all_auto
       sleep 45
 for spid in $(pgrep -f whatsapp) $(pgrep -f musically) $(pgrep -f adobe) $(pgrep -f telegram) $(pgrep -f netflix) $(pgrep -f wemesh) $(pgrep -f discord) $(pgrep -f youtube) $(pgrep -f facebook) $(pgrep -f chrome) $(pgrep -f browser) $(pgrep -f instagram) $(pgrep -f docs) $(pgrep -f twitch); do
   if [[ "$(grep -Eo "$spid" "$toptsdir")" ]] || [[ "$(grep -Eo "$spid" "$toptcdir")" ]]; then
@@ -41,7 +41,7 @@ for spid in $(pgrep -f whatsapp) $(pgrep -f musically) $(pgrep -f adobe) $(pgrep
       kmsg "User is using social media, and etc apps. Applied balanced profile"
       setprop kingauto.prof balanced
       get_all
-      apply_all
+      apply_all_auto
       sleep 45
 for bpid in $(pgrep -f geekbench) $(pgrep -f androbench2) $(pgrep -f kinemaster) $(pgrep -f futuremark) $(pgrep -f cputhrottlingtest) $(pgrep -f camera) $(pgrep -f cam) $(pgrep -f antutu); do
   if [[ "$(grep -Eo "$bpid" "$toptsdir")" ]] || [[ "$(grep -Eo "$bpid" "$toptcdir")" ]]; then  
@@ -49,14 +49,14 @@ for bpid in $(pgrep -f geekbench) $(pgrep -f androbench2) $(pgrep -f kinemaster)
       kmsg "User is running benchmark / heavy apps. Applied extreme profile"
       setprop kingauto.prof extreme
       get_all
-      apply_all
+      apply_all_auto
       sleep 45
-  fi
-done
-  fi
-done
-  fi
-done
+      fi
+        done
+            fi
+              done
+                  fi
+                    done
 
       get_scrn_state
 
@@ -65,7 +65,7 @@ done
           kmsg "Device screen is turned off. Applied battery profile, extended script check time"
           setprop kingauto.prof battery
           get_all
-          apply_all
+          apply_all_auto
           sleep 75
       fi
 
@@ -76,7 +76,7 @@ done
           kmsg "Device is charging, trying to reduce battery cycles by applying battery profile and extending check time"
           setprop kingauto.prof battery
           get_all
-          apply_all
+          apply_all_auto
           sleep 75
       fi
 
@@ -87,14 +87,14 @@ done
           kmsg "Device battery is lower than 20%, applying battery profile to prolong battery life"
           setprop kingauto.prof battery
           get_all
-          apply_all
+          apply_all_auto
           sleep 75
       else
           kmsg3 ""
           kmsg "No considerable usage found. Applied latency profile"
-          setprop kingauto.prof latency
+          setprop kingauto.prof battery
           get_all
-          apply_all
+          apply_all_auto
           sleep 30
       fi
   
