@@ -831,7 +831,7 @@ kmsg3 ""
 
 config_thermal() {
 # Configure thermal profile
-if [[ -e "/sys/class/thermal/thermal_message" ]] && [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
+if [[ -e "/sys/class/thermal/thermal_message" ]] && [[ ! "$ktsr_prof_en" == "extreme" ]] || [[ ! "$ktsr_prof_en" == "gaming" ]] || [[ ! "$(getprop kingauto.prof)" == "extreme" ]] || [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
     write "/sys/class/thermal/thermal_message/sconfig" "0"
     kmsg "Tweaked thermal profile"
     kmsg3 ""
