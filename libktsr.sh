@@ -80,7 +80,6 @@ write() {
 	
 	# Bail out if value is already set
 	if [[ "$curval" == "$2" ]]; then
-	    kmsg2 "$1 is already set to $2, skipping..."
 	    return 0
 	fi
 
@@ -102,7 +101,7 @@ write() {
 SCHED_PERIOD_LATENCY="$((1 * 1000 * 1000))"
 
 SCHED_PERIOD_BALANCE="$((4 * 1000 * 1000))"
-
+	
 SCHED_PERIOD_BATTERY="$((8 * 1000 * 1000))"
 
 SCHED_PERIOD_THROUGHPUT="$((10 * 1000 * 1000))"
@@ -1737,7 +1736,7 @@ if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "bala
     fi
 
 elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
-    if [[ -e "/sys/kernel/hmp" ]]; then
+   if [[ -e "/sys/kernel/hmp" ]]; then
     write "/sys/kernel/hmp/boost" "1"
     write "/sys/kernel/hmp/down_compensation_enabled" "1"
     write "/sys/kernel/hmp/family_boost" "1"
@@ -1746,10 +1745,10 @@ elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "ext
     write "/sys/kernel/hmp/down_threshold" "180"
     kmsg "Tweaked HMP parameters"
     kmsg3 ""
-    fi
+   fi
 
 elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    if [[ -e "/sys/kernel/hmp" ]]; then
+   if [[ -e "/sys/kernel/hmp" ]]; then
     write "/sys/kernel/hmp/boost" "0"
     write "/sys/kernel/hmp/down_compensation_enabled" "1"
     write "/sys/kernel/hmp/family_boost" "0"
@@ -1758,10 +1757,10 @@ elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "bat
     write "/sys/kernel/hmp/down_threshold" "303"
     kmsg "Tweaked HMP parameters"
     kmsg3 ""
-    fi
+   fi
 
 elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-    if [[ -e "/sys/kernel/hmp" ]]; then
+   if [[ -e "/sys/kernel/hmp" ]]; then
     write "/sys/kernel/hmp/boost" "1"
     write "/sys/kernel/hmp/down_compensation_enabled" "1"
     write "/sys/kernel/hmp/family_boost" "1"
@@ -1770,7 +1769,7 @@ elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gami
     write "/sys/kernel/hmp/down_threshold" "125"
     kmsg "Tweaked HMP parameters"
     kmsg3 ""
-    fi
+   fi
 fi
 }
 
@@ -1911,8 +1910,7 @@ kmsg "Tweaked GPU parameters"
 kmsg3 ""
 
 elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
-   if [[ "$qcom" == "true" ]]; then
-       avail_govs="$(cat "$gpu/devfreq/available_governors")"
+	  avail_govs="$(cat "$gpu/devfreq/available_governors")"
 
 	  for governor in msm-adreno-tz simple_ondemand ondemand
 	  do
@@ -1923,8 +1921,7 @@ elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "ba
 		fi
 	done
 	
-	elif [[ "$exynos" == "true" ]]; then
-	      avail_govs="$(cat "$gpui/gpu_available_governor")"
+	avail_govs="$(cat "$gpui/gpu_available_governor")"
 
 	for governor in Interactive Dynamic Static ondemand
 	do
@@ -1935,8 +1932,7 @@ elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "ba
 		fi
 	done
 	
-	elif [[ "$mtk" == "true" ]]; then
-	      avail_govs="$(cat "$gpu/available_governors")"
+	avail_govs="$(cat "$gpu/available_governors")"
 
 	for governor in Interactive Dynamic Static ondemand
 	do
@@ -1944,10 +1940,9 @@ elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "ba
 		then
 			write "$gpu/governor" "$governor"
 			break
-		  fi
-	  done
-	fi
-	
+		fi
+	done
+
 if [[ "$qcom" == "true" ]]; then
     write "$gpu/throttling" "1"
     write "$gpu/thermal_pwrlevel" "$gpu_calc_thrtl"
@@ -2152,6 +2147,7 @@ then
     write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
 fi
 
+# Tweak some mali parameters
 if [[ -d "/proc/mali/" ]] 
 then
      [[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "0"
@@ -2170,6 +2166,7 @@ then
     write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "1750"
 fi
 
+# Disable adreno idler
 if [[ -d "/sys/module/adreno_idler" ]]
 then
     write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
@@ -2529,7 +2526,8 @@ volt_exynos5() {
 }
 
 disable_crypto_tests() {
-if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]; then
+if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]
+then
     write "/sys/module/cryptomgr/parameters/notests" "Y"
     kmsg "Disabled cryptography tests"
     kmsg3 ""
@@ -2555,7 +2553,7 @@ fi
 config_schedtune() {
 # Schedtune tweaks
 if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
-    if [[ -d "$stune" ]]; then
+  if [[ -d "$stune" ]]; then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2603,10 +2601,11 @@ if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "laten
     
     kmsg "Tweaked schedtune parameters"
     kmsg3 ""
-    fi
+  fi
 
 elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
-    if [[ -d "$stune" ]]; then
+    if [[ -d "$stune" ]]
+    then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2657,7 +2656,8 @@ elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "ba
     fi
 
 elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
-    if [[ -d "$stune" ]]; then
+    if [[ -d "$stune" ]]
+    then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2708,7 +2708,8 @@ elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "ext
     fi
 
 elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    if [[ -d "$stune" ]]; then
+   if [[ -d "$stune" ]]
+   then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2745,10 +2746,11 @@ elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "bat
     
     kmsg "Tweaked schedtune parameters"
     kmsg3 ""
-    fi
+   fi
 
 elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-    if [[ -d "$stune" ]]; then
+   if [[ -d "$stune" ]]
+   then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2796,13 +2798,14 @@ elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gami
     
     kmsg "Tweaked schedtune parameters"
     kmsg3 ""
-    fi
+  fi
 fi
 }
 
 config_uclamp() {
 if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
-    if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
+  if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
+  then
     sysctl -w kernel.sched_util_clamp_min_rt_default=16
     sysctl -w kernel.sched_util_clamp_min=64
 
@@ -2827,10 +2830,11 @@ if [[ "$ktsr_prof_en" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "laten
     write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
-    fi
+fi
 
 elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
-    if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
+   if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
+   then
     sysctl -w kernel.sched_util_clamp_min_rt_default=32
     sysctl -w kernel.sched_util_clamp_min=128
 
@@ -2855,10 +2859,11 @@ elif [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "ba
     write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
-    fi
+fi
 
 elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
-    if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
+   if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
+   then
     sysctl -w kernel.sched_util_clamp_min_rt_default=96
     sysctl -w kernel.sched_util_clamp_min=192
 
@@ -2883,10 +2888,11 @@ elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "ext
     write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
-    fi
+   fi
 
 elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
+if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
+then
     sysctl -w kernel.sched_util_clamp_min_rt_default=16
     sysctl -w kernel.sched_util_clamp_min=128
 
@@ -2911,10 +2917,11 @@ elif [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "bat
     write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
-    fi
+fi
 
 elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-    if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
+   if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]
+   then
     sysctl -w kernel.sched_util_clamp_min_rt_default=96
     sysctl -w kernel.sched_util_clamp_min=192
  
@@ -2939,7 +2946,7 @@ elif [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "gami
     write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
     kmsg "Tweaked Uclamp parameters"
     kmsg3 ""
-    fi
+  fi
 fi
 }
 
@@ -3541,10 +3548,9 @@ write "/proc/sys/kernel/printk" "0 0 0 0"
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
 fi
-
+fi
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
-fi
 }
 
 enable_kvb() {
@@ -4521,8 +4527,6 @@ get_cpu_load
 }
 
 apply_all() {
-get_all
-
 print_info
 
 stop_services
@@ -4697,6 +4701,8 @@ cpuctl=/dev/cpuctl/
 latency() {
 init=$(date +%s)
 
+get_all
+
 apply_all
 
 kmsg "Latency profile applied. Enjoy!"
@@ -4726,6 +4732,8 @@ kmsg3 ""
 balanced() {
 init=$(date +%s)
 
+get_all
+
 apply_all
 
 kmsg "Balanced profile applied. Enjoy!"
@@ -4743,6 +4751,8 @@ kmsg "Elapsed time: $exectime seconds."
 extreme() {
 init=$(date +%s)
 
+get_all
+
 apply_all
 
 kmsg "Extreme profile applied. Enjoy!"
@@ -4759,6 +4769,8 @@ kmsg "Elapsed time: $exectime seconds."
 # Battery Profile
 battery() {
 init=$(date +%s)
+   
+get_all
 
 apply_all
 
@@ -4776,6 +4788,8 @@ kmsg "Elapsed time: $exectime seconds."
 # Gaming Profile
 gaming() {
 init=$(date +%s)
+     	
+get_all
 
 apply_all
 
