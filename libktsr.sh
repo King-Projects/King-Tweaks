@@ -4839,7 +4839,6 @@ blkio=/dev/blkio/
 
 cpuctl=/dev/cpuctl/
 
-# Latency Profile
 latency() {
 init=$(date +%s)
 
@@ -4857,8 +4856,6 @@ exit=$(date +%s)
 exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
 }
-
-# Automatic Profile
 automatic() {     	
 kmsg "Applying automatic profile"
 kmsg3 ""
@@ -4869,8 +4866,6 @@ kingauto &
 kmsg "Applied automatic profile"
 kmsg3 ""
 }
-
-# Balanced Profile
 balanced() {
 init=$(date +%s)
 
@@ -4888,8 +4883,6 @@ exit=$(date +%s)
 exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
 }
-
-# Extreme Profile
 extreme() {
 init=$(date +%s)
 
@@ -4907,8 +4900,6 @@ exit=$(date +%s)
 exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
 }
-
-# Battery Profile
 battery() {
 init=$(date +%s)
    
@@ -4926,8 +4917,6 @@ exit=$(date +%s)
 exectime=$((exit - init))
 kmsg "Elapsed time: $exectime seconds."
 }
-
-# Gaming Profile
 gaming() {
 init=$(date +%s)
      	

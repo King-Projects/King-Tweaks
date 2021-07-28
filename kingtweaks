@@ -35,19 +35,19 @@ then
 fi
 
 boot_run_once=false
-ktsr_prof=$(getprop persist.kingtweaks.mode)
-[[ -z "$ktsr_prof" ]] && setprop persist.kingtweaks.mode "3"
+ktsr_prof=$(getprop persist.king.tweaks.prof)
+[[ -z "$ktsr_prof" ]] && setprop persist.king.tweaks.prof "3"
 
 while true
 do
 sleep 3
 if "$boot_run_once"
 then
-[[ "$(getprop persist.kingtweaks.mode)" == "$ktsr_prof" ]] && continue
+[[ "$(getprop persist.king.tweaks.prof)" == "$ktsr_prof" ]] && continue
 else
 boot_run_once=true
 fi
-ktsr_prof=$(getprop persist.kingtweaks.mode)
+ktsr_prof=$(getprop persist.king.tweaks.prof)
 
 case "$ktsr_prof" in
 
