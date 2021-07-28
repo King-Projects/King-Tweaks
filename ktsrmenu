@@ -29,14 +29,14 @@ mount -o remount,rw /cache 2>/dev/null
 mount -o rw,remount /cache 2>/dev/null
 
 # Logs should go in this file
-LOG=/data/local/tmp/"$ID".log
-oldLOG=/data/local/tmp/"$ID"-old.log
+LOG=/data/media/0/KTSR/"$ID"-CLI.log
+oldLOG=/data/media/0/KTSR/"$ID"-CLI-old.log
 
 # Verbose output goes here
-VERLOG=/data/local/tmp/"$ID"-verbose.log
-oldVERLOG=/data/local/tmp/"$ID"-verbose-old.log
-stdoutLOG="$MODDIR"/logs/"$ID"-STDOUT.log
-oldstdoutLOG="$MODDIR"/logs/"$ID"-STDOUT-old.log
+VERLOG=/data/media/0/KTSR/"$ID"-verbose.log
+oldVERLOG=/data/media/0/KTSR/"$ID"-verbose-old.log
+stdoutLOG=/data/media/0/KTSR/"$ID"-CLI-STDOUT.log
+oldstdoutLOG=/data/media/0/KTSR/"$ID"-CLI-STDOUT-old.log
 
 # Start logging verbosely
 mv -f "$VERLOG" "$oldVERLOG" 2>/dev/null; mv -f "$LOG" "$oldLOG" 2>/dev/null; mv -f "$stdoutLOG" "$oldstdoutLOG" 2>/dev/null
@@ -106,15 +106,11 @@ fi
 menu() {
 clear
 echo ""
-echo "******************************************"
-echo "* KTSR (Alt.) Profile Controller & Misc. *"
-echo "******************************************"
+echo "${Y}************${N}"
+echo "${Y}* KTSR CLI *${N}"
+echo "${Y}************${N}"
 echo ""
-<<<<<<< HEAD
-echo "Version: v1.5.6-beta-r6"
-=======
-echo "Version: v1.5.3-beta-r5"
->>>>>>> parent of ed1f091 (Many improvements, changes and fixes)
+echo "${G}Ver: 1.5.7-beta-r6${N}"
 echo ""
 echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 echo ""

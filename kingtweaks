@@ -19,12 +19,12 @@ then
     rm -rf "$KLOG"
 fi
 
-if [[ ! -d "/sdcard/KTSR" ]] 
+if [[ ! -d "/data/media/0/KTSR" ]] 
 then
-    mkdir -p "/sdcard/KTSR"
+    mkdir -p "/data/media/0/KTSR"
 fi
 
-if [[ -d "/sdcard/KTSR" ]] 
+if [[ -d "/data/media/0/KTSR" ]] 
 then
     touch "$KLOG"
 fi
@@ -194,8 +194,8 @@ sqlite_opt_max_size=1000000
 if [[ "$(stat -t "$KDBG" | awk '{print $2}')" -eq "$kdbg_max_size" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}')" -gt "$kdbg_max_size" ]]; then
     rm -rf "$KDBG"
 
-elif [[ "$(stat -t /sdcard/KTSR/sqlite_opt.log | awk '{print $2}')" -eq "$sqlite_opt_max_size" ]] || [[ "$(stat -t /sdcard/KTSR/sqlite_opt.log | awk '{print $2}')" -gt "$sqlite_opt_max_size" ]]; then
-      rm -rf "/sdcard/KTSR/sqlite_opt.log"
+elif [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log | awk '{print $2}')" -eq "$sqlite_opt_max_size" ]] || [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log | awk '{print $2}')" -gt "$sqlite_opt_max_size" ]]; then
+      rm -rf "/data/media/0/KTSR/sqlite_opt.log"
 fi
 }
 

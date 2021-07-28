@@ -91,7 +91,7 @@ for bpid in $(pgrep -f geekbench) $(pgrep -f androbench2) $(pgrep -f kinemaster)
       else
           kmsg3 ""
           kmsg "No considerable usage found. Applied latency profile"
-          setprop kingauto.prof battery
+          setprop kingauto.prof latency
           get_all
           apply_all_auto
           sleep 30
