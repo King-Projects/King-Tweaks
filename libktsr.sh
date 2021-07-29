@@ -4498,7 +4498,7 @@ print_info
 
 stop_services
 
-if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "latency" ]]; then
     thermal_default
 
 elif [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
@@ -4542,13 +4542,13 @@ else
     misc_cpu_max_pwr
 fi
 
-if [[ ! "$ktsr_prof_en" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" != "extreme" ]] && [[ "$ktsr_prof_en" != "gaming" ]]; then
     enable_ppm
 else
     disable_ppm
 fi
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" != "extreme" ]] && [[ "$ktsr_prof_en" != "gaming" ]]; then
     cpu_clk_default
 else
     cpu_clk_max
@@ -4584,10 +4584,10 @@ fi
 
 vm_lmk_"$ktsr_prof_en"
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" != "extreme" ]] && [[ "$ktsr_prof_en" != "gaming" ]]; then
     ppm_policy_default
 
-elif [[ "$ktsr_prof_en" == "extreme" ]]; then
+elif [[ "$ktsr_prof_en" == "extreme" ]]; then 
       ppm_policy_max
 fi
 
@@ -4621,7 +4621,7 @@ else
     disable_kern_batt_saver
 fi
 
-if [[ ! "$ktsr_prof_en" == "battery" ]]; then
+if [[ "$ktsr_prof_en" != "battery" ]]; then
     enable_hp_snd
 else
     disable_hp_snd
@@ -4633,7 +4633,7 @@ else
     disable_lpm
 fi
 
-if [[ ! "$ktsr_prof_en" == "extreme" ]] && [[ ! "$ktsr_prof_en" == "gaming" ]]; then
+if [[ "$ktsr_prof_en" != "extreme" ]] && [[ "$ktsr_prof_en" != "gaming" ]]; then
     enable_pm2_idle_mode
 else
     disable_pm2_idle_mode
@@ -4707,13 +4707,13 @@ else
     misc_cpu_max_pwr
 fi
 
-if [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
     enable_ppm
 else
     disable_ppm
 fi
 
-if [[ "$(getprop kingauto.prof)" != "extreme" ]] || [[ "$(getprop kingauto.prof)" != "latency" ]] || [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
+if [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
     cpu_clk_default
 else
     cpu_clk_max
@@ -4749,7 +4749,7 @@ fi
 
 vm_lmk_$(getprop kingauto.prof)
 
-if [[ ! "$(getprop kingauto.prof)" == "extreme" ]] && [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
     ppm_policy_default
 
 elif [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
@@ -4786,7 +4786,7 @@ else
     disable_kern_batt_saver
 fi
 
-if [[ ! "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$(getprop kingauto.prof)" != "battery" ]]; then
     enable_hp_snd
 else
     disable_hp_snd
@@ -4798,7 +4798,7 @@ else
     disable_lpm
 fi
 
-if [[ ! "$(getprop kingauto.prof)" == "extreme" ]] && [[ ! "$(getprop kingauto.prof)" == "gaming" ]]; then
+if [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
     enable_pm2_idle_mode
 else
     disable_pm2_idle_mode
