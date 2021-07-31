@@ -1416,7 +1416,6 @@ do
     write "$governor/hispeed_freq" "$cpu_max_freq"
 done
 
-# Apply governor specific tunables for schedutil, or it's modifications
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
     write "$governor/up_rate_limit_us" "1000"
@@ -2122,8 +2121,8 @@ if [[ "$qcom" == "true" ]]; then
     write "$gpu/devfreq/min_freq" "$gpu_min_freq"
     write "$gpu/default_pwrlevel" "1"
     write "$gpu/force_bus_on" "0"
-    write "$gpu/force_clk_on" "0"
-    write "$gpu/force_rail_on" "0"
+    write "$gpu/force_clk_on" "1"
+    write "$gpu/force_rail_on" "1"
     write "$gpu/idle_timer" "1000"
     write "$gpu/pwrnap" "1"
 else
@@ -2969,7 +2968,6 @@ fi
 }
 
 sched_ft_balanced() {
-# Scheduler features
 if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
@@ -2982,7 +2980,6 @@ fi
 }
 
 sched_ft_extreme() {
-# Scheduler features
 if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
@@ -2995,7 +2992,6 @@ fi
 }
 
 sched_ft_battery() {
-# Scheduler features
 if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
@@ -3008,7 +3004,6 @@ fi
 }
 
 sched_ft_gaming() {
-# Scheduler features
 if [[ -e "/sys/kernel/debug/sched_features" ]]
 then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
@@ -3133,7 +3128,6 @@ kmsg3 ""
 }
 
 sched_balanced() {
-# Tweak some kernel settings to improve overall performance
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
     write "${kernel}sched_child_runs_first" "1"
 fi
@@ -3230,203 +3224,6 @@ kmsg3 ""
 }
 
 sched_extreme() {
-# Tweak some kernel settings to improve overall performance.
-if [[ -e "${kernel}sched_child_runs_first" ]]; then
-    write "${kernel}sched_child_runs_first" "0"
-fi
-if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
-    write "${kernel}perf_cpu_time_max_percent" "25"
-fi
-if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
-    write "${kernel}sched_autogroup_enabled" "0"
-fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
-fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
-fi
-write "${kernel}sched_tunable_scaling" "0"
-if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
-fi
-if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
-    write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
-fi
-if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
-    write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
-fi
-if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "5000000"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
-    write "${kernel}sched_min_task_util_for_colocation" "0"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
-    write "${kernel}sched_min_task_util_for_boost" "0"
-fi
-write "${kernel}sched_nr_migrate" "128"
-write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_cstate_aware" ]]; then
-    write "${kernel}sched_cstate_aware" "1"
-fi
-write "${kernel}printk_devkmsg" "off"
-if [[ -e "${kernel}timer_migration" ]]; then
-    write "${kernel}timer_migration" "0"
-fi
-if [[ -e "${kernel}sched_boost" ]]; then
-    write "${kernel}sched_boost" "2"
-fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "$mtk" == "true" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "2"
-else
-    write "/sys/devices/system/cpu/eas/enable" "1"
-fi
-if [[ -e "/proc/ufs_perf" ]]; then
-    write "/proc/ufs_perf" "2"
-fi
-if [[ -e "/proc/cpuidle/enable" ]]; then
-    write "/proc/cpuidle/enable" "0"
-fi
-if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
-    write "/sys/kernel/debug/eara_thermal/enable" "0"
-fi
-if [[ -e "/sys/power/little_thermal_temp" ]]; then
-    write "/sys/power/little_thermal_temp" "90"
-fi
-if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-    write "${kernel}sched_walt_rotate_big_tasks" "1"
-fi
-if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
-fi
-if [[ -e "${kernel}sched_boost_top_app" ]]; then
-    write "${kernel}sched_boost_top_app" "1"
-fi
-if [[ -e "${kernel}sched_init_task_load" ]]; then
-    write "${kernel}sched_init_task_load" "30"
-fi
-if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    write "${kernel}sched_migration_fixup" "1"
-fi
-if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-    write "${kernel}sched_enable_power_aware" "1"
-fi
-if [[ -e "${kernel}power_aware_timer_migration" ]]; then
-    write "${kernel}power_aware_timer_migration" "1"
-fi
-if [[ -e "${kernel}sched_energy_aware" ]]; then
-    write "${kernel}sched_energy_aware" "1"
-fi
-
-# Set memory sleep mode to s2idle
-if [[ -e "/sys/power/mem_sleep" ]]; then
-    write "/sys/power/mem_sleep" "s2idle"
-fi
-
-kmsg "Tweaked various kernel parameters"
-kmsg3 ""
-}
-
-sched_battery() {
-# Tweak some kernel settings to improve overall performance.
-if [[ -e "${kernel}sched_child_runs_first" ]]; then
-    write "${kernel}sched_child_runs_first" "0"
-fi
-if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
-    write "${kernel}perf_cpu_time_max_percent" "3"
-fi
-if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
-    write "${kernel}sched_autogroup_enabled" "1"
-fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
-fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
-fi
-write "${kernel}sched_tunable_scaling" "0"
-if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
-fi
-if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
-    write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
-fi
-if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
-    write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
-fi
-if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "5000000"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
-    write "${kernel}sched_min_task_util_for_colocation" "0"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
-    write "${kernel}sched_min_task_util_for_boost" "0"
-fi
-write "${kernel}sched_nr_migrate" "192"
-write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_cstate_aware" ]]; then
-    write "${kernel}sched_cstate_aware" "1"
-fi
-write "${kernel}printk_devkmsg" "off"
-if [[ -e "${kernel}timer_migration" ]]; then
-    write "${kernel}timer_migration" "1"
-fi
-if [[ -e "${kernel}sched_boost" ]]; then
-    write "${kernel}sched_boost" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "1"
-fi
-if [[ -e "/proc/ufs_perf" ]]; then
-    write "/proc/ufs_perf" "0"
-fi
-if [[ -e "/proc/cpuidle/enable" ]]; then
-    write "/proc/cpuidle/enable" "1"
-fi
-if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
-    write "/sys/kernel/debug/eara_thermal/enable" "0"
-fi
-if [[ -e "/sys/power/little_thermal_temp" ]]; then
-    write "/sys/power/little_thermal_temp" "90"
-fi
-if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-    write "${kernel}sched_walt_rotate_big_tasks" "1"
-fi
-if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
-fi
-if [[ -e "${kernel}sched_boost_top_app" ]]; then
-    write "${kernel}sched_boost_top_app" "1"
-fi
-if [[ -e "${kernel}sched_init_task_load" ]]; then
-    write "${kernel}sched_init_task_load" "15"
-fi
-if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    write "${kernel}sched_migration_fixup" "1"
-fi
-if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-    write "${kernel}sched_enable_power_aware" "1"
-fi
-if [[ -e "${kernel}power_aware_timer_migration" ]]; then
-    write "${kernel}power_aware_timer_migration" "1"
-fi
-if [[ -e "${kernel}sched_energy_aware" ]]; then
-    write "${kernel}sched_energy_aware" "1"
-fi
-
-# Set memory sleep mode to deep
-if [[ -e "/sys/power/mem_sleep" ]]; then
-write "/sys/power/mem_sleep" "deep"
-fi
-
-kmsg "Tweaked various kernel parameters"
-kmsg3 ""
-}
-
-sched_gaming() {
-# Tweak some kernel settings to improve overall performance.
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
     write "${kernel}sched_child_runs_first" "0"
 fi
@@ -3515,7 +3312,198 @@ if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
 
-# Set memory sleep mode to s2idle 
+if [[ -e "/sys/power/mem_sleep" ]]; then
+    write "/sys/power/mem_sleep" "s2idle"
+fi
+
+kmsg "Tweaked various kernel parameters"
+kmsg3 ""
+}
+
+sched_battery() {
+if [[ -e "${kernel}sched_child_runs_first" ]]; then
+    write "${kernel}sched_child_runs_first" "0"
+fi
+if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
+    write "${kernel}perf_cpu_time_max_percent" "3"
+fi
+if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
+    write "${kernel}sched_autogroup_enabled" "1"
+fi
+if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
+fi
+if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
+fi
+write "${kernel}sched_tunable_scaling" "0"
+if [[ -e "${kernel}sched_latency_ns" ]]; then
+    write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
+fi
+if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
+    write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
+fi
+if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
+    write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
+fi
+if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
+    write "${kernel}sched_migration_cost_ns" "5000000"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
+    write "${kernel}sched_min_task_util_for_colocation" "0"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
+    write "${kernel}sched_min_task_util_for_boost" "0"
+fi
+write "${kernel}sched_nr_migrate" "192"
+write "${kernel}sched_schedstats" "0"
+if [[ -e "${kernel}sched_cstate_aware" ]]; then
+    write "${kernel}sched_cstate_aware" "1"
+fi
+write "${kernel}printk_devkmsg" "off"
+if [[ -e "${kernel}timer_migration" ]]; then
+    write "${kernel}timer_migration" "1"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
+    write "${kernel}sched_boost" "0"
+fi
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "1"
+fi
+if [[ -e "/proc/ufs_perf" ]]; then
+    write "/proc/ufs_perf" "0"
+fi
+if [[ -e "/proc/cpuidle/enable" ]]; then
+    write "/proc/cpuidle/enable" "1"
+fi
+if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
+    write "/sys/kernel/debug/eara_thermal/enable" "0"
+fi
+if [[ -e "/sys/power/little_thermal_temp" ]]; then
+    write "/sys/power/little_thermal_temp" "90"
+fi
+if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
+    write "${kernel}sched_walt_rotate_big_tasks" "1"
+fi
+if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
+    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+fi
+if [[ -e "${kernel}sched_boost_top_app" ]]; then
+    write "${kernel}sched_boost_top_app" "1"
+fi
+if [[ -e "${kernel}sched_init_task_load" ]]; then
+    write "${kernel}sched_init_task_load" "15"
+fi
+if [[ -e "${kernel}sched_migration_fixup" ]]; then
+    write "${kernel}sched_migration_fixup" "1"
+fi
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+    write "${kernel}sched_enable_power_aware" "1"
+fi
+if [[ -e "${kernel}power_aware_timer_migration" ]]; then
+    write "${kernel}power_aware_timer_migration" "1"
+fi
+if [[ -e "${kernel}sched_energy_aware" ]]; then
+    write "${kernel}sched_energy_aware" "1"
+fi
+
+if [[ -e "/sys/power/mem_sleep" ]]; then
+write "/sys/power/mem_sleep" "deep"
+fi
+
+kmsg "Tweaked various kernel parameters"
+kmsg3 ""
+}
+
+sched_gaming() {
+if [[ -e "${kernel}sched_child_runs_first" ]]; then
+    write "${kernel}sched_child_runs_first" "0"
+fi
+if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
+    write "${kernel}perf_cpu_time_max_percent" "25"
+fi
+if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
+    write "${kernel}sched_autogroup_enabled" "0"
+fi
+if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
+fi
+if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
+    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
+fi
+write "${kernel}sched_tunable_scaling" "0"
+if [[ -e "${kernel}sched_latency_ns" ]]; then
+    write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
+fi
+if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
+    write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
+fi
+if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
+    write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
+fi
+if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
+    write "${kernel}sched_migration_cost_ns" "5000000"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
+    write "${kernel}sched_min_task_util_for_colocation" "0"
+fi
+if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
+    write "${kernel}sched_min_task_util_for_boost" "0"
+fi
+write "${kernel}sched_nr_migrate" "128"
+write "${kernel}sched_schedstats" "0"
+if [[ -e "${kernel}sched_cstate_aware" ]]; then
+    write "${kernel}sched_cstate_aware" "1"
+fi
+write "${kernel}printk_devkmsg" "off"
+if [[ -e "${kernel}timer_migration" ]]; then
+    write "${kernel}timer_migration" "0"
+fi
+if [[ -e "${kernel}sched_boost" ]]; then
+    write "${kernel}sched_boost" "1"
+fi
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "$mtk" == "true" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "2"
+else
+    write "/sys/devices/system/cpu/eas/enable" "1"
+fi
+if [[ -e "/proc/ufs_perf" ]]; then
+    write "/proc/ufs_perf" "2"
+fi
+if [[ -e "/proc/cpuidle/enable" ]]; then
+    write "/proc/cpuidle/enable" "0"
+fi
+if [[ -e "/sys/kernel/debug/eara_thermal/enable" ]]; then
+    write "/sys/kernel/debug/eara_thermal/enable" "0"
+fi
+if [[ -e "/sys/power/little_thermal_temp" ]]; then
+    write "/sys/power/little_thermal_temp" "90"
+fi
+if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
+    write "${kernel}sched_walt_rotate_big_tasks" "1"
+fi
+if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
+    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+fi
+if [[ -e "${kernel}sched_boost_top_app" ]]; then
+    write "${kernel}sched_boost_top_app" "1"
+fi
+if [[ -e "${kernel}sched_init_task_load" ]]; then
+    write "${kernel}sched_init_task_load" "30"
+fi
+if [[ -e "${kernel}sched_migration_fixup" ]]; then
+    write "${kernel}sched_migration_fixup" "1"
+fi
+if [[ -e "${kernel}sched_enable_power_aware" ]]; then
+    write "${kernel}sched_enable_power_aware" "1"
+fi
+if [[ -e "${kernel}power_aware_timer_migration" ]]; then
+    write "${kernel}power_aware_timer_migration" "1"
+fi
+if [[ -e "${kernel}sched_energy_aware" ]]; then
+    write "${kernel}sched_energy_aware" "1"
+fi
+
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
 fi
@@ -3680,6 +3668,7 @@ fi
 }
 
 vm_lmk_latency() {
+# Credits to Paget96 for this also
 fr=$(((total_ram * 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 4 / 100) * 1024 / 4))
@@ -3719,14 +3708,17 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
+if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
     write "${vm}reap_mem_on_sigkill" "1"
 fi
 if [[ -e "${vm}swap_ratio" ]]; then
-write "${vm}swap_ratio" "100"
+    write "${vm}swap_ratio" "100"
+fi
+if [[ -e "${vm}oom_dump_tasks" ]]; then
+    write "${vm}oom_dump_tasks" "0"
 fi
 
 # Tune lmk_minfree
@@ -3746,6 +3738,7 @@ fi
 
 # Disable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+    setprop lmk.autocalc false
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
@@ -3757,6 +3750,11 @@ fi
 # Tune vm_extra_free_kbytes
 if [[ -e "${vm}extra_free_kbytes" ]]; then
     write "${vm}extra_free_kbytes" "$efr"
+fi
+
+# Tune lmk_adj
+if [[ -e "${lmk}parameters/adj" ]]; then
+    write "${lmk}parameters/adj" "0,112,224,408,824,1000"
 fi
 
 kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
@@ -3777,17 +3775,14 @@ if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
 fi
 
-# Extra free kbytes calculated based on min_free_kbytes
 efr=$((mfr * 16 / 5))
 
 if [[ "$efr" -lt "18432" ]]; then
     efr=18432
 fi
 
-# always sync before dropping caches
 sync
 
-# VM settings to improve overall user experience and performance
 write "${vm}drop_caches" "2"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "25"
@@ -3796,7 +3791,6 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device do not have more than 5 GB RAM on samsung devices
 if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "${vm}swappiness" "150"
 else
@@ -3804,44 +3798,46 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
+if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
     write "${vm}reap_mem_on_sigkill" "1"
 fi
 if [[ -e "${vm}swap_ratio" ]]; then
-write "${vm}swap_ratio" "100"
+    write "${vm}swap_ratio" "100"
+fi
+if [[ -e "${vm}oom_dump_tasks" ]]; then
+    write "${vm}oom_dump_tasks" "0"
 fi
 
-# Tune lmk_minfree
 if [[ -e "${lmk}parameters/minfree" ]]; then
     write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
 fi
 
-# Enable oom_reaper
 if [[ -e "${lmk}parameters/oom_reaper" ]]; then
     write "${lmk}parameters/oom_reaper" "1"
 fi
 	
-# Enable lmk_fast_run
 if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
     write "${lmk}parameters/lmk_fast_run" "1"
 fi
 
-# Disable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+    setprop lmk.autocalc false
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
-# Tune vm_min_free_kbytes
 if [[ -e "${vm}min_free_kbytes" ]]; then
     write "${vm}min_free_kbytes" "$mfr"
 fi
-  
-# Tune vm_extra_free_kbytes
+
 if [[ -e "${vm}extra_free_kbytes" ]]; then
     write "${vm}extra_free_kbytes" "$efr"
+fi
+
+if [[ -e "${lmk}parameters/adj" ]]; then
+    write "${lmk}parameters/adj" "0,112,224,408,824,1000"
 fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
@@ -3868,10 +3864,8 @@ if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
 fi
 
-# always sync before dropping caches
 sync
 
-# VM settings to improve overall user experience and performance
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
@@ -3880,7 +3874,6 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device do not have more than 5 GB RAM on samsung devices
 if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "${vm}swappiness" "150"
 else
@@ -3888,7 +3881,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "150"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] || [[ $total_ram -lt "5000" ]]; then
+if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
@@ -3897,35 +3890,37 @@ fi
 if [[ -e "${vm}swap_ratio" ]]; then
 write "${vm}swap_ratio" "100"
 fi
+if [[ -e "${vm}oom_dump_tasks" ]]; then
+    write "${vm}oom_dump_tasks" "0"
+fi
 
-# Tune lmk_minfree
 if [[ -e "${lmk}parameters/minfree" ]]; then
     write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
 fi
 
-# Enable oom_reaper
 if [[ -e "${lmk}parameters/oom_reaper" ]]; then
     write "${lmk}parameters/oom_reaper" "1"
 fi
 	
-# Enable lmk_fast_run
 if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
     write "${lmk}parameters/lmk_fast_run" "1"
 fi
 
-# Disable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+    setprop lmk.autocalc false
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
-# Tune vm_min_free_kbytes
 if [[ -e "${vm}min_free_kbytes" ]]; then
     write "${vm}min_free_kbytes" "$mfr"
 fi
-  
-# Tune vm_extra_free_kbytes
+
 if [[ -e "${vm}extra_free_kbytes" ]]; then
     write "${vm}extra_free_kbytes" "$efr"
+fi
+
+if [[ -e "${lmk}parameters/adj" ]]; then
+    write "${lmk}parameters/adj" "0,112,224,408,824,1000"
 fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
@@ -3933,12 +3928,12 @@ kmsg3 ""
 }
 
 vm_lmk_battery() {
-fr=$(((total_ram * 2 / 100) * 1024 / 4))
-bg=$(((total_ram * 3 / 100) * 1024 / 4))
-et=$(((total_ram * 4 / 100) * 1024 / 4))
-mr=$(((total_ram * 8 / 100) * 1024 / 4))
-cd=$(((total_ram * 12 / 100) * 1024 / 4))
-ab=$(((total_ram * 14 / 100) * 1024 / 4))
+fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
+bg=$(((total_ram * 5 / 100) * 1024 / 4))
+et=$(((total_ram * 6 / 100) * 1024 / 4))
+mr=$(((total_ram * 7 / 100) * 1024 / 4))
+cd=$(((total_ram * 9 / 100) * 1024 / 4))
+ab=$(((total_ram * 11 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
 
@@ -3952,10 +3947,8 @@ if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
 fi
 
-# always sync before dropping caches
 sync
 
-# VM settings to improve overall user experience and performance
 write "${vm}drop_caches" "1"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "20"
@@ -3964,7 +3957,6 @@ write "${vm}dirty_writeback_centisecs" "500"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device do not have more than 5 GB RAM on samsung devices
 if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "${vm}swappiness" "150"
 else
@@ -3972,44 +3964,46 @@ else
 fi
 write "${vm}laptop_mode" "1"
 write "${vm}vfs_cache_pressure" "60"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
+if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
     write "${vm}reap_mem_on_sigkill" "1"
 fi
 if [[ -e "${vm}swap_ratio" ]]; then
-write "${vm}swap_ratio" "100"
+    write "${vm}swap_ratio" "100"
+fi
+if [[ -e "${vm}oom_dump_tasks" ]]; then
+    write "${vm}oom_dump_tasks" "0"
 fi
 
-# Tune lmk_minfree
 if [[ -e "${lmk}parameters/minfree" ]]; then
     write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
 fi
 
-# Enable oom_reaper
 if [[ -e "${lmk}parameters/oom_reaper" ]]; then
     write "${lmk}parameters/oom_reaper" "1"
 fi
-	
-# Enable lmk_fast_run
+
 if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
     write "${lmk}parameters/lmk_fast_run" "1"
 fi
 
-# Disable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+    setprop lmk.autocalc false
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
-# Tune vm_min_free_kbytes
 if [[ -e "${vm}min_free_kbytes" ]]; then
     write "${vm}min_free_kbytes" "$mfr"
 fi
-  
-# Tune vm_extra_free_kbytes
+
 if [[ -e "${vm}extra_free_kbytes" ]]; then
     write "${vm}extra_free_kbytes" "$efr"
+fi
+
+if [[ -e "${lmk}parameters/adj" ]]; then
+    write "${lmk}parameters/adj" "0,112,224,408,824,1000"
 fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
@@ -4018,8 +4012,8 @@ kmsg3 ""
 
 vm_lmk_gaming() {
 fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
-bg=$(((total_ram * 2 / 100) * 1024 / 4))
-et=$(((total_ram * 4 / 100) * 1024 / 4))
+bg=$(((total_ram * 5 / 100) * 1024 / 4))
+et=$(((total_ram * 6 / 100) * 1024 / 4))
 mr=$(((total_ram * 7 / 100) * 1024 / 4))
 cd=$(((total_ram * 11 / 100) * 1024 / 4))
 ab=$(((total_ram * 13 / 100) * 1024 / 4))
@@ -4036,10 +4030,8 @@ if [[ "$mfr" -le "3072" ]]; then
     mfr=3072
 fi
 
-# always sync before dropping caches
 sync
 
-# VM settings to improve overall user experience and performance.
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "15"
 write "${vm}dirty_ratio" "30"
@@ -4048,7 +4040,6 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device do not have more than 5 GB RAM on samsung devices
 if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
     write "${vm}swappiness" "150"
 else
@@ -4056,44 +4047,46 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "500"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && [[ "$total_ram" -lt "5000" ]]; then
+if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
 if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
     write "${vm}reap_mem_on_sigkill" "1"
 fi
 if [[ -e "${vm}swap_ratio" ]]; then
-write "${vm}swap_ratio" "100"
+    write "${vm}swap_ratio" "100"
+fi
+if [[ -e "${vm}oom_dump_tasks" ]]; then
+    write "${vm}oom_dump_tasks" "0"
 fi
 
-# Tune lmk_minfree
 if [[ -e "${lmk}parameters/minfree" ]]; then
     write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
 fi
 
-# Enable oom_reaper
 if [[ -e "${lmk}parameters/oom_reaper" ]]; then
     write "${lmk}parameters/oom_reaper" "1"
 fi
-	
-# Enable lmk_fast_run
+
 if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
     write "${lmk}parameters/lmk_fast_run" "1"
 fi
 
-# Enable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
+    setprop lmk.autocalc false
     write "${lmk}parameters/enable_adaptive_lmk" "1"
 fi
 
-# Tune vm_min_free_kbytes
 if [[ -e "${vm}min_free_kbytes" ]]; then
     write "${vm}min_free_kbytes" "$mfr"
 fi
   
-# Tune vm_extra_free_kbytes
 if [[ -e "${vm}extra_free_kbytes" ]]; then
     write "${vm}extra_free_kbytes" "$efr"
+fi
+
+if [[ -e "${lmk}parameters/adj" ]]; then
+    write "${lmk}parameters/adj" "0,112,224,408,824,1000"
 fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
@@ -4101,7 +4094,6 @@ kmsg3 ""
 }
 
 disable_msm_thermal() {
-# Disable msm_thermal
 if [[ -d "/sys/module/msm_thermal" ]]
 then
     write "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
@@ -4149,7 +4141,6 @@ fi
 }
 
 fix_dt2w() {
-# Fix DT2W
 if [[ -e "/sys/touchpanel/double_tap" ]] && [[ -e "/proc/tp_gesture" ]]
 then
     write "/sys/touchpanel/double_tap" "1"
@@ -4178,7 +4169,6 @@ fi
 }
 
 enable_tb() {
-# Enable touch boost
 if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]
 then
     write "/sys/module/msm_performance/parameters/touchboost" "1"
@@ -4195,7 +4185,6 @@ fi
 }
 
 disable_tb() {
-# Disable touch boost
 if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]
 then
     write "/sys/module/msm_performance/parameters/touchboost" "0"
@@ -4269,7 +4258,6 @@ fi
 }
 
 enable_hp_snd() {
-# Enable high performance audio
 for hpm in /sys/module/snd_soc_wcd*
 do
   if [[ -e "$hpm" ]]
@@ -4283,7 +4271,6 @@ done
 }
 
 disable_hp_snd() {
-# Disable high performance audio
 for hpm in /sys/module/snd_soc_wcd*
 do
   if [[ -e "$hpm" ]]
@@ -4297,7 +4284,6 @@ done
 }
 
 enable_lpm() {
-# Enable LPM
 for lpm in /sys/module/lpm_levels/system/*/*/*/
 do
   if [[ -d "/sys/module/lpm_levels" ]]
@@ -4315,7 +4301,6 @@ kmsg3 ""
 }
 
 disable_lpm() {
-# Disable LPM
 for lpm in /sys/module/lpm_levels/system/*/*/*/
 do
   if [[ -d "/sys/module/lpm_levels" ]]
@@ -4369,7 +4354,6 @@ fi
 }
 
 enable_usb_fast_chrg() {
-# Enable USB 3.0 fast charging
 if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]
 then
     write "/sys/kernel/fast_charge/force_fast_charge" "1"
