@@ -807,12 +807,7 @@ kmsg3 ""
 }
 
 stop_services() {
-# Disable perf, mpdecision and few debug services
-for v in 0 1 2 3 4; do
-    stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
-    stop perf-hal-$v-$v 2>/dev/null
-done
-
+# Disable perfd, mpdecision and few debug services
 stop perfd 2>/dev/null
 if [[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     start mpdecision 2>/dev/null
@@ -829,7 +824,7 @@ if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -rf "/data/system/perfd/default_values"
 fi
 
-kmsg "Disabled perf, mpdecision and few debug services"
+kmsg "Disabled perfd, mpdecision and few debug services"
 kmsg3 ""
 }
 
@@ -2930,15 +2925,15 @@ fi
 }
 
 config_fs() {
-# FS tweaks
+# Raise inotify limit, disable the notification of files / directories changes
 if [[ -d "/proc/sys/fs" ]]
 then
     write "/proc/sys/fs/dir-notify-enable" "0"
-    write "/proc/sys/fs/lease-break-time" "10"
+    write "/proc/sys/fs/lease-break-time" "15"
     write "/proc/sys/fs/leases-enable" "1"
     write "/proc/sys/fs/file-max" "2097152"
-    write "/proc/sys/fs/inotify/max_queued_events" "131072"
-    write "/proc/sys/fs/inotify/max_user_watches" "131072"
+    write "/proc/sys/fs/inotify/max_queued_events" "524288"
+    write "/proc/sys/fs/inotify/max_user_watches" "524288"
     write "/proc/sys/fs/inotify/max_user_instances" "1024"
     kmsg "Tweaked FS"
     kmsg3 ""
@@ -3034,7 +3029,7 @@ fi
 }
 
 sched_latency() {
-# Tweak some kernel settings to improve overall performance
+# Tweak kernel settings to improve overall performance
 if [[ -e "${kernel}sched_child_runs_first" ]]; then
     write "${kernel}sched_child_runs_first" "1"
 fi
@@ -3117,7 +3112,9 @@ fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
-
+if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
+    write "${kernel}hung_task_timeout_secs" "0"
+fi
 # Set memory sleep mode to s2idle 
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
@@ -3213,7 +3210,9 @@ fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
-
+if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
+    write "${kernel}hung_task_timeout_secs" "0"
+fi
 # Set memory sleep mode to deep
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "deep"
@@ -3311,7 +3310,9 @@ fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
-
+if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
+    write "${kernel}hung_task_timeout_secs" "0"
+fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
 fi
@@ -3406,9 +3407,11 @@ fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
-
+if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
+    write "${kernel}hung_task_timeout_secs" "0"
+fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
-write "/sys/power/mem_sleep" "deep"
+    write "/sys/power/mem_sleep" "deep"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -3503,7 +3506,9 @@ fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
 fi
-
+if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
+    write "${kernel}hung_task_timeout_secs" "0"
+fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
 fi
@@ -3673,16 +3678,16 @@ fr=$(((total_ram * 2 / 100) * 1024 / 4))
 bg=$(((total_ram * 3 / 100) * 1024 / 4))
 et=$(((total_ram * 4 / 100) * 1024 / 4))
 mr=$(((total_ram * 6 / 100) * 1024 / 4))
-cd=$(((total_ram * 9 / 100) * 1024 / 4))
-ab=$(((total_ram * 12 / 100) * 1024 / 4))
+cd=$(((total_ram * 7 / 100) * 1024 / 4))
+ab=$(((total_ram * 9 / 100) * 1024 / 4))
 
 efr=$((mfr * 16 / 5))
+
+mfr=$((total_ram * 6 / 5))
 
 if [[ "$efr" -lt "18432" ]]; then
     efr=18432
 fi
-
-mfr=$((total_ram * 9 / 5))
 
 if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
@@ -3700,8 +3705,8 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-# Use SSWAP if device do not have more than 5 GB RAM on samsung devices
-if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
+# Use SSWAP on samsung devices if it do not have more than 4 GB RAM
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "4096" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3762,20 +3767,20 @@ kmsg3 ""
 }
 
 vm_lmk_balanced() {
-fr=$(((total_ram * 5 / 2 / 100) * 1024 / 4))
-bg=$(((total_ram * 3 / 100) * 1024 / 4))
+fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
+bg=$(((total_ram * 4 / 100) * 1024 / 4))
 et=$(((total_ram * 5 / 100) * 1024 / 4))
-mr=$(((total_ram * 7 / 100) * 1024 / 4))
-cd=$(((total_ram * 9 / 100) * 1024 / 4))
-ab=$(((total_ram * 11 / 100) * 1024 / 4))
+mr=$(((total_ram * 6 / 100) * 1024 / 4))
+cd=$(((total_ram * 8 / 100) * 1024 / 4))
+ab=$(((total_ram * 10 / 100) * 1024 / 4))
 
-mfr=$((total_ram * 8 / 5))
+mfr=$((total_ram * 7 / 5))
+
+efr=$((mfr * 16 / 5))
 
 if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
 fi
-
-efr=$((mfr * 16 / 5))
 
 if [[ "$efr" -lt "18432" ]]; then
     efr=18432
@@ -3791,7 +3796,7 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "4096" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3845,20 +3850,20 @@ kmsg3 ""
 }
 
 vm_lmk_extreme() {
-fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
-bg=$(((total_ram * 3 / 100) * 1024 / 4))
-et=$(((total_ram * 5 / 100) * 1024 / 4))
-mr=$(((total_ram * 7 / 100) * 1024 / 4))
+fr=$(((total_ram * 3 / 100) * 1024 / 4))
+bg=$(((total_ram * 5 / 100) * 1024 / 4))
+et=$(((total_ram * 7 / 100) * 1024 / 4))
+mr=$(((total_ram * 9 / 100) * 1024 / 4))
 cd=$(((total_ram * 11 / 100) * 1024 / 4))
-ab=$(((total_ram * 14 / 100) * 1024 / 4))
+ab=$(((total_ram * 13 / 100) * 1024 / 4))
+
+mfr=$((total_ram * 9 / 5))
 
 efr=$((mfr * 16 / 5))
 
 if [[ "$efr" -lt "18432" ]]; then
     efr=18432
 fi
-
-mfr=$((total_ram * 6 / 5))
 
 if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
@@ -3874,7 +3879,7 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "4096" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -3929,19 +3934,19 @@ kmsg3 ""
 
 vm_lmk_battery() {
 fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
-bg=$(((total_ram * 5 / 100) * 1024 / 4))
-et=$(((total_ram * 6 / 100) * 1024 / 4))
-mr=$(((total_ram * 7 / 100) * 1024 / 4))
-cd=$(((total_ram * 9 / 100) * 1024 / 4))
-ab=$(((total_ram * 11 / 100) * 1024 / 4))
+bg=$(((total_ram * 4 / 100) * 1024 / 4))
+et=$(((total_ram * 5 / 100) * 1024 / 4))
+mr=$(((total_ram * 6 / 100) * 1024 / 4))
+cd=$(((total_ram * 8 / 100) * 1024 / 4))
+ab=$(((total_ram * 10 / 100) * 1024 / 4))
+
+mfr=$((total_ram * 6 / 5))
 
 efr=$((mfr * 16 / 5))
 
 if [[ "$efr" -lt "18432" ]]; then
     efr=18432
 fi
-
-mfr=$((total_ram * 7 / 5))
 
 if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
@@ -3957,7 +3962,7 @@ write "${vm}dirty_writeback_centisecs" "500"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "4096" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
@@ -4011,22 +4016,22 @@ kmsg3 ""
 }
 
 vm_lmk_gaming() {
-fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
+fr=$(((total_ram * 3 / 100) * 1024 / 4))
 bg=$(((total_ram * 5 / 100) * 1024 / 4))
-et=$(((total_ram * 6 / 100) * 1024 / 4))
-mr=$(((total_ram * 7 / 100) * 1024 / 4))
-cd=$(((total_ram * 11 / 100) * 1024 / 4))
-ab=$(((total_ram * 13 / 100) * 1024 / 4))
+et=$(((total_ram * 7 / 100) * 1024 / 4))
+mr=$(((total_ram * 8 / 100) * 1024 / 4))
+cd=$(((total_ram * 9 / 100) * 1024 / 4))
+ab=$(((total_ram * 11 / 100) * 1024 / 4))
+
+mfr=$((total_ram * 9 / 5))
 
 efr=$((mfr * 16 / 5))
 
-if [[ "$efr" -le "18432" ]]; then
+if [[ "$efr" -lt "18432" ]]; then
     efr=18432
 fi
 
-mfr=$((total_ram * 6 / 5))
-
-if [[ "$mfr" -le "3072" ]]; then
+if [[ "$mfr" -lt "3072" ]]; then
     mfr=3072
 fi
 
@@ -4040,7 +4045,7 @@ write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "5000" ]]; then
+if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "4096" ]]; then
     write "${vm}swappiness" "150"
 else
     write "${vm}swappiness" "100"
