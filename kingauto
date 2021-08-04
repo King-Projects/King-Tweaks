@@ -15,7 +15,7 @@ toptsdir=/dev/stune/top-app/tasks
 toptcdir=/dev/cpuset/top-app/tasks
 
 # Get screen state (ON | OFF)
-get_scrn_state() {
+get_scrn_state(){
 	scrn_state=$(dumpsys power | grep state=O | cut -d "=" -f 2)
 	if [[ "$scrn_state" == "ON" ]]; then 
 	    scrn_on=1
@@ -88,7 +88,7 @@ for bpid in $(pgrep -f geekbench) $(pgrep -f androbench2) $(pgrep -f kinemaster)
           setprop kingauto.prof battery
           get_all
           apply_all_auto
-      else
+      elif [[ "$batt_pctg" -ge "20" ]]; then
           kmsg3 ""
           kmsg "No considerable usage found. Applied latency profile"
           setprop kingauto.prof latency

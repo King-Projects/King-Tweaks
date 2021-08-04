@@ -103,7 +103,7 @@ else
     ts=Unknown
 fi
 
-menu() {
+menu(){
 clear
 echo ""
 echo "${Y}************${N}"
