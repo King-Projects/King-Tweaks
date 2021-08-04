@@ -14,10 +14,11 @@ echo "275" > "/sys/devices/platform/kcal_ctrl.0/kcal_sat"
 echo "253" > "/sys/devices/platform/kcal_ctrl.0/kcal_val"
 echo "258" > "/sys/devices/platform/kcal_ctrl.0/kcal_cont"
 
-if [[ $? == "1" ]]; then
-    echo "[!] Kcal preset executed with errors." > "$KXLOG"
-    exit 1
-else
-    echo "[*] Kcal preset executed without any errors! Enjoy." > "$KXLOG"
+if [[ $? == "0" ]]; then
+    echo "[*] KCAL Xvision preset executed without any errors!" > "$KXLOG"
     exit 0
+
+elif [[ $? != "0" ]]; then
+    echo "[!] KCAL Xvision preset executed with errors." > "$KXLOG"
+    exit $?
 fi
