@@ -584,7 +584,6 @@ get_batt_sts(){
 # Fetch battery status
 if [[ -e "/sys/class/power_supply/battery/status" ]]; then
     batt_sts=$(cat /sys/class/power_supply/battery/status)
-
 else
     batt_sts=$(dumpsys battery | awk '/status/{print $2}')
 fi
@@ -603,7 +602,6 @@ elif [[ "$batt_sts" == "4" ]]; then
 
 elif [[ "$batt_sts" == "5" ]]; then
       batt_sts=Full
-
 else
     batt_sts=$batt_sts
 fi
@@ -823,10 +821,10 @@ else
     stop mpdecision 2>/dev/null
 fi
 stop vendor.perfservice 2>/dev/null
-stop traced 2>/dev/null
 stop vendor.cnss_diag 2>/dev/null
 stop vendor.tcpdump 2>/dev/null
 stop statsd 2>/dev/null
+stop charge_logger 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -rf "/data/system/perfd/default_values"
@@ -958,7 +956,7 @@ config_cpuset(){
 if [[ "$soc" == "msm8937" ]]; then
     write "${cpuset}foreground/cpus" "0-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-3"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     write "${cpuset}restricted/cpus" "0-3"
@@ -968,7 +966,7 @@ if [[ "$soc" == "msm8937" ]]; then
 elif [[ "$soc" == "msm8952" ]]; then
     write "${cpuset}foreground/cpus" "0-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-3"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     kmsg "Tweaked cpusets"
@@ -986,7 +984,7 @@ elif [[ "$soc" == "msm8953" ]]; then
 elif [[ "$soc" == "msm8996" ]]; then
     write "${cpuset}foreground/cpus" "0-3"
     write "${cpuset}foreground/boost/cpus" "2-3"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-2"
     write "${cpuset}system-background/cpus" "2-3"
     write "${cpuset}top-app/cpus" "0-3"
     kmsg "Tweaked cpusets"
@@ -995,7 +993,7 @@ elif [[ "$soc" == "msm8996" ]]; then
 elif [[ "$soc" == "msm8998" ]]; then
     write "${cpuset}foreground/cpus" "0-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-2"
+    write "${cpuset}background/cpus" "0-3"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     kmsg "Tweaked cpusets"
@@ -1004,7 +1002,7 @@ elif [[ "$soc" == "msm8998" ]]; then
 elif [[ "$soc" == "msmnile" ]]; then
     write "${cpuset}foreground/cpus" "0-2,4-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-2"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     kmsg "Tweaked cpusets"
@@ -1012,7 +1010,7 @@ elif [[ "$soc" == "msmnile" ]]; then
     
 elif [[ "$soc" == "mt6768" ]]; then
     write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-3"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     write "${cpuset}restricted/cpus" "0-3"
@@ -1021,7 +1019,7 @@ elif [[ "$soc" == "mt6768" ]]; then
 
 elif [[ "$soc" == "mt6873" ]]; then
     write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-3"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     write "${cpuset}restricted/cpus" "0-3"
@@ -1030,7 +1028,7 @@ elif [[ "$soc" == "mt6873" ]]; then
     
 elif [[ "$soc" == "mt6885" ]]; then
     write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-3"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     write "${cpuset}restricted/cpus" "0-3"
@@ -1038,34 +1036,34 @@ elif [[ "$soc" == "mt6885" ]]; then
     kmsg3 ""
     
 elif [[ "$soc" == "sdm710" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/cpus" "0-2,4-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-2"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     kmsg "Tweaked cpusets"
     kmsg3 ""
     
 elif [[ "$soc" == "sdm845" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/cpus" "0-2,4-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-2"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     kmsg "Tweaked cpusets"
     kmsg3 ""
     
 elif [[ "$soc" == "sm6150" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/cpus" "0-2,4-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-2"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     kmsg "Tweaked cpusets"
     kmsg3 ""
     
 elif [[ "$soc" == "lito" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/cpus" "0-2,4-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
     write "${cpuset}background/cpus" "0-1"
     write "${cpuset}system-background/cpus" "0-3"
@@ -1085,17 +1083,17 @@ elif [[ "$soc" == "lahaina" ]]; then
 elif [[ "$soc" == "exynos5" ]]; then
     write "${cpuset}foreground/cpus" "0-2,4-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-3"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
-    write "${cpuset}dex2oat/cpus" "2-7"
+    write "${cpuset}dex2oat/cpus" "0-3,6-7"
     kmsg "Tweaked cpusets"
     kmsg3 ""
     
 elif [[ "$soc" == "trinket" ]]; then
-    write "${cpuset}foreground/cpus" "0-2,4-7"
+    write "${cpuset}foreground/cpus" "0-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-3"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     write "${cpuset}restricted/cpus" "0-3"
@@ -1114,7 +1112,7 @@ elif [[ "$soc" == "kona" ]]; then
 elif [[ "$soc" == "universal9820" ]]; then
       write "${cpuset}foreground/cpus" "0-2,4-7"
       write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}background/cpus" "0-2"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}dexopt/cpus" "0-3,6-7"
