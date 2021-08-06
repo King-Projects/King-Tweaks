@@ -484,16 +484,16 @@ fi
 
 get_ktsr_info(){
 # Fetch KTSR version
-build_ver=$(cat $MODPATH/module.prop | grep version= | sed "s/version=//")
+build_ver=$(cat "$MODPATH"/module.prop | grep version= | sed "s/version=//")
 
 # Fetch KTSR build type
-build_tp=$(cat $MODPATH/ktsr.prop | grep buildtype= | sed "s/buildtype=//")
+build_tp=$(cat "$MODPATH"/ktsr.prop | grep buildtype= | sed "s/buildtype=//")
 
 # Fetch KTSR build date
-build_dt=$(cat $MODPATH/ktsr.prop | grep builddate= | sed "s/builddate=//")
+build_dt=$(cat "$MODPATH"/ktsr.prop | grep builddate= | sed "s/builddate=//")
 
 # Fetch KTSR build codename
-build_cdn=$(cat $MODPATH/ktsr.prop | grep codename= | sed "s/codename=//")
+build_cdn=$(cat "$MODPATH"/ktsr.prop | grep codename= | sed "s/codename=//")
 }
 
 get_batt_tmp(){
@@ -651,19 +651,19 @@ fi
 get_gpu_load(){
 # Fetch GPU load
 if [[ -e "$gpui/gpu_busy_percentage" ]]; then
-    gpu_load=$(cat $gpui/gpu_busy_percentage | tr -d %)
+    gpu_load=$(cat "$gpui"/gpu_busy_percentage | tr -d %)
 
 elif [[ -e "$gpu/utilization" ]]; then
-      gpu_load=$(cat $gpu/utilization)
+      gpu_load=$(cat "$gpu"/utilization)
       
 elif [[ -e "/proc/mali/utilization" ]]; then
       gpu_load=$(cat /proc/mali/utilization)
 
 elif [[ -e "$gpu/load" ]]; then
-      gpu_load=$(cat $gpu/load | tr -d %)
+      gpu_load=$(cat "$gpu"/load | tr -d %)
 
 elif [[ -e "$gpui/gpu_busy" ]]; then
-      gpu_load=$(cat $gpui/gpu_busy | tr -d %) 
+      gpu_load=$(cat "$gpui"/gpu_busy | tr -d %) 
 fi
 }
 
@@ -984,7 +984,7 @@ elif [[ "$soc" == "msm8953" ]]; then
 elif [[ "$soc" == "msm8996" ]]; then
     write "${cpuset}foreground/cpus" "0-3"
     write "${cpuset}foreground/boost/cpus" "2-3"
-    write "${cpuset}background/cpus" "0-2"
+    write "${cpuset}background/cpus" "1-3"
     write "${cpuset}system-background/cpus" "2-3"
     write "${cpuset}top-app/cpus" "0-3"
     kmsg "Tweaked cpusets"
@@ -1013,6 +1013,17 @@ elif [[ "$soc" == "mt6768" ]]; then
     write "${cpuset}background/cpus" "0-3"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
+    write "${cpuset}restricted/cpus" "0-3"
+    kmsg "Tweaked cpusets"
+    kmsg3 ""
+
+elif [[ "$soc" == "mt6785" ]]; then
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-3"
+    write "${cpuset}system-background/cpus" "0-3"
+    write "${cpuset}top-app/cpus" "0-7"
+    write "${cpuset}top-app/boost/cpus" "0-7"
     write "${cpuset}restricted/cpus" "0-3"
     kmsg "Tweaked cpusets"
     kmsg3 ""
@@ -1065,7 +1076,7 @@ elif [[ "$soc" == "sm6150" ]]; then
 elif [[ "$soc" == "lito" ]]; then
     write "${cpuset}foreground/cpus" "0-2,4-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-2"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     kmsg "Tweaked cpusets"
@@ -1074,14 +1085,14 @@ elif [[ "$soc" == "lito" ]]; then
 elif [[ "$soc" == "lahaina" ]]; then
     write "${cpuset}foreground/cpus" "0-2,4-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-2"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     kmsg "Tweaked cpusets"
     kmsg3 ""
     
 elif [[ "$soc" == "exynos5" ]]; then
-    write "${cpuset}foreground/cpus" "0-2,4-7"
+    write "${cpuset}foreground/cpus" "0-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
     write "${cpuset}background/cpus" "0-3"
     write "${cpuset}system-background/cpus" "0-3"
@@ -1103,16 +1114,16 @@ elif [[ "$soc" == "trinket" ]]; then
 elif [[ "$soc" == "kona" ]]; then
     write "${cpuset}foreground/cpus" "0-2,4-7"
     write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}background/cpus" "0-2"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     kmsg "Tweaked cpusets"
     kmsg3 ""
     
 elif [[ "$soc" == "universal9820" ]]; then
-      write "${cpuset}foreground/cpus" "0-2,4-7"
+      write "${cpuset}foreground/cpus" "0-7"
       write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-2"
+      write "${cpuset}background/cpus" "0-3"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}dexopt/cpus" "0-3,6-7"
@@ -1690,6 +1701,10 @@ fi
 if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
     write "/proc/cpufreq/cpufreq_stress_test" "0"
 fi
+
+if [[ -e "/proc/cpufreq/cpufreq_sched_disable" ]]; then
+    write "/proc/cpufreq/cpufreq_sched_disable" "0"
+fi
 }
 
 misc_cpu_max_pwr(){
@@ -1704,6 +1719,10 @@ fi
 if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
     write "/proc/cpufreq/cpufreq_stress_test" "1"
 fi
+
+if [[ -e "/proc/cpufreq/cpufreq_sched_disable" ]]; then
+    write "/proc/cpufreq/cpufreq_sched_disable" "0"
+fi
 }
 
 misc_cpu_pwr_saving(){
@@ -1717,6 +1736,10 @@ fi
 
 if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
     write "/proc/cpufreq/cpufreq_stress_test" "0"
+fi
+
+if [[ -e "/proc/cpufreq/cpufreq_sched_disable" ]]; then
+    write "/proc/cpufreq/cpufreq_sched_disable" "0"
 fi
 }
 
@@ -3078,7 +3101,9 @@ write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
     write "${kernel}timer_migration" "0"
 fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "$mtk" == "true" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "2"
+else
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
 if [[ -e "/proc/ufs_perf" ]]; then
@@ -3119,6 +3144,10 @@ if [[ -e "${kernel}sched_energy_aware" ]]; then
 fi
 if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
     write "${kernel}hung_task_timeout_secs" "0"
+fi
+# We do not need it on android, and also is disabled by default on redhat for security purposes
+if [[ -e "${kernel}sysrq" ]]; then
+    write "${kernel}sysrq" "0"
 fi
 # Set memory sleep mode to s2idle 
 if [[ -e "/sys/power/mem_sleep" ]]; then
@@ -3176,7 +3205,9 @@ fi
 if [[ -e "${kernel}sched_boost" ]]; then
     write "${kernel}sched_boost" "0"
 fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "$mtk" == "true" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "2"
+else
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
 if [[ -e "/proc/ufs_perf" ]]; then
@@ -3217,6 +3248,9 @@ if [[ -e "${kernel}sched_energy_aware" ]]; then
 fi
 if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
     write "${kernel}hung_task_timeout_secs" "0"
+fi
+if [[ -e "${kernel}sysrq" ]]; then
+    write "${kernel}sysrq" "0"
 fi
 # Set memory sleep mode to deep
 if [[ -e "/sys/power/mem_sleep" ]]; then
@@ -3318,6 +3352,9 @@ fi
 if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
     write "${kernel}hung_task_timeout_secs" "0"
 fi
+if [[ -e "${kernel}sysrq" ]]; then
+    write "${kernel}sysrq" "0"
+fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
 fi
@@ -3373,7 +3410,9 @@ fi
 if [[ -e "${kernel}sched_boost" ]]; then
     write "${kernel}sched_boost" "0"
 fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "$mtk" == "true" ]]; then
+    write "/sys/devices/system/cpu/eas/enable" "2"
+else
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
 if [[ -e "/proc/ufs_perf" ]]; then
@@ -3414,6 +3453,9 @@ if [[ -e "${kernel}sched_energy_aware" ]]; then
 fi
 if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
     write "${kernel}hung_task_timeout_secs" "0"
+fi
+if [[ -e "${kernel}sysrq" ]]; then
+    write "${kernel}sysrq" "0"
 fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "deep"
@@ -3513,6 +3555,9 @@ if [[ -e "${kernel}sched_energy_aware" ]]; then
 fi
 if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
     write "${kernel}hung_task_timeout_secs" "0"
+fi
+if [[ -e "${kernel}sysrq" ]]; then
+    write "${kernel}sysrq" "0"
 fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
@@ -3748,7 +3793,6 @@ fi
 
 # Disable adaptive_lmk
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
-    setprop lmk.autocalc false
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
@@ -3834,7 +3878,6 @@ if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
 fi
 
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
-    setprop lmk.autocalc false
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
@@ -3917,7 +3960,6 @@ if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
 fi
 
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
-    setprop lmk.autocalc false
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
@@ -4000,7 +4042,6 @@ if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
 fi
 
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
-    setprop lmk.autocalc false
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
@@ -4083,7 +4124,6 @@ if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
 fi
 
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
-    setprop lmk.autocalc false
     write "${lmk}parameters/enable_adaptive_lmk" "1"
 fi
 
@@ -4224,8 +4264,7 @@ avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 			break
 		fi
 	done
-	
-# TCP Tweaks
+
 write "${tcp}ip_no_pmtu_disc" "0"
 write "${tcp}tcp_ecn" "1"
 write "${tcp}tcp_timestamps" "0"
@@ -4243,6 +4282,10 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
+# Increase rmem_max and wmem_max values to 2M
+write "/proc/sys/net/core/wmem_max" "8388608"
+write "/proc/sys/net/core/rmem_max" "8388608"
+# Distribute load between CPUs, at cost of some delay on timestamps
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
 kmsg "Applied TCP tweaks"
