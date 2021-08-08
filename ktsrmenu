@@ -7,7 +7,7 @@
 ID="KTSR"
 
 # Detect root
-_name=$(basename $0)
+_name=$(basename "$0")
 ls /data >/dev/null 2>&1 || { echo "[!] $ID needs to run as root"; echo "type 'su' then '$_name'"; exit 1; }
 
 # Import magisk util_functions.sh
@@ -110,7 +110,7 @@ echo "${Y}************${N}"
 echo "${Y}* KTSR CLI *${N}"
 echo "${Y}************${N}"
 echo ""
-echo "${G}Ver: 1.5.7.1-beta-r6${N}"
+echo "${G}Ver: 1.5.7.2-beta-r7${N}"
 echo ""
 echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 echo ""
@@ -118,15 +118,15 @@ echo "[*] Thermal: ${B}$ts${N}"
 echo ""
 echo "[*] Available profiles: "
 echo ""
-echo "${C}[1] Automatic: Change your profile automatically based on specific circumstances and do additional tweaking for a better user-experience.${N}"
+echo "${C}[1] Automatic: Change between profiles automatically based on user activity for a better user-experience.${N}"
 echo ""
-echo "${B}[2] Battery: Reduce power draw to less battery drain and energetic comsumption, ensuring a juicy battery life.${N}"
+echo "${B}[2] Battery: Reduce SOC power draw to less battery comsumption, ensuring a juicy battery life.${N}"
 echo ""
-echo "${G}[3] Balanced: Balanced between battery life and performance, perfect to be used as daily driver.${N}"
+echo "${G}[3] Balanced: Balanced between battery life and performance, perfect to be used on day-to-day activities.${N}"
 echo ""
-echo "${Y}[4] Extreme: Tweaks both CPU / GPU and more for less throttling, maintaining a consistent performance. May drain more battery also. Recommended to benchmarking / heavy apps.${N}"
+echo "${Y}[4] Extreme: Tweaks both CPU / GPU for a consistent experience while dealing with heavy apps. May drain more battery life compared to Balanced / Latency.${N}"
 echo ""
-echo "${R}[5] Gaming: Recommended to gamers who want the best performance possible while playing, with almost zero throttling, tweaks both CPU / GPU and many other settings, will probably drain a lot of battery life.${N}"
+echo "${R}[5] Gaming: Recommended to users who wants the best performance possible while playing, tweaking both CPU / GPU to it's max. May drain a lot of battery life.${N}"
 echo ""
 echo "[6] Latency: Recommended to users who want really silky / smooth UI"
 echo ""
@@ -134,6 +134,7 @@ echo "[*] Other misc options: "
 echo ""
 echo "[7] Optimize apps package"
 echo ""
+
 if [[ "$low_power_mode" == "Disabled" ]]; then
     echo "[8] Enable low power mode"
     echo ""
@@ -141,6 +142,7 @@ else
     echo "[9] Disable low power mode"
     echo ""
 fi
+
 if [[ "$data_saver" == "Disabled" ]]; then
     echo "[10] Enable data saver"
     echo ""
@@ -148,6 +150,7 @@ else
     echo "[11] Disable data saver"
     echo ""
 fi
+
 if [[ "$loc_mode_pwr_saving" == "Disabled" ]]; then
     echo "[12] Enable power-saving location mode"
     echo ""
@@ -155,6 +158,7 @@ else
     echo "[13] Disable power-saving location mode"
     echo ""
 fi
+
 echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
 echo ""
 echo "[15] Access our telegram group"
@@ -162,30 +166,36 @@ echo ""
 if [[ "$ts" == "On" ]]; then
     echo "${B}[16] Disable thermal${N}"
     echo ""
+
 elif [[ "$ts" == "Off" ]]; then
       echo "${B}[17] Enable thermal${N}"
       echo ""
 fi
+
 if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
     echo "[18] 50 HZ Refresh Rate"   
     echo ""
+
 elif [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
       echo "[18] 50 HZ Refresh Rate"   
       echo ""
       echo "[19] 55 HZ Refresh Rate"
       echo ""
 fi
+
 if [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "60" ]]; then
-echo "[20] 60 HZ Refresh Rate"
-echo ""
+    echo "[20] 60 HZ Refresh Rate"
+    echo ""
 fi
+
 if [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]]; then
-echo "[21] 90 HZ Refresh Rate"
-echo ""
+    echo "[21] 90 HZ Refresh Rate"
+    echo ""
 fi
+
 if [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]]; then
-echo "[22] 120 HZ Refresh Rate"
-echo ""
+    echo "[22] 120 HZ Refresh Rate"
+    echo ""
 fi
 echo "[23] Reset Refresh Rate config"
 echo ""
@@ -199,6 +209,15 @@ echo "[27] Reset apps flag"
 echo ""
 echo "[28] Recompile all apps with speed-profile flag (faster apps startup, optimization, etc) (Needs to reset apps flag first)"
 echo ""
+if [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]]; then
+    echo "[29] Switch to dynamic thermal profile (May improve charging speed)"
+    echo ""
+
+elif [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]]; then
+      echo "[30] Switch to default thermal profile"
+      echo ""
+fi
+
 echo "${R}[0] Exit${N}"
 echo ""
 echo -n "${Y}[*] Select the desired option:${N} "
@@ -425,15 +444,15 @@ read -r option
                                                
                                         "24")
                                              sync
-                                             echo "3" > /proc/sys/vm/drop_caches
+                                             echo "3" > "/proc/sys/vm/drop_caches"
                                              echo "${G}Done!${N}"
-                                             sleep 2
+                                             sleep 3
                                              menu
                                              ;;
                                              
                                       "25")
                                            sync
-                                           echo "3" > /proc/sys/vm/drop_caches
+                                           echo "3" > '/proc/sys/vm/drop_caches"
                                            am kill-all
                                            echo "${G}Done!${N}"
                                            sleep 3
@@ -442,16 +461,17 @@ read -r option
                                            
                                        "26")
                                             sync
-                                            echo "3" > /proc/sys/vm/drop_caches
+                                            echo "3" > '/proc/sys/vm/drop_caches"
                                             am kill-all
                                             sleep 3
-                                            while IFS= read -r pkgnm; do
-                                            if [[ ! "$pkgnm" == "com.termux" ]] && [[ ! "$pkgnm" == "jackpal.androidterm" ]] && [[ ! "$pkgnm" == "yarolegovich.materialterminal" ]] && [[ ! "$pkgnm" == "com.google.android.inputmethod.latin" ]] && [[ ! "$pkgnm" == "com.termoneplus" ]]; then
-                                            am force-stop "$pkgnm"
+                                            while IFS= read -r pkg_nm; do
+                                            if [[ "$pkg_nm" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]]; then
+                                                am force-stop "$pkg_nm"
                                             fi
                                             done <<< "$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
                                             echo "${G}Done!${N}"
                                             sleep 2
+                                            menu
                                             ;;
                                            
                                             "27")
@@ -461,7 +481,18 @@ read -r option
                                                  "28")
                                                       cmd package compile -m speed-profile -f -a >/dev/null 2>&1
                                                       ;;
+                                                      
+                                                      "29")
+                                                           echo "2" > "/sys/class/thermal/thermal_message/sconfig"
+                                                           echo "${G}Done!${N}"
+                                                           sleep 2
+                                                           ;; 
                                                  
+                                                    "30")
+                                                         echo "0" > "/sys/class/thermal/thermal_message/sconfig"
+                                                         echo "${G}Done!${N}"
+                                                         sleep 2
+                                                         ;;
                                        "0")
 						                   echo "${G}Hope that see ya soon! ;)${N}"
 						                   ;;
@@ -500,7 +531,7 @@ read -r option
 						
 						   t)
 						     if [[ "$thermal" == "On" ]]; then 
-						         echo "Disabling thermal..."
+						         echo "Disabling thermal services..."
 						         stop thermal 2>/dev/null
 						         stop thermald 2>/dev/null
 						         stop thermalservice 2>/dev/null
@@ -543,14 +574,13 @@ read -r option
                                    echo "3" > /proc/sys/vm/drop_caches
                                    am kill-all
                                    sleep 3
-                                   while IFS= read -r pkgnm; do
-                                   if [[ ! "$pkgnm" == "com.termux" ]] && [[ ! "$pkgnm" == "jackpal.androidterm" ]] && [[ ! "$pkgnm" == "yarolegovich.materialterminal" ]] && [[ ! "$pkgnm" == "com.google.android.inputmethod.latin" ]] && [[ ! "$pkgnm" == "com.termoneplus" ]]; then
-                                   am force-stop "$pkgnm"
+                                   while IFS= read -r pkg_nm; do
+                                   if [[ "$pkg_nm" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]]; then
+                                       am force-stop "$pkg_nm"
                                    fi
                                    done <<< "$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
                                    echo "${G}Done!${N}"
                                    sleep 2
-
                              else
                                  help_me
                              fi
