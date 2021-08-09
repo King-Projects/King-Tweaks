@@ -110,7 +110,7 @@ echo "${Y}************${N}"
 echo "${Y}* KTSR CLI *${N}"
 echo "${Y}************${N}"
 echo ""
-echo "${G}Ver: 1.5.7.2-beta-r7${N}"
+echo "${G}Ver: 1.5.7.3-beta-r7${N}"
 echo ""
 echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 echo ""
@@ -163,6 +163,7 @@ echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
 echo ""
 echo "[15] Access our telegram group"
 echo ""
+
 if [[ "$ts" == "On" ]]; then
     echo "${B}[16] Disable thermal${N}"
     echo ""
@@ -197,6 +198,7 @@ if [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120"
     echo "[22] 120 HZ Refresh Rate"
     echo ""
 fi
+
 echo "[23] Reset Refresh Rate config"
 echo ""
 echo "[24] Free RAM [ Balanced ] (Will only drop caches)."
@@ -209,6 +211,7 @@ echo "[27] Reset apps flag"
 echo ""
 echo "[28] Recompile all apps with speed-profile flag (faster apps startup, optimization, etc) (Needs to reset apps flag first)"
 echo ""
+
 if [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]]; then
     echo "[29] Switch to dynamic thermal profile (May improve charging speed)"
     echo ""
@@ -452,7 +455,7 @@ read -r option
                                              
                                       "25")
                                            sync
-                                           echo "3" > '/proc/sys/vm/drop_caches"
+                                           echo "3" > "/proc/sys/vm/drop_caches"
                                            am kill-all
                                            echo "${G}Done!${N}"
                                            sleep 3
@@ -461,7 +464,7 @@ read -r option
                                            
                                        "26")
                                             sync
-                                            echo "3" > '/proc/sys/vm/drop_caches"
+                                            echo "3" > "/proc/sys/vm/drop_caches"
                                             am kill-all
                                             sleep 3
                                             while IFS= read -r pkg_nm; do
@@ -507,7 +510,7 @@ read -r option
 						    menu
 						fi
 
-						help_me() {
+						help_me(){
                         echo "$MODTITLE $VER($REL)"
                         echo "by $AUTHOR"
                         echo "Usage: $_name"
