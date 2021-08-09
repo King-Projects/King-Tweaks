@@ -165,11 +165,11 @@ echo "[15] Access our telegram group"
 echo ""
 
 if [[ "$ts" == "On" ]]; then
-    echo "${B}[16] Disable thermal${N}"
+    echo "${B}[16] Disable thermal services (Can reduce throttling but also make your device heats up more)${N}"
     echo ""
 
 elif [[ "$ts" == "Off" ]]; then
-      echo "${B}[17] Enable thermal${N}"
+      echo "${B}[17] Enable thermal services${N}"
       echo ""
 fi
 
@@ -212,11 +212,11 @@ echo ""
 echo "[28] Recompile all apps with speed-profile flag (faster apps startup, optimization, etc) (Needs to reset apps flag first)"
 echo ""
 
-if [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]]; then
+if [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]]; then
     echo "[29] Switch to dynamic thermal profile (May improve charging speed)"
     echo ""
 
-elif [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]]; then
+elif [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]]; then
       echo "[30] Switch to default thermal profile"
       echo ""
 fi
@@ -489,12 +489,14 @@ read -r option
                                                            echo "2" > "/sys/class/thermal/thermal_message/sconfig"
                                                            echo "${G}Done!${N}"
                                                            sleep 2
+                                                           menu
                                                            ;; 
                                                  
                                                     "30")
                                                          echo "0" > "/sys/class/thermal/thermal_message/sconfig"
                                                          echo "${G}Done!${N}"
                                                          sleep 2
+                                                         menu
                                                          ;;
                                        "0")
 						                   echo "${G}Hope that see ya soon! ;)${N}"
@@ -561,20 +563,20 @@ read -r option
 						     f)
 						     if [[ "$2" == "1" ]]; then
 						         sync
-						         echo "3" > /proc/sys/vm/drop_caches
+						         echo "3" > "/proc/sys/vm/drop_caches"
 						         echo "${G}Done!${N}"
 						         sleep 2
 						     
                              elif [[ "$2" == "2" ]]; then
                                    sync
-                                   echo "3" > /proc/sys/vm/drop_caches
+                                   echo "3" > "/proc/sys/vm/drop_caches"
                                    am kill-all
                                    echo "${G}Done!${N}"
                                    sleep 3
                              
                              elif [[ "$2" == "3" ]]; then
                                    sync
-                                   echo "3" > /proc/sys/vm/drop_caches
+                                   echo "3" > "/proc/sys/vm/drop_caches"
                                    am kill-all
                                    sleep 3
                                    while IFS= read -r pkg_nm; do
