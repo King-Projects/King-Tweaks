@@ -447,13 +447,13 @@ detect_cpu_sched(){
 # Fetch the CPU scheduling type
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-  if [[ "$(cat "${cpu}/scaling_available_governors" | grep 'sched')" ]]; then
+  if [[ "$(cat "${cpu}scaling_available_governors" | grep 'sched')" ]]; then
       cpu_sched=EAS
 
-  elif [[ "$(cat "${cpu}/scaling_available_governors" | grep 'util')" ]]; then
+  elif [[ "$(cat "${cpu}scaling_available_governors" | grep 'util')" ]]; then
         cpu_sched=EAS
 
-  elif [[ "$(cat "${cpu}/scaling_available_governors" | grep 'interactive')" ]]; then
+  elif [[ "$(cat "${cpu}scaling_available_governors" | grep 'interactive')" ]]; then
         cpu_sched=HMP
   else
       cpu_sched=Unknown
@@ -960,180 +960,185 @@ kmsg "Enabled core control & CPU hotplug"
 kmsg3 ""
 }
 
-# Some of these are based from helloklf (GitHub) vtools, credits to him.
+# Some of these are based from @helloklf (GitHub) vtools, credits to him.
 config_cpuset(){
 if [[ "${soc}" == "msm8937" ]]; then
     write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-3"
+    write "${cpuset}foreground/boost/cpus" "0-7"
+    write "${cpuset}background/cpus" "0-1"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     write "${cpuset}restricted/cpus" "0-3"
     kmsg "Tweaked cpusets"
     kmsg3 ""
-    
+
 elif [[ "${soc}" == "msm8952" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-3"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "${soc}" == "msm8953" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-3"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "${soc}" == "msm8996" ]]; then
-    write "${cpuset}foreground/cpus" "0-3"
-    write "${cpuset}foreground/boost/cpus" "2-3"
-    write "${cpuset}background/cpus" "1-3"
-    write "${cpuset}system-background/cpus" "2-3"
-    write "${cpuset}top-app/cpus" "0-3"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-3"
+      write "${cpuset}foreground/boost/cpus" "0-3"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "1-3"
+      write "${cpuset}top-app/cpus" "0-3"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "${soc}" == "msm8998" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-3"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "${soc}" == "msmnile" ]]; then
-    write "${cpuset}foreground/cpus" "0-2,4-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-2"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-3,5-6"
+      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "${soc}" == "mt6768" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}background/cpus" "0-3"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    write "${cpuset}restricted/cpus" "0-3"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
 
 elif [[ "${soc}" == "mt6785" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-3"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    write "${cpuset}top-app/boost/cpus" "0-7"
-    write "${cpuset}restricted/cpus" "0-3"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}top-app/boost/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
 
 elif [[ "$soc" == "mt6873" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}background/cpus" "0-3"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    write "${cpuset}restricted/cpus" "0-3"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "$soc" == "mt6885" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}background/cpus" "0-3"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    write "${cpuset}restricted/cpus" "0-3"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "$soc" == "sdm710" ]]; then
-    write "${cpuset}foreground/cpus" "0-2,4-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-2"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-3,5-6"
+      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "$soc" == "sdm845" ]]; then
-    write "${cpuset}foreground/cpus" "0-2,4-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-2"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
-    
-elif [[ "$soc" == "sm6150" ]]; then
-    write "${cpuset}foreground/cpus" "0-2,4-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-2"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-3,5-6"
+      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
+      
+      elif [[ "$soc" == "sm6150" ]]; then
+      write "${cpuset}foreground/cpus" "0-3,5-6"
+      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "$soc" == "lito" ]]; then
-    write "${cpuset}foreground/cpus" "0-2,4-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-2"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-5,7"
+      write "${cpuset}foreground/boost/cpus" "0-5,7"
+      write "${cpuset}background/cpus" "4-5"
+      write "${cpuset}system-background/cpus" "2-5"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "2-5"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "$soc" == "lahaina" ]]; then
-    write "${cpuset}foreground/cpus" "0-2,4-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-2"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-3,5-6"
+      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "$soc" == "exynos5" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-3"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    write "${cpuset}dex2oat/cpus" "0-3,6-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "2-5"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}dex2oat/cpus" "0-3,6-7"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "$soc" == "trinket" ]]; then
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-3"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    write "${cpuset}restricted/cpus" "0-3"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-3,5-6"
+      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "$soc" == "kona" ]]; then
-    write "${cpuset}foreground/cpus" "0-2,4-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-2"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
+      write "${cpuset}foreground/cpus" "0-3,5-6"
+      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}top-app/cpus" "0-7"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
     
 elif [[ "$soc" == "universal9820" ]]; then
       write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-3"
-      write "${cpuset}system-background/cpus" "0-3"
+      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "2-5"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}dexopt/cpus" "0-3,6-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -4291,9 +4296,9 @@ write "${tcp}tcp_keepalive_probes" "10"
 write "${tcp}tcp_keepalive_intvl" "30"
 write "${tcp}tcp_fin_timeout" "30"
 write "${tcp}tcp_low_latency" "1"
-# Increase rmem_max and wmem_max values to 2M
-write "/proc/sys/net/core/wmem_max" "8388608"
-write "/proc/sys/net/core/rmem_max" "8388608"
+# Increase rmem_max and wmem_max values to 4M
+write "/proc/sys/net/core/wmem_max" "16777216"
+write "/proc/sys/net/core/rmem_max" "16777216"
 # Distribute load between CPUs, at cost of some delay on timestamps
 write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
@@ -4563,11 +4568,11 @@ else
     disable_devfreq_boost
 fi
 
-boost_"$ktsr_prof_en"
+boost_${ktsr_prof_en}
 
-io_"$ktsr_prof_en"
+io_${ktsr_prof_en}
 
-cpu_"$ktsr_prof_en"
+cpu_${ktsr_prof_en}
 
 if [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]]; then
     enable_kvb
@@ -4598,7 +4603,7 @@ else
     cpu_clk_max
 fi
 
-hmp_"$ktsr_prof_en"
+hmp_${ktsr_prof_en}
 
 gpu_${ktsr_prof_en}
 
