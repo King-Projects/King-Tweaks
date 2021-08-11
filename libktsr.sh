@@ -654,7 +654,7 @@ fi
 
 get_gpu_load(){
 # Fetch GPU load
-if [[ -e "${gpui}/gpu_busy_percentage" ]]; then
+if [[ -e "${gpui}gpu_busy_percentage" ]]; then
     gpu_load=$(cat "${gpui}gpu_busy_percentage" | tr -d %)
 
 elif [[ -e "${gpu}utilization" ]]; then
@@ -663,10 +663,10 @@ elif [[ -e "${gpu}utilization" ]]; then
 elif [[ -e "/proc/mali/utilization" ]]; then
       gpu_load=$(cat /proc/mali/utilization)
 
-elif [[ -e "${gpu}/load" ]]; then
+elif [[ -e "${gpu}load" ]]; then
       gpu_load=$(cat "${gpu}load" | tr -d %)
 
-elif [[ -e "${gpui}/gpu_busy" ]]; then
+elif [[ -e "${gpui}gpu_busy" ]]; then
       gpu_load=$(cat "${gpui}gpu_busy" | tr -d %) 
 fi
 }
@@ -963,6 +963,7 @@ kmsg3 ""
 # Some of these are based from @helloklf (GitHub) vtools, credits to him.
 config_cpuset(){
 if [[ "${soc}" == "msm8937" ]]; then
+    write "${cpuset}camera-daemon/cpus" "0-7"
     write "${cpuset}foreground/cpus" "0-7"
     write "${cpuset}foreground/boost/cpus" "0-7"
     write "${cpuset}background/cpus" "0-1"
@@ -973,24 +974,29 @@ if [[ "${soc}" == "msm8937" ]]; then
     kmsg3 ""
 
 elif [[ "${soc}" == "msm8952" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-7"
       write "${cpuset}foreground/boost/cpus" "0-7"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "${soc}" == "msm8953" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-7"
       write "${cpuset}foreground/boost/cpus" "0-7"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "${soc}" == "msm8996" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-3"
       write "${cpuset}foreground/cpus" "0-3"
       write "${cpuset}foreground/boost/cpus" "0-3"
       write "${cpuset}background/cpus" "0-1"
@@ -1000,24 +1006,29 @@ elif [[ "${soc}" == "msm8996" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "msm8998" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-7"
       write "${cpuset}foreground/boost/cpus" "0-7"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "${soc}" == "msmnile" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "${soc}" == "mt6768" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-7"
       write "${cpuset}foreground/boost/cpus" "0-7"
       write "${cpuset}background/cpus" "0-1"
@@ -1028,6 +1039,7 @@ elif [[ "${soc}" == "mt6768" ]]; then
       kmsg3 ""
 
 elif [[ "${soc}" == "mt6785" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-7"
       write "${cpuset}foreground/boost/cpus" "0-7"
       write "${cpuset}background/cpus" "0-1"
@@ -1039,6 +1051,7 @@ elif [[ "${soc}" == "mt6785" ]]; then
       kmsg3 ""
 
 elif [[ "$soc" == "mt6873" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-7"
       write "${cpuset}foreground/boost/cpus" "0-7"
       write "${cpuset}background/cpus" "0-1"
@@ -1049,6 +1062,7 @@ elif [[ "$soc" == "mt6873" ]]; then
       kmsg3 ""
     
 elif [[ "$soc" == "mt6885" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-7"
       write "${cpuset}foreground/boost/cpus" "0-7"
       write "${cpuset}background/cpus" "0-1"
@@ -1059,15 +1073,18 @@ elif [[ "$soc" == "mt6885" ]]; then
       kmsg3 ""
     
 elif [[ "$soc" == "sdm710" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "$soc" == "sdm845" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
@@ -1077,16 +1094,20 @@ elif [[ "$soc" == "sdm845" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
       
-      elif [[ "$soc" == "sm6150" ]]; then
+elif [[ "$soc" == "sm6150" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "$soc" == "lito" ]]; then
+	  write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-5,7"
       write "${cpuset}foreground/boost/cpus" "0-5,7"
       write "${cpuset}background/cpus" "4-5"
@@ -1097,25 +1118,30 @@ elif [[ "$soc" == "lito" ]]; then
       kmsg3 ""
     
 elif [[ "$soc" == "lahaina" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "$soc" == "exynos5" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-7"
       write "${cpuset}foreground/boost/cpus" "0-7"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "2-5"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}dex2oat/cpus" "0-3,6-7"
+      write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "$soc" == "trinket" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
@@ -1126,15 +1152,18 @@ elif [[ "$soc" == "trinket" ]]; then
       kmsg3 ""
     
 elif [[ "$soc" == "kona" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "$soc" == "universal9820" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
       write "${cpuset}foreground/cpus" "0-7"
       write "${cpuset}foreground/boost/cpus" "0-7"
       write "${cpuset}background/cpus" "0-1"
@@ -1142,6 +1171,19 @@ elif [[ "$soc" == "universal9820" ]]; then
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}dexopt/cpus" "0-3,6-7"
       write "${cpuset}restricted/cpus" "0-3"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
+
+elif [[ "$soc" == "atoll" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-5,7"
+      write "${cpuset}foreground/boost/cpus" "0-5,7"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "2-5"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}restricted/cpus" "2-5"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
 fi
 }
 
@@ -2556,9 +2598,11 @@ if [[ -d "$stune" ]]; then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
+    write "${stune}background/schedtune.sched_boost_no_override" "1"
     write "${stune}background/schedtune.prefer_perf" "0"
     write "${stune}background/schedtune.util_est_en" "0"
     write "${stune}background/schedtune.ontime_en" "0"
+    write "${stune}background/schedtune.prefer_high_cap" "0"
     
     write "${stune}foreground/schedtune.boost" "0"
     write "${stune}foreground/schedtune.prefer_idle" "0"
@@ -2567,20 +2611,34 @@ if [[ -d "$stune" ]]; then
     write "${stune}foreground/schedtune.prefer_perf" "0"
     write "${stune}foreground/schedtune.util_est_en" "0"
     write "${stune}foreground/schedtune.ontime_en" "0"
+    write "${stune}foreground/schedtune.prefer_high_cap" "0"
     
     write "${stune}nnapi-hal/schedtune.boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
     write "${stune}nnapi-hal/schedtune.sched_boost" "0"
+    write "${stune}nnapi-hal/schedtune.sched_boost_no_override" "1"
     write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
     write "${stune}nnapi-hal/schedtune.util_est_en" "0"
     write "${stune}nnapi-hal/schedtune.ontime_en" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_high_cap" "0"
     
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
+    write "${stune}rt/schedtune.sched_boost_no_override" "1"
     write "${stune}rt/schedtune.prefer_perf" "0"
     write "${stune}rt/schedtune.util_est_en" "0"
     write "${stune}rt/schedtune.ontime_en" "0"
+    write "${stune}rt/schedtune.prefer_high_cap" "0"
+    
+    write "${stune}camera-daemon/schedtune.boost" "0"
+    write "${stune}camera-daemon/schedtune.prefer_idle" "1"
+    write "${stune}camera-daemon/schedtune.sched_boost" "0"
+    write "${stune}camera-daemon/schedtune.sched_boost_no_override" "1"
+    write "${stune}camera-daemon/schedtune.prefer_perf" "0"
+    write "${stune}camera-daemon/schedtune.util_est_en" "0"
+    write "${stune}camera-daemon/schedtune.ontime_en" "0"
+    write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
     
     write "${stune}top-app/schedtune.boost" "10"
     write "${stune}top-app/schedtune.prefer_idle" "1"
@@ -2589,6 +2647,7 @@ if [[ -d "$stune" ]]; then
     write "${stune}top-app/schedtune.prefer_perf" "1"
     write "${stune}top-app/schedtune.util_est_en" "1"
     write "${stune}top-app/schedtune.ontime_en" "1"
+    write "${stune}top-app/schedtune.prefer_high_cap" "1"
     
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
@@ -2597,6 +2656,7 @@ if [[ -d "$stune" ]]; then
     write "${stune}schedtune.prefer_perf" "0"
     write "${stune}schedtune.util_est_en" "0"
     write "${stune}schedtune.ontime_en" "0"
+    write "${stune}schedtune.prefer_high_cap" "0"
     
     kmsg "Tweaked schedtune settings"
     kmsg3 ""
@@ -2609,9 +2669,11 @@ then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
+    write "${stune}background/schedtune.sched_boost_no_override" "1"
     write "${stune}background/schedtune.prefer_perf" "0"
     write "${stune}background/schedtune.util_est_en" "0"
     write "${stune}background/schedtune.ontime_en" "0"
+    write "${stune}background/schedtune.prefer_high_cap" "0"
     
     write "${stune}foreground/schedtune.boost" "0"
     write "${stune}foreground/schedtune.prefer_idle" "0"
@@ -2620,20 +2682,34 @@ then
     write "${stune}foreground/schedtune.prefer_perf" "0"
     write "${stune}foreground/schedtune.util_est_en" "0"
     write "${stune}foreground/schedtune.ontime_en" "0"
+    write "${stune}foreground/schedtune.prefer_high_cap" "0"
     
     write "${stune}nnapi-hal/schedtune.boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
     write "${stune}nnapi-hal/schedtune.sched_boost" "0"
+    write "${stune}nnapi-hal/schedtune.sched_boost_no_override" "1"
     write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
     write "${stune}nnapi-hal/schedtune.util_est_en" "0"
     write "${stune}nnapi-hal/schedtune.ontime_en" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_high_cap" "0"
     
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
+    write "${stune}rt/schedtune.sched_boost_no_override" "1"
     write "${stune}rt/schedtune.prefer_perf" "0"
     write "${stune}rt/schedtune.util_est_en" "0"
     write "${stune}rt/schedtune.ontime_en" "0"
+    write "${stune}rt/schedtune.prefer_high_cap" "0"
+    
+    write "${stune}camera-daemon/schedtune.boost" "0"
+    write "${stune}camera-daemon/schedtune.prefer_idle" "1"
+    write "${stune}camera-daemon/schedtune.sched_boost" "0"
+    write "${stune}camera-daemon/schedtune.sched_boost_no_override" "1"
+    write "${stune}camera-daemon/schedtune.prefer_perf" "0"
+    write "${stune}camera-daemon/schedtune.util_est_en" "0"
+    write "${stune}camera-daemon/schedtune.ontime_en" "0"
+    write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
     
     write "${stune}top-app/schedtune.boost" "5"
     write "${stune}top-app/schedtune.prefer_idle" "1"
@@ -2642,6 +2718,7 @@ then
     write "${stune}top-app/schedtune.prefer_perf" "1"
     write "${stune}top-app/schedtune.util_est_en" "1"
     write "${stune}top-app/schedtune.ontime_en" "1"
+    write "${stune}top-app/schedtune.prefer_high_cap" "1"
     
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
@@ -2650,6 +2727,7 @@ then
     write "${stune}schedtune.prefer_perf" "0"
     write "${stune}schedtune.util_est_en" "0"
     write "${stune}schedtune.ontime_en" "0"
+    write "${stune}schedtune.prefer_high_cap" "0"
     
     kmsg "Tweaked schedtune settings"
     kmsg3 ""
@@ -2662,9 +2740,11 @@ then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
+    write "${stune}background/schedtune.sched_boost_no_override" "1"
     write "${stune}background/schedtune.prefer_perf" "0"
     write "${stune}background/schedtune.util_est_en" "0"
     write "${stune}background/schedtune.ontime_en" "0"
+    write "${stune}background/schedtune.prefer_high_cap" "0"
     
     write "${stune}foreground/schedtune.boost" "50"
     write "${stune}foreground/schedtune.prefer_idle" "1"
@@ -2673,20 +2753,34 @@ then
     write "${stune}foreground/schedtune.prefer_perf" "1"
     write "${stune}foreground/schedtune.util_est_en" "1"
     write "${stune}foreground/schedtune.ontime_en" "1"
+    write "${stune}foreground/schedtune.prefer_high_cap" "1"
     
     write "${stune}nnapi-hal/schedtune.boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
     write "${stune}nnapi-hal/schedtune.sched_boost" "0"
+    write "${stune}nnapi-hal/schedtune.sched_boost_no_override" "1"
     write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
     write "${stune}nnapi-hal/schedtune.util_est_en" "0"
     write "${stune}nnapi-hal/schedtune.ontime_en" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_high_cap" "0"
     
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
+    write "${stune}rt/schedtune.sched_boost_no_override" "1"
     write "${stune}rt/schedtune.prefer_perf" "0"
     write "${stune}rt/schedtune.util_est_en" "0"
     write "${stune}rt/schedtune.ontime_en" "0"
+    write "${stune}rt/schedtune.prefer_high_cap" "0"
+    
+    write "${stune}camera-daemon/schedtune.boost" "0"
+    write "${stune}camera-daemon/schedtune.prefer_idle" "1"
+    write "${stune}camera-daemon/schedtune.sched_boost" "0"
+    write "${stune}camera-daemon/schedtune.sched_boost_no_override" "1"
+    write "${stune}camera-daemon/schedtune.prefer_perf" "0"
+    write "${stune}camera-daemon/schedtune.util_est_en" "0"
+    write "${stune}camera-daemon/schedtune.ontime_en" "0"
+    write "${stune}camera-daemon/schedtune.prefer_high_cap" "1"
     
     write "${stune}top-app/schedtune.boost" "50"
     write "${stune}top-app/schedtune.prefer_idle" "1"
@@ -2695,6 +2789,7 @@ then
     write "${stune}top-app/schedtune.prefer_perf" "1"
     write "${stune}top-app/schedtune.util_est_en" "1"
     write "${stune}top-app/schedtune.ontime_en" "1"
+    write "${stune}top-app/schedtune.prefer_high_cap" "1"
     
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
@@ -2703,6 +2798,7 @@ then
     write "${stune}schedtune.prefer_perf" "0"
     write "${stune}schedtune.util_est_en" "0"
     write "${stune}schedtune.ontime_en" "0"
+    write "${stune}schedtune.prefer_high_cap" "0"
     
     kmsg "Tweaked schedtune settings"
     kmsg3 ""
@@ -2715,29 +2811,57 @@ then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
+    write "${stune}background/schedtune.sched_boost_no_override" "1"
     write "${stune}background/schedtune.prefer_perf" "0"
-
+    write "${stune}background/schedtune.util_est_en" "0"
+    write "${stune}background/schedtune.ontime_en" "0"
+    write "${stune}background/schedtune.prefer_high_cap" "0"
+    
     write "${stune}foreground/schedtune.boost" "0"
     write "${stune}foreground/schedtune.prefer_idle" "0"
     write "${stune}foreground/schedtune.sched_boost" "0"
+    write "${stune}foreground/schedtune.sched_boost_no_override" "1"
     write "${stune}foreground/schedtune.prefer_perf" "0"
-
+    write "${stune}foreground/schedtune.util_est_en" "0"
+    write "${stune}foreground/schedtune.ontime_en" "0"
+    write "${stune}foreground/schedtune.prefer_high_cap" "0"
+    
     write "${stune}nnapi-hal/schedtune.boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
     write "${stune}nnapi-hal/schedtune.sched_boost" "0"
+    write "${stune}nnapi-hal/schedtune.sched_boost_no_override" "1"
     write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
+    write "${stune}nnapi-hal/schedtune.util_est_en" "0"
+    write "${stune}nnapi-hal/schedtune.ontime_en" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_high_cap" "0"
     
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
     write "${stune}rt/schedtune.sched_boost" "0"
+    write "${stune}rt/schedtune.sched_boost_no_override" "1"
     write "${stune}rt/schedtune.prefer_perf" "0"
-
+    write "${stune}rt/schedtune.util_est_en" "0"
+    write "${stune}rt/schedtune.ontime_en" "0"
+    write "${stune}rt/schedtune.prefer_high_cap" "0"
+    
+    write "${stune}camera-daemon/schedtune.boost" "0"
+    write "${stune}camera-daemon/schedtune.prefer_idle" "1"
+    write "${stune}camera-daemon/schedtune.sched_boost" "0"
+    write "${stune}camera-daemon/schedtune.sched_boost_no_override" "1"
+    write "${stune}camera-daemon/schedtune.prefer_perf" "0"
+    write "${stune}camera-daemon/schedtune.util_est_en" "0"
+    write "${stune}camera-daemon/schedtune.ontime_en" "0"
+    write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
+    
     write "${stune}top-app/schedtune.boost" "1"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "0"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
     write "${stune}top-app/schedtune.prefer_perf" "1"
-
+    write "${stune}top-app/schedtune.util_est_en" "1"
+    write "${stune}top-app/schedtune.ontime_en" "1"
+    write "${stune}top-app/schedtune.prefer_high_cap" "1"
+    
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
     write "${stune}schedtune.sched_boost" "0"
@@ -2745,6 +2869,7 @@ then
     write "${stune}schedtune.prefer_perf" "0"
     write "${stune}schedtune.util_est_en" "0"
     write "${stune}schedtune.ontime_en" "0"
+    write "${stune}schedtune.prefer_high_cap" "0"
     
     kmsg "Tweaked schedtune settings"
     kmsg3 ""
@@ -2757,9 +2882,11 @@ then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
+    write "${stune}background/schedtune.sched_boost_no_override" "1"
     write "${stune}background/schedtune.prefer_perf" "0"
-    write "${stune}foreground/schedtune.util_est_en" "1"
-    write "${stune}foreground/schedtune.ontime_en" "1"
+    write "${stune}background/schedtune.util_est_en" "0"
+    write "${stune}background/schedtune.ontime_en" "0"
+    write "${stune}background/schedtune.prefer_high_cap" "0"
     
     write "${stune}foreground/schedtune.boost" "50"
     write "${stune}foreground/schedtune.prefer_idle" "1"
@@ -2768,13 +2895,16 @@ then
     write "${stune}foreground/schedtune.prefer_perf" "0"
     write "${stune}foreground/schedtune.util_est_en" "1"
     write "${stune}foreground/schedtune.ontime_en" "1"
+    write "${stune}foreground/schedtune.prefer_high_cap" "1"
     
     write "${stune}nnapi-hal/schedtune.boost" "0"
     write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
     write "${stune}nnapi-hal/schedtune.sched_boost" "0"
+    write "${stune}nnapi-hal/schedtune.sched_boost_no_override" "1"
     write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
     write "${stune}nnapi-hal/schedtune.util_est_en" "0"
     write "${stune}nnapi-hal/schedtune.ontime_en" "0"
+    write "${stune}nnapi-hal/schedtune.prefer_high_cap" "0"
     
     write "${stune}rt/schedtune.boost" "0"
     write "${stune}rt/schedtune.prefer_idle" "0"
@@ -2782,6 +2912,16 @@ then
     write "${stune}rt/schedtune.prefer_perf" "0"
     write "${stune}rt/schedtune.util_est_en" "0"
     write "${stune}rt/schedtune.ontime_en" "0"
+    write "${stune}rt/schedtune.prefer_high_cap" "0"
+    
+    write "${stune}camera-daemon/schedtune.boost" "0"
+    write "${stune}camera-daemon/schedtune.prefer_idle" "1"
+    write "${stune}camera-daemon/schedtune.sched_boost" "0"
+    write "${stune}camera-daemon/schedtune.sched_boost_no_override" "1"
+    write "${stune}camera-daemon/schedtune.prefer_perf" "0"
+    write "${stune}camera-daemon/schedtune.util_est_en" "0"
+    write "${stune}camera-daemon/schedtune.ontime_en" "0"
+    write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
     
     write "${stune}top-app/schedtune.boost" "50"
     write "${stune}top-app/schedtune.prefer_idle" "1"
@@ -2790,14 +2930,17 @@ then
     write "${stune}top-app/schedtune.prefer_perf" "1"
     write "${stune}top-app/schedtune.util_est_en" "1"
     write "${stune}top-app/schedtune.ontime_en" "1"
+    write "${stune}top-app/schedtune.prefer_high_cap" "1"
     
     write "${stune}schedtune.boost" "0"
+    write "${stune}schedtune.prefer_high_cap" "0"
     write "${stune}schedtune.prefer_idle" "0"
     write "${stune}schedtune.sched_boost" "0"
     write "${stune}schedtune.sched_boost_no_override" "0"
     write "${stune}schedtune.prefer_perf" "0"
     write "${stune}schedtune.util_est_en" "0"
     write "${stune}schedtune.ontime_en" "0"
+    write "${stune}schedtune.prefer_high_cap" "0"
     
     kmsg "Tweaked schedtune settings"
     kmsg3 ""
