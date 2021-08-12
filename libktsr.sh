@@ -75,8 +75,8 @@ write(){
         return 1
     fi
 
-    # Make file writable in case it is not already
-	chmod +w "$1" 2>/dev/null
+    # Make file readable and writable in case it is not already
+	chmod +rw "$1" 2>/dev/null
 
 	# Fetch the current key value
     curval=$(cat "$1" 2>/dev/null)
@@ -128,7 +128,7 @@ lock(){
 	# Log the success
 	kmsg1 "$1 $curval -> $2"
 
-    chmod 0444 "$1" 2>/dev/null
+    chmod 000 "$1" 2>/dev/null
 }
 
 # Duration in nanoseconds of one scheduling period
@@ -2237,7 +2237,7 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}idle_timer" "1000"
     write "${gpu}pwrnap" "1"
 elif [[ "$qcom" == "false" ]]; then
-      [[ "$one_ui" == "false" ]] && write "${gpu}dvfs" "0"
+      [[ "$one_ui" == "false" ]] && lock "${gpu}dvfs" "0"
        lock "${gpui}gpu_min_clock" "$gpu_min"
        write "${gpu}highspeed_clock" "$gpu_max_freq"
        write "${gpu}highspeed_load" "76"
@@ -2248,7 +2248,7 @@ elif [[ "$qcom" == "false" ]]; then
        write "${gpug}mali_touch_boost_level" "1"
        lock "${gpu}max_freq" "$gpu_max_freq"
        lock "${gpu}min_freq" "$gpu_min_freq"
-       write "${gpu}tmu" "0"
+       lock "${gpu}tmu" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "40"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "20"
@@ -3793,7 +3793,7 @@ fi
 
 ufs_pwr_saving(){
 if [[ -d "/sys/class/devfreq/1d84000.ufshc" ]]; then
-    write "/sys/class/devfreq/1d84000.ufshc/max_freq" "75000000"
+    lock "/sys/class/devfreq/1d84000.ufshc/max_freq" "75000000"
     kmsg "Tweaked UFS"
     kmsg3 ""
 fi
@@ -3946,9 +3946,9 @@ write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP on samsung devices if it do not have more than 4 GB RAM
 if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "4096" ]]; then
-    write "${vm}swappiness" "150"
+    lock "${vm}swappiness" "150"
 else
-    write "${vm}swappiness" "100"
+    lock "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
@@ -4035,9 +4035,9 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "4096" ]]; then
-    write "${vm}swappiness" "150"
+    lock "${vm}swappiness" "150"
 else
-    write "${vm}swappiness" "100"
+    lock "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
@@ -4117,9 +4117,9 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "4096" ]]; then
-    write "${vm}swappiness" "150"
+    lock "${vm}swappiness" "150"
 else
-    write "${vm}swappiness" "100"
+    lock "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "150"
@@ -4199,9 +4199,9 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "4096" ]]; then
-    write "${vm}swappiness" "150"
+    lock "${vm}swappiness" "150"
 else
-    write "${vm}swappiness" "100"
+    lock "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "1"
 write "${vm}vfs_cache_pressure" "60"
@@ -4281,9 +4281,9 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 if [[ "$samsung" == "true" ]] && [[ "$total_ram" -lt "4096" ]]; then
-    write "${vm}swappiness" "150"
+    lock "${vm}swappiness" "150"
 else
-    write "${vm}swappiness" "100"
+    lock "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "500"
@@ -4500,11 +4500,11 @@ fi
 }
 
 enable_hp_snd(){
-for hpm in /sys/module/snd_soc_wcd*
+for hpm in /sys/module/snd_soc_wcd*/
 do
   if [[ -e "$hpm" ]]
   then
-      write "${hpm}/parameters/high_perf_mode" "1"
+      write "${hpm}parameters/high_perf_mode" "1"
       kmsg "Enabled high performance audio"
       kmsg3 ""
       break
@@ -4513,11 +4513,11 @@ done
 }
 
 disable_hp_snd(){
-for hpm in /sys/module/snd_soc_wcd*
+for hpm in /sys/module/snd_soc_wcd*/
 do
   if [[ -e "$hpm" ]]
   then
-      write "${hpm}/parameters/high_perf_mode" "0"
+      write "${hpm}parameters/high_perf_mode" "0"
       kmsg "Disabled high performance audio"
       kmsg3 ""
       break
