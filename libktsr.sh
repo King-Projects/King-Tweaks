@@ -75,8 +75,11 @@ write(){
         return 1
     fi
 
+    # Make file writable in case it is not already
+	chmod +w "$1" 2>/dev/null
+
 	# Fetch the current key value
-    curval=$(cat "$1" 2> /dev/null)
+    curval=$(cat "$1" 2>/dev/null)
 	
 	# Bail out if value is already set
 	if [[ "$curval" == "$2" ]]; then
@@ -84,11 +87,8 @@ write(){
 	    return 0
 	fi
 
-	# Make file writable in case it is not already
-	chmod +w "$1" 2> /dev/null
-
 	# Write the new value and bail if there's an error
-	if ! echo -n "$2" > "$1" 2> /dev/null
+	if ! echo -n "$2" > "$1" 2>/dev/null
 	then
 	    kmsg2 "Failed: $1 -> $2"
 		return 1
@@ -96,6 +96,39 @@ write(){
 	
 	# Log the success
 	kmsg1 "$1 $curval -> $2"
+}
+
+lock(){
+	# Bail out if file does not exist
+	if [[ ! -f "$1" ]]; then
+	    kmsg2 "$1 doesn't exist, skipping..."
+        return 1
+    fi
+
+    # Make file writable in case it is not already
+	chmod +w "$1" 2>/dev/null
+
+	# Fetch the current key value
+    curval=$(cat "$1" 2>/dev/null)
+	
+	# Bail out if value is already set
+	if [[ "$curval" == "$2" ]]; then
+	    kmsg2 "$1 is already set to $2, skipping..."
+	    return 0
+	fi
+
+
+	# Write the new value and bail if there's an error
+	if ! echo -n "$2" > "$1" 2>/dev/null
+	then
+	    kmsg2 "Failed: $1 -> $2"
+		return 1
+	fi
+	
+	# Log the success
+	kmsg1 "$1 $curval -> $2"
+
+    chmod 0444 "$1" 2>/dev/null
 }
 
 # Duration in nanoseconds of one scheduling period
@@ -228,26 +261,26 @@ done
 get_gpu_max(){
 gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -v var="$gpu_num_pl" '{print $var}')
     
-if [[ "${gpu_max}" -ne "${gpu_max_freq}" ]]; then
+if [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
     gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk 'NF>1{print $NF}')
     
-elif [[ "${gpu_max}" -ne "${gpu_max_freq}" ]]; then
+elif [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
       gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')
                
-elif [[ "${gpu_max}" -ne "${gpu_max_freq}" ]]; then
+elif [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
       gpu_max=$gpu_max_freq
 fi
 
 if [[ -e "${gpu}available_frequencies" ]]; then
     gpu_max2=$(cat "${gpu}available_frequencies" | awk 'NF>1{print $NF}')
     
-elif [[ "${gpu_max2}" -ne "${gpu_max_freq}" ]]; then
+elif [[ "${gpu_max2}" -lt "${gpu_max_freq}" ]]; then
       gpu_max2=$(cat "${gpu}available_frequencies" | awk '{print $1}')
     
 elif [[ -e "${gpui}gpu_freq_table" ]]; then
       gpu_max2=$(cat "${gpui}gpu_freq_table" | awk 'NF>1{print $NF}')
 
-elif [[ "${gpu_max2}" -ne "${gpu_max_freq}" ]]; then
+elif [[ "${gpu_max2}" -lt "${gpu_max_freq}" ]]; then
       gpu_max2=$(cat "${gpui}gpu_freq_table" | awk '{print $1}')
 fi
 }
@@ -256,13 +289,13 @@ get_gpu_min(){
 if [[ -e "${gpu}available_frequencies" ]]; then
     gpu_min=$(cat "${gpu}available_frequencies" | awk '{print $1}')
 
-elif [[ "${gpu_min}" -ne "${gpu_min_freq}" ]]; then
+elif [[ "${gpu_min}" -gt "${gpu_min_freq}" ]]; then
       gpu_min=$(cat "${gpu}available_frequencies" | awk 'NF>1{print $NF}')
 
 elif [[ -e "${gpui}gpu_freq_table" ]]; then
       gpu_min=$(cat "${gpui}gpu_freq_table" | awk '{print $1}')
 
-elif [[ "${gpu_min}" -ne "${gpu_min_freq}" ]]; then
+elif [[ "${gpu_min}" -gt "${gpu_min_freq}" ]]; then
       gpu_min=$(cat "${gpui}gpu_freq_table" | awk 'NF>1{print $NF}')
 fi
 }
@@ -507,7 +540,6 @@ if [[ -e "/sys/class/power_supply/battery/temp" ]]; then
 
 elif [[ -e "/sys/class/power_supply/battery/batt_temp" ]]; then 
       batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
-
 else 
     batt_tmp=$(dumpsys battery | awk '/temperature/{print $2}')
 fi
@@ -617,7 +649,7 @@ if [[ "${batt_cpct}" == "" ]]; then
     batt_cpct=$(dumpsys batterystats | grep Capacity: | awk '{print $2}' | cut -d "," -f 1)
 fi
                
-if [[ "$(batt_cpct)" -gt "1000000" ]]; then
+if [[ "${batt_cpct}" -ge "1000000" ]]; then
     batt_cpct=$((batt_cpct / 1000))
 fi
 }
@@ -747,7 +779,7 @@ fi
 
 enable_devfreq_boost(){
 for dir in /sys/class/devfreq/*/; do
-    write "${dir}min_freq" "$(cat "${dir}max_freq")"
+    lock "${dir}min_freq" "$(cat "${dir}max_freq")"
 done
 
 kmsg "Enabled devfreq boost"
@@ -1465,8 +1497,8 @@ do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "${avail_govs}" == *"$governor"* ]]
 		then
-			write "${cpu}scaling_governor" "$governor"
-			break
+			lock "${cpu}scaling_governor" "$governor"
+		  break
 		fi
 	done
 done
@@ -1524,7 +1556,7 @@ do
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]
 	  then
-		  write "${cpu}scaling_governor" "$governor"
+		  lock "${cpu}scaling_governor" "$governor"
 		  break
 		fi
 	done
@@ -1532,32 +1564,32 @@ done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
-    write "${governor}/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
-    write "${governor}/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
+    write "${governor}/up_rate_limit_us" "500"
+    write "${governor}/down_rate_limit_us" "20000"
     write "${governor}/pl" "1"
-    write "${governor}/iowait_boost_enable" "0"
-    write "${governor}/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
+    write "${governor}/iowait_boost_enable" "1"
+    write "${governor}/rate_limit_us" "20000"
     write "${governor}/hispeed_load" "80"
     write "${governor}/hispeed_freq" "$cpu_max_freq"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
-    write "${governor}/up_rate_limit_us" "$((SCHED_PERIOD_BALANCE / 1000))"
-    write "${governor}/down_rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
+    write "${governor}/up_rate_limit_us" "500"
+    write "${governor}/down_rate_limit_us" "20000"
     write "${governor}/pl" "1"
-    write "${governor}/iowait_boost_enable" "0"
-    write "${governor}/rate_limit_us" "$((4 * SCHED_PERIOD_BALANCE / 1000))"
+    write "${governor}/iowait_boost_enable" "1"
+    write "${governor}/rate_limit_us" "20000"
     write "${governor}/hispeed_load" "80"
     write "${governor}/hispeed_freq" "$cpu_max_freq"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
-    write "${governor}/timer_rate" "16000"
+    write "${governor}/timer_rate" "10000"
     write "${governor}/boost" "0"
     write "${governor}/io_is_busy" "1"
-    write "${governor}/timer_slack" "16000"
+    write "${governor}/timer_slack" "20000"
     write "${governor}/input_boost" "0"
     write "${governor}/use_migration_notif" "0" 
     write "${governor}/ignore_hispeed_on_notif" "1"
@@ -1565,9 +1597,9 @@ do
     write "${governor}/boostpulse" "0"
     write "${governor}/fastlane" "1"
     write "${governor}/fast_ramp_down" "0"
-    write "${governor}/sampling_rate" "16000"
-    write "${governor}/sampling_rate_min" "16000"
-    write "${governor}/min_sample_time" "16000"
+    write "${governor}/sampling_rate" "20000"
+    write "${governor}/sampling_rate_min" "20000"
+    write "${governor}/min_sample_time" "20000"
     write "${governor}/go_hispeed_load" "80"
     write "${governor}/hispeed_freq" "$cpu_max_freq"
 done
@@ -1582,7 +1614,7 @@ do
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]
 	  then
-		  write "${cpu}scaling_governor" "$governor"
+		  lock "${cpu}scaling_governor" "$governor"
 	    break
 	  fi
   done
@@ -1639,7 +1671,7 @@ do
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]
 	  then
-		  write "${cpu}scaling_governor" "$governor"
+		  lock "${cpu}scaling_governor" "$governor"
 		  break
 		fi
 	done
@@ -1697,7 +1729,7 @@ do
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]
 	  then
-		  write "${cpu}scaling_governor" "$governor"
+		  lock "${cpu}scaling_governor" "$governor"
 		  break
 		fi
 	done
@@ -1882,7 +1914,7 @@ gpu_latency(){
 		  # Once a matching governor is found, set it and break
 		  if [[ "$avail_govs" == *"$governor"* ]]
 		  then
-			  write "${gpu}devfreq/governor" "$governor"
+			  lock "${gpu}devfreq/governor" "$governor"
 			  break
 		    fi
 	    done
@@ -1894,7 +1926,7 @@ gpu_latency(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    write "${gpui}gpu_governor" "$governor"
+			    lock "${gpui}gpu_governor" "$governor"
 			    break
 		      fi
 	      done
@@ -1906,7 +1938,7 @@ gpu_latency(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    write "${gpu}governor" "$governor"
+			    lock "${gpu}governor" "$governor"
 			    break
 	          fi
           done
@@ -1918,8 +1950,8 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}devfreq/adrenoboost" "0"
     write "${gpu}force_no_nap" "0"
     write "${gpu}bus_split" "1"
-    write "${gpu}devfreq/max_freq" "$gpu_max_freq"
-    write "${gpu}devfreq/min_freq" "$gpu_min_freq"
+    lock "${gpu}devfreq/max_freq" "$gpu_max_freq"
+    lock "${gpu}devfreq/min_freq" "$gpu_min_freq"
     write "${gpu}default_pwrlevel" "$((gpu_min_pl - 1))"
     write "${gpu}force_bus_on" "0"
     write "${gpu}force_clk_on" "0"
@@ -1928,15 +1960,15 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}pwrnap" "1"
 elif [[ "$qcom" == "false" ]]; then
       [[ "$one_ui" == "false" ]] && write "${gpu}dvfs" "1"
-       write "${gpui}gpu_min_clock" "$gpu_min"
+       lock "${gpui}gpu_min_clock" "$gpu_min"
        write "${gpu}highspeed_clock" "$gpu_max_freq"
        write "${gpu}highspeed_load" "80"
        write "${gpu}highspeed_delay" "0"
        write "${gpu}power_policy" "coarse_demand"
        write "${gpui}boost" "0"
        write "${gpug}mali_touch_boost_level" "0"
-       write "${gpu}max_freq" "$gpu_max_freq"
-       write "${gpu}min_freq" "$gpu_min_freq"
+       lock "${gpu}max_freq" "$gpu_max_freq"
+       lock "${gpu}min_freq" "$gpu_min_freq"
        write "${gpu}tmu" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "60"
@@ -2018,7 +2050,7 @@ gpu_balanced(){
 	    do
 		  if [[ "$avail_govs" == *"$governor"* ]]
 		  then
-			  write "${gpu}devfreq/governor" "$governor"
+			  lock "${gpu}devfreq/governor" "$governor"
 			  break
 		    fi
 	    done
@@ -2030,7 +2062,7 @@ gpu_balanced(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    write "${gpui}gpu_governor" "$governor"
+			    lock "${gpui}gpu_governor" "$governor"
 			    break
 		      fi
 	      done
@@ -2042,7 +2074,7 @@ gpu_balanced(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    write "${gpu}governor" "$governor"
+			    lock "${gpu}governor" "$governor"
 			    break
 	          fi
           done
@@ -2054,8 +2086,8 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}devfreq/adrenoboost" "0"
     write "${gpu}force_no_nap" "0"
     write "${gpu}bus_split" "1"
-    write "${gpu}devfreq/max_freq" "$gpu_max_freq"
-    write "${gpu}devfreq/min_freq" "$gpu_min_freq"
+    lock "${gpu}devfreq/max_freq" "$gpu_max_freq"
+    lock "${gpu}devfreq/min_freq" "$gpu_min_freq"
     write "${gpu}default_pwrlevel" "$gpu_min_pl"
     write "${gpu}force_bus_on" "0"
     write "${gpu}force_clk_on" "0"
@@ -2064,15 +2096,15 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}pwrnap" "1"
 elif [[ "$qcom" == "false" ]]; then
       [[ "$one_ui" == "false" ]] && write "${gpu}dvfs" "1"
-       write "${gpui}gpu_min_clock" "$gpu_min"
+       lock "${gpui}gpu_min_clock" "$gpu_min"
        write "${gpu}highspeed_clock" "$gpu_max_freq"
        write "${gpu}highspeed_load" "86"
        write "${gpu}highspeed_delay" "0"
        write "${gpu}power_policy" "coarse_demand"
        write "${gpui}boost" "0"
        write "${gpug}mali_touch_boost_level" "0"
-       write "${gpu}max_freq" "$gpu_max_freq"
-       write "${gpu}min_freq" "$gpu_min_freq"
+       lock "${gpu}max_freq" "$gpu_max_freq"
+       lock "${gpu}min_freq" "$gpu_min_freq"
        write "${gpu}tmu" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold "70"
@@ -2160,7 +2192,7 @@ gpu_extreme(){
 		  # Once a matching governor is found, set it and break
 		  if [[ "$avail_govs" == *"$governor"* ]]
 		  then
-			  write "${gpu}devfreq/governor" "$governor"
+			  lock "${gpu}devfreq/governor" "$governor"
 			  break
 		    fi
 	    done
@@ -2172,7 +2204,7 @@ gpu_extreme(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    write "${gpui}gpu_governor" "$governor"
+			    lock "${gpui}gpu_governor" "$governor"
 			    break
 		      fi
 	      done
@@ -2184,7 +2216,7 @@ gpu_extreme(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    write "${gpu}governor" "$governor"
+			    lock "${gpu}governor" "$governor"
 			    break
 	          fi
           done
@@ -2196,8 +2228,8 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}devfreq/adrenoboost" "2"
     write "${gpu}force_no_nap" "0"
     write "${gpu}bus_split" "0"
-    write "${gpu}devfreq/max_freq" "$gpu_max_freq"
-    write "${gpu}devfreq/min_freq" "$gpu_min_freq"
+    lock "${gpu}devfreq/max_freq" "$gpu_max_freq"
+    lock "${gpu}devfreq/min_freq" "$gpu_min_freq"
     write "${gpu}default_pwrlevel" "1"
     write "${gpu}force_bus_on" "0"
     write "${gpu}force_clk_on" "1"
@@ -2206,7 +2238,7 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}pwrnap" "1"
 elif [[ "$qcom" == "false" ]]; then
       [[ "$one_ui" == "false" ]] && write "${gpu}dvfs" "0"
-       write "${gpui}gpu_min_clock" "$gpu_min"
+       lock "${gpui}gpu_min_clock" "$gpu_min"
        write "${gpu}highspeed_clock" "$gpu_max_freq"
        write "${gpu}highspeed_load" "76"
        write "${gpu}highspeed_delay" "0"
@@ -2214,8 +2246,8 @@ elif [[ "$qcom" == "false" ]]; then
        write "${gpu}cl_boost_disable" "0"
        write "${gpui}boost" "0"
        write "${gpug}mali_touch_boost_level" "1"
-       write "${gpu}max_freq" "$gpu_max_freq"
-       write "${gpu}min_freq" "$gpu_min_freq"
+       lock "${gpu}max_freq" "$gpu_max_freq"
+       lock "${gpu}min_freq" "$gpu_min_freq"
        write "${gpu}tmu" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "40"
@@ -2297,7 +2329,7 @@ gpu_battery(){
 	    do
 		  if [[ "$avail_govs" == *"$governor"* ]]
 		  then
-			  write "${gpu}devfreq/governor" "$governor"
+			  lock "${gpu}devfreq/governor" "$governor"
 			  break
 		    fi
 	    done
@@ -2309,7 +2341,7 @@ gpu_battery(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    write "${gpui}gpu_governor" "$governor"
+			    lock "${gpui}gpu_governor" "$governor"
 			    break
 		      fi
 	      done
@@ -2321,7 +2353,7 @@ gpu_battery(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    write "${gpu}governor" "$governor"
+			    lock "${gpu}governor" "$governor"
 			    break
 	          fi
           done
@@ -2333,8 +2365,8 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}devfreq/adrenoboost" "0"
     write "${gpu}force_no_nap" "0"
     write "${gpu}bus_split" "1"
-    write "${gpu}devfreq/min_freq" "$gpu_min_freq"
-    write "${gpu}default_pwrlevel" "$gpu_min_pl"
+    lock "${gpu}devfreq/min_freq" "$gpu_min_freq"
+    lock "${gpu}default_pwrlevel" "$gpu_min_pl"
     write "${gpu}force_bus_on" "0"
     write "${gpu}force_clk_on" "0"
     write "${gpu}force_rail_on" "0"
@@ -2342,7 +2374,7 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}pwrnap" "1"
 elif [[ "$qcom" == "false" ]]; then
       [[ "$one_ui" == "false" ]] && write "${gpu}dvfs" "1"
-       write "${gpui}gpu_min_clock" "$gpu_min"
+       lock "${gpui}gpu_min_clock" "$gpu_min"
        write "${gpu}highspeed_clock" "$gpu_max_freq"
        write "${gpu}highspeed_load" "95"
        write "${gpu}highspeed_delay" "0"
@@ -2350,8 +2382,8 @@ elif [[ "$qcom" == "false" ]]; then
        write "${gpu}cl_boost_disable" "1"
        write "${gpui}boost" "0"
        write "${gpug}mali_touch_boost_level" "0"
-       write "${gpu}max_freq" "$gpu_max_freq"
-       write "${gpu}min_freq" "$gpu_min_freq"
+       lock "${gpu}max_freq" "$gpu_max_freq"
+       lock "${gpu}min_freq" "$gpu_min_freq"
        write "${gpu}tmu" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "85"
@@ -2439,7 +2471,7 @@ gpu_gaming(){
 		  # Once a matching governor is found, set it and break
 		  if [[ "$avail_govs" == *"$governor"* ]]
 		  then
-			  write "${gpu}devfreq/governor" "$governor"
+			  lock "${gpu}devfreq/governor" "$governor"
 			  break
 		    fi
 	    done
@@ -2451,7 +2483,7 @@ gpu_gaming(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    write "${gpui}gpu_governor" "$governor"
+			    lock "${gpui}gpu_governor" "$governor"
 			    break
 		      fi
 	      done
@@ -2463,7 +2495,7 @@ gpu_gaming(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    write "${gpu}governor" "$governor"
+			    lock "${gpu}governor" "$governor"
 			    break
 	          fi
           done
@@ -2475,8 +2507,8 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}devfreq/adrenoboost" "3"
     write "${gpu}force_no_nap" "1"
     write "${gpu}bus_split" "0"
-    write "${gpu}devfreq/max_freq" "$gpu_max_freq"
-    write "${gpu}devfreq/min_freq" "$gpu_max"
+    lock "${gpu}devfreq/max_freq" "$gpu_max_freq"
+    lock "${gpu}devfreq/min_freq" "$gpu_max"
     write "${gpu}default_pwrlevel" "$gpu_max_pl"
     write "${gpu}force_bus_on" "1"
     write "${gpu}force_clk_on" "1"
@@ -2484,8 +2516,8 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}idle_timer" "1000000"
     write "${gpu}pwrnap" "0"
 elif [[ "$qcom" == "false" ]]; then
-      [[ "$one_ui" == "false" ]] && write "${gpu}dvfs" "0"
-       write "${gpui}gpu_min_clock" "$gpu_max2"
+      [[ "$one_ui" == "false" ]] && lock "${gpu}dvfs" "0"
+       lock "${gpui}gpu_min_clock" "$gpu_max2"
        write "${gpu}highspeed_clock" "$gpu_max_freq"
        write "${gpu}highspeed_load" "76"
        write "${gpu}highspeed_delay" "0"
@@ -2493,9 +2525,9 @@ elif [[ "$qcom" == "false" ]]; then
        write "${gpu}cl_boost_disable" "0"
        write "${gpui}boost" "1"
        write "${gpug}mali_touch_boost_level" "1"
-       write "${gpu}max_freq" "$gpu_max_freq"
-       write "${gpu}min_freq" "$gpu_max_freq"
-       write "${gpu}tmu" "0"
+       lock "${gpu}max_freq" "$gpu_max_freq"
+       lock "${gpu}min_freq" "$gpu_max_freq"
+       lock "${gpu}tmu" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "35"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "15"
@@ -3850,10 +3882,10 @@ for cpus in /sys/devices/system/cpu/cpufreq/policy*/
 do
   if [[ -e "${cpus}scaling_min_freq" ]]
   then
-      write "${cpus}scaling_min_freq" "$cpu_max_freq"
-      write "${cpus}scaling_max_freq" "$cpu_max_freq"
-      write "${cpus}user_scaling_min_freq" "$cpu_max_freq"
-      write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
+      lock "${cpus}scaling_min_freq" "$cpu_max_freq"
+      lock "${cpus}scaling_max_freq" "$cpu_max_freq"
+      lock "${cpus}user_scaling_min_freq" "$cpu_max_freq"
+      lock "${cpus}user_scaling_max_freq" "$cpu_max_freq"
    fi
 done
 
@@ -3861,10 +3893,10 @@ for cpus in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   if [[ -e "${cpus}scaling_min_freq" ]]
   then
-      write "${cpus}scaling_min_freq" "$cpu_max_freq"
-      write "${cpus}scaling_max_freq" "$cpu_max_freq"
-      write "${cpus}user_scaling_min_freq" "$cpu_max_freq"
-      write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
+      lock "${cpus}scaling_min_freq" "$cpu_max_freq"
+      lock "${cpus}scaling_max_freq" "$cpu_max_freq"
+      lock "${cpus}user_scaling_min_freq" "$cpu_max_freq"
+      lock "${cpus}user_scaling_max_freq" "$cpu_max_freq"
    fi
 done
 
@@ -5056,7 +5088,6 @@ sync
 kingauto &
 	
 kmsg "Applied automatic profile"
-kmsg3 ""
 }
 balanced(){
 init=$(date +%s)
