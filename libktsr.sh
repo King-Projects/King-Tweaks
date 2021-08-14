@@ -75,8 +75,8 @@ write(){
         return 1
     fi
 
-    # Make file writable in case it is not already
-	chmod +w "$1" 2>/dev/null
+    # Make file readable and writable in case it is not already
+	chmod +rw "$1" 2>/dev/null
 
 	# Fetch the current key value
     curval=$(cat "$1" 2>/dev/null)
@@ -106,7 +106,7 @@ lock(){
     fi
 
     # Make file writable in case it is not already
-	chmod +w "$1" 2>/dev/null
+	chmod +rw "$1" 2>/dev/null
 
 	# Fetch the current key value
     curval=$(cat "$1" 2>/dev/null)
@@ -118,7 +118,7 @@ lock(){
 		return 1
 	fi
 	
-    chmod 444 "$1" 2>/dev/null
+    chmod 000 "$1" 2>/dev/null
 
 	# Log the success
 	kmsg1 "$1 $curval -> $2"
