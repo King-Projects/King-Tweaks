@@ -106,18 +106,11 @@ lock(){
     fi
 
     # Make file writable in case it is not already
-	chmod +w "$1" 2>/dev/null
+	chmod +rw "$1" 2>/dev/null
 
 	# Fetch the current key value
     curval=$(cat "$1" 2>/dev/null)
-	
-	# Bail out if value is already set
-	if [[ "$curval" == "$2" ]]; then
-	    kmsg2 "$1 is already set to $2, skipping..."
-	    return 0
-	fi
-
-
+    
 	# Write the new value and bail if there's an error
 	if ! echo -n "$2" > "$1" 2>/dev/null
 	then
@@ -125,10 +118,10 @@ lock(){
 		return 1
 	fi
 	
+    chmod 000 "$1" 2>/dev/null
+
 	# Log the success
 	kmsg1 "$1 $curval -> $2"
-
-    chmod 000 "$1" 2>/dev/null
 }
 
 # Duration in nanoseconds of one scheduling period
@@ -3342,6 +3335,9 @@ fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
 fi
+if [[ -e "${kernel}sched_conservative_pl" ]]; then
+    write "${kernel}sched_conservative_pl" "0"
+fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3445,6 +3441,9 @@ fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "deep"
 fi
+if [[ -e "${kernel}sched_conservative_pl" ]]; then
+    write "${kernel}sched_conservative_pl" "0"
+fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3546,6 +3545,9 @@ if [[ -e "${kernel}sysrq" ]]; then
 fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
+fi
+if [[ -e "${kernel}sched_conservative_pl" ]]; then
+    write "${kernel}sched_conservative_pl" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -3649,6 +3651,9 @@ fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "deep"
 fi
+if [[ -e "${kernel}sched_conservative_pl" ]]; then
+    write "${kernel}sched_conservative_pl" "1"
+fi
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3750,6 +3755,9 @@ if [[ -e "${kernel}sysrq" ]]; then
 fi
 if [[ -e "/sys/power/mem_sleep" ]]; then
     write "/sys/power/mem_sleep" "s2idle"
+fi
+if [[ -e "${kernel}sched_conservative_pl" ]]; then
+    write "${kernel}sched_conservative_pl" "0"
 fi
 
 kmsg "Tweaked various kernel parameters"
@@ -4839,7 +4847,7 @@ fi
 
 config_tcp
 
-if [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]]; then
+if [[ "$ktsr_prof_en" == "battery" ]]; then
     enable_kern_batt_saver
 else
     disable_kern_batt_saver
@@ -5004,7 +5012,7 @@ fi
 
 config_tcp
 
-if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
+if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     enable_kern_batt_saver
 else
     disable_kern_batt_saver
