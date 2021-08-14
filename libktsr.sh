@@ -1413,7 +1413,7 @@ do
    write "${queue}add_random" "0"
    write "${queue}iostats" "0"
    write "${queue}rotational" "0"
-   write "${queue}read_ahead_kb" "512"
+   write "${queue}read_ahead_kb" "2048"
    write "${queue}nomerges" "2"
    write "${queue}rq_affinity" "2"
    write "${queue}nr_requests" "256"
@@ -1467,7 +1467,7 @@ do
     write "${queue}add_random" "0"
     write "${queue}iostats" "0"
     write "${queue}rotational" "0"
-    write "${queue}read_ahead_kb" "512"
+    write "${queue}read_ahead_kb" "2048"
     write "${queue}nomerges" "2"
     write "${queue}rq_affinity" "2"
     write "${queue}nr_requests" "256"
@@ -1993,6 +1993,8 @@ then
     write "/sys/module/ged/parameters/gx_frc_mode" "0"
     write "/sys/module/ged/parameters/gx_game_mode" "0"
     write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
+    write "/sys/module/ged/parameters/boost_amp" "0"
+    write "/sys/module/ged/parameters/gx_boost_on" "0"
 fi
 
 if [[ -d "/proc/gpufreq/" ]] 
@@ -2129,6 +2131,8 @@ then
     write "/sys/module/ged/parameters/gx_frc_mode" "0"
     write "/sys/module/ged/parameters/gx_game_mode" "0"
     write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
+    write "/sys/module/ged/parameters/boost_amp" "0"
+    write "/sys/module/ged/parameters/gx_boost_on" "0"
 fi
 
 if [[ -d "/proc/gpufreq/" ]] 
@@ -2257,7 +2261,7 @@ then
     write "/sys/module/ged/parameters/enable_cpu_boost" "1"
     write "/sys/module/ged/parameters/enable_gpu_boost" "1"
     write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
-    write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
+    write "/sys/module/ged/parameters/ged_force_mdp_enable" "1"
     write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
     write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
     write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
@@ -2272,6 +2276,8 @@ then
     write "/sys/module/ged/parameters/gx_frc_mode" "1"
     write "/sys/module/ged/parameters/gx_game_mode" "0"
     write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
+    write "/sys/module/ged/parameters/boost_amp" "1"
+    write "/sys/module/ged/parameters/gx_boost_on" "1"
 fi
 
 if [[ -d "/proc/gpufreq/" ]] 
@@ -2408,6 +2414,8 @@ then
     write "/sys/module/ged/parameters/gx_frc_mode" "0"
     write "/sys/module/ged/parameters/gx_game_mode" "0"
     write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
+    write "/sys/module/ged/parameters/boost_amp" "0"
+    write "/sys/module/ged/parameters/gx_boost_on" "0"
 fi
 
 if [[ -d "/proc/gpufreq/" ]] 
@@ -2551,6 +2559,8 @@ then
     write "/sys/module/ged/parameters/gx_frc_mode" "1"
     write "/sys/module/ged/parameters/gx_game_mode" "1"
     write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
+    write "/sys/module/ged/parameters/boost_amp" "1'
+    write "/sys/module/ged/parameters/gx_boost_on" "1"
 fi
 
 if [[ -d "/proc/gpufreq/" ]]
