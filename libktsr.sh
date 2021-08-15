@@ -2234,7 +2234,7 @@ if [[ "$qcom" == "true" ]]; then
     write "${gpu}idle_timer" "1000"
     write "${gpu}pwrnap" "1"
 elif [[ "$qcom" == "false" ]]; then
-      [[ "$one_ui" == "false" ]] && lock "${gpu}dvfs" "0"
+      [[ "$one_ui" == "false" ]] && write "${gpu}dvfs" "1"
        lock "${gpui}gpu_min_clock" "$gpu_min"
        write "${gpu}highspeed_clock" "$gpu_max_freq"
        write "${gpu}highspeed_load" "76"
@@ -2269,7 +2269,7 @@ then
     write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
     write "/sys/module/ged/parameters/ged_smart_boost" "0"
     write "/sys/module/ged/parameters/gpu_debug_enable" "0"
-    write "/sys/module/ged/parameters/gpu_dvfs_enable" "0"
+    write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
     write "/sys/module/ged/parameters/gx_3D_benchmark_on" "1"
     write "/sys/module/ged/parameters/gx_dfps" "1"
     write "/sys/module/ged/parameters/gx_force_cpu_boost" "1"
@@ -2293,7 +2293,7 @@ fi
 
 if [[ -d "/proc/mali/" ]] 
 then
-     [[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "0"
+     [[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "1"
      write "/proc/mali/always_on" "0"
 fi
 
