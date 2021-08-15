@@ -1413,7 +1413,7 @@ do
    write "${queue}add_random" "0"
    write "${queue}iostats" "0"
    write "${queue}rotational" "0"
-   write "${queue}read_ahead_kb" "2048"
+   write "${queue}read_ahead_kb" "1024"
    write "${queue}nomerges" "2"
    write "${queue}rq_affinity" "2"
    write "${queue}nr_requests" "256"
@@ -1467,7 +1467,7 @@ do
     write "${queue}add_random" "0"
     write "${queue}iostats" "0"
     write "${queue}rotational" "0"
-    write "${queue}read_ahead_kb" "2048"
+    write "${queue}read_ahead_kb" "1024"
     write "${queue}nomerges" "2"
     write "${queue}rq_affinity" "2"
     write "${queue}nr_requests" "256"
@@ -2559,7 +2559,7 @@ then
     write "/sys/module/ged/parameters/gx_frc_mode" "1"
     write "/sys/module/ged/parameters/gx_game_mode" "1"
     write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
-    write "/sys/module/ged/parameters/boost_amp" "1'
+    write "/sys/module/ged/parameters/boost_amp" "1"
     write "/sys/module/ged/parameters/gx_boost_on" "1"
 fi
 
