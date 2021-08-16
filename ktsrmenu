@@ -381,7 +381,7 @@ read -r option
 						                              ;;
 						                            
                                                  "18") 
-                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
+                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]]; then
                                                           echo "50" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       else
                                                           echo "Y" > "/sys/module/mdss_mdp/parameters/custom_hz"
@@ -392,7 +392,7 @@ read -r option
                                                       ;;
                                                       
                                                  "19")
-                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
+                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]]; then
                                                           echo "55" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       fi
                                                       echo "${G}Done!${N}"
@@ -401,7 +401,7 @@ read -r option
                                                       ;;
                                                       
                                                  "20")
-                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
+                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]]; then
                                                           echo "60" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       else
                                                           echo "N" > "/sys/module/mdss_mdp/parameters/custom_hz"
@@ -436,10 +436,10 @@ read -r option
                                                  ;;
 						                      
                                           "23")
-                                               settings reset system min_refresh_rate 2>/dev/null
-                                               settings reset system peak_refresh_rate 2>/dev/null
-                                               settings reset system user_refresh_rate 2>/dev/null
-                                               settings reset global oneplus_screen_refresh_rate 2>/dev/null
+                                               settings delete system min_refresh_rate >/dev/null 2>&1
+                                               settings delete system peak_refresh_rate >/dev/null 2>&1
+                                               settings delete system user_refresh_rate >/dev/null 2>&1
+                                               settings delete global oneplus_screen_refresh_rate >/dev/null 2>&1
                                                echo "${G}Done!${N}"
                                                sleep 2
                                                menu
