@@ -50,7 +50,6 @@ fi
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 
 case "$ktsr_prof" in
-
 1)
   ktsr_prof_in=otomatis
   ;;

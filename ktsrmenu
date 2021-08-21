@@ -45,12 +45,11 @@ mv -f "$VERLOG" "$oldVERLOG" 2>/dev/null; mv -f "$LOG" "$oldLOG" 2>/dev/null; mv
 
 # exec 1>$stdoutLOG
 
-set -x 2>"$VERLOG"
+set -x 2>"${VERLOG}"
 
 ktsr_prof=$(getprop persist.king.tweaks.prof)
  	
-case "$ktsr_prof" in
-
+case "${ktsr_prof}" in
 1)
   ktsr_prof_en=Automatic
   ;;
@@ -75,34 +74,29 @@ case "$ktsr_prof" in
            ktsr_prof_en=Latency
            ;;
       esac
-
+      
 if [[ "$(settings get global low_power)" == "1" ]]; then
     low_power_mode=Enabled
 else
     low_power_mode=Disabled
 fi
-
 if [[ "$(cmd netpolicy get restrict-background | awk '{print $4}')" == "enabled" ]]; then
     data_saver=Enabled
 else
     data_saver=Disabled
 fi
-
 if [[ "$(settings get secure location_providers_allowed)" == "" ]]; then
     loc_mode_pwr_saving=Enabled
 else
     loc_mode_pwr_saving=Disabled
 fi
-
 if [[ "$(getprop init.svc.thermal-engine)" == "running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "running" ]] || [[ "$(getprop init.svc.thermald)" == "running" ]] || [[ "$(getprop init.svc.thermalservice)" == "running" ]] || [[ "$(getprop init.svc.thermanager)" == "running" ]]; then
     ts=On
-    
 elif [[ "$(getprop init.svc.thermal-engine)" == "stopped" ]] || [[ "$(getprop init.svc.mi_thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermalservice)" == "stopped" ]] || [[ "$(getprop init.svc.thermanager)" == "stopped" ]]; then
       ts=Off
 else
     ts=Unknown
 fi
-
 menu(){
 clear
 echo ""
@@ -110,7 +104,7 @@ echo "${Y}************${N}"
 echo "${Y}* KTSR CLI *${N}"
 echo "${Y}************${N}"
 echo ""
-echo "${G}Ver: 1.5.7.3-beta-r7${N}"
+echo "${G}Ver: 1.5.8.3-beta-r7${N}"
 echo ""
 echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 echo ""
@@ -134,7 +128,6 @@ echo "[*] Other misc options: "
 echo ""
 echo "[7] Optimize apps package"
 echo ""
-
 if [[ "$low_power_mode" == "Disabled" ]]; then
     echo "[8] Enable low power mode"
     echo ""
@@ -142,7 +135,6 @@ else
     echo "[9] Disable low power mode"
     echo ""
 fi
-
 if [[ "$data_saver" == "Disabled" ]]; then
     echo "[10] Enable data saver"
     echo ""
@@ -150,7 +142,6 @@ else
     echo "[11] Disable data saver"
     echo ""
 fi
-
 if [[ "$loc_mode_pwr_saving" == "Disabled" ]]; then
     echo "[12] Enable power-saving location mode"
     echo ""
@@ -158,47 +149,36 @@ else
     echo "[13] Disable power-saving location mode"
     echo ""
 fi
-
 echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
 echo ""
 echo "[15] Access our telegram group"
 echo ""
-
 if [[ "$ts" == "On" ]]; then
     echo "${B}[16] Disable thermal services (Can reduce throttling but also make your device heats up more)${N}"
     echo ""
-
 elif [[ "$ts" == "Off" ]]; then
       echo "${B}[17] Enable thermal services${N}"
       echo ""
 fi
-
 if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
     echo "[18] 50 HZ Refresh Rate"   
     echo ""
-
 elif [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
       echo "[18] 50 HZ Refresh Rate"   
       echo ""
       echo "[19] 55 HZ Refresh Rate"
       echo ""
 fi
-
-if [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "60" ]]; then
+if [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "60" ]]; then
     echo "[20] 60 HZ Refresh Rate"
     echo ""
-fi
-
-if [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]]; then
+elif [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]]; then
     echo "[21] 90 HZ Refresh Rate"
     echo ""
-fi
-
-if [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]]; then
+elif [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]]; then
     echo "[22] 120 HZ Refresh Rate"
     echo ""
 fi
-
 echo "[23] Reset Refresh Rate config"
 echo ""
 echo "[24] Free RAM [ Balanced ] (Will only drop caches)."
@@ -207,25 +187,18 @@ echo "[25] Free RAM [ Agressive ] (Will kill all background apps and drop caches
 echo ""
 echo "[26] Free RAM [ Extreme ] (Will kill all apps, and drop caches)."
 echo ""
-echo "[27] Reset apps flag"
-echo ""
-echo "[28] Recompile all apps with speed-profile flag (faster apps startup, optimization, etc) (Needs to reset apps flag first)"
-echo ""
-
 if [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]]; then
-    echo "[29] Switch to dynamic thermal profile (May improve charging speed)"
+    echo "[27] Switch to dynamic thermal profile (May improve charging speed)"
     echo ""
-
 elif [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]]; then
-      echo "[30] Switch to default thermal profile"
+      echo "[28] Switch to default thermal profile"
       echo ""
 fi
-
 echo "${R}[0] Exit${N}"
 echo ""
 echo -n "${Y}[*] Select the desired option:${N} "
 read -r option
-		case $option in
+		case "${option}" in
 			"1")
 				echo "${B}Applying profile...${N}"
 				setprop persist.king.tweaks.prof "1" 2>/dev/null
@@ -436,10 +409,10 @@ read -r option
                                                  ;;
 						                      
                                           "23")
-                                               settings delete system min_refresh_rate >/dev/null 2>&1
-                                               settings delete system peak_refresh_rate >/dev/null 2>&1
-                                               settings delete system user_refresh_rate >/dev/null 2>&1
-                                               settings delete global oneplus_screen_refresh_rate >/dev/null 2>&1
+                                               settings reset system min_refresh_rate >/dev/null 2>&1
+                                               settings reset system peak_refresh_rate >/dev/null 2>&1
+                                               settings reset system user_refresh_rate >/dev/null 2>&1
+                                               settings reset global oneplus_screen_refresh_rate >/dev/null 2>&1
                                                echo "${G}Done!${N}"
                                                sleep 2
                                                menu
@@ -476,28 +449,20 @@ read -r option
                                             sleep 2
                                             menu
                                             ;;
-                                           
-                                            "27")
-                                                 cmd package compile --reset -a >/dev/null 2>&1
-                                                 ;;
+                                               
+                                              "27")
+                                              echo "2" > "/sys/class/thermal/thermal_message/sconfig"
+                                              echo "${G}Done!${N}"
+                                              sleep 2
+                                              menu
+                                              ;; 
                                                  
-                                                 "28")
-                                                      cmd package compile -m speed-profile -f -a >/dev/null 2>&1
-                                                      ;;
-                                                      
-                                                      "29")
-                                                           echo "2" > "/sys/class/thermal/thermal_message/sconfig"
-                                                           echo "${G}Done!${N}"
-                                                           sleep 2
-                                                           menu
-                                                           ;; 
-                                                 
-                                                    "30")
-                                                         echo "0" > "/sys/class/thermal/thermal_message/sconfig"
-                                                         echo "${G}Done!${N}"
-                                                         sleep 2
-                                                         menu
-                                                         ;;
+                                              "28")
+                                              echo "0" > "/sys/class/thermal/thermal_message/sconfig"
+                                              echo "${G}Done!${N}"
+                                              sleep 2
+                                              menu
+                                              ;;
                                        "0")
 						                   echo "${G}Hope that see ya soon! ;)${N}"
 						                   ;;
