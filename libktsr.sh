@@ -515,16 +515,16 @@ fi
 
 get_ktsr_info(){
 # Fetch version
-build_ver=$(grep version= "${MODPATH}module.prop" | sed "s/version=//")
+bd_ver=$(grep version= "${MODPATH}module.prop" | sed "s/version=//")
 
 # Fetch build type
-build_tp=$(grep build_rel= "${MODPATH}module.prop" | sed "s/build_rel=//")
+bd_rel=$(grep build_rel= "${MODPATH}module.prop" | sed "s/build_rel=//")
 
 # Fetch build date
-build_dt=$(grep build_date= "${MODPATH}module.prop" | sed "s/build_date=//")
+bd_dt=$(grep build_date= "${MODPATH}module.prop" | sed "s/build_date=//")
 
 # Fetch build codename
-build_cdn=$(grep codename= "${MODPATH}module.prop" | sed "s/codename=//")
+bd_cdn=$(grep codename= "${MODPATH}module.prop" | sed "s/codename=//")
 }
 
 get_batt_tmp(){
@@ -1401,7 +1401,7 @@ kmsg "Tweaked I/O scheduler"
 kmsg3 ""
 }
 
-io_extreme() {
+io_extreme(){
 for queue in /sys/block/*/queue/
 do
   avail_scheds="$(cat "${queue}scheduler")"
@@ -1490,7 +1490,7 @@ do
 	avail_govs="$(cat "${cpu}/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in schedplus schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "${avail_govs}" == *"$governor"* ]]
@@ -1550,7 +1550,7 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in schedplus schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]
 	  then
@@ -1608,7 +1608,7 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in schedplus schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]
 	  then
@@ -1665,7 +1665,7 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in schedplus schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]
 	  then
@@ -1723,7 +1723,7 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in schedplus schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]
 	  then
@@ -2109,9 +2109,9 @@ elif [[ "${qcom}" == "false" ]]; then
        lock "${gpu}max_freq" "${gpu_max_freq}"
        lock "${gpu}min_freq" "${gpu_min_freq}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
-       write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold "70"
-       write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential "45"
-       write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold "65"
+       write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "70"
+       write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "45"
+       write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold" "65"
        write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "40"
 fi
 
@@ -3785,7 +3785,7 @@ if [[ "${ppm}" == "true" ]]; then
     write "/proc/ppm/policy_status" "3 0"
     write "/proc/ppm/policy_status" "4 1"
     write "/proc/ppm/policy_status" "5 0"
-    write "/proc/ppm/policy_status" "7 0"
+    write "/proc/ppm/policy_status" "7 1"
     write "/proc/ppm/policy_status" "9 0"
     kmsg "Tweaked PPM Policies"
     kmsg3 ""
@@ -3805,7 +3805,7 @@ if [[ "${ppm}" == "true" ]]; then
     write "/proc/ppm/policy_status" "3 0"
     write "/proc/ppm/policy_status" "4 0"
     write "/proc/ppm/policy_status" "5 0"
-    write "/proc/ppm/policy_status" "7 0"
+    write "/proc/ppm/policy_status" "7 1"
     write "/proc/ppm/policy_status" "9 1"
     kmsg "Tweaked PPM Policies"
     kmsg3 ""
@@ -5144,11 +5144,7 @@ else
     misc_cpu_max_pwr
 fi
 
-if [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]]; then
-    enable_ppm
-else
-    disable_ppm
-fi
+disable_ppm
 
 if [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]]; then
     cpu_clk_default
@@ -5185,13 +5181,6 @@ else
 fi
 
 vm_lmk_${ktsr_prof_en}
-
-if [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]]; then
-    ppm_policy_default
-
-elif [[ "${ktsr_prof_en}" == "extreme" ]]; then 
-      ppm_policy_max
-fi
 
 disable_msm_thermal
 
@@ -5319,11 +5308,7 @@ else
     misc_cpu_max_pwr
 fi
 
-if [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
-    enable_ppm
-else
-    disable_ppm
-fi
+disable_ppm
 
 if [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
     cpu_clk_default
@@ -5360,13 +5345,6 @@ else
 fi
 
 vm_lmk_$(getprop kingauto.prof)
-
-if [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
-    ppm_policy_default
-
-elif [[ "$(getprop kingauto.prof)" == "extreme" ]]; then
-      ppm_policy_max
-fi
 
 disable_msm_thermal
 
