@@ -1,5 +1,6 @@
 #!/system/bin/sh
 # KTSR by pedro (pedrozzz0 @ GitHub)
+# Credits: Uperf, by Matt Yang.
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 MODPATH=/data/adb/modules/KTSR
@@ -183,22 +184,125 @@ case "$ktsr_prof" in
              ;;
         esac
 
-clear_logs() {
-# Remove debug log if size is = / > 1 MB
-kdbg_max_size=1000000
-
-# Do the same to sqlite opt logs
-sqlite_opt_max_size=1000000
-
-if [[ "$(stat -t "$KDBG" | awk '{print $2}')" -eq "$kdbg_max_size" ]] || [[ "$(stat -t "$KLOG" | awk '{print $2}')" -gt "$kdbg_max_size" ]]; then
-    rm -rf "$KDBG"
-
-elif [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log | awk '{print $2}')" -eq "$sqlite_opt_max_size" ]] || [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log | awk '{print $2}')" -gt "$sqlite_opt_max_size" ]]; then
-      rm -rf "/data/media/0/KTSR/sqlite_opt.log"
-fi
-}
-
 clear_logs
+
+    # Reduce perf cluster wakeup
+    # Daemons
+    pin_proc_on_pwr "crtc_commit|crtc_event|pp_event|msm_irqbalance|netd|mdnsd|analytics"
+    pin_proc_on_pwr "imsdaemon|cnss-daemon|qadaemon|qseecomd|time_daemon|ATFWD-daemon|ims_rtp_daemon|qcrilNrd"
+    # ueventd related to hotplug of camera, wifi, usb... 
+    # pin_proc_on_pwr "ueventd"
+    # hardware services, eg. android.hardware.sensors@1.0-service
+    pin_proc_on_pwr "android.hardware.bluetooth"
+    pin_proc_on_pwr "android.hardware.gnss"
+    pin_proc_on_pwr "android.hardware.health"
+    pin_proc_on_pwr "android.hardware.thermal"
+    pin_proc_on_pwr "android.hardware.wifi"
+    pin_proc_on_pwr "android.hardware.keymaster"
+    pin_proc_on_pwr "vendor.qti.hardware.qseecom"
+    pin_proc_on_pwr "hardware.sensors"
+    pin_proc_on_pwr "sensorservice"
+    # com.android.providers.media.module controlled by uperf
+    pin_proc_on_pwr "android.process.media"
+    # com.miui.securitycenter & com.miui.securityadd
+    pin_proc_on_pwr "miui\.security"
+
+    # system_server blacklist
+    # system_server controlled by uperf
+    change_proc_cgroup "system_server" "" "cpuset"
+    # input dispatcher
+    change_thread_high_prio "system_server" "input"
+    # related to camera startup
+    # change_thread_affinity "system_server" "ProcessManager" "ff"
+    # not important
+    pin_thread_on_pwr "system_server" "Miui|Connect|Network|Wifi|backup|Sync|Observer|Power|Sensor|batterystats"
+    pin_thread_on_pwr "system_server" "Thread-|pool-|Jit|CachedAppOpt|Greezer|TaskSnapshot|Oom"
+    change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "4"
+    # pin_thread_on_pwr "system_server" "Async" # it blocks camera
+    # pin_thread_on_pwr "system_server" "\.bg" # it blocks binders
+    # do not let GC thread block system_server
+    # pin_thread_on_mid "system_server" "HeapTaskDaemon"
+    # pin_thread_on_mid "system_server" "FinalizerDaemon"
+
+    # Render Pipeline
+    # surfaceflinger controlled by uperf
+    # android.phone controlled by uperf
+    # speed up searching service binder
+    change_task_cgroup "servicemanag" "top-app" "cpuset"
+    # prevent display service from being preempted by normal tasks
+    # vendor.qti.hardware.display.allocator-service cannot be set to RT policy, will be reset to 120
+    unpin_proc "\.hardware\.display"
+    change_task_affinity "\.hardware\.display" "7f"
+    change_task_rt "\.hardware\.display" "2"
+    # let UX related Binders run with top-app
+    change_thread_cgroup "\.hardware\.display" "^Binder" "top-app" "cpuset"
+    change_thread_cgroup "\.hardware\.display" "^HwBinder" "top-app" "cpuset"
+    change_thread_cgroup "\.composer" "^Binder" "top-app" "cpuset"
+
+    # Heavy Scene Boost
+    # boost app boot process, zygote--com.xxxx.xxx
+    # boost android process pool, usap--com.xxxx.xxx
+    unpin_proc "zygote|usap"
+    change_task_high_prio "zygote|usap"
+
+    # busybox fork from magiskd
+    pin_proc_on_mid "magiskd"
+    change_task_nice "magiskd" "19"
+    
+    change_task_rt "kingtweaks" "1"
+    pin_proc_on_pwr "kingtweaks"
+    
+    # kernel reclaim threads run on more power-efficient cores
+    change_task_nice "kswapd" "-2"
+    change_task_nice "oom_reaper" "-2"
+    change_task_affinity "kswapd" "7f"
+    change_task_affinity "oom_reaper" "7f"
+
+# Similiar to PinnerService, Mlock(Unevictable) 200~350MB
+fscc_add_obj "${sys_frm}/framework.jar"
+fscc_add_obj "${sys_frm}/services.jar"
+fscc_add_obj "${sys_frm}/ext.jar"
+fscc_add_obj "${sys_frm}/telephony-common.jar"
+fscc_add_obj "${sys_frm}/qcnvitems.jar"
+fscc_add_obj "${sys_frm}/oat"
+fscc_add_obj "${sys_frm}/arm64"
+fscc_add_obj "${sys_frm}/arm/boot-framework.oat"
+fscc_add_obj "${sys_frm}/arm/boot-framework.vdex"
+fscc_add_obj "${sys_frm}/arm/boot.oat"
+fscc_add_obj "${sys_frm}/arm/boot.vdex"
+fscc_add_obj "${sys_frm}/arm/boot-core-libart.oat"
+fscc_add_obj "${sys_frm}/arm/boot-core-libart.vdex"
+fscc_add_obj "${sys_lib}/libandroid_servers.so"
+fscc_add_obj "${sys_lib}/libandroid_runtime.so"
+fscc_add_obj "${sys_lib}/libandroidfw.so"
+fscc_add_obj "${sys_lib}/libandroid.so"
+fscc_add_obj "${sys_lib}/libhwui.so"
+fscc_add_obj "${sys_lib}/libjpeg.so"
+fscc_add_obj "${vdr_lib}/libssc.so"
+fscc_add_obj "${vdr_lib}/libgsl.so"
+fscc_add_obj "${vdr_lib}/sensors.ssc.so"
+fscc_add_apex_lib "core-oj.jar"
+fscc_add_apex_lib "core-libart.jar"
+fscc_add_apex_lib "updatable-media.jar"
+fscc_add_apex_lib "okhttp.jar"
+fscc_add_apex_lib "bouncycastle.jar"
+# Do not pin too many files on low memory devices
+[[ "$total_ram" -gt "2048" ]] && fscc_add_apk "com.android.systemui"
+[[ "$total_ram" -gt "2048" ]] && fscc_add_dex "com.android.systemui"
+[[ "$total_ram" -gt "3072" ]] && fscc_add_app_home "com.android.systemui"
+[[ "$total_ram" -gt "3072" ]] && fscc_add_app_ime "com.android.systemui"
+
+fscc_stop
+fscc_start
+
+# Run adjshield
+[[ ! -f "${adj_cfg}" ]] && adjshield_create_default_cfg
+adjshield_stop
+adjshield_start
+rebuild_process_scan_cache
+
+# save mode for automatic applying mode after reboot
+save_panel
 
 case "$ktsr_prof_en" in
 "automatic") 

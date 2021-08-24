@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # KTSR by Pedro (pedrozzz0 @ GitHub)
-# Credits: Draco (tytydraco @ GitHub), Dan (Paget69 @ XDA), mogoroku @ GitHub, helloklf @ GitHub, chenzyadb @ Gitee, Matt Yang (yc9559 @ GitHub) and Eight (dlwlrma123 @ GitHub).
+# Credits: Ktweak, by Draco (tytydraco @ GitHub), LSpeed, Dan (Paget69 @ XDA), mogoroku @ GitHub, vtools, by helloklf @ GitHub, Cuprum-Turbo-Adjustment, by chenzyadb @ Gitee, qti-mem-opt & Uperf, by Matt Yang (yc9559 @ GitHub) and Pandora's Box, by Eight (dlwlrma123 @ GitHub).
 # If you wanna use it as part of your project, please maintain the credits to it's respectives authors.
 
 MODPATH=/data/adb/modules/KTSR/
@@ -147,7 +147,7 @@ get_gpu_dir(){
 for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/
   do
     if [[ -d "${gpul}" ]]; then
-        gpu=$gpul
+        gpu=${gpul}
         qcom=true
     fi
 done
@@ -155,7 +155,7 @@ done
      for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/
      do
        if [[ -d "${gpul1}" ]]; then
-           gpu=$gpul1
+           gpu=${gpul1}
            qcom=true
        fi
    done
@@ -163,7 +163,7 @@ done
       for gpul2 in /sys/devices/*.mali/
       do
         if [[ -d "${gpul2}" ]]; then
-            gpu=$gpul2
+            gpu=${gpul2}
             qcom=false
         fi
     done
@@ -171,7 +171,7 @@ done
        for gpul3 in /sys/devices/platform/*.gpu/
        do
          if [[ -d "${gpul3}" ]]; then
-             gpu=$gpul3
+             gpu=${gpul3}
              qcom=false
          fi
      done
@@ -179,7 +179,7 @@ done
          for gpul4 in /sys/devices/platform/mali-*/
          do
            if [[ -d "${gpul4}" ]]; then
-               gpu=$gpul4
+               gpu=${gpul4}
                qcom=false
            fi
        done
@@ -187,7 +187,7 @@ done
            for gpul5 in /sys/devices/platform/*.mali/
            do
              if [[ -d "${gpul5}" ]]; then
-                 gpu=$gpul5
+                 gpu=${gpul5}
                  qcom=false
              fi
          done
@@ -195,7 +195,7 @@ done
              for gpul6 in /sys/class/misc/mali*/device/devfreq/gpufreq/
              do
                if [[ -d "${gpul6}" ]]; then
-                   gpu=$gpul6
+                   gpu=${gpul6}
                    qcom=false
                fi
            done
@@ -203,7 +203,7 @@ done
               for gpul7 in /sys/class/misc/mali*/device/devfreq/*.gpu/
               do
                 if [[ -d "${gpul7}" ]]; then
-                    gpu=$gpul7
+                    gpu=${gpul7}
                     qcom=false
                 fi
             done
@@ -211,7 +211,7 @@ done
                for gpul8 in /sys/devices/platform/*.mali/misc/mali0/
                do
                  if [[ -d "${gpul8}" ]]; then
-                     gpu=$gpul8
+                     gpu=${gpul8}
                      qcom=false
                  fi
              done
@@ -219,7 +219,7 @@ done
              for gpul9 in /sys/devices/platform/mali.*/
              do
                if [[ -d "${gpul9}" ]]; then
-                   gpu=$gpul9
+                   gpu=${gpul9}
                    qcom=false
                fi
            done
@@ -474,13 +474,13 @@ detect_cpu_sched(){
 # Fetch the CPU scheduling type
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-  if [[ "$(cat "${cpu}scaling_available_governors" | grep 'sched')" ]]; then
+  if [[ "$(grep sched "${cpu}scaling_available_governors")" ]]; then
       cpu_sched=EAS
 
-  elif [[ "$(cat "${cpu}scaling_available_governors" | grep 'util')" ]]; then
+  elif [[ "$(grep util "${cpu}scaling_available_governors")" ]]; then
         cpu_sched=EAS
 
-  elif [[ "$(cat "${cpu}scaling_available_governors" | grep 'interactive')" ]]; then
+  elif [[ "$(grep interactive "${cpu}scaling_available_governors")" ]]; then
         cpu_sched=HMP
   else
       cpu_sched=Unknown
@@ -515,16 +515,16 @@ fi
 
 get_ktsr_info(){
 # Fetch version
-build_ver=$(cat "${MODPATH}module.prop" | grep version= | sed "s/version=//")
+build_ver=$(grep version= "${MODPATH}module.prop" | sed "s/version=//")
 
 # Fetch build type
-build_tp=$(cat "${MODPATH}ktsr.prop" | grep buildtype= | sed "s/buildtype=//")
+build_tp=$(grep build_rel= "${MODPATH}module.prop" | sed "s/build_rel=//")
 
 # Fetch build date
-build_dt=$(cat "${MODPATH}ktsr.prop" | grep builddate= | sed "s/builddate=//")
+build_dt=$(grep build_date= "${MODPATH}module.prop" | sed "s/build_date=//")
 
 # Fetch build codename
-build_cdn=$(cat "${MODPATH}ktsr.prop" | grep codename= | sed "s/codename=//")
+build_cdn=$(grep codename= "${MODPATH}module.prop" | sed "s/codename=//")
 }
 
 get_batt_tmp(){
@@ -827,10 +827,10 @@ kmsg3 "** ROM: $rom_info"
 kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}' | tail -n 1)"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}' | tail -n 1) PPI"
 kmsg3 "** Refresh Rate: $rr HZ"                                         
-kmsg3 "** KTSR Version: $build_ver"                                                                                     
-kmsg3 "** KTSR Codename: $build_cdn"                                                                                   
-kmsg3 "** Build Type: $build_tp"                                                                                         
-kmsg3 "** Build Date: $build_dt"                                                                                          
+kmsg3 "** Build Version: $bd_ver"                                                                                     
+kmsg3 "** Build Codename: $bd_cdn"                                                                                   
+kmsg3 "** Build Release: $bd_rel"                                                                                         
+kmsg3 "** Build Date: $bd_dt"                                                                                          
 kmsg3 "** Battery Charge Level: $batt_pctg %"  
 kmsg3 "** Battery Capacity: $batt_cpct mAh"
 kmsg3 "** Battery Health: $batt_hth"                                                                                     
@@ -859,7 +859,7 @@ if [[ "${ktsr_prof_en}" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "bat
 else
     stop mpdecision 2>/dev/null
 fi
-stop vendor.perfservice 2>/dev/null
+# stop vendor.perfservice 2>/dev/null
 stop vendor.cnss_diag 2>/dev/null
 stop vendor.tcpdump 2>/dev/null
 stop statsd 2>/dev/null
@@ -1968,7 +1968,6 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpug}mali_touch_boost_level" "0"
        lock "${gpu}max_freq" "${gpu_max_freq}"
        lock "${gpu}min_freq" "${gpu_min_freq}"
-       write "${gpu}tmu" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "60"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "40"
@@ -2046,7 +2045,7 @@ kmsg3 ""
 }
 
 gpu_balanced(){
-	if [[ "$[qcom}" == "true" ]]; then
+	if [[ "${qcom}" == "true" ]]; then
 	    avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 	    for governor in msm-adreno-tz simple_ondemand ondemand
@@ -2109,7 +2108,6 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpug}mali_touch_boost_level" "0"
        lock "${gpu}max_freq" "${gpu_max_freq}"
        lock "${gpu}min_freq" "${gpu_min_freq}"
-       write "${gpu}tmu" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold "70"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential "45"
@@ -2257,7 +2255,6 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpug}mali_touch_boost_level" "1"
        lock "${gpu}max_freq" "${gpu_max_freq}"
        lock "${gpu}min_freq" "${gpu_min_freq}"
-       lock "${gpu}tmu" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "40"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "20"
@@ -2396,7 +2393,6 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpug}mali_touch_boost_level" "0"
        lock "${gpu}max_freq" "${gpu_max_freq}"
        lock "${gpu}min_freq" "${gpu_min_freq}"
-       write "${gpu}tmu" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "85"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "65"
@@ -2544,7 +2540,6 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpug}mali_touch_boost_level" "1"
        lock "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
        lock "${gpu}devfreq/gpufreq/min_freq" "${gpu_max_freq}"
-       lock "${gpu}tmu" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "35"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "15"
@@ -3168,8 +3163,8 @@ then
     write "${fs}lease-break-time" "15"
     write "${fs}leases-enable" "1"
     write "${fs}file-max" "2097152"
-    write "${fs}inotify/max_queued_events" "524288"
-    write "${fs}inotify/max_user_watches" "524288"
+    write "${fs}inotify/max_queued_events" "131072"
+    write "${fs}inotify/max_user_watches" "131072"
     write "${fs}inotify/max_user_instances" "1024"
     kmsg "Tweaked FS"
     kmsg3 ""
@@ -3273,7 +3268,7 @@ if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
 fi
 lock "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "10000000"
+    write "${kernel}sched_latency_ns" "200000"
 fi
 if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
     write "${kernel}sched_min_granularity_ns" "1250000"
@@ -3345,6 +3340,7 @@ fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
     write "/sys/devices/system/cpu/sched/sched_boost" "0"
 fi
+write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3377,7 +3373,7 @@ if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
     write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BALANCE / 2))"
 fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "5000000"
+    write "${kernel}sched_migration_cost_ns" "200000"
 fi
 if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
     write "${kernel}sched_min_task_util_for_colocation" "0"
@@ -3442,6 +3438,7 @@ fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
     write "/sys/devices/system/cpu/sched/sched_boost" "0"
 fi
+write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3474,7 +3471,7 @@ if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
     write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "5000000"
+    write "${kernel}sched_migration_cost_ns" "200000"
 fi
 if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
     write "${kernel}sched_min_task_util_for_colocation" "0"
@@ -3538,6 +3535,7 @@ fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
     write "/sys/devices/system/cpu/sched/sched_boost" "1"
 fi
+write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3570,7 +3568,7 @@ if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
     write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
 fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "5000000"
+    write "${kernel}sched_migration_cost_ns" "200000"
 fi
 if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
     write "${kernel}sched_min_task_util_for_colocation" "0"
@@ -3634,6 +3632,7 @@ fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
     write "/sys/devices/system/cpu/sched/sched_boost" "0"
 fi
+write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -3666,7 +3665,7 @@ if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
     write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "5000000"
+    write "${kernel}sched_migration_cost_ns" "200000"
 fi
 if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
     write "${kernel}sched_min_task_util_for_colocation" "0"
@@ -3730,6 +3729,7 @@ fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
     write "/sys/devices/system/cpu/sched/sched_boost" "1"
 fi
+write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
 kmsg "Tweaked various kernel parameters"
 kmsg3 ""
@@ -4524,11 +4524,11 @@ for lpm in /sys/module/lpm_levels/system/*/*/*/
 do
   if [[ -d "/sys/module/lpm_levels" ]]
   then
-      write "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
-      write "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "N"
-      write "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
-      write "${lpm}idle_enabled" "N"
-      write "${lpm}suspend_enabled" "N"
+      lock "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
+      lock "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "N"
+      lock "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
+      lock "${lpm}idle_enabled" "N"
+      lock "${lpm}suspend_enabled" "N"
    fi
 done
 
@@ -4591,44 +4591,405 @@ fi
 }
 
 emmc_clk_sclg_balanced(){
-if [[ -d "/sys/class/mmc_host/mmc0/" ]]; then
+if [[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]]; then
     write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
     write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "25"
     write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "5"
+    write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "1"
+    write "/sys/class/mmc_host/mmc1/clk_scaling/up_threshold" "25"
+    write "/sys/class/mmc_host/mmc1/clk_scaling/down_threshold" "5"
 
-elif [[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]]; then
+elif [[ -d "/sys/class/mmc_host/mmc0/" ]]; then
       write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
       write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "25"
       write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "5"
-      write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "1"
-      write "/sys/class/mmc_host/mmc1/clk_scaling/up_threshold" "25"
-      write "/sys/class/mmc_host/mmc1/clk_scaling/down_threshold" "5"
 fi
 }
 
 emmc_clk_sclg_pwr_saving(){
-if [[ -d "/sys/class/mmc_host/mmc0/" ]]; then
+if [[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]]; then
     write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
     write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "40"
     write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "10"
+    write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "1"
+    write "/sys/class/mmc_host/mmc1/clk_scaling/up_threshold" "40"
+    write "/sys/class/mmc_host/mmc1/clk_scaling/down_threshold" "10"
 
-elif [[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]]; then
+elif [[ -d "/sys/class/mmc_host/mmc0/" ]]; then
       write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
       write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "40"
       write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "10"
-      write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "1"
-      write "/sys/class/mmc_host/mmc1/clk_scaling/up_threshold" "40"
-      write "/sys/class/mmc_host/mmc1/clk_scaling/down_threshold" "10"
 fi
 }
 
 disable_emmc_clk_sclg(){
-if [[ -d "/sys/class/mmc_host/mmc0/" ]]; then
+if [[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]]; then
     write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
+    write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"
 
-elif [[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]]; then
+elif [[ -d "/sys/class/mmc_host/mmc0/" ]]; then
       write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
-      write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"
+fi
+}
+
+disable_debug(){
+# Disable debugging / logging
+for i in edac_mc_log_ce enable_event_log log_level* log_ecn_error snapshot_crashdumper; do
+  for o in $(find /sys/module/*/parameters -type f -name "${i}"); do
+      write "${o}" "0"
+      write "${o}" "N"
+   done
+done
+
+kmsg "Disabled misc debugging"
+kmsg3 ""
+}
+
+# process scan cache
+ps_ret=""
+
+# $1:content
+write_panel(){
+    echo "$1" >> "$bbn_log"
+}
+
+save_panel(){
+    write_panel "[*] Bourbon - the essential process optimizer"
+    write_panel ""
+    write_panel "Version: 1.0"
+    write_panel ""
+    write_panel "Last performed: $(date '+%Y-%m-%d %H:%M:%S')"
+    write_panel ""
+    write_panel "FSCACHE status: $(fscc_status)"
+    write_panel ""
+    write_panel "Adjshield status: $(adjshield_status)"
+    write_panel ""
+    write_panel "Adjshield config file: $adj_cfg"
+}
+
+# $1:str
+adjshield_write_cfg(){
+    echo "$1" >> "$adj_cfg"
+}
+
+adjshield_create_default_cfg(){
+    adjshield_write_cfg "# AdjShield Config File"
+    adjshield_write_cfg "# Prevent given processes from being killed by Android LMK by protecting oom_score_adj"
+    adjshield_write_cfg "# List all the package names of your Apps which you want to keep alive."
+    adjshield_write_cfg "com.riotgames.league.wildrift"
+    adjshield_write_cfg "com.activision.callofduty.shooter"
+    adjshield_write_cfg "com.mobile.legends"
+    adjshield_write_cfg "com.tencent.ig"
+}
+
+adjshield_start(){
+    # clear logs
+    true > "${adj_log}"
+    true > "${bbn_log}"
+    # check interval: 120 seconds - Deprecated, use event driven instead
+    "${MODPATH}system/bin/adjshield" -o "${adj_log}" -c "${adj_cfg}" &
+}
+
+adjshield_stop(){
+    killall "$adj_nm" 2>/dev/null
+}
+
+# return:status
+adjshield_status(){
+    if [[ "$(ps -A | grep "${adj_nm}")" != "" ]]; then
+        echo "Adjshield running. see $adj_log for details."
+    else
+        # "Error: Log file not found"
+        err="$(cat "${adj_log}" | grep Error | head -n 1 | cut -d: -f2)"
+        if [[ "${err}" != "" ]]; then
+            echo "Not running. ${err}."
+        else
+            echo "Not running. Unknown reason."
+        fi
+    fi
+}
+
+# $1:task_name $2:cgroup_name $3:"cpuset"/"stune"
+change_task_cgroup(){
+    for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
+        for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
+            comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+            echo "${temp_tid}" > "/dev/$3/$2/tasks"
+        done
+    done
+}
+
+# $1:process_name $2:cgroup_name $3:"cpuset"/"stune"
+change_proc_cgroup(){
+    for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
+        comm="$(cat /proc/${temp_pid}/comm)"
+        echo "${temp_pid}" > "/dev/$3/$2/cgroup.procs"
+    done
+}
+
+# $1:task_name $2:thread_name $3:cgroup_name $4:"cpuset"/"stune"
+change_thread_cgroup(){
+    for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
+        for temp_tid in $(ls "/proc/$temp_pid/task/"); do
+            comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+            if [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]]; then
+                echo "${temp_tid}" > "/dev/$4/$3/tasks"
+            fi
+        done
+    done
+}
+
+# $1:task_name $2:cgroup_name $3:"cpuset"/"stune"
+change_main_thread_cgroup(){
+    for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
+        comm="$(cat /proc/${temp_pid}/comm)"
+        echo "${temp_pid}" > "/dev/$3/$2/tasks"
+    done
+}
+
+# $1:task_name $2:hex_mask(0x00000003 is CPU0 and CPU1)
+change_task_affinity(){
+    for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
+        for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
+            comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+            taskset -p "$2" "${temp_tid}" >> "${bbn_log}"
+        done
+    done
+}
+
+# $1:task_name $2:thread_name $3:hex_mask(0x00000003 is CPU0 and CPU1)
+change_thread_affinity(){
+    for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
+        for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
+            comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+            if [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]]; then
+                taskset -p "$3" "${temp_tid}" >> "${bbn_log}"
+            fi
+        done
+    done
+}
+
+# $1:task_name $2:nice(relative to 120)
+change_task_nice(){
+    for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
+        for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
+            renice -n +40 -p "${temp_tid}"
+            renice -n -19 -p "${temp_tid}"
+            renice -n "$2" -p "${temp_tid}"
+        done
+    done
+}
+
+# $1:task_name $2:thread_name $3:nice(relative to 120)
+change_thread_nice(){
+    for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
+        for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
+            comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+            if [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]]; then
+                renice -n +40 -p "${temp_tid}"
+                renice -n -19 -p "${temp_tid}"
+                renice -n "$3" -p "${temp_tid}"
+            fi
+        done
+    done
+}
+
+# $1:task_name $2:priority(99-x, 1<=x<=99)
+change_task_rt(){
+    for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
+        for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
+            comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+            chrt -f -p "$2" "${temp_tid}" >> "${bbn_log}"
+        done
+    done
+}
+
+# $1:task_name $2:thread_name $3:priority(99-x, 1<=x<=99)
+change_thread_rt(){
+    for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
+        for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
+            comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+            if [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]]; then
+                chrt -f -p "$3" "${temp_tid}" >> "${bbn_log}"
+            fi
+        done
+    done
+}
+
+# $1:task_name
+change_task_high_prio(){
+    # audio thread nice <= -16
+    change_task_nice "$1" "-15"
+}
+
+# $1:task_name $2:thread_name
+change_thread_high_prio(){
+    # audio thread nice <= -16
+    change_thread_nice "$1" "$2" "-15"
+}
+
+# $1:task_name $2:thread_name
+unpin_thread(){
+    change_thread_cgroup "$1" "$2" "" "cpuset"
+}
+
+# $1:task_name $2:thread_name
+pin_thread_on_pwr(){
+    change_thread_cgroup "$1" "$2" "background" "cpuset"
+}
+
+# $1:task_name $2:thread_name
+pin_thread_on_mid(){
+    change_thread_cgroup "$1" "$2" "foreground" "cpuset"
+    change_thread_affinity "$1" "$2" "7f"
+}
+
+# $1:task_name $2:thread_name
+pin_thread_on_perf(){
+    unpin_thread "$1" "$2"
+    change_thread_affinity "$1" "$2" "f0"
+}
+
+# $1:task_name
+unpin_proc(){
+    change_task_cgroup "$1" "" "cpuset"
+}
+
+# $1:task_name
+pin_proc_on_pwr(){
+    change_task_cgroup "$1" "background" "cpuset"
+}
+
+# $1:task_name
+pin_proc_on_mid(){
+    unpin_proc "$1"
+    change_task_affinity "$1" "7f"
+}
+
+# $1:task_name
+pin_proc_on_perf(){
+    unpin_proc "$1"
+    change_task_affinity "$1" "f0"
+}
+
+rebuild_process_scan_cache(){
+    # avoid matching grep itself
+    # ps -Ao pid,args | grep kswapd
+    # 150 [kswapd0]
+    # 16490 grep kswapd
+    ps_ret="$(ps -Ao pid,args)"
+}
+
+fscc_file_list=""
+
+# $1:apk_path $return:oat_path
+fscc_path_apk_to_oat(){
+    # OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
+    echo "${1%/*}/oat"
+}
+
+# $1:file/dir
+fscc_list_append(){
+    fscc_file_list="$fscc_file_list $1"
+}
+
+# $1:file/dir
+fscc_add_obj(){
+    # whether file or dir exists
+    if [[ -e "$1" ]]; then
+        fscc_list_append "$1"
+    fi
+}
+
+# $1:package_name
+fscc_add_apk(){
+    if [[ "$1" != "" ]]; then
+        # pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
+        fscc_add_obj "$(pm path "$1" | head -n 1 | cut -d: -f2)"
+    fi
+}
+
+# $1:package_name
+fscc_add_dex(){
+    if [[ "$1" != "" ]]; then
+        # pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
+        package_apk_path="$(pm path "$1" | head -n 1 | cut -d: -f2)"
+        # user app: OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
+        fscc_add_obj "${package_apk_path%/*}/oat"
+
+        # remove apk name suffix
+        apk_nm="${package_apk_path%/*}"
+        # remove path prefix
+        apk_nm="${apk_nm##*/}"
+        # system app: get dex & vdex
+        # /data/dalvik-cache/arm64/system@product@priv-app@OPSystemUI@OPSystemUI.apk@classes.dex
+        for dex in $(find "${dvk}" | grep "@$apk_name@"); do
+            fscc_add_obj "${dex}"
+        done
+   fi
+}
+
+fscc_add_app_home(){
+    # well, not working on Android 7.1
+    intent_act="android.intent.action.MAIN"
+    intent_cat="android.intent.category.HOME"
+    # "  packageName=com.microsoft.launcher"
+    pkg_nm="$(pm resolve-activity -a "${intent_act}" -c "${intent_cat}" | grep packageName | head -n 1 | cut -d= -f2)"
+    # /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.dex 16M/31M  53.2%
+    # /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.vdex 120K/120K  100%
+    # /system/priv-app/OPLauncher2/OPLauncher2.apk 14M/30M  46.1%
+    fscc_add_apk "${pkg_nm}"
+    fscc_add_dex "${pkg_nm}"
+}
+
+fscc_add_app_ime(){
+    # "      packageName=com.baidu.input_yijia"
+    pkg_nm="$(ime list | grep packageName | head -n 1 | cut -d= -f2)"
+    # /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.dex 5M/17M  33.1%
+    # /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.vdex 2M/7M  28.1%
+    # /system/app/baidushurufa/baidushurufa.apk 1M/28M  5.71%
+    # pin apk file in memory is not valuable
+    fscc_add_dex "${pkg_nm}"
+}
+
+# $1:package_name
+fscc_add_apex_lib(){
+    fscc_add_obj "$(find /apex -name "$1" | head -n 1)"
+}
+
+# after appending fscc_file_list
+fscc_start(){
+    # multiple parameters, cannot be warped by ""
+    "${MODPATH}system/bin/fscache-ctrl" -fdlb0 "${fscc_file_list}"
+}
+
+fscc_stop(){
+    killall "${fscc_nm}" 2>/dev/null
+}
+
+# return:status
+fscc_status(){
+    # get the correct value after waiting for fscc loading files
+    sleep 2
+    if [[ "$(ps -A | grep "${fscc_nm}")" != "" ]]; then
+        echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache."
+    else
+        echo "Not running."
+    fi
+}
+
+clear_logs(){
+# Remove debug log if size is >= 1 MB
+kdbg_max_size=1000000
+
+# Do the same to sqlite opt log
+sqlite_opt_max_size=1000000
+
+if [[ "$(stat -t "$KDBG" 2>/dev/null | awk '{print $2}')" -eq "$kdbg_max_size" ]] || [[ "$(stat -t "$KLOG" 2>/dev/null | awk '{print $2}')" -gt "$kdbg_max_size" ]]; then
+    rm -rf "$KDBG"
+
+elif [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -eq "$sqlite_opt_max_size" ]] || [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -gt "$sqlite_opt_max_size" ]]; then
+      rm -rf "/data/media/0/KTSR/sqlite_opt.log"
 fi
 }
 
@@ -4736,7 +5097,7 @@ get_sql_info
 get_cpu_load
 }
 
-apply_all() {
+apply_all(){
 print_info
 
 stop_services
@@ -4901,6 +5262,8 @@ elif [[ "${ktsr_prof_en}" == "battery" ]]; then
 elif [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
       disable_emmc_clk_sclg
 fi
+
+disable_debug
 }
 
 apply_all_auto(){
@@ -5074,6 +5437,8 @@ elif [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 elif [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
       disable_emmc_clk_sclg
 fi
+
+disable_debug
 }
 
 ###############################
@@ -5097,6 +5462,19 @@ blkio=/dev/blkio/
 cpuctl=/dev/cpuctl/
 
 fs=/proc/sys/fs/
+
+bbn_log=/data/media/0/KTSR/bourbon.log
+adj_rel="${BIN_DIR}"
+adj_nm="adjshield"
+adj_cfg="/data/media/0/KTSR/adjshield.conf"
+adj_log="/data/media/0/KTSR/adjshield.log"
+fscc_nm="fscache-ctrl"
+sys_frm="/system/framework"
+sys_lib="/system/lib64"
+vdr_lib="/vendor/lib64"
+dvk="/data/dalvik-cache"
+apx1="/apex/com.android.art/javalib"
+apx2="/apex/com.android.runtime/javalib"
 
 latency(){
 init=$(date +%s)
