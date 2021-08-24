@@ -3277,7 +3277,7 @@ if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
     write "${kernel}sched_wakeup_granularity_ns" "2000000"
 fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "5000000"
+    write "${kernel}sched_migration_cost_ns" "200000"
 fi
 if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
     write "${kernel}sched_min_task_util_for_colocation" "0"
