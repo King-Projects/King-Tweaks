@@ -2112,7 +2112,7 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "70"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "45"
        write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_upthreshold" "65"
-       write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential "40"
+       write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "40"
 fi
 
 if [[ -d "/sys/modules/ged/" ]]
