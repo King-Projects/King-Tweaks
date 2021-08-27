@@ -119,9 +119,6 @@ lock(){
 	fi
 	
     chmod 000 "$1" 2>/dev/null
-
-	# Log the success
-	kmsg1 "$1 $curval -> $2"
 }
 
 # Duration in nanoseconds of one scheduling period
@@ -501,7 +498,7 @@ get_ram_info(){
 total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
 
 # Fetch the amount of available RAM
-avail_ram=$(busybox free -m | grep Mem: | awk '{print $7}')
+avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')
 }
 
 get_batt_pctg(){               
@@ -640,7 +637,7 @@ get_batt_cpct(){
 batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
 
 if [[ "${batt_cpct}" == "" ]]; then
-    batt_cpct=$(dumpsys batterystats | grep Capacity: | awk '{print $2}' | cut -d "," -f 1)
+    batt_cpct=$(dumpsys batterystats | awk '/Capacity:/{print $2}' | cut -d "," -f 1)
 fi
                
 if [[ "${batt_cpct}" -ge "1000000" ]]; then
@@ -5468,8 +5465,8 @@ kmsg "End of execution: $(date)"
 kmsg3 ""
 exit=$(date +%s)
 
-exectime=$((exit - init))
-kmsg "Elapsed time: $exectime seconds."
+exec_time=$((exit - init))
+kmsg "Elapsed time: $exec_time seconds."
 }
 automatic(){     	
 kmsg "Applying automatic profile"
@@ -5494,8 +5491,8 @@ kmsg "End of execution: $(date)"
 kmsg3 ""
 exit=$(date +%s)
 
-exectime=$((exit - init))
-kmsg "Elapsed time: $exectime seconds."
+exec_time=$((exit - init))
+kmsg "Elapsed time: $exec_time seconds."
 }
 extreme(){
 init=$(date +%s)
@@ -5511,8 +5508,8 @@ kmsg "End of execution: $(date)"
 kmsg3 ""
 exit=$(date +%s)
 
-exectime=$((exit - init))
-kmsg "Elapsed time: $exectime seconds."
+exec_time=$((exit - init))
+kmsg "Elapsed time: $exec_time seconds."
 }
 battery(){
 init=$(date +%s)
@@ -5528,8 +5525,8 @@ kmsg "End of execution: $(date)"
 kmsg3 ""
 exit=$(date +%s)
 
-exectime=$((exit - init))
-kmsg "Elapsed time: $exectime seconds."
+exec_time=$((exit - init))
+kmsg "Elapsed time: $exec_time seconds."
 }
 gaming(){
 init=$(date +%s)
@@ -5544,4 +5541,7 @@ kmsg3 ""
 kmsg "End of execution: $(date)"
 kmsg3 ""
 exit=$(date +%s)
+
+exec_time=$((exit - init))
+kmsg "Elapsed time: $exec_time seconds."
 }

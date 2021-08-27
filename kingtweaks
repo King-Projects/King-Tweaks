@@ -259,6 +259,7 @@ clear_logs
     change_task_affinity "oom_reaper" "7f"
 
 # Similiar to PinnerService, Mlock(Unevictable) 200~350MB
+if [[ "$(getprop ro.boot.hardware)" == "qcom" ]]; then
 fscc_add_obj "${sys_frm}/framework.jar"
 fscc_add_obj "${sys_frm}/services.jar"
 fscc_add_obj "${sys_frm}/ext.jar"
@@ -299,9 +300,10 @@ fscc_start
 [[ ! -f "${adj_cfg}" ]] && adjshield_create_default_cfg
 adjshield_stop
 adjshield_start
+fi
 rebuild_process_scan_cache
 
-# save mode for automatic applying mode after reboot
+# Save mode for be applied automatically after reboot
 save_panel
 
 case "$ktsr_prof_en" in
