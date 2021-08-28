@@ -12,7 +12,7 @@ bold=$(tput bold)
 blink=$(tput blink)
 default=$(tput sgr0)
 date=$(date)
-v=$(grep version= module.prop | sed "s/version=//")
+v="2.0.2"
 vcd=$(grep versionCode= module.prop | sed "s/versionCode=//")
 
 read -r -p 'Build release: ' br
@@ -21,20 +21,20 @@ read -r -p 'Codename: ' cdn
 
 init=$(date +%s)
 
-if [[ "$(grep codename $(pwd)/module.prop)" ]]; then
+if [[ "$(grep build_date $(pwd)/module.prop)" ]]; then
     sed -i -e "/build_date=/s/=.*/=$date/" $(pwd)/module.prop
-    sed -i -e "/build_rel=/s/=.*/=$br/" $(pwd)/module.prop
-    sed -i -e "/codename=/s/=.*/=$cdn/" $(pwd)/module.prop
-else
-    echo "build_date=$date
-build_rel=$br
-codename=$cdn" >> $(pwd)/module.prop
 fi
 
-if [[ "$br" != b* ]]; then
+if [[ ! "$(grep build_date $(pwd)/module.prop)" ]]; then
+    echo "build_date=$date" >> $(pwd)/module.prop
+fi
+
+if [[ "$br" == b* ]]; then
     vcd=$(printf "%.3d" "$((${vcd} + 1))")
     sed -i -e "/versionCode=/s/=.*/=$vcd/" $(pwd)/module.prop
 fi
+
+sed -i -e "/version=/s/=.*/=$v-$br-$cdn/" $(pwd)/module.prop
 
 echo ""
 echo "Build starting at $(date)"

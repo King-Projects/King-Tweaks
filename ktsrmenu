@@ -463,6 +463,15 @@ read -r option
                                               sleep 2
                                               menu
                                               ;;
+                                              
+                                              "29")
+                                              rm -rf /data/system/batterystats* 2>/dev/null
+                                              dumpsys batterystats --reset >/dev/null 2>&1
+                                              echo "${G}Done!${N}"
+                                              sleep 2
+                                              menu
+                                              ;;
+                                              
                                        "0")
 						                   echo "${G}Hope that see ya soon! ;)${N}"
 						                   ;;
