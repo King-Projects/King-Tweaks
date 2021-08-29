@@ -9,29 +9,24 @@ MODPATH=/data/adb/modules/KTSR
 . "$MODPATH"/libs/libktsr.sh
 
 # Check for root permissions and bail if not granted
-if [[ "$(id -u)" != "0" ]]
-then
+if [[ "$(id -u)" != "0" ]]; then
     kmsg2 "No root permissions. Exiting..."
     exit 1
 fi
 
-if [[ -e "$KLOG" ]] 
-then
+if [[ -e "$KLOG" ]]; then
     rm -rf "$KLOG"
 fi
 
-if [[ ! -d "/data/media/0/KTSR" ]] 
-then
+if [[ ! -d "/data/media/0/KTSR" ]]; then
     mkdir -p "/data/media/0/KTSR"
 fi
 
-if [[ -d "/data/media/0/KTSR" ]] 
-then
+if [[ -d "/data/media/0/KTSR" ]]; then
     touch "$KLOG"
 fi
 
-if [[ -e "$KDBG" ]]
-then
+if [[ -e "$KDBG" ]]; then
     rm -rf "$KDBG"
 fi
 
@@ -42,11 +37,10 @@ ktsr_prof=$(getprop persist.king.tweaks.prof)
 while true
 do
 sleep 3
-if "$boot_run_once"
-then
-[[ "$(getprop persist.king.tweaks.prof)" == "$ktsr_prof" ]] && continue
+if "$boot_run_once"; then
+    [[ "$(getprop persist.king.tweaks.prof)" == "$ktsr_prof" ]] && continue
 else
-boot_run_once=true
+    boot_run_once=true
 fi
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 
@@ -259,7 +253,7 @@ clear_logs
     change_task_affinity "oom_reaper" "7f"
 
 # Similiar to PinnerService, Mlock(Unevictable) 200~350MB
-if [[ "$(getprop ro.boot.hardware)" == "qcom" ]]; then
+#if [[ "$(getprop ro.boot.hardware)" == "qcom" ]]; then
 fscc_add_obj "${sys_frm}/framework.jar"
 fscc_add_obj "${sys_frm}/services.jar"
 fscc_add_obj "${sys_frm}/ext.jar"
@@ -300,7 +294,7 @@ fscc_start
 [[ ! -f "${adj_cfg}" ]] && adjshield_create_default_cfg
 adjshield_stop
 adjshield_start
-fi
+#fi
 rebuild_process_scan_cache
 
 # Save mode for be applied automatically after reboot
