@@ -104,7 +104,7 @@ lock(){
         return 1
     fi
 
-	# Write the new value and bail if there's an error
+	# Lock the node and bail out if there's an error
 	if [[ ! "$(chmod 000 "$1" 2>/dev/null)" ]]; then
 	    kmsg2 "Lock: $1 failed"
 		return 1
@@ -1487,7 +1487,7 @@ do
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "${avail_govs}" == *"$governor"* ]]; then
-			lock "${cpu}scaling_governor" "$governor"
+			lock_value "${cpu}scaling_governor" "$governor"
 		  break
 		fi
 	done
@@ -1545,7 +1545,7 @@ do
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]; then
-		  lock "${cpu}scaling_governor" "$governor"
+		  lock_value "${cpu}scaling_governor" "$governor"
 		break
 	  fi
   done
@@ -1602,7 +1602,7 @@ do
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]; then
-		  lock "${cpu}scaling_governor" "$governor"
+		  lock_value "${cpu}scaling_governor" "$governor"
 	    break
 	  fi
   done
@@ -1658,7 +1658,7 @@ do
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]; then
-		  lock "${cpu}scaling_governor" "$governor"
+		  lock_value "${cpu}scaling_governor" "$governor"
 		break
       fi
   done
@@ -1715,7 +1715,7 @@ do
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]; then
-		  lock "${cpu}scaling_governor" "$governor"
+		  lock_value "${cpu}scaling_governor" "$governor"
 		break
       fi
   done
