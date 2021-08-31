@@ -3853,6 +3853,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
+lock_value "${vm}watermark_scale_factor" "30"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
@@ -3901,6 +3902,11 @@ if [[ -e "${lmk}parameters/adj" ]]; then
     write "${lmk}parameters/adj" "0,112,224,408,824,1000"
 fi
 
+# Huge shrinker (LMK) calling interval
+if [[ -e "${lmk}parameters/cost" ]]; then
+    lock_value "${lmk}parameters/cost" "4096"
+fi
+
 kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 kmsg3 ""
 }
@@ -3942,6 +3948,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
+lock_value "${vm}watermark_scale_factor" "30"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
@@ -3981,6 +3988,10 @@ fi
 
 if [[ -e "${lmk}parameters/adj" ]]; then
     write "${lmk}parameters/adj" "0,112,224,408,824,1000"
+fi
+
+if [[ -e "${lmk}parameters/cost" ]]; then
+    lock_value "${lmk}parameters/cost" "4096"
 fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
@@ -4024,6 +4035,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "150"
+lock_value "${vm}watermark_scale_factor" "30"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
@@ -4063,6 +4075,10 @@ fi
 
 if [[ -e "${lmk}parameters/adj" ]]; then
     write "${lmk}parameters/adj" "0,112,224,408,824,1000"
+fi
+
+if [[ -e "${lmk}parameters/cost" ]]; then
+    lock_value "${lmk}parameters/cost" "4096"
 fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
@@ -4106,6 +4122,7 @@ else
 fi
 write "${vm}laptop_mode" "1"
 write "${vm}vfs_cache_pressure" "60"
+lock_value "${vm}watermark_scale_factor" "30"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
@@ -4145,6 +4162,10 @@ fi
 
 if [[ -e "${lmk}parameters/adj" ]]; then
     write "${lmk}parameters/adj" "0,112,224,408,824,1000"
+fi
+
+if [[ -e "${lmk}parameters/cost" ]]; then
+    lock_value "${lmk}parameters/cost" "4096"
 fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
@@ -4188,6 +4209,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "500"
+lock_value "${vm}watermark_scale_factor" "30"
 if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
     write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 fi
@@ -4227,6 +4249,10 @@ fi
 
 if [[ -e "${lmk}parameters/adj" ]]; then
     write "${lmk}parameters/adj" "0,112,224,408,824,1000"
+fi
+
+if [[ -e "${lmk}parameters/cost" ]]; then
+    lock_value "${lmk}parameters/cost" "4096"
 fi
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
@@ -4860,7 +4886,7 @@ fscc_add_apex_lib(){
 # after appending fscc_file_list
 fscc_start(){
     # multiple parameters, cannot be warped by ""
-    "${MODPATH}system/bin/fscache-ctrl" -fdlb0 "${fscc_file_list}"
+    "${MODPATH}system/bin/$fscc_nm" -fdlb0 $fscc_file_list
 }
 
 fscc_stop(){
@@ -4871,7 +4897,7 @@ fscc_stop(){
 fscc_status(){
     # get the correct value after waiting for fscc loading files
     sleep 2
-    if [[ "$(ps -A | grep "${fscc_nm}")" != "" ]]; then
+    if [[ "$(ps -A | grep "$fscc_nm")" != "" ]]; then
         echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache."
     else
         echo "Not running."
@@ -5324,23 +5350,14 @@ disable_debug
 ###############################
 
 tcp=/proc/sys/net/ipv4/
-
 kernel=/proc/sys/kernel/
-
 vm=/proc/sys/vm/
-
 cpuset=/dev/cpuset/
-
 stune=/dev/stune/
-
 lmk=/sys/module/lowmemorykiller/
-
 blkio=/dev/blkio/
-
 cpuctl=/dev/cpuctl/
-
 fs=/proc/sys/fs/
-
 bbn_log=/data/media/0/KTSR/bourbon.log
 adj_rel="${BIN_DIR}"
 adj_nm="adjshield"

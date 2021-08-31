@@ -284,9 +284,8 @@ fscc_add_apex_lib "bouncycastle.jar"
 # Do not pin too many files on low memory devices
 [[ "$total_ram" -gt "2048" ]] && fscc_add_apk "com.android.systemui"
 [[ "$total_ram" -gt "2048" ]] && fscc_add_dex "com.android.systemui"
-[[ "$total_ram" -gt "3072" ]] && fscc_add_app_home "com.android.systemui"
-[[ "$total_ram" -gt "3072" ]] && fscc_add_app_ime "com.android.systemui"
-
+[[ "$total_ram" -gt "4096" ]] && fscc_add_app_home "com.android.systemui"
+[[ "$total_ram" -gt "4096" ]] && fscc_add_app_ime "com.android.systemui"
 fscc_stop
 fscc_start
 
