@@ -76,7 +76,7 @@ write(){
     fi
 
     # Make file readable and writable in case it is not already
-	chmod +rw "$1" 2>/dev/null
+	chmod 777 "$1" 2>/dev/null
 
 	# Fetch the current key value
     curval=$(cat "$1" 2>/dev/null)
@@ -124,7 +124,7 @@ lock_value(){
     fi
 
     # Make file readable and writable in case it is not already
-	chmod +rw "$1" 2>/dev/null
+	chmod 777 "$1" 2>/dev/null
 
 	# Fetch the current key value
     curval=$(cat "$1" 2>/dev/null)
