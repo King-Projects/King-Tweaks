@@ -83,7 +83,7 @@ write(){
 	
 	# Bail out if value is already set
 	if [[ "$curval" == "$2" ]]; then
-	    kmsg2 "$1 is already set to $2, skipping..."
+	    kmsg1 "$1 is already set to $2, skipping..."
 	    return 0
 	fi
 
@@ -110,6 +110,9 @@ lock(){
 		return 1
 	fi
 	
+	# Log the success
+	kmsg1 "Lock: $curval"
+	
     chmod 000 "$1" 2>/dev/null
 }
 
@@ -132,10 +135,10 @@ lock_value(){
 		return 1
 	fi
 	
-    chmod 000 "$1" 2>/dev/null
-
-    # Log the success
+	# Log the success
 	kmsg1 "Lock: $curval & $1 -> $2"
+	
+    chmod 000 "$1" 2>/dev/null
 }
 
 # Duration in nanoseconds of one scheduling period
@@ -927,7 +930,7 @@ elif [[ -e "/sys/devices/system/cpu/cpuhotplug/enabled" ]]; then
 fi
 
 if [[ -e "/sys/kernel/intelli_plug" ]]; then
-    lock_values "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+    lock_value "/sys/kernel/intelli_plug/intelli_plug_active" "0"
 fi
 
 if [[ -e "/sys/module/blu_plug" ]]; then
@@ -2076,8 +2079,8 @@ if [[ "${qcom}" == "true" ]]; then
     write "${gpu}pwrnap" "1"
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
-       lock "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       lock "${gpui}gpu_min_clock" "${gpu_min}"
+       lock_value "${gpui}gpu_max_clock" "${gpu_max_freq}"
+       lock_value "${gpui}gpu_min_clock" "${gpu_min}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "86"
        write "${gpu}highspeed_delay" "0"
@@ -3195,7 +3198,7 @@ fi
 if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
     write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
 fi
-lock "${kernel}sched_tunable_scaling" "0"
+lock_value "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
     write "${kernel}sched_latency_ns" "200000"
 fi
@@ -3291,7 +3294,7 @@ fi
 if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
     write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
 fi
-lock "${kernel}sched_tunable_scaling" "0"
+lock_value "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
     write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BALANCE"
 fi
@@ -3389,7 +3392,7 @@ fi
 if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
     write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
 fi
-lock "${kernel}sched_tunable_scaling" "0"
+lock_value "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
     write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
 fi
@@ -3486,7 +3489,7 @@ fi
 if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
     write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
 fi
-lock "${kernel}sched_tunable_scaling" "0"
+lock_value "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
     write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
 fi
@@ -3583,7 +3586,7 @@ fi
 if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
     write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
 fi
-lock "${kernel}sched_tunable_scaling" "0"
+lock_value "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
     write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
 fi
@@ -3699,7 +3702,7 @@ fi
 
 ufs_pwr_saving(){
 if [[ -d "/sys/class/devfreq/1d84000.ufshc/" ]]; then
-    lock "/sys/class/devfreq/1d84000.ufshc/max_freq" "75000000"
+    lock_value "/sys/class/devfreq/1d84000.ufshc/max_freq" "75000000"
     kmsg "Tweaked UFS"
     kmsg3 ""
 fi
@@ -4427,11 +4430,11 @@ disable_lpm(){
 for lpm in /sys/module/lpm_levels/system/*/*/*/
 do
   if [[ -d "/sys/module/lpm_levels/" ]]; then
-      lock "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
-      lock "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "N"
-      lock "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
-      lock "${lpm}idle_enabled" "N"
-      lock "${lpm}suspend_enabled" "N"
+      lock_value "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
+      lock_value "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "N"
+      lock_value "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
+      lock_value "${lpm}idle_enabled" "N"
+      lock_value "${lpm}suspend_enabled" "N"
   fi
 done
 
