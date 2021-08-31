@@ -76,7 +76,7 @@ write(){
     fi
 
     # Make file readable and writable in case it is not already
-	chmod 777 "$1" 2>/dev/null
+	chmod +rw "$1" 2>/dev/null
 
 	# Fetch the current key value
     curval=$(cat "$1" 2>/dev/null)
@@ -88,7 +88,8 @@ write(){
 	fi
 
 	# Write the new value and bail if there's an error
-	if [[ ! "$(echo -n "$2" > "$1" 2>/dev/null)" ]]; then
+	if ! echo -n "$2" > "$1" 2>/dev/null
+    then
 	    kmsg2 "Failed: $1 -> $2"
 		return 1
 	fi
@@ -105,13 +106,14 @@ lock(){
     fi
 
 	# Lock the node and bail out if there's an error
-	if [[ ! "$(chmod 000 "$1" 2>/dev/null)" ]]; then
+	if ! chmod 000 "$1" 2>/dev/null
+    then
 	    kmsg2 "Lock: $1 failed"
 		return 1
 	fi
 	
 	# Log the success
-	kmsg1 "Lock: $curval"
+	kmsg1 "Lock: $1"
 	
     chmod 000 "$1" 2>/dev/null
 }
@@ -124,19 +126,20 @@ lock_value(){
     fi
 
     # Make file readable and writable in case it is not already
-	chmod 777 "$1" 2>/dev/null
+	chmod +rw "$1" 2>/dev/null
 
 	# Fetch the current key value
     curval=$(cat "$1" 2>/dev/null)
 
 	# Write the new value and bail if there's an error
-	if [[ ! "$(echo -n "$2" > "$1" 2>/dev/null)" ]]; then
+	if ! echo -n "$2" > "$1" 2>/dev/null
+    then
 	    kmsg2 "Failed: $1 -> $2"
 		return 1
 	fi
 	
 	# Log the success
-	kmsg1 "Lock: $curval & $1 -> $2"
+	kmsg1 "Lock: $1 & $curval -> $2"
 	
     chmod 000 "$1" 2>/dev/null
 }
