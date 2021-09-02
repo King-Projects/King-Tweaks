@@ -33,7 +33,7 @@ fi
 
 # set_busybox <busybox binary>
 # alias busybox applets
-set_busybox() {
+set_busybox(){
   if [[ -x "$1" ]]; then
     for i in $(${1} --list); do
       if [[ "$i" != 'echo' ]]; then
@@ -69,7 +69,7 @@ fi
 #=========================== Default Functions and Variables
 
 # Set perm
-set_perm() {
+set_perm(){
   chown "$2":"$3" "$1" || return 1
   chmod "$4" "$1" || return 1
   (if [[ -z "$5" ]]; then
@@ -86,7 +86,7 @@ set_perm() {
 }
 
 # Set perm recursive
-set_perm_recursive() {
+set_perm_recursive(){
   find "$1" -type d 2>/dev/null | while read dir; do
     set_perm "$dir" "$2" "$3" "$4" "$6"
   done
@@ -96,14 +96,14 @@ set_perm_recursive() {
 }
 
 # Mktouch
-mktouch() {
+mktouch(){
   mkdir -p "${1%/*}" 2>/dev/null
   [[ -z $2 ]] && touch "$1" || echo "$2" > "$1"
   chmod 644 "$1"
 }
 
 # Grep prop
-grep_prop() {
+grep_prop(){
   local REGEX="s/^$1=//p"
   shift
   local FILES=$@
@@ -112,13 +112,13 @@ grep_prop() {
 }
 
 # Is mounted
-is_mounted() {
+is_mounted(){
   grep -q " $(readlink -f "$1") " /proc/mounts 2>/dev/null
   return $?
 }
 
 # Abort
-abort() {
+abort(){
   echo "$1"
   exit 1
 }
@@ -176,7 +176,7 @@ div="${Bl}$(printf '%*s' "${character_no}" '' | tr " " "=")${N}"
 
 # title_div [-c] <title>
 # based on $div with <title>
-title_div() {
+title_div(){
   [[ "$1" = "-c" ]] && local character_no=$2 && shift 2
   [[ -z "$1" ]] && { local message=; no=0; } || { local message="$@ "; local no=$(echo "$@" | wc -c); }
   [[ $character_no -gt $no ]] && local extdiv=$((character_no-no)) || { echo "Invalid!"; return 1; }
@@ -184,7 +184,7 @@ title_div() {
 }
 
 # set_file_prop <property> <value> <prop.file>
-set_file_prop() {
+set_file_prop(){
   if [[ -f "$3" ]]; then
     if grep -q "$1=" "$3"; then
       sed -i "s/${1}=.*/${1}=${2}/g" "$3"
@@ -198,7 +198,7 @@ set_file_prop() {
 
 # https://github.com/fearside/ProgressBar
 # ProgressBar <progress> <total>
-ProgressBar() {
+ProgressBar(){
 # Determine Screen Size
   if [[ "$COLUMNS" -le "57" ]]; then
     local var1=2
@@ -221,7 +221,7 @@ printf "\rProgress : ${BGBL}|${N}${_done// /${BGBL}$loadBar${N}}${_left// / }${B
 
 #https://github.com/fearside/SimpleProgressSpinner
 # Spinner <message>
-Spinner() {
+Spinner(){
 
 # Choose which character to show.
 case ${_indicator} in
@@ -238,7 +238,7 @@ printf "\r${@} [${_indicator}]"
 }
 
 # cmd & spinner <message>
-e_spinner() {
+e_spinner(){
   PID=$!
   h=0; anim='-\|/';
   while [[ -d /proc/$PID ]]; do
@@ -250,7 +250,7 @@ e_spinner() {
 
 # test_connection
 # tests if there's internet connection
-test_connection() {
+test_connection(){
   (
   if ping -q -c 1 -W 1 google.com >/dev/null 2>&1; then
     true
@@ -265,7 +265,7 @@ test_connection() {
 
 # Log files will be uploaded to termbin.com
 # Logs included: VERLOG LOG oldVERLOG oldLOG
-upload_logs() {
+upload_logs(){
   $BBok && {
     test_connection || exit
     echo "Uploading logs"
@@ -293,7 +293,7 @@ upload_logs() {
 # Prints a message at random
 # CHANCES - no. of chances <integer>
 # TARGET - target value out of CHANCES <integer>
-prandom() {
+prandom(){
   local CHANCES=2
   local TARGET=2
   [[ "$1" =  "-c" ]] && { local CHANCES=$2; local TARGET=$3; shift 3; }
@@ -302,7 +302,7 @@ prandom() {
 
 # Print Center
 # Prints text in the center of terminal
-pcenter() {
+pcenter(){
   local CHAR=$(printf "$@" | sed 's|\\e[[0-9;]*m||g' | wc -m)
   local hfCOLUMN=$((COLUMNS/2))
   local hfCHAR=$((CHAR/2))
