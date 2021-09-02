@@ -2302,7 +2302,7 @@ gpu_battery(){
     if [[ "${qcom}" == "true" ]]; then
 	    avail_govs="$(cat "${gpu}devfreq/available_governors")"
 	    
-	    for governor in simple_ondemand msm-adreno-tz ondemand
+	    for governor in msm-adreno-tz simple_ondemand ondemand
 	    do
 		  if [[ "${avail_govs}" == *"$governor"* ]]; then
 			  lock_value "${gpu}devfreq/governor" "$governor"
@@ -2313,7 +2313,7 @@ gpu_battery(){
     elif [[ "${exynos}" == "true" ]]; then
 	      avail_govs="$(cat "${gpui}gpu_available_governor")"
 
-	      for governor in mali_ondemand ondemand Interactive Dynamic Static
+	      for governor in Interactive mali_ondemand ondemand Dynamic Static
 	      do
 		    if [[ "${avail_govs}" == *"$governor"* ]]; then
 			    lock_value "${gpui}gpu_governor" "$governor"
@@ -2324,7 +2324,7 @@ gpu_battery(){
 	elif [[ "${mtk}" == "true" ]]; then
 	      avail_govs="$(cat "${gpu}available_governors")"
 
-	      for governor in mali_ondemand ondemand Interactive Dynamic Static
+	      for governor in Interactive mali_ondemand ondemand Dynamic Static
 	      do
 		    if [[ "${avail_govs}" == *"$governor"* ]]; then
 			    lock_value "${gpu}governor" "$governor"
@@ -2335,7 +2335,7 @@ gpu_battery(){
 
 if [[ "${qcom}" == "true" ]]; then
     write "${gpu}throttling" "1"
-    write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
+    write "${gpu}thermal_pwrlevel" "1"
     write "${gpu}devfreq/adrenoboost" "0"
     write "${gpu}force_no_nap" "0"
     write "${gpu}bus_split" "1"
@@ -2419,7 +2419,7 @@ if [[ -d "/sys/module/simple_gpu_algorithm/" ]]; then
     kmsg3 ""
 fi
 
-if [[ -d "/sys/module/adreno_idler" ]]; then
+if [[ -d "/sys/module/adreno_idler/" ]]; then
     write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
     write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "10000"
     write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "45"
