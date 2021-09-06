@@ -196,6 +196,8 @@ elif [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/cla
 fi
 echo "[29] Reset battery stats"
 echo ""
+echo "[30] Access our Wiki"
+echo ""
 echo "${R}[0] Exit${N}"
 echo ""
 echo -n "${Y}[*] Select the desired option:${N} "
@@ -474,6 +476,10 @@ read -r option
                                               menu
                                               ;;
                                               
+                                              "30")
+                                              am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
+                                              ;;
+                                              
                                        "0")
 						                   echo "${G}Hope that see ya soon! ;)${N}"
 						                   ;;
@@ -498,7 +504,7 @@ read -r option
                         echo "-t [thermal] [1/0] [enable / disable thermal services without opening the terminal GUI]"
                         echo "-f [free ram] [1-3] [Higher value means more agressive]"
                         echo "-h [help] [show this message]"
-                        am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
+                        am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
                         exit
                         }
 						

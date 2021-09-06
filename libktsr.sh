@@ -1,13 +1,13 @@
 #!/system/bin/sh
 # KTSR by Pedro (pedrozzz0 @ GitHub)
-# Credits: Ktweak, by Draco (tytydraco @ GitHub), LSpeed, Dan (Paget69 @ XDA), mogoroku @ GitHub, vtools, by helloklf @ GitHub, Cuprum-Turbo-Adjustment, by chenzyadb @ Gitee, qti-mem-opt & Uperf, by Matt Yang (yc9559 @ GitHub) and Pandora's Box, by Eight (dlwlrma123 @ GitHub).
+# Credits: Ktweak, by Draco (tytydraco @ GitHub), LSpeed, Dan (Paget69 @ XDA), mogoroku @ GitHub, vtools, by helloklf @ GitHub, Cuprum-Turbo-Adjustment, by chenzyadb @ CoolApk, qti-mem-opt & Uperf, by Matt Yang (yc9559 @ CoolApk) and Pandora's Box, by Eight (dlwlrma123 @ GitHub).
 # If you wanna use it as part of your project, please maintain the credits to it's respectives authors.
 
-MODPATH=/data/adb/modules/KTSR/
+MODPATH="/data/adb/modules/KTSR/"
 
-KLOG=/data/media/0/KTSR/KTSR.log
+KLOG="/data/media/0/KTSR/KTSR.log"
 
-KDBG=/data/media/0/KTSR/KTSR_DBG.log
+KDBG="/data/media/0/KTSR/KTSR_DBG.log"
 
 # Log in white and continue (unnecessary)
 kmsg(){
@@ -272,7 +272,7 @@ done
 }
 
 get_gpu_max(){
-gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk 'NF>1{print $NF}')
+gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')
 
 if [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
     gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -v var="$gpu_num_pl" '{print $var}')
@@ -285,31 +285,31 @@ elif [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
 fi
 
 if [[ -e "${gpu}available_frequencies" ]]; then
-    gpu_max2=$(cat "${gpu}available_frequencies" | awk 'NF>1{print $NF}')
+    gpu_max2=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
     
 elif [[ "${gpu_max2}" -lt "${gpu_max_freq}" ]]; then
-      gpu_max2=$(cat "${gpu}available_frequencies" | awk '{print $1}')
+      gpu_max2=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
     
 elif [[ -e "${gpui}gpu_freq_table" ]]; then
-      gpu_max2=$(cat "${gpui}gpu_freq_table" | awk 'NF>1{print $NF}')
+      gpu_max2=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
 
 elif [[ "${gpu_max2}" -lt "${gpu_max_freq}" ]]; then
-      gpu_max2=$(cat "${gpui}gpu_freq_table" | awk '{print $1}')
+      gpu_max2=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
 fi
 }
 
 get_gpu_min(){
 if [[ -e "${gpu}available_frequencies" ]]; then
-    gpu_min=$(cat "${gpu}available_frequencies" | awk '{print $1}')
+    gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
 
 elif [[ "${gpu_min}" -gt "${gpu_min_freq}" ]]; then
-      gpu_min=$(cat "${gpu}available_frequencies" | awk 'NF>1{print $NF}')
+      gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
 
 elif [[ -e "${gpui}gpu_freq_table" ]]; then
-      gpu_min=$(cat "${gpui}gpu_freq_table" | awk '{print $1}')
+      gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
 
 elif [[ "${gpu_min}" -gt "${gpu_min_freq}" ]]; then
-      gpu_min=$(cat "${gpui}gpu_freq_table" | awk 'NF>1{print $NF}')
+      gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
 fi
 }
 
@@ -797,7 +797,12 @@ fi
 
 enable_devfreq_boost(){
 for dir in /sys/class/devfreq/*/; do
-     lock_value "${dir}min_freq" "$(cat "${dir}max_freq")"
+     max_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
+     max_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
+     if [[ "$max_devfreq2" -gt "${max_devfreq}" ]]; then
+         max_devfreq=${max_devfreq2}
+     fi
+     lock_value "${dir}min_freq" "$max_devfreq"
 done
 
 kmsg "Enabled devfreq boost"
@@ -806,14 +811,12 @@ kmsg3 ""
 
 disable_devfreq_boost(){
 for dir in /sys/class/devfreq/*/; do
-     min_dev_freq=$(cat "${dir}available_frequencies" | awk '{print $1}')
-     min_dev_freq2=$(cat "${dir}available_frequencies" | awk 'NF>1{print $NF}')
- 
-     if [[ "${min_dev_freq2}" -lt "${min_dev_freq}" ]]; then
-         min_dev_freq=${min_dev_freq2}
+     min_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
+     min_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
+     if [[ "${min_devfreq2}" -lt "${min_devfreq}" ]]; then
+         min_devfreq=${min_devfreq2}
      fi
-    
-     write "${dir}min_freq" "${min_dev_freq}"
+     write "${dir}min_freq" "${min_devfreq}"
 done
 
 kmsg "Disabled devfreq boost"
@@ -885,6 +888,7 @@ stop vendor.cnss_diag 2>/dev/null
 stop vendor.tcpdump 2>/dev/null
 stop statsd 2>/dev/null
 stop charge_logger 2>/dev/null
+stop oneplus_brain_service 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -rf "/data/system/perfd/default_values"
@@ -2474,7 +2478,7 @@ gpu_gaming(){
 if [[ "${qcom}" == "true" ]]; then
     write "${gpu}throttling" "0"
     write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
-    write "${gpu}devfreq/adrenoboost" "3"
+    write "${gpu}devfreq/adrenoboost" "0"
     write "${gpu}force_no_nap" "1"
     write "${gpu}bus_split" "0"
     lock_value "${gpu}devfreq/max_freq" "${gpu_max_freq}"
@@ -2942,8 +2946,8 @@ fi
 
 uclamp_latency(){
 if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-    sysctl -w kernel.sched_util_clamp_min_rt_default=16
-    sysctl -w kernel.sched_util_clamp_min=64
+    write "${kernel}sched_util_clamp_min" "0"
+    write "${kernel}sched_util_clamp_max" "100"
 
     write "${cpuctl}top-app/cpu.uclamp.max" "max"
     write "${cpuctl}top-app/cpu.uclamp.min" "20"
@@ -2971,8 +2975,8 @@ fi
 
 uclamp_balanced(){
 if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-    sysctl -w kernel.sched_util_clamp_min_rt_default=32
-    sysctl -w kernel.sched_util_clamp_min=128
+    write "${kernel}sched_util_clamp_min" "0"
+    write "${kernel}sched_util_clamp_max" "100"
 
     write "${cpuctl}top-app/cpu.uclamp.max" "max"
     write "${cpuctl}top-app/cpu.uclamp.min" "10"
@@ -3000,8 +3004,8 @@ fi
 
 uclamp_extreme(){
 if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-    sysctl -w kernel.sched_util_clamp_min_rt_default=96
-    sysctl -w kernel.sched_util_clamp_min=192
+    write "${kernel}sched_util_clamp_min" "0"
+    write "${kernel}sched_util_clamp_max" "100"
 
     write "${cpuctl}top-app/cpu.uclamp.max" "max"
     write "${cpuctl}top-app/cpu.uclamp.min" "max"
@@ -3029,8 +3033,8 @@ fi
 
 uclamp_battery(){
 if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-    sysctl -w kernel.sched_util_clamp_min_rt_default=16
-    sysctl -w kernel.sched_util_clamp_min=128
+    write "${kernel}sched_util_clamp_min" "0"
+    write "${kernel}sched_util_clamp_max" "100"
 
     write "${cpuctl}top-app/cpu.uclamp.max" "max"
     write "${cpuctl}top-app/cpu.uclamp.min" "5"
@@ -3229,9 +3233,7 @@ write "${kernel}printk_devkmsg" "off"
 if [[ -e "${kernel}timer_migration" ]]; then
     write "${kernel}timer_migration" "0"
 fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "2"
-else
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
 if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
@@ -3275,6 +3277,21 @@ fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
     write "/sys/devices/system/cpu/sched/sched_boost" "0"
 fi
+if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
+    lock_value "/sys/kernel/ems/eff_mode" "0"
+fi
+if [[ -e "/sys/module/opchain/parameters/chain_on" ]]; then
+    lock_value "/sys/module/opchain/parameters/chain_on" "0"
+fi
+if [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]]; then
+    lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+fi
+if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
+    lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+fi
+for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
+    lock_value "$bcl_md" "0"
+done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
 kmsg "Tweaked various kernel parameters"
@@ -3328,9 +3345,7 @@ fi
 if [[ -e "${kernel}sched_boost" ]]; then
     write "${kernel}sched_boost" "0"
 fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "2"
-else
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
 if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
@@ -3373,6 +3388,21 @@ fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
     write "/sys/devices/system/cpu/sched/sched_boost" "0"
 fi
+if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
+    lock_value "/sys/kernel/ems/eff_mode" "0"
+fi
+if [[ -e "/sys/module/opchain/parameters/chain_on" ]]; then
+    lock_value "/sys/module/opchain/parameters/chain_on" "0"
+fi
+if [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]]; then
+    lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+fi
+if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
+    lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+fi
+for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
+    lock_value "$bcl_md" "0"
+done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
 kmsg "Tweaked various kernel parameters"
@@ -3470,6 +3500,21 @@ fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
     write "/sys/devices/system/cpu/sched/sched_boost" "1"
 fi
+if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
+    lock_value "/sys/kernel/ems/eff_mode" "0"
+fi
+if [[ -e "/sys/module/opchain/parameters/chain_on" ]]; then
+    lock_value "/sys/module/opchain/parameters/chain_on" "0"
+fi
+if [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]]; then
+    lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+fi
+if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
+    lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+fi
+for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
+    lock_value "$bcl_md" "0"
+done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
 kmsg "Tweaked various kernel parameters"
@@ -3523,9 +3568,7 @@ fi
 if [[ -e "${kernel}sched_boost" ]]; then
     write "${kernel}sched_boost" "0"
 fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "$mtk" == "true" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "2"
-else
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
 if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
@@ -3567,6 +3610,21 @@ fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
     write "/sys/devices/system/cpu/sched/sched_boost" "0"
 fi
+if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
+    lock_value "/sys/kernel/ems/eff_mode" "0"
+fi
+if [[ -e "/sys/module/opchain/parameters/chain_on" ]]; then
+    lock_value "/sys/module/opchain/parameters/chain_on" "0"
+fi
+if [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]]; then
+    lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+fi
+if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
+    lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+fi
+for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
+    lock_value "$bcl_md" "0"
+done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
 kmsg "Tweaked various kernel parameters"
@@ -3664,6 +3722,21 @@ fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
     write "/sys/devices/system/cpu/sched/sched_boost" "1"
 fi
+if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
+    lock_value "/sys/kernel/ems/eff_mode" "0"
+fi
+if [[ -e "/sys/module/opchain/parameters/chain_on" ]]; then
+    lock_value "/sys/module/opchain/parameters/chain_on" "0"
+fi
+if [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]]; then
+    lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+fi
+if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
+    lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+fi
+for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
+    lock_value "$bcl_md" "0"
+done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
 kmsg "Tweaked various kernel parameters"
@@ -3843,8 +3916,8 @@ sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "25"
-write "${vm}dirty_expire_centisecs" "3000"
-write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}dirty_expire_centisecs" "4500"
+write "${vm}dirty_writeback_centisecs" "5000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
@@ -3900,11 +3973,6 @@ if [[ -e "${vm}extra_free_kbytes" ]]; then
     write "${vm}extra_free_kbytes" "$efr"
 fi
 
-# Tune lmk_adj
-if [[ -e "${lmk}parameters/adj" ]]; then
-    write "${lmk}parameters/adj" "0,112,224,408,824,1000"
-fi
-
 # Huge shrinker (LMK) calling interval
 if [[ -e "${lmk}parameters/cost" ]]; then
     lock_value "${lmk}parameters/cost" "4096"
@@ -3939,8 +4007,8 @@ sync
 write "${vm}drop_caches" "2"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "25"
-write "${vm}dirty_expire_centisecs" "1000"
-write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "4000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
@@ -3985,14 +4053,6 @@ if [[ -e "${vm}min_free_kbytes" ]]; then
     write "${vm}min_free_kbytes" "$mfr"
 fi
 
-if [[ -e "${vm}extra_free_kbytes" ]]; then
-    write "${vm}extra_free_kbytes" "$efr"
-fi
-
-if [[ -e "${lmk}parameters/adj" ]]; then
-    write "${lmk}parameters/adj" "0,112,224,408,824,1000"
-fi
-
 if [[ -e "${lmk}parameters/cost" ]]; then
     lock_value "${lmk}parameters/cost" "4096"
 fi
@@ -4026,8 +4086,8 @@ sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "3000"
-write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}dirty_expire_centisecs" "4000"
+write "${vm}dirty_writeback_centisecs" "5000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
@@ -4076,10 +4136,6 @@ if [[ -e "${vm}extra_free_kbytes" ]]; then
     write "${vm}extra_free_kbytes" "$efr"
 fi
 
-if [[ -e "${lmk}parameters/adj" ]]; then
-    write "${lmk}parameters/adj" "0,112,224,408,824,1000"
-fi
-
 if [[ -e "${lmk}parameters/cost" ]]; then
     lock_value "${lmk}parameters/cost" "4096"
 fi
@@ -4113,8 +4169,8 @@ sync
 write "${vm}drop_caches" "1"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "20"
-write "${vm}dirty_expire_centisecs" "200"
-write "${vm}dirty_writeback_centisecs" "500"
+write "${vm}dirty_expire_centisecs" "6000"
+write "${vm}dirty_writeback_centisecs" "6000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
@@ -4163,10 +4219,6 @@ if [[ -e "${vm}extra_free_kbytes" ]]; then
     write "${vm}extra_free_kbytes" "$efr"
 fi
 
-if [[ -e "${lmk}parameters/adj" ]]; then
-    write "${lmk}parameters/adj" "0,112,224,408,824,1000"
-fi
-
 if [[ -e "${lmk}parameters/cost" ]]; then
     lock_value "${lmk}parameters/cost" "4096"
 fi
@@ -4200,8 +4252,8 @@ sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "15"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "3000"
-write "${vm}dirty_writeback_centisecs" "3000"
+write "${vm}dirty_expire_centisecs" "5000"
+write "${vm}dirty_writeback_centisecs" "6000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
@@ -4248,10 +4300,6 @@ fi
   
 if [[ -e "${vm}extra_free_kbytes" ]]; then
     write "${vm}extra_free_kbytes" "$efr"
-fi
-
-if [[ -e "${lmk}parameters/adj" ]]; then
-    write "${lmk}parameters/adj" "0,112,224,408,824,1000"
 fi
 
 if [[ -e "${lmk}parameters/cost" ]]; then
@@ -4574,6 +4622,42 @@ kmsg "Disabled misc debugging"
 kmsg3 ""
 }
 
+perfmgr_default(){ 
+if [[ -d "${perfmgr}boost_ctrl/eas_ctrl/" ]]; then
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_prefer_idle" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_fg_boost" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_ta_boost" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_bg_boost" "-100"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_uclamp_min" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_fg_uclamp_min" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_ta_uclamp_min" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_bg_uclamp_min" "0"
+    write "${perfmgr}boost_ctrl/cpu_ctrl/cfp_enable" "1"
+    write "${perfmgr}boost_ctrl/cpu_ctrl/cfp_up_loading" "60"
+    write "${perfmgr}boost_ctrl/cpu_ctrl/cfp_down_loading" "80"
+    kmsg "Tweaked perfmgr settings"
+    kmsg3 ""
+fi
+}
+
+perfmgr_pwr_saving(){
+if [[ -d "${perfmgr}boost_ctrl/eas_ctrl/" ]]; then
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_prefer_idle" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_fg_boost" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_ta_boost" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_bg_boost" "-100"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_uclamp_min" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_fg_uclamp_min" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_ta_uclamp_min" "0"
+    write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_bg_uclamp_min" "0"
+    write "${perfmgr}boost_ctrl/cpu_ctrl/cfp_enable" "1"
+    write "${perfmgr}boost_ctrl/cpu_ctrl/cfp_up_loading" "80"
+    write "${perfmgr}boost_ctrl/cpu_ctrl/cfp_down_loading" "60"
+    kmsg "Tweaked perfmgr settings"
+    kmsg3 ""
+fi
+}
+
 # process scan cache
 ps_ret=""
 
@@ -4585,7 +4669,7 @@ write_panel(){
 save_panel(){
     write_panel "[*] Bourbon - the essential process optimizer"
     write_panel ""
-    write_panel "Version: 1.0"
+    write_panel "Version: 1.1"
     write_panel ""
     write_panel "Last performed: $(date '+%Y-%m-%d %H:%M:%S')"
     write_panel ""
@@ -5037,7 +5121,7 @@ elif [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]
       thermal_dynamic
 fi
 
-if [[ "${ktsr_prof_en}" == "battery" ]]; then
+if [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]]; then
     enable_core_ctl
 else
     disable_core_ctl
@@ -5182,6 +5266,12 @@ elif [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]
 fi
 
 disable_debug
+
+if [[ "${ktsr_prof_en}" != "battery" ]]; then
+    perfmgr_default
+else
+    perfmgr_pwr_saving
+fi
 }
 
 apply_all_auto(){
@@ -5346,22 +5436,28 @@ elif [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.pro
 fi
 
 disable_debug
+
+if [[ "$(getprop kingauto.prof)" != "battery" ]]; then
+    perfmgr_default
+else
+    perfmgr_pwr_saving
+fi
 }
 
 ###############################
 # Abbreviations
 ###############################
 
-tcp=/proc/sys/net/ipv4/
-kernel=/proc/sys/kernel/
-vm=/proc/sys/vm/
-cpuset=/dev/cpuset/
-stune=/dev/stune/
-lmk=/sys/module/lowmemorykiller/
-blkio=/dev/blkio/
-cpuctl=/dev/cpuctl/
-fs=/proc/sys/fs/
-bbn_log=/data/media/0/KTSR/bourbon.log
+tcp="/proc/sys/net/ipv4/"
+kernel="/proc/sys/kernel/"
+vm="/proc/sys/vm/"
+cpuset="/dev/cpuset/"
+stune="/dev/stune/"
+lmk="/sys/module/lowmemorykiller/"
+blkio="/dev/blkio/"
+cpuctl="/dev/cpuctl/"
+fs="/proc/sys/fs/"
+bbn_log="/data/media/0/KTSR/bourbon.log"
 adj_rel="${BIN_DIR}"
 adj_nm="adjshield"
 adj_cfg="/data/media/0/KTSR/adjshield.conf"
@@ -5373,6 +5469,7 @@ vdr_lib="/vendor/lib64"
 dvk="/data/dalvik-cache"
 apx1="/apex/com.android.art/javalib"
 apx2="/apex/com.android.runtime/javalib"
+perfmgr="/proc/perfmgr/"
 
 latency(){
 init=$(date +%s)
