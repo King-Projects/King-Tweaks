@@ -3,10 +3,10 @@
 # Credits: Uperf, by Matt Yang.
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
-MODPATH=/data/adb/modules/KTSR
+MODPATH="/data/adb/modules/KTSR"
 
 # Load libraries
-. "$MODPATH"/libs/libktsr.sh
+. "$MODPATH/libs/libktsr.sh"
 
 # Check for root permissions and bail if not granted
 if [[ "$(id -u)" != "0" ]]; then
@@ -243,9 +243,10 @@ clear_logs
     pin_proc_on_mid "magiskd"
     change_task_nice "magiskd" "19"
     
-    change_task_rt "kingtweaks" "1"
-    pin_proc_on_pwr "kingtweaks"
-    
+    # we want our process to run the most fast possible
+    pin_proc_on_perf "kingtweaks"
+    change_task_high_prio "kingtweaks"
+
     # kernel reclaim threads run on more power-efficient cores
     change_task_nice "kswapd" "-2"
     change_task_nice "oom_reaper" "-2"
@@ -282,15 +283,15 @@ fscc_add_apex_lib "updatable-media.jar"
 fscc_add_apex_lib "okhttp.jar"
 fscc_add_apex_lib "bouncycastle.jar"
 # Do not pin too many files on low memory devices
-[[ "$total_ram" -gt "2048" ]] && fscc_add_apk "com.android.systemui"
-[[ "$total_ram" -gt "2048" ]] && fscc_add_dex "com.android.systemui"
-[[ "$total_ram" -gt "4096" ]] && fscc_add_app_home "com.android.systemui"
-[[ "$total_ram" -gt "4096" ]] && fscc_add_app_ime "com.android.systemui"
+[[ "$total_ram" -gt 2048 ]] && fscc_add_apk "com.android.systemui"
+[[ "$total_ram" -gt 2048 ]] && fscc_add_dex "com.android.systemui"
+[[ "$total_ram" -gt 4096 ]] && fscc_add_app_home "com.android.systemui"
+[[ "$total_ram" -gt 4096 ]] && fscc_add_app_ime "com.android.systemui"
 fscc_stop
 fscc_start
 
 # Run adjshield
-[[ ! -f "${adj_cfg}" ]] && adjshield_create_default_cfg
+[[ ! -f "$adj_cfg" ]] && adjshield_create_default_cfg
 adjshield_stop
 adjshield_start
 #fi

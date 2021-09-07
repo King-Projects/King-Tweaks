@@ -517,11 +517,15 @@ kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 }
 
 get_ram_info(){
-# Fetch the total amount of memory RAM
-total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
-
-# Fetch the amount of available RAM
-avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')
+if [[ "$(which busybox)" ]]; then
+    # Fetch the total amount of memory RAM
+    total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
+    # Fetch the amount of available RAM
+    avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')
+else
+    total_ram="N/A (Install busybox first)"
+    avail_ram="N/A (Install busybox first)"
+fi
 }
 
 get_batt_pctg(){               
@@ -625,7 +629,7 @@ elif [[ "${batt_hth}" == "6" ]]; then
 elif [[ "${batt_hth}" == "7" ]]; then
       batt_hth=Cold               
 else
-    batt_hth=${batt_hth}
+    batt_hth=$batt_hth
 fi
 }
 
@@ -652,7 +656,7 @@ elif [[ "${batt_sts}" == "4" ]]; then
 elif [[ "${batt_sts}" == "5" ]]; then
       batt_sts=Full
 else
-    batt_sts=${batt_sts}
+    batt_sts=$batt_sts
 fi
 }
 
@@ -668,18 +672,25 @@ if [[ "${batt_cpct}" -ge "1000000" ]]; then
 fi
 }
 
-get_busy_ver(){
+get_bb_ver(){
 # Fetch busybox version
 if [[ "$(which busybox)" ]]; then
-    busy_ver=$(busybox | awk 'NR==1{print $2}')
+    bb_ver=$(busybox | awk 'NR==1{print $2}')
 else
-    busy_ver="N/A"
+    bb_ver="N/A"
 fi
 }
 
 get_rom_info(){
 # Fetch ROM info
-rom_info=$(getprop ro.build.display.id | awk '{print $1,$3,$4,$5}')
+rom_info=$(getprop ro.build.description | awk '{print $1,$3,$4,$5}')
+
+if [[ "$rom_info" == "" ]]; then
+    rom_info=$(getprop ro.bootimage.build.description | awk '{print $1,$3,$4,$5}')
+
+elif [[ "$rom_info" == "" ]]; then
+      rom_info=$(getprop ro.system.build.description | awk '{print $1,$3,$4,$5}')
+fi
 }
 
 get_slnx_stt(){
@@ -866,7 +877,7 @@ kmsg3 "** SQLite Version: $sql_ver"
 kmsg3 "** SQLite Build Date: $sql_bd_dt"
 kmsg3 "** System Uptime: $sys_uptime"
 kmsg3 "** SELinux: $slnx_stt"                                                                                   
-kmsg3 "** Busybox: $busy_ver"
+kmsg3 "** Busybox: $bb_ver"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
@@ -4973,11 +4984,11 @@ fscc_add_apex_lib(){
 # after appending fscc_file_list
 fscc_start(){
     # multiple parameters, cannot be warped by ""
-    "${MODPATH}system/bin/$fscc_nm" -fdlb0 $fscc_file_list
+    $MODPATH/system/bin/$fscc_nm -fdlb0 $fscc_file_list
 }
 
 fscc_stop(){
-    killall "${fscc_nm}" 2>/dev/null
+    killall -9 $fscc_nm 2>/dev/null
 }
 
 # return:status
