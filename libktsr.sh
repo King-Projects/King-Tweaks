@@ -1,6 +1,7 @@
 #!/system/bin/sh
 # KTSR by Pedro (pedrozzz0 @ GitHub)
 # Credits: Ktweak, by Draco (tytydraco @ GitHub), LSpeed, Dan (Paget69 @ XDA), mogoroku @ GitHub, vtools, by helloklf @ GitHub, Cuprum-Turbo-Adjustment, by chenzyadb @ CoolApk, qti-mem-opt & Uperf, by Matt Yang (yc9559 @ CoolApk) and Pandora's Box, by Eight (dlwlrma123 @ GitHub).
+# Thanks: GR for some help
 # If you wanna use it as part of your project, please maintain the credits to it's respectives authors.
 
 MODPATH="/data/adb/modules/KTSR/"
@@ -511,7 +512,6 @@ done
 get_kern_info(){
 # Fetch kernel name and version
 kern_ver_name=$(uname -r)
-
 # Fetch kernel build date
 kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 }
@@ -540,13 +540,10 @@ fi
 get_ktsr_info(){
 # Fetch version
 bd_ver=$(grep version= "${MODPATH}module.prop" | sed "s/version=//")
-
 # Fetch build type
 bd_rel=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-" '{print $2}')
-
 # Fetch build date
 bd_dt=$(grep build_date= "${MODPATH}module.prop" | sed "s/build_date=//")
-
 # Fetch build codename
 bd_cdn=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-" '{print $3}')
 }
@@ -561,7 +558,6 @@ elif [[ -e "/sys/class/power_supply/battery/batt_temp" ]]; then
 else 
     batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
 fi
-
 # Ignore the battery temperature decimal
 batt_tmp=$((batt_tmp / 10))
 }
@@ -656,7 +652,7 @@ elif [[ "${batt_sts}" == "4" ]]; then
 elif [[ "${batt_sts}" == "5" ]]; then
       batt_sts=Full
 else
-    batt_sts=$batt_sts
+    batt_sts=${batt_sts}
 fi
 }
 
@@ -685,10 +681,9 @@ get_rom_info(){
 # Fetch ROM info
 rom_info=$(getprop ro.build.description | awk '{print $1,$3,$4,$5}')
 
-if [[ "$rom_info" == "" ]]; then
+if [[ "${rom_info}" == "" ]]; then
     rom_info=$(getprop ro.bootimage.build.description | awk '{print $1,$3,$4,$5}')
-
-elif [[ "$rom_info" == "" ]]; then
+elif [[ "${rom_info}" == "" ]]; then
       rom_info=$(getprop ro.system.build.description | awk '{print $1,$3,$4,$5}')
 fi
 }
@@ -834,50 +829,60 @@ kmsg "Disabled devfreq boost"
 kmsg3 ""
 }
 
+is_big_little(){
+for i in 1 2 3 4 5 6 7; do 
+    if [[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]]; then
+        big_little=true
+    else
+        big_little=false
+    fi
+done
+}
+
 print_info(){
 kmsg3 ""  	
 kmsg "General Info"
 
 kmsg3 ""
 kmsg3 "** Date of execution: $(date)"                                                                                    
-kmsg3 "** Kernel: $kern_ver_name"                                                                                           
-kmsg3 "** Kernel Build Date: $kern_bd_dt"
-kmsg3 "** SOC: ${soc_mf}, $soc"                                                                                               
-kmsg3 "** SDK: $sdk"
-kmsg3 "** Android Version: $avs"    
-kmsg3 "** CPU Governor: $cpu_gov"   
+kmsg3 "** Kernel: ${kern_ver_name}"                                                                                           
+kmsg3 "** Kernel Build Date: ${kern_bd_dt}"
+kmsg3 "** SOC: ${soc_mf}, ${soc}"                                                                                               
+kmsg3 "** SDK: ${sdk}"
+kmsg3 "** Android Version: ${avs}"    
+kmsg3 "** CPU Governor: ${cpu_gov}"   
 kmsg3 "** CPU Load: $cpu_load %"
-kmsg3 "** Number of cores: $nr_cores"
+kmsg3 "** Number of cores: ${nr_cores}"
 kmsg3 "** CPU Freq: ${cpu_min_clk_mhz}-${cpu_max_clk_mhz} MHz"
-kmsg3 "** CPU Scheduling Type: $cpu_sched"                                                                               
-kmsg3 "** AArch: $arch"        
+kmsg3 "** CPU Scheduling Type: ${cpu_sched}"                                                                               
+kmsg3 "** AArch: ${arch}"        
 kmsg3 "** GPU Load: ${gpu_load}%"
 kmsg3 "** GPU Freq: ${gpu_min_clk_mhz}-${gpu_max_clk_mhz} MHz"
-kmsg3 "** GPU Model: $gpu_mdl"                                                                                         
+kmsg3 "** GPU Model: ${gpu_mdl}"                                                                                         
 kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
 kmsg3 "** GPU Governor: $gpu_gov"                                                                                  
-kmsg3 "** Device: ${dvc_brnd}, $dvc_cdn"                                                                                                
-kmsg3 "** ROM: $rom_info"                 
+kmsg3 "** Device: ${dvc_brnd}, ${dvc_cdn}"                                                                                                
+kmsg3 "** ROM: ${rom_info}"                 
 kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}' | tail -n 1)"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}' | tail -n 1) PPI"
 kmsg3 "** Refresh Rate: $rr HZ"                                         
-kmsg3 "** Build Version: $bd_ver"                                                                                     
-kmsg3 "** Build Codename: $bd_cdn"                                                                                   
-kmsg3 "** Build Release: $bd_rel"                                                                                         
-kmsg3 "** Build Date: $bd_dt"                                                                                          
+kmsg3 "** Build Version: ${bd_ver}"                                                                                     
+kmsg3 "** Build Codename: ${bd_cdn}"                                                                                   
+kmsg3 "** Build Release: ${bd_rel}"                                                                                         
+kmsg3 "** Build Date: ${bd_dt}"                                                                                          
 kmsg3 "** Battery Charge Level: $batt_pctg %"  
 kmsg3 "** Battery Capacity: $batt_cpct mAh"
-kmsg3 "** Battery Health: $batt_hth"                                                                                     
-kmsg3 "** Battery Status: $batt_sts"                                                                                     
+kmsg3 "** Battery Health: ${batt_hth}"                                                                                     
+kmsg3 "** Battery Status: ${batt_sts}"                                                                                     
 kmsg3 "** Battery Temperature: $batt_tmp °C"                                                                               
 kmsg3 "** Device RAM: $total_ram MB"                                                                                     
 kmsg3 "** Device Available RAM: $avail_ram MB"
-kmsg3 "** Root: $root"
-kmsg3 "** SQLite Version: $sql_ver"
-kmsg3 "** SQLite Build Date: $sql_bd_dt"
-kmsg3 "** System Uptime: $sys_uptime"
-kmsg3 "** SELinux: $slnx_stt"                                                                                   
-kmsg3 "** Busybox: $bb_ver"
+kmsg3 "** Root: ${root}"
+kmsg3 "** SQLite Version: ${sql_ver}"
+kmsg3 "** SQLite Build Date: ${sql_bd_dt}"
+kmsg3 "** System Uptime: ${sys_uptime}"
+kmsg3 "** SELinux: ${slnx_stt}"                                                                                   
+kmsg3 "** Busybox: ${bb_ver}"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
@@ -1027,9 +1032,9 @@ kmsg3 ""
 # Some of these are based from @helloklf (GitHub) vtools, credits to him.
 config_cpuset(){
 if [[ "${soc}" == "msm8937" ]]; then
-    write "${cpuset}camera-daemon/cpus" "0-7"
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}foreground/boost/cpus" "0-7"
+    write "${cpuset}camera-daemon/cpus" "0-6"
+    write "${cpuset}foreground/cpus" "0-6"
+    write "${cpuset}foreground/boost/cpus" "0-6"
     write "${cpuset}background/cpus" "0-1"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
@@ -1038,9 +1043,9 @@ if [[ "${soc}" == "msm8937" ]]; then
     kmsg3 ""
 
 elif [[ "${soc}" == "msm8952" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1049,9 +1054,9 @@ elif [[ "${soc}" == "msm8952" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "msm8953" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1060,19 +1065,19 @@ elif [[ "${soc}" == "msm8953" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "msm8996" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-3"
-      write "${cpuset}foreground/cpus" "0-3"
-      write "${cpuset}foreground/boost/cpus" "0-3"
+      write "${cpuset}camera-daemon/cpus" "0-2"
+      write "${cpuset}foreground/cpus" "0-2"
+      write "${cpuset}foreground/boost/cpus" "0-2"
       write "${cpuset}background/cpus" "0-1"
-      write "${cpuset}system-background/cpus" "1-3"
+      write "${cpuset}system-background/cpus" "0-2"
       write "${cpuset}top-app/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "${soc}" == "msm8998" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1081,7 +1086,7 @@ elif [[ "${soc}" == "msm8998" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "msmnile" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}camera-daemon/cpus" "0-3"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
@@ -1092,9 +1097,9 @@ elif [[ "${soc}" == "msmnile" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "mt6768" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1103,9 +1108,9 @@ elif [[ "${soc}" == "mt6768" ]]; then
       kmsg3 ""
 
 elif [[ "${soc}" == "mt6785" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "0-7"
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1114,10 +1119,10 @@ elif [[ "${soc}" == "mt6785" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
 
-elif [[ "$soc" == "mt6873" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "0-7"
+elif [[ "${soc}" == "mt6873" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1125,10 +1130,10 @@ elif [[ "$soc" == "mt6873" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
-elif [[ "$soc" == "mt6885" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "0-7"
+elif [[ "${soc}" == "mt6885" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1136,8 +1141,8 @@ elif [[ "$soc" == "mt6885" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
-elif [[ "$soc" == "sdm710" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
+elif [[ "${soc}" == "sdm710" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-6"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
@@ -1147,8 +1152,8 @@ elif [[ "$soc" == "sdm710" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
-elif [[ "$soc" == "sdm845" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
+elif [[ "${soc}" == "sdm845" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-3"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
@@ -1158,8 +1163,8 @@ elif [[ "$soc" == "sdm845" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
       
-elif [[ "$soc" == "sm6150" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
+elif [[ "${soc}" == "sm6150" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-6"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
@@ -1169,11 +1174,11 @@ elif [[ "$soc" == "sm6150" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
-elif [[ "$soc" == "lito" ]]; then
-	  write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-5,7"
-      write "${cpuset}foreground/boost/cpus" "0-5,7"
+elif [[ "${soc}" == "lito" ]]; then
+	  write "${cpuset}camera-daemon/cpus" "0-3"
+      write "${cpuset}camera-daemon-dedicated/cpus" "0-3"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "4-5"
       write "${cpuset}system-background/cpus" "2-5"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1181,8 +1186,8 @@ elif [[ "$soc" == "lito" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
-elif [[ "$soc" == "lahaina" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
+elif [[ "${soc}" == "lahaina" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-3"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
@@ -1192,20 +1197,20 @@ elif [[ "$soc" == "lahaina" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
-elif [[ "$soc" == "exynos5" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "0-7"
+elif [[ "${soc}" == "exynos5" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "2-5"
       write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}dex2oat/cpus" "0-3,6-7"
+      write "${cpuset}dex2oat/cpus" "0-3,5-6"
       write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
-elif [[ "$soc" == "trinket" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
+elif [[ "${soc}" == "trinket" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-6"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
@@ -1215,8 +1220,8 @@ elif [[ "$soc" == "trinket" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
-elif [[ "$soc" == "kona" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
+elif [[ "${soc}" == "kona" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-3"
       write "${cpuset}foreground/cpus" "0-3,5-6"
       write "${cpuset}foreground/boost/cpus" "0-3,5-6"
       write "${cpuset}background/cpus" "0-1"
@@ -1226,22 +1231,22 @@ elif [[ "$soc" == "kona" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
-elif [[ "$soc" == "universal9820" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "0-7"
+elif [[ "${soc}" == "universal9820" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "2-5"
       write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}dexopt/cpus" "0-3,6-7"
+      write "${cpuset}dexopt/cpus" "0-3,5-6"
       write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
 
-elif [[ "$soc" == "atoll" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-5,7"
-      write "${cpuset}foreground/boost/cpus" "0-5,7"
+elif [[ "${soc}" == "atoll" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "2-5"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1565,7 +1570,7 @@ do
 
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  if [[ "$avail_govs" == *"$governor"* ]]; then
+	  if [[ "${avail_govs}" == *"$governor"* ]]; then
 		  lock_value "${cpu}scaling_governor" "$governor"
 		break
 	  fi
@@ -1622,7 +1627,7 @@ do
 
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  if [[ "$avail_govs" == *"$governor"* ]]; then
+	  if [[ "${avail_govs}" == *"$governor"* ]]; then
 		  lock_value "${cpu}scaling_governor" "$governor"
 	    break
 	  fi
@@ -1735,7 +1740,7 @@ do
 
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  if [[ "$avail_govs" == *"$governor"* ]]; then
+	  if [[ "${avail_govs}" == *"$governor"* ]]; then
 		  lock_value "${cpu}scaling_governor" "$governor"
 		break
       fi
@@ -2606,7 +2611,7 @@ fi
 }
 
 schedtune_latency(){
-if [[ -d "$stune" ]]; then
+if [[ -d "${stune}" ]]; then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2676,7 +2681,7 @@ fi
 }
 
 schedtune_balanced(){
-if [[ -d "$stune" ]]; then
+if [[ -d "${stune}" ]]; then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2746,7 +2751,7 @@ fi
 }
 
 schedtune_extreme(){
-if [[ -d "$stune" ]]; then
+if [[ -d "${stune}" ]]; then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2816,7 +2821,7 @@ fi
 }
 
 schedtune_battery(){
-if [[ -d "$stune" ]]; then
+if [[ -d "${stune}" ]]; then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -2886,7 +2891,7 @@ fi
 }
 
 schedtune_gaming(){
-if [[ -d "$stune" ]]; then
+if [[ -d "${stune}" ]]; then
     write "${stune}background/schedtune.boost" "0"
     write "${stune}background/schedtune.prefer_idle" "0"
     write "${stune}background/schedtune.sched_boost" "0"
@@ -3211,7 +3216,7 @@ if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
     write "${kernel}sched_autogroup_enabled" "1"
 fi
 if [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
+    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 fi
 if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
     write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
@@ -3260,13 +3265,7 @@ if [[ -e "${kernel}sched_init_task_load" ]]; then
     write "${kernel}sched_init_task_load" "25"
 fi
 if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    write "${kernel}sched_migration_fixup" "1"
-fi
-if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-    write "${kernel}sched_enable_power_aware" "1"
-fi
-if [[ -e "${kernel}power_aware_timer_migration" ]]; then
-    write "${kernel}power_aware_timer_migration" "1"
+    lock_value "${kernel}sched_migration_fixup" "0"
 fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
@@ -3300,8 +3299,21 @@ fi
 if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
     lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 fi
+if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
+    write "${kernel}sched_is_big_little" "1" 
+elif [[ -e "${kernel}sched_is_big_little" ]]; then
+      write "${kernel}sched_is_big_little" "0"
+fi
+if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
+    write "${kernel}sched_sync_hint_enable" "0"
+elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
+      write "${kernel}sched_sync_hint_enable" "1"
+fi
+if [[ -e "${kernel}sched_initial_task_util" ]]; then
+    write "${kernel}sched_initial_task_util" "0"
+fi
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    lock_value "$bcl_md" "0"
+    lock_value "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3319,15 +3331,15 @@ fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
     write "${kernel}sched_autogroup_enabled" "1"
 fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
+if [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]]; then
+    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
+if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
+    write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
 fi
 lock_value "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BALANCE"
+    write "${kernel}sched_latency_ns" "${SCHED_PERIOD_BALANCE}"
 fi
 if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
     write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BALANCE / SCHED_TASKS_BALANCE))"
@@ -3372,13 +3384,7 @@ if [[ -e "${kernel}sched_init_task_load" ]]; then
     write "${kernel}sched_init_task_load" "20"
 fi
 if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    write "${kernel}sched_migration_fixup" "1"
-fi
-if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-    write "${kernel}sched_enable_power_aware" "1"
-fi
-if [[ -e "${kernel}power_aware_timer_migration" ]]; then
-    write "${kernel}power_aware_timer_migration" "1"
+    lock_value "${kernel}sched_migration_fixup" "0"
 fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
@@ -3391,7 +3397,7 @@ if [[ -e "${kernel}sysrq" ]]; then
 fi
 # Set memory sleep mode to deep
 if [[ -e "/sys/power/mem_sleep" ]]; then
-    write "/sys/power/mem_sleep" "deep"
+    write "/sys/power/mem_sleep" "s2idle"
 fi
 if [[ -e "${kernel}sched_conservative_pl" ]]; then
     write "${kernel}sched_conservative_pl" "0"
@@ -3411,8 +3417,21 @@ fi
 if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
     lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 fi
+if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
+    write "${kernel}sched_is_big_little" "1" 
+elif [[ -e "${kernel}sched_is_big_little" ]]; then
+      write "${kernel}sched_is_big_little" "0"
+fi
+if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
+    write "${kernel}sched_sync_hint_enable" "0"
+elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
+      write "${kernel}sched_sync_hint_enable" "1"
+fi
+if [[ -e "${kernel}sched_initial_task_util" ]]; then
+    write "${kernel}sched_initial_task_util" "0"
+fi
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    lock_value "$bcl_md" "0"
+    lock_value "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3430,15 +3449,15 @@ fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
     write "${kernel}sched_autogroup_enabled" "0"
 fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
+if [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]]; then
+    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
 fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
+if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
+    write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
 fi
 lock_value "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
+    write "${kernel}sched_latency_ns" "${SCHED_PERIOD_THROUGHPUT}"
 fi
 if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
     write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
@@ -3447,7 +3466,7 @@ if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
     write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "200000"
+    write "${kernel}sched_migration_cost_ns" "0"
 fi
 if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
     write "${kernel}sched_min_task_util_for_colocation" "0"
@@ -3465,9 +3484,9 @@ if [[ -e "${kernel}timer_migration" ]]; then
     write "${kernel}timer_migration" "0"
 fi
 if [[ -e "${kernel}sched_boost" ]]; then
-    write "${kernel}sched_boost" "1"
+    lock_value "${kernel}sched_boost" "1"
 fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "$mtk" == "true" ]]; then
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]]; then
     write "/sys/devices/system/cpu/eas/enable" "2"
 else
     write "/sys/devices/system/cpu/eas/enable" "1"
@@ -3485,13 +3504,7 @@ if [[ -e "${kernel}sched_init_task_load" ]]; then
     write "${kernel}sched_init_task_load" "30"
 fi
 if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    write "${kernel}sched_migration_fixup" "1"
-fi
-if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-    write "${kernel}sched_enable_power_aware" "1"
-fi
-if [[ -e "${kernel}power_aware_timer_migration" ]]; then
-    write "${kernel}power_aware_timer_migration" "1"
+    lock_value "${kernel}sched_migration_fixup" "0"
 fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
@@ -3509,7 +3522,7 @@ if [[ -e "${kernel}sched_conservative_pl" ]]; then
     write "${kernel}sched_conservative_pl" "0"
 fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
-    write "/sys/devices/system/cpu/sched/sched_boost" "1"
+    lock_value "/sys/devices/system/cpu/sched/sched_boost" "1"
 fi
 if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
     lock_value "/sys/kernel/ems/eff_mode" "0"
@@ -3523,8 +3536,21 @@ fi
 if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
     lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 fi
+if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
+    write "${kernel}sched_is_big_little" "1" 
+elif [[ -e "${kernel}sched_is_big_little" ]]; then
+      write "${kernel}sched_is_big_little" "0"
+fi
+if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
+    write "${kernel}sched_sync_hint_enable" "0"
+elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
+      write "${kernel}sched_sync_hint_enable" "1"
+fi
+if [[ -e "${kernel}sched_initial_task_util" ]]; then
+    write "${kernel}sched_initial_task_util" "0"
+fi
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    lock_value "$bcl_md" "0"
+    lock_value "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3542,15 +3568,15 @@ fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
     write "${kernel}sched_autogroup_enabled" "1"
 fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
+if [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]]; then
+    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
+if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
+    write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
 fi
 lock_value "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "$SCHED_PERIOD_BATTERY"
+    write "${kernel}sched_latency_ns" "${SCHED_PERIOD_BATTERY}"
 fi
 if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
     write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
@@ -3595,13 +3621,7 @@ if [[ -e "${kernel}sched_init_task_load" ]]; then
     write "${kernel}sched_init_task_load" "15"
 fi
 if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    write "${kernel}sched_migration_fixup" "1"
-fi
-if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-    write "${kernel}sched_enable_power_aware" "1"
-fi
-if [[ -e "${kernel}power_aware_timer_migration" ]]; then
-    write "${kernel}power_aware_timer_migration" "1"
+    lock_value "${kernel}sched_migration_fixup" "0"
 fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
@@ -3633,8 +3653,21 @@ fi
 if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
     lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 fi
+if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
+    write "${kernel}sched_is_big_little" "1" 
+elif [[ -e "${kernel}sched_is_big_little" ]]; then
+      write "${kernel}sched_is_big_little" "0"
+fi
+if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
+    write "${kernel}sched_sync_hint_enable" "0"
+elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
+      write "${kernel}sched_sync_hint_enable" "1"
+fi
+if [[ -e "${kernel}sched_initial_task_util" ]]; then
+    write "${kernel}sched_initial_task_util" "0"
+fi
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    lock_value "$bcl_md" "0"
+    lock_value "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3652,15 +3685,15 @@ fi
 if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
     write "${kernel}sched_autogroup_enabled" "0"
 fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkscale_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkscale_enable" "0"
+if [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]]; then
+    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
 fi
-if [[ -e "/sys/devices/soc/$bt_dvc/clkgate_enable" ]]; then
-    write "/sys/devices/soc/$bt_dvc/clkgate_enable" "1"
+if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
+    write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
 fi
 lock_value "${kernel}sched_tunable_scaling" "0"
 if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "$SCHED_PERIOD_THROUGHPUT"
+    write "${kernel}sched_latency_ns" "${SCHED_PERIOD_THROUGHPUT}"
 fi
 if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
     write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
@@ -3669,7 +3702,7 @@ if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
     write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
 fi
 if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "200000"
+    write "${kernel}sched_migration_cost_ns" "0"
 fi
 if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
     write "${kernel}sched_min_task_util_for_colocation" "0"
@@ -3687,9 +3720,9 @@ if [[ -e "${kernel}timer_migration" ]]; then
     write "${kernel}timer_migration" "0"
 fi
 if [[ -e "${kernel}sched_boost" ]]; then
-    write "${kernel}sched_boost" "1"
+    lock_value "${kernel}sched_boost" "1"
 fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "$mtk" == "true" ]]; then
+if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]]; then
     write "/sys/devices/system/cpu/eas/enable" "2"
 else
     write "/sys/devices/system/cpu/eas/enable" "1"
@@ -3707,13 +3740,7 @@ if [[ -e "${kernel}sched_init_task_load" ]]; then
     write "${kernel}sched_init_task_load" "30"
 fi
 if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    write "${kernel}sched_migration_fixup" "1"
-fi
-if [[ -e "${kernel}sched_enable_power_aware" ]]; then
-    write "${kernel}sched_enable_power_aware" "1"
-fi
-if [[ -e "${kernel}power_aware_timer_migration" ]]; then
-    write "${kernel}power_aware_timer_migration" "1"
+    lock_value "${kernel}sched_migration_fixup" "0"
 fi
 if [[ -e "${kernel}sched_energy_aware" ]]; then
     write "${kernel}sched_energy_aware" "1"
@@ -3731,7 +3758,7 @@ if [[ -e "${kernel}sched_conservative_pl" ]]; then
     write "${kernel}sched_conservative_pl" "0"
 fi
 if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
-    write "/sys/devices/system/cpu/sched/sched_boost" "1"
+    lock_value "/sys/devices/system/cpu/sched/sched_boost" "1"
 fi
 if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
     lock_value "/sys/kernel/ems/eff_mode" "0"
@@ -3745,8 +3772,21 @@ fi
 if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
     lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 fi
+if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
+    write "${kernel}sched_is_big_little" "1" 
+elif [[ -e "${kernel}sched_is_big_little" ]]; then
+      write "${kernel}sched_is_big_little" "0"
+fi
+if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
+    write "${kernel}sched_sync_hint_enable" "0"
+elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
+      write "${kernel}sched_sync_hint_enable" "1"
+fi
+if [[ -e "${kernel}sched_initial_task_util" ]]; then
+    write "${kernel}sched_initial_task_util" "0"
+fi
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    lock_value "$bcl_md" "0"
+    lock_value "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -4423,7 +4463,7 @@ avail_con="$(cat "${tcp}tcp_available_congestion_control")"
     for tcpcc in bbr2 bbr westwood cubic bic
 	do
 	    # Once a matching TCP congestion control is found, set it and break
-		if [[ "$avail_con" == *"$tcpcc"* ]]; then
+		if [[ "${avail_con}" == *"${tcpcc}"* ]]; then
 			write "${tcp}"tcp_congestion_control "${tcpcc}"
 		  break
 		fi
@@ -4457,8 +4497,7 @@ kmsg3 ""
 }
 
 enable_kern_batt_saver(){
-if [[ -d "/sys/module/battery_saver/" ]]
-then
+if [[ -d "/sys/module/battery_saver/" ]]; then
     write "/sys/module/battery_saver/parameters/enabled" "Y"
     kmsg "Enabled kernel battery saver"
     kmsg3 ""
@@ -4466,8 +4505,7 @@ fi
 }
 
 disable_kern_batt_saver(){
-if [[ -d "/sys/module/battery_saver/" ]]
-then
+if [[ -d "/sys/module/battery_saver/" ]]; then
     write "/sys/module/battery_saver/parameters/enabled" "N"
     kmsg "Disabled kernel battery saver"
     kmsg3 ""
@@ -4711,7 +4749,7 @@ adjshield_start(){
     true > "${adj_log}"
     true > "${bbn_log}"
     # check interval: 120 seconds - Deprecated, use event driven instead
-    "${MODPATH}system/bin/adjshield" -o "${adj_log}" -c "${adj_cfg}" &
+    ${MODPATH}system/bin/adjshield -o "$adj_log" -c "$adj_cfg" &
 }
 
 adjshield_stop(){
@@ -4984,7 +5022,7 @@ fscc_add_apex_lib(){
 # after appending fscc_file_list
 fscc_start(){
     # multiple parameters, cannot be warped by ""
-    $MODPATH/system/bin/$fscc_nm -fdlb0 $fscc_file_list
+    ${MODPATH}system/bin/${fscc_nm} -fdlb0 $fscc_file_list
 }
 
 fscc_stop(){
@@ -5009,10 +5047,10 @@ kdbg_max_size=1000000
 # Do the same to sqlite opt log
 sqlite_opt_max_size=1000000
 
-if [[ "$(stat -t "$KDBG" 2>/dev/null | awk '{print $2}')" -eq "$kdbg_max_size" ]] || [[ "$(stat -t "$KLOG" 2>/dev/null | awk '{print $2}')" -gt "$kdbg_max_size" ]]; then
+if [[ "$(stat -t "${KDBG}" 2>/dev/null | awk '{print $2}')" -eq "${kdbg_max_size}" ]] || [[ "$(stat -t "$KLOG" 2>/dev/null | awk '{print $2}')" -gt "$kdbg_max_size" ]]; then
     rm -rf "$KDBG"
 
-elif [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -eq "$sqlite_opt_max_size" ]] || [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -gt "$sqlite_opt_max_size" ]]; then
+elif [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -eq "${sqlite_opt_max_size}" ]] || [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -gt "${sqlite_opt_max_size}" ]]; then
       rm -rf "/data/media/0/KTSR/sqlite_opt.log"
 fi
 }
@@ -5094,7 +5132,7 @@ get_batt_sts
 
 get_batt_cpct
 
-get_busy_ver
+get_bb_ver
 
 get_rom_info
 
@@ -5117,6 +5155,8 @@ get_bt_dvc
 get_uptime
 
 get_sql_info
+
+is_big_little
 
 get_cpu_load
 }
@@ -5497,7 +5537,7 @@ kmsg3 ""
 exit=$(date +%s)
 
 exec_time=$((exit - init))
-kmsg "Elapsed time: $exec_time seconds."
+kmsg "Spent time: $exec_time seconds."
 }
 automatic(){     	
 kmsg "Applying automatic profile"
@@ -5523,7 +5563,7 @@ kmsg3 ""
 exit=$(date +%s)
 
 exec_time=$((exit - init))
-kmsg "Elapsed time: $exec_time seconds."
+kmsg "Spent time: $exec_time seconds."
 }
 extreme(){
 init=$(date +%s)
@@ -5540,7 +5580,7 @@ kmsg3 ""
 exit=$(date +%s)
 
 exec_time=$((exit - init))
-kmsg "Elapsed time: $exec_time seconds."
+kmsg "Spent time: $exec_time seconds."
 }
 battery(){
 init=$(date +%s)
@@ -5557,7 +5597,7 @@ kmsg3 ""
 exit=$(date +%s)
 
 exec_time=$((exit - init))
-kmsg "Elapsed time: $exec_time seconds."
+kmsg "Spent time: $exec_time seconds."
 }
 gaming(){
 init=$(date +%s)
@@ -5574,5 +5614,5 @@ kmsg3 ""
 exit=$(date +%s)
 
 exec_time=$((exit - init))
-kmsg "Elapsed time: $exec_time seconds."
+kmsg "Spent time: $exec_time seconds."
 }
