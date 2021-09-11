@@ -14,8 +14,8 @@ if [[ "$(id -u)" != "0" ]]; then
     exit 1
 fi
 
-if [[ -e "$KLOG" ]]; then
-    rm -rf "$KLOG"
+if [[ -e "${KLOG}" ]]; then
+    rm -rf "${KLOG}"
 fi
 
 if [[ ! -d "/data/media/0/KTSR" ]]; then
@@ -23,28 +23,28 @@ if [[ ! -d "/data/media/0/KTSR" ]]; then
 fi
 
 if [[ -d "/data/media/0/KTSR" ]]; then
-    touch "$KLOG"
+    touch "${KLOG}"
 fi
 
-if [[ -e "$KDBG" ]]; then
-    rm -rf "$KDBG"
+if [[ -e "${KDBG}" ]]; then
+    rm -rf "${KDBG}"
 fi
 
 boot_run_once=false
 ktsr_prof=$(getprop persist.king.tweaks.prof)
-[[ -z "$ktsr_prof" ]] && setprop persist.king.tweaks.prof "3"
+[[ -z "${ktsr_prof}" ]] && setprop persist.king.tweaks.prof "3"
 
 while true
 do
 sleep 3
-if "$boot_run_once"; then
-    [[ "$(getprop persist.king.tweaks.prof)" == "$ktsr_prof" ]] && continue
+if "${boot_run_once}"; then
+    [[ "$(getprop persist.king.tweaks.prof)" == "${ktsr_prof}" ]] && continue
 else
     boot_run_once=true
 fi
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 
-case "$ktsr_prof" in
+case "${ktsr_prof}" in
 1)
   ktsr_prof_in=otomatis
   ;;
@@ -70,8 +70,7 @@ case "$ktsr_prof" in
             ;;
        esac
 
-case "$ktsr_prof" in
-
+case "${ktsr_prof}" in
 1)
   ktsr_prof_pt=automático
   ;;
@@ -97,8 +96,7 @@ case "$ktsr_prof" in
           ;;
       esac
 
-case "$ktsr_prof" in
-
+case "${ktsr_prof}" in
 1)
   ktsr_prof_en=automatic
   ;;
@@ -124,8 +122,7 @@ case "$ktsr_prof" in
            ;;
       esac
 
-case "$ktsr_prof" in 
-
+case "${ktsr_prof}" in 
 1)
   ktsr_prof_tr=gecikme
   ;;
@@ -151,8 +148,7 @@ case "$ktsr_prof" in
               ;;
          esac
 
-case "$ktsr_prof" in
-
+case "${ktsr_prof}" in
 1)
   ktsr_prof_fr=automatique
   ;;
@@ -254,7 +250,6 @@ clear_logs
     change_task_affinity "oom_reaper" "7f"
 
 # Similiar to PinnerService, Mlock(Unevictable) 200~350MB
-#if [[ "$(getprop ro.boot.hardware)" == "qcom" ]]; then
 fscc_add_obj "${sys_frm}/framework.jar"
 fscc_add_obj "${sys_frm}/services.jar"
 fscc_add_obj "${sys_frm}/ext.jar"
@@ -283,24 +278,23 @@ fscc_add_apex_lib "updatable-media.jar"
 fscc_add_apex_lib "okhttp.jar"
 fscc_add_apex_lib "bouncycastle.jar"
 # Do not pin too many files on low memory devices
-[[ "$total_ram" -gt 2048 ]] && fscc_add_apk "com.android.systemui"
-[[ "$total_ram" -gt 2048 ]] && fscc_add_dex "com.android.systemui"
-[[ "$total_ram" -gt 4096 ]] && fscc_add_app_home "com.android.systemui"
-[[ "$total_ram" -gt 4096 ]] && fscc_add_app_ime "com.android.systemui"
+[[ "${total_ram}" -gt "2048" ]] && fscc_add_apk "com.android.systemui"
+[[ "${total_ram}" -gt "2048" ]] && fscc_add_dex "com.android.systemui"
+[[ "${total_ram}" -gt "4096" ]] && fscc_add_app_home "com.android.systemui"
+[[ "${total_ram}" -gt "4096" ]] && fscc_add_app_ime "com.android.systemui"
 fscc_stop
 fscc_start
 
 # Run adjshield
-[[ ! -f "$adj_cfg" ]] && adjshield_create_default_cfg
+[[ ! -f "${adj_cfg}" ]] && adjshield_create_default_cfg
 adjshield_stop
 adjshield_start
-#fi
 rebuild_process_scan_cache
 
 # Save mode for be applied automatically after reboot
 save_panel
 
-case "$ktsr_prof_en" in
+case "${ktsr_prof_en}" in
 "automatic") 
 
 if [[ "$(getprop persist.sys.locale)" == "en-US" ]]
