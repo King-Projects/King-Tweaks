@@ -12,18 +12,18 @@ MODUTILVER=v2.6.1
 MODUTILVCODE=261
 
 # Check A/B slot
-if [[ -d /system_root ]]; then
+if [[ -d "/system_root" ]]; then
   isABDevice=true
-  SYSTEM=/system_root/system
-  SYSTEM2=/system
-  CACHELOC=/data/cache
+  SYSTEM="/system_root/system"
+  SYSTEM2="/system"
+  CACHELOC="/data/cache"
 else
   isABDevice=false
-  SYSTEM=/system
-  SYSTEM2=/system
-  CACHELOC=/cache
+  SYSTEM="/system"
+  SYSTEM2="/system"
+  CACHELOC="/cache"
 fi
-[[ -z "$isABDevice" ]] && { echo "[!] Something went wrong"; exit 1; }
+[[ -z "${isABDevice}" ]] && { echo "[!] Something went wrong"; exit 1; }
 
 #=========================== Set Busybox up
 # Variables:
@@ -36,7 +36,7 @@ fi
 set_busybox(){
   if [[ -x "$1" ]]; then
     for i in $(${1} --list); do
-      if [[ "$i" != 'echo' ]]; then
+      if [[ "${i}" != 'echo' ]]; then
         alias "$i"="${1} $i" >/dev/null 2>&1
       fi
     done
@@ -45,7 +45,7 @@ set_busybox(){
   fi
 }
 _busybox=false
-if [[ -n "$_bb" ]]; then
+if [[ -n "${_bb}" ]]; then
   true
 elif [[ -x "$SYSTEM2"/xbin/busybox ]]; then
   _bb=$SYSTEM2/xbin/busybox
@@ -104,10 +104,10 @@ mktouch(){
 
 # Grep prop
 grep_prop(){
-  local REGEX="s/^$1=//p"
+  REGEX="s/^$1=//p"
   shift
-  local FILES=$@
-  [[ -z "$FILES" ]] && FILES='/system/build.prop'
+  FILES=$@
+  [[ -z "${FILES}" ]] && FILES="/system/build.prop"
   sed -n "$REGEX" $FILES 2>/dev/null | head -n 1
 }
 
@@ -177,8 +177,8 @@ div="${Bl}$(printf '%*s' "${character_no}" '' | tr " " "=")${N}"
 # title_div [-c] <title>
 # based on $div with <title>
 title_div(){
-  [[ "$1" = "-c" ]] && local character_no=$2 && shift 2
-  [[ -z "$1" ]] && { local message=; no=0; } || { local message="$@ "; local no=$(echo "$@" | wc -c); }
+  [[ "$1" = "-c" ]] && character_no=$2 && shift 2
+  [[ -z "$1" ]] && { message=; no=0; } || { message="$@ "; no=$(echo "$@" | wc -c); }
   [[ $character_no -gt $no ]] && local extdiv=$((character_no-no)) || { echo "Invalid!"; return 1; }
   echo "${W}$message${N}${Bl}$(printf '%*s' "$extdiv" '' | tr " " "=")${N}"
 }
@@ -200,20 +200,20 @@ set_file_prop(){
 # ProgressBar <progress> <total>
 ProgressBar(){
 # Determine Screen Size
-  if [[ "$COLUMNS" -le "57" ]]; then
-    local var1=2
-	local var2=20
+  if [[ "${COLUMNS}" -le "57" ]]; then
+    var1=2
+	var2=20
   else
-    local var1=4
-    local var2=40
+    var1=4
+    var2=40
   fi
 # Process data
-  local _progress=$(((${1}*100/${2}*100)/100))
-  local _done=$(((${_progress}*${var1})/10))
-  local _left=$((${var2}-$_done))
+  _progress=$(((${1}*100/${2}*100)/100))
+  _done=$(((${_progress}*${var1})/10))
+  _left=$((${var2}-$_done))
 # Build progressbar string lengths
-  local _done=$(printf "%${_done}s")
-  local _left=$(printf "%${_left}s")
+  _done=$(printf "%${_done}s")
+  _left=$(printf "%${_left}s")
 
 # Build progressbar strings and print the ProgressBar line
 printf "\rProgress : ${BGBL}|${N}${_done// /${BGBL}$loadBar${N}}${_left// / }${BGBL}|${N} ${_progress}%%"
@@ -294,18 +294,18 @@ upload_logs(){
 # CHANCES - no. of chances <integer>
 # TARGET - target value out of CHANCES <integer>
 prandom(){
-  local CHANCES=2
-  local TARGET=2
-  [[ "$1" =  "-c" ]] && { local CHANCES=$2; local TARGET=$3; shift 3; }
+  CHANCES=2
+  TARGET=2
+  [[ "$1" =  "-c" ]] && { CHANCES=$2; TARGET=$3; shift 3; }
   [[ "$((RANDOM%CHANCES+1))" -eq "$TARGET" ]] && echo "$@"
 }
 
 # Print Center
 # Prints text in the center of terminal
 pcenter(){
-  local CHAR=$(printf "$@" | sed 's|\\e[[0-9;]*m||g' | wc -m)
-  local hfCOLUMN=$((COLUMNS/2))
-  local hfCHAR=$((CHAR/2))
-  local indent=$((hfCOLUMN-hfCHAR))
+  CHAR=$(printf "$@" | sed 's|\\e[[0-9;]*m||g' | wc -m)
+  hfCOLUMN=$((COLUMNS/2))
+  hfCHAR=$((CHAR/2))
+  indent=$((hfCOLUMN-hfCHAR))
   echo "$(printf '%*s' "${indent}" '') $@"
 }
