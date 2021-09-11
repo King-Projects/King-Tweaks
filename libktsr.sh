@@ -4725,18 +4725,15 @@ if [[ -d "${perfmgr}boost_ctrl/eas_ctrl/" ]]; then
 fi
 }
 
-# process scan cache
-ps_ret=""
-
 # $1:content
 write_panel(){
-    echo "$1" >> "$bbn_log"
+    echo "$1" >> "${bbn_log}"
 }
 
 save_panel(){
     write_panel "[*] Bourbon - the essential process optimizer"
     write_panel ""
-    write_panel "Version: 1.1"
+    write_panel "Version: 1.2-r1"
     write_panel ""
     write_panel "Last performed: $(date '+%Y-%m-%d %H:%M:%S')"
     write_panel ""
@@ -4749,7 +4746,7 @@ save_panel(){
 
 # $1:str
 adjshield_write_cfg(){
-    echo "$1" >> "$adj_cfg"
+    echo "$1" >> "${adj_cfg}"
 }
 
 adjshield_create_default_cfg(){
@@ -4767,11 +4764,11 @@ adjshield_start(){
     true > "${adj_log}"
     true > "${bbn_log}"
     # check interval: 120 seconds - Deprecated, use event driven instead
-    ${MODPATH}system/bin/adjshield -o "$adj_log" -c "$adj_cfg" &
+    ${MODPATH}system/bin/adjshield -o "${adj_log}" -c "${adj_cfg}" &
 }
 
 adjshield_stop(){
-    killall "$adj_nm" 2>/dev/null
+    killall "${adj_nm}" 2>/dev/null
 }
 
 # return:status
@@ -4899,13 +4896,13 @@ change_thread_rt(){
 # $1:task_name
 change_task_high_prio(){
     # audio thread nice <= -16
-    change_task_nice "$1" "-15"
+    change_task_nice "$1" "-19"
 }
 
 # $1:task_name $2:thread_name
 change_thread_high_prio(){
     # audio thread nice <= -16
-    change_thread_nice "$1" "$2" "-15"
+    change_thread_nice "$1" "$2" "-19"
 }
 
 # $1:task_name $2:thread_name
@@ -4959,8 +4956,6 @@ rebuild_process_scan_cache(){
     # 16490 grep kswapd
     ps_ret="$(ps -Ao pid,args)"
 }
-
-fscc_file_list=""
 
 # $1:apk_path $return:oat_path
 fscc_path_apk_to_oat(){
@@ -5044,7 +5039,7 @@ fscc_start(){
 }
 
 fscc_stop(){
-    killall -9 $fscc_nm 2>/dev/null
+    killall -9 "${fscc_nm}" 2>/dev/null
 }
 
 # return:status
@@ -5056,6 +5051,70 @@ fscc_status(){
     else
         echo "Not running."
     fi
+}
+
+cgroup_bbn_opt(){
+    # Reduce perf cluster wakeup
+    # Daemons
+    pin_proc_on_pwr "crtc_commit|crtc_event|pp_event|msm_irqbalance|netd|mdnsd|analytics"
+    pin_proc_on_pwr "imsdaemon|cnss-daemon|qadaemon|qseecomd|time_daemon|ATFWD-daemon|ims_rtp_daemon|qcrilNrd"
+    # ueventd related to hotplug of camera, wifi, usb... 
+    # pin_proc_on_pwr "ueventd"
+    # hardware services, eg. android.hardware.sensors@1.0-service
+    pin_proc_on_pwr "android.hardware.bluetooth"
+    pin_proc_on_pwr "android.hardware.gnss"
+    pin_proc_on_pwr "android.hardware.health"
+    pin_proc_on_pwr "android.hardware.thermal"
+    pin_proc_on_pwr "android.hardware.wifi"
+    pin_proc_on_pwr "android.hardware.keymaster"
+    pin_proc_on_pwr "vendor.qti.hardware.qseecom"
+    pin_proc_on_pwr "hardware.sensors"
+    pin_proc_on_pwr "sensorservice"
+    # com.android.providers.media.module controlled by uperf
+    pin_proc_on_pwr "android.process.media"
+    # com.miui.securitycenter & com.miui.securityadd
+    pin_proc_on_pwr "miui\.security"
+
+    # system_server blacklist
+    # system_server controlled by uperf
+    change_proc_cgroup "system_server" "" "cpuset"
+    # input dispatcher
+    change_thread_high_prio "system_server" "input"
+    # related to camera startup
+    # change_thread_affinity "system_server" "ProcessManager" "ff"
+    # not important
+    pin_thread_on_pwr "system_server" "Miui|Connect|Network|Wifi|backup|Sync|Observer|Power|Sensor|batterystats"
+    pin_thread_on_pwr "system_server" "Thread-|pool-|Jit|CachedAppOpt|Greezer|TaskSnapshot|Oom"
+    change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "4"
+    # pin_thread_on_pwr "system_server" "Async" # it blocks camera
+    # pin_thread_on_pwr "system_server" "\.bg" # it blocks binders
+    # do not let GC thread block system_server
+    # pin_thread_on_mid "system_server" "HeapTaskDaemon"
+    # pin_thread_on_mid "system_server" "FinalizerDaemon"
+
+    # Render Pipeline
+    # surfaceflinger controlled by uperf
+    # android.phone controlled by uperf
+    # speed up searching service binder
+    change_task_cgroup "servicemanag" "top-app" "cpuset"
+    # prevent display service from being preempted by normal tasks
+    # vendor.qti.hardware.display.allocator-service cannot be set to RT policy, will be reset to 120
+    unpin_proc "\.hardware\.display"
+    change_task_affinity "\.hardware\.display" "7f"
+    change_task_rt "\.hardware\.display" "2"
+    # let UX related Binders run with top-app
+    change_thread_cgroup "\.hardware\.display" "^Binder" "top-app" "cpuset"
+    change_thread_cgroup "\.hardware\.display" "^HwBinder" "top-app" "cpuset"
+    change_thread_cgroup "\.composer" "^Binder" "top-app" "cpuset"
+
+    # Heavy Scene Boost
+    # boost app boot process, zygote--com.xxxx.xxx
+    # boost android process pool, usap--com.xxxx.xxx
+    unpin_proc "zygote64|zygote|usap32|usap64"
+    
+    # busybox fork from magiskd
+    pin_proc_on_mid "magiskd"
+    change_task_nice "magiskd" "19"
 }
 
 clear_logs(){
@@ -5539,6 +5598,8 @@ dvk="/data/dalvik-cache"
 apx1="/apex/com.android.art/javalib"
 apx2="/apex/com.android.runtime/javalib"
 perfmgr="/proc/perfmgr/"
+fscc_file_list=""
+ps_ret=""
 
 latency(){
 init=$(date +%s)
