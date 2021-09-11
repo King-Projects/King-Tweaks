@@ -12,21 +12,21 @@ KDBG="/data/media/0/KTSR/KTSR_DBG.log"
 
 # Log in white and continue (unnecessary)
 kmsg(){
-	echo -e "[*] $@" >> "$KLOG"
+	echo -e "[*] $@" >> "${KLOG}"
 }
 
 kmsg1(){
-	echo -e "$@" >> "$KDBG"
+	echo -e "$@" >> "${KDBG}"
 	echo -e "$@"
 }
 
 kmsg2(){
-	echo -e "[!] $@" >> "$KDBG"
+	echo -e "[!] $@" >> "${KDBG}"
 	echo -e "[!] $@"
 }
 
 kmsg3(){
-	echo -e "$@" >> "$KLOG"
+	echo -e "$@" >> "${KLOG}"
 }
 
 toast(){
@@ -83,7 +83,7 @@ write(){
     curval=$(cat "$1" 2>/dev/null)
 	
 	# Bail out if value is already set
-	if [[ "$curval" == "$2" ]]; then
+	if [[ "${curval}" == "$2" ]]; then
 	    kmsg1 "$1 is already set to $2, skipping..."
 	    return 0
 	fi
@@ -357,10 +357,10 @@ cpu_max_freq2=$(chmod +r /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_max_freq &
 cpu_max_freq3=$(chmod +r /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_max_freq && cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_max_freq && chmod -r /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_max_freq)
 
 if [[ "${cpu_max_freq2}" -gt "${cpu_max_freq}" ]] && [[ "${cpu_max_freq2}" -gt "${cpu_max_freq3}" ]]; then
-    cpu_max_freq=$cpu_max_freq2
+    cpu_max_freq=${cpu_max_freq2}
 
 elif [[ "${cpu_max_freq3}" -gt "${cpu_max_freq}" ]] && [[ "${cpu_max_freq3}" -gt "${cpu_max_freq2}" ]]; then
-      cpu_max_freq=$cpu_max_freq3
+      cpu_max_freq=${cpu_max_freq3}
 fi
 }
 
@@ -370,7 +370,7 @@ cpu_min_freq=$(chmod +r /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq &&
 cpu_min_freq2=$(chmod +r /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_min_freq && chmod -r /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_min_freq)
 
 if [[ "${cpu_min_freq2}" -lt "${cpu_min_freq}" ]]; then
-    cpu_min_freq=$cpu_min_freq2
+    cpu_min_freq=${cpu_min_freq2}
 fi
 }
 
@@ -908,6 +908,9 @@ stop oneplus_brain_service 2>/dev/null
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -rf "/data/system/perfd/default_values"
+
+elif [[ -e "/data/vendor/perfd/default_values" ]]; then
+      rm -rf "/data/vendor/perfd/default_values"
 fi
 
 kmsg "Disabled perfd, mpdecision and few debug services"
@@ -3312,6 +3315,10 @@ fi
 if [[ -e "${kernel}sched_initial_task_util" ]]; then
     write "${kernel}sched_initial_task_util" "0"
 fi
+# Disable ram-boost relying memplus prefetcher, use traditional swapping
+if [[ -d "/sys/module/memplus_core/" ]]; then
+    lock_value "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
+fi
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
     lock_value "${bcl_md}" "0"
 done
@@ -3429,6 +3436,9 @@ elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
 fi
 if [[ -e "${kernel}sched_initial_task_util" ]]; then
     write "${kernel}sched_initial_task_util" "0"
+fi
+if [[ -d "/sys/module/memplus_core/" ]]; then
+    write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 fi
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
     lock_value "${bcl_md}" "0"
@@ -3549,6 +3559,9 @@ fi
 if [[ -e "${kernel}sched_initial_task_util" ]]; then
     write "${kernel}sched_initial_task_util" "0"
 fi
+if [[ -d "/sys/module/memplus_core/" ]]; then
+    write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
+fi
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
     lock_value "${bcl_md}" "0"
 done
@@ -3665,6 +3678,9 @@ elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
 fi
 if [[ -e "${kernel}sched_initial_task_util" ]]; then
     write "${kernel}sched_initial_task_util" "0"
+fi
+if [[ -d "/sys/module/memplus_core/" ]]; then
+    write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 fi
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
     lock_value "${bcl_md}" "0"
@@ -3784,6 +3800,9 @@ elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
 fi
 if [[ -e "${kernel}sched_initial_task_util" ]]; then
     write "${kernel}sched_initial_task_util" "0"
+fi
+if [[ -d "/sys/module/memplus_core/" ]]; then
+    write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 fi
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
     lock_value "${bcl_md}" "0"
@@ -4660,10 +4679,9 @@ fi
 
 disable_debug(){
 # Disable debugging / logging
-for i in edac_mc_log* enable_event_log log_level* log_ecn_error snapshot_crashdumper; do
-  for o in $(find /sys/module/*/parameters -type f -name "${i}"); do
+for i in edac_mc_log* enable_event_log log_level* *log_ue* *log_ce* log_ecn_error snapshot_crashdumper seclog*; do
+  for o in $(find /sys/ -type f -name "${i}"); do
       write "${o}" "0"
-      write "${o}" "N"
    done
 done
 
@@ -5033,7 +5051,7 @@ fscc_stop(){
 fscc_status(){
     # get the correct value after waiting for fscc loading files
     sleep 2
-    if [[ "$(ps -A | grep "$fscc_nm")" != "" ]]; then
+    if [[ "$(ps -A | grep "${fscc_nm}")" != "" ]]; then
         echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache."
     else
         echo "Not running."
@@ -5047,10 +5065,10 @@ kdbg_max_size=1000000
 # Do the same to sqlite opt log
 sqlite_opt_max_size=1000000
 
-if [[ "$(stat -t "${KDBG}" 2>/dev/null | awk '{print $2}')" -eq "${kdbg_max_size}" ]] || [[ "$(stat -t "$KLOG" 2>/dev/null | awk '{print $2}')" -gt "$kdbg_max_size" ]]; then
-    rm -rf "$KDBG"
+if [[ "$(stat -t "${KDBG}" 2>/dev/null | awk '{print $2}')" -ge "${kdbg_max_size}" ]]; then
+    rm -rf "${KDBG}"
 
-elif [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -eq "${sqlite_opt_max_size}" ]] || [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -gt "${sqlite_opt_max_size}" ]]; then
+elif [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -ge "${sqlite_opt_max_size}" ]]; then
       rm -rf "/data/media/0/KTSR/sqlite_opt.log"
 fi
 }
