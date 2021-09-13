@@ -539,7 +539,7 @@ fi
 
 get_ktsr_info(){
 # Fetch version
-bd_ver=$(grep version= "${MODPATH}module.prop" | sed "s/version=//")
+bd_ver=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-" '{print $1}')
 # Fetch build type
 bd_rel=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-" '{print $2}')
 # Fetch build date
@@ -1234,6 +1234,18 @@ elif [[ "${soc}" == "kona" ]]; then
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
+elif [[ "${soc}" == "universal9811" ]]; then
+      write "${cpuset}camera-daemon/cpus" "0-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
+      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}system-background/cpus" "2-5"
+      write "${cpuset}top-app/cpus" "0-7"
+      write "${cpuset}dexopt/cpus" "0-3,5-6"
+      write "${cpuset}restricted/cpus" "0-3"
+      kmsg "Tweaked cpusets"
+      kmsg3 ""
+
 elif [[ "${soc}" == "universal9820" ]]; then
       write "${cpuset}camera-daemon/cpus" "0-6"
       write "${cpuset}foreground/cpus" "0-6"
@@ -5599,7 +5611,6 @@ apx1="/apex/com.android.art/javalib"
 apx2="/apex/com.android.runtime/javalib"
 perfmgr="/proc/perfmgr/"
 fscc_file_list=""
-ps_ret=""
 
 latency(){
 init=$(date +%s)
