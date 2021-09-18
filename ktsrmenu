@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# KTSR by Pedro (pedrozzz0 @ GitHub)
+# KTSR™ by Pedro (pedrozzz0 @ GitHub)
 # Credits: veez21
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
@@ -128,21 +128,21 @@ echo "[*] Other misc options: "
 echo ""
 echo "[7] Optimize apps package"
 echo ""
-if [[ "$low_power_mode" == "Disabled" ]]; then
+if [[ "${low_power_mode}" == "Disabled" ]]; then
     echo "[8] Enable low power mode"
     echo ""
 else
     echo "[9] Disable low power mode"
     echo ""
 fi
-if [[ "$data_saver" == "Disabled" ]]; then
+if [[ "${data_saver}" == "Disabled" ]]; then
     echo "[10] Enable data saver"
     echo ""
 else
     echo "[11] Disable data saver"
     echo ""
 fi
-if [[ "$loc_mode_pwr_saving" == "Disabled" ]]; then
+if [[ "${loc_mode_pwr_saving}" == "Disabled" ]]; then
     echo "[12] Enable power-saving location mode"
     echo ""
 else
@@ -153,10 +153,10 @@ echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
 echo ""
 echo "[15] Access our telegram group"
 echo ""
-if [[ "$ts" == "On" ]]; then
+if [[ "${ts}" == "On" ]]; then
     echo "${B}[16] Disable thermal services (Can reduce throttling but also make your device heats up more)${N}"
     echo ""
-elif [[ "$ts" == "Off" ]]; then
+elif [[ "${ts}" == "Off" ]]; then
       echo "${B}[17] Enable thermal services${N}"
       echo ""
 fi
@@ -455,14 +455,14 @@ read -r option
                                             ;;
                                                
                                               "27")
-                                              echo "2" > "/sys/class/thermal/thermal_message/sconfig"
+                                              echo "2" > "/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
                                               echo "${G}Done!${N}"
                                               sleep 2
                                               menu
                                               ;; 
                                                  
                                               "28")
-                                              echo "0" > "/sys/class/thermal/thermal_message/sconfig"
+                                              echo "0" > "/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
                                               echo "${G}Done!${N}"
                                               sleep 2
                                               menu
@@ -510,14 +510,14 @@ read -r option
 						
 						while getopts ":p:f:th:" opt; do
 						case "${opt}" in
-						 p) 
-						 echo "${B}Applying profile...${N}"
-						 setprop persist.king.tweaks.prof "$2" 2>/dev/null
-						 echo "${G}Done!${N}"
-                         ;;
-						
+						p) 
+						echo "${B}Applying profile...${N}"
+						setprop persist.king.tweaks.prof "$2" 2>/dev/null
+						echo "${G}Done!${N}"
+                        ;;
+
 						     t)
-						     if [[ $2 == "0" ]]; then 
+						     if [[ "$2" == "0" ]]; then 
 						         echo "Disabling thermal services..."
 						         stop thermal 2>/dev/null
 						         stop thermald 2>/dev/null
@@ -527,7 +527,7 @@ read -r option
 						         stop thermanager 2>/dev/null
 						         stop thermal_manager 2>/dev/null
 						         echo "${G}Done!${N}"
-						     elif [[ "$ts" == "1" ]]; then
+						     elif [[ "${ts}" == "1" ]]; then
 						           echo "${B}Enabling thermal...${N}"
                                    start thermal 2>/dev/null
 						           start thermald 2>/dev/null
@@ -562,7 +562,7 @@ read -r option
                                    am kill-all
                                    sleep 3
                                    while IFS= read -r pkg_nm; do
-                                   if [[ "$pkg_nm" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]]; then
+                                   if [[ "${pkg_nm}" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]]; then
                                        am force-stop "$pkg_nm"
                                    fi
                                    done <<< "$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"

@@ -1,6 +1,6 @@
-# What is King Tweaks?
+# What is King Tweaks™?
 
-**King Tweaks** is a tweaker / optimizer magisk module which aim to improve user-experience.
+**King Tweaks™** is a tweaker / optimizer magisk module which aim to improve user-experience.
 
 It tweaks kernel settings, overall android settings, optimize databases, zipalign apks and much more.
 

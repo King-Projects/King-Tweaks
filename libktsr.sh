@@ -1,8 +1,9 @@
 #!/system/bin/sh
-# KTSR by Pedro (pedrozzz0 @ GitHub)
+# KTSR™ by Pedro (pedrozzz0 @ GitHub)
 # Credits: Ktweak, by Draco (tytydraco @ GitHub), LSpeed, Dan (Paget69 @ XDA), mogoroku @ GitHub, vtools, by helloklf @ GitHub, Cuprum-Turbo-Adjustment, by chenzyadb @ CoolApk, qti-mem-opt & Uperf, by Matt Yang (yc9559 @ CoolApk) and Pandora's Box, by Eight (dlwlrma123 @ GitHub).
 # Thanks: GR for some help
 # If you wanna use it as part of your project, please maintain the credits to it's respectives authors.
+# TODO: Implement a proper debug flag & cleanup some variables
 
 MODPATH="/data/adb/modules/KTSR/"
 
@@ -29,6 +30,7 @@ kmsg3(){
 	echo -e "$@" >> "${KLOG}"
 }
 
+# toasttext: <text content>
 toast(){
 	am start -a android.intent.action.MAIN -e toasttext "Applying ${ktsr_prof_en} profile..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
@@ -53,12 +55,12 @@ toast_tr_1(){
 	am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_tr} profili uygulandı" -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
-toast_in(){
-	am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil ${ktsr_prof_in}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
+toast_id(){
+	am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil ${ktsr_prof_id}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
-toast_in_1(){
-	am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_in} terpakai" -n bellavita.toast/.MainActivity >/dev/null 2>&1
+toast_id_1(){
+	am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_id} terpakai" -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
 toast_fr(){
@@ -69,6 +71,7 @@ toast_fr_1(){
 	am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_fr} chargé" -n bellavita.toast/.MainActivity >/dev/null 2>&1
 }
 
+# write:$1 $2
 write(){
 	# Bail out if file does not exist
 	if [[ ! -f "$1" ]]; then
@@ -99,6 +102,7 @@ write(){
 	kmsg1 "$1 $curval -> $2"
 }
 
+# lock:$1
 lock(){
 	# Bail out if file does not exist
 	if [[ ! -f "$1" ]]; then
@@ -119,6 +123,7 @@ lock(){
     chmod 000 "$1" 2>/dev/null
 }
 
+# lock_value:$1 $2
 lock_value(){
     # Bail out if file does not exist
 	if [[ ! -f "$1" ]]; then
@@ -520,11 +525,12 @@ get_ram_info(){
 if [[ "$(which busybox)" ]]; then
     # Fetch the total amount of memory RAM
     total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
+    total_ram_kb=$(busybox cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1)
     # Fetch the amount of available RAM
     avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')
 else
-    total_ram="N/A (Install busybox first)"
-    avail_ram="N/A (Install busybox first)"
+    total_ram="N/A (Please install busybox first!)"
+    avail_ram="N/A (Please install busybox first!)"
 fi
 }
 
@@ -673,7 +679,7 @@ get_bb_ver(){
 if [[ "$(which busybox)" ]]; then
     bb_ver=$(busybox | awk 'NR==1{print $2}')
 else
-    bb_ver="N/A"
+    bb_ver="N/A (Please install busybox first!)"
 fi
 }
 
@@ -771,8 +777,8 @@ if [[ "$(which sqlite3)" ]]; then
     # Fetch SQLite build date
     sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}')
 else
-    sql_ver="N/A"
-    sql_bd_dt="N/A"
+    sql_ver="N/A (Install SQLite3 first!)"
+    sql_bd_dt="N/A (Install SQLite3 first!)"
 fi
 }
 
@@ -805,10 +811,10 @@ enable_devfreq_boost(){
 for dir in /sys/class/devfreq/*/; do
      max_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
      max_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
-     if [[ "$max_devfreq2" -gt "${max_devfreq}" ]]; then
+     if [[ "${max_devfreq2}" -gt "${max_devfreq}" ]]; then
          max_devfreq=${max_devfreq2}
      fi
-     lock_value "${dir}min_freq" "$max_devfreq"
+     lock_value "${dir}min_freq" "${max_devfreq}"
 done
 
 kmsg "Enabled devfreq boost"
@@ -859,8 +865,8 @@ kmsg3 "** AArch: ${arch}"
 kmsg3 "** GPU Load: ${gpu_load}%"
 kmsg3 "** GPU Freq: ${gpu_min_clk_mhz}-${gpu_max_clk_mhz} MHz"
 kmsg3 "** GPU Model: ${gpu_mdl}"                                                                                         
-kmsg3 "** GPU Drivers Info: $drvs_info"                                                                                  
-kmsg3 "** GPU Governor: $gpu_gov"                                                                                  
+kmsg3 "** GPU Drivers Info: ${drvs_info}"                                                                                  
+kmsg3 "** GPU Governor: ${gpu_gov}"                                                                                  
 kmsg3 "** Device: ${dvc_brnd}, ${dvc_cdn}"                                                                                                
 kmsg3 "** ROM: ${rom_info}"                 
 kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}' | tail -n 1)"
@@ -1146,8 +1152,8 @@ elif [[ "${soc}" == "mt6885" ]]; then
     
 elif [[ "${soc}" == "sdm710" ]]; then
       write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-3,5-6"
-      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1168,8 +1174,8 @@ elif [[ "${soc}" == "sdm845" ]]; then
       
 elif [[ "${soc}" == "sm6150" ]]; then
       write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-3,5-6"
-      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1180,9 +1186,9 @@ elif [[ "${soc}" == "sm6150" ]]; then
 elif [[ "${soc}" == "lito" ]]; then
 	  write "${cpuset}camera-daemon/cpus" "0-3"
       write "${cpuset}camera-daemon-dedicated/cpus" "0-3"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "4-5"
+      write "${cpuset}foreground/cpus" "0-3,5-6"
+      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}background/cpus" "5-6"
       write "${cpuset}system-background/cpus" "2-5"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "2-5"
@@ -1205,7 +1211,7 @@ elif [[ "${soc}" == "exynos5" ]]; then
       write "${cpuset}foreground/cpus" "0-6"
       write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
-      write "${cpuset}system-background/cpus" "2-5"
+      write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}dex2oat/cpus" "0-3,5-6"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1214,8 +1220,8 @@ elif [[ "${soc}" == "exynos5" ]]; then
     
 elif [[ "${soc}" == "trinket" ]]; then
       write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-3,5-6"
-      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+      write "${cpuset}foreground/cpus" "0-6"
+      write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1239,7 +1245,7 @@ elif [[ "${soc}" == "universal9811" ]]; then
       write "${cpuset}foreground/cpus" "0-6"
       write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
-      write "${cpuset}system-background/cpus" "2-5"
+      write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}dexopt/cpus" "0-3,5-6"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1251,7 +1257,7 @@ elif [[ "${soc}" == "universal9820" ]]; then
       write "${cpuset}foreground/cpus" "0-6"
       write "${cpuset}foreground/boost/cpus" "0-6"
       write "${cpuset}background/cpus" "0-1"
-      write "${cpuset}system-background/cpus" "2-5"
+      write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}dexopt/cpus" "0-3,5-6"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1262,7 +1268,7 @@ elif [[ "${soc}" == "atoll" ]]; then
       write "${cpuset}camera-daemon/cpus" "0-6"
       write "${cpuset}foreground/cpus" "0-6"
       write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}background/cpus" "0-2"
       write "${cpuset}system-background/cpus" "2-5"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "2-5"
@@ -3971,25 +3977,13 @@ fi
 }
 
 vm_lmk_latency(){
-# Credits to Paget96 for this also
-fr=$(((total_ram * 2 / 100) * 1024 / 4))
-bg=$(((total_ram * 3 / 100) * 1024 / 4))
-et=$(((total_ram * 4 / 100) * 1024 / 4))
-mr=$(((total_ram * 6 / 100) * 1024 / 4))
-cd=$(((total_ram * 7 / 100) * 1024 / 4))
-ab=$(((total_ram * 9 / 100) * 1024 / 4))
-
-efr=$((mfr * 16 / 5))
-
-mfr=$((total_ram * 6 / 5))
-
-if [[ "${efr}" -le "18432" ]]; then
-    efr=18432
-fi
-
-if [[ "${mfr}" -le "3072" ]]; then
-    mfr=3072
-fi
+[[ "${total_ram_kb}" -gt "8388608" ]] && minfree="25600,38400,51200,64000,256000,307200" && efk="204800"
+[[ "${total_ram_kb}" -le "8388608" ]] && minfree="25600,38400,51200,64000,153600,179200" && efk="128000"
+[[ "${total_ram_kb}" -le "6291456" ]] && minfree="25600,38400,51200,64000,102400,128000" && efk="102400"
+[[ "${total_ram_kb}" -le "4197304" ]] && minfree="12800,19200,25600,32000,76800,102400" && efk="76800"
+[[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
+[[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
+[[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
 
 # always sync before dropping caches
 sync
@@ -4004,7 +3998,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP on samsung devices if it do not have more than 4 GB RAM
-if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4096" ]]; then
+if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
     lock_value "${vm}swappiness" "150"
 else
     lock_value "${vm}swappiness" "100"
@@ -4027,7 +4021,7 @@ fi
 
 # Tune lmk_minfree
 if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+    write "${lmk}parameters/minfree" "${minfree}"
 fi
 
 # Enable oom_reaper
@@ -4044,15 +4038,10 @@ fi
 if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
-
-# Tune vm_min_free_kbytes
-if [[ -e "${vm}min_free_kbytes" ]]; then
-    write "${vm}min_free_kbytes" "$mfr"
-fi
   
 # Tune vm_extra_free_kbytes
 if [[ -e "${vm}extra_free_kbytes" ]]; then
-    write "${vm}extra_free_kbytes" "$efr"
+    write "${vm}extra_free_kbytes" "${efk}"
 fi
 
 # Huge shrinker (LMK) calling interval
@@ -4065,24 +4054,13 @@ kmsg3 ""
 }
 
 vm_lmk_balanced(){
-fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
-bg=$(((total_ram * 4 / 100) * 1024 / 4))
-et=$(((total_ram * 5 / 100) * 1024 / 4))
-mr=$(((total_ram * 6 / 100) * 1024 / 4))
-cd=$(((total_ram * 8 / 100) * 1024 / 4))
-ab=$(((total_ram * 10 / 100) * 1024 / 4))
-
-mfr=$((total_ram * 7 / 5))
-
-efr=$((mfr * 16 / 5))
-
-if [[ "${mfr}" -le "3072" ]]; then
-    mfr=3072
-fi
-
-if [[ "${efr}" -le "18432" ]]; then
-    efr=18432
-fi
+[[ "${total_ram_kb}" -gt "8388608" ]] && minfree="25600,38400,51200,64000,256000,307200" && efk="204800"
+[[ "${total_ram_kb}" -le "8388608" ]] && minfree="25600,38400,51200,64000,153600,179200" && efk="128000"
+[[ "${total_ram_kb}" -le "6291456" ]] && minfree="25600,38400,51200,64000,102400,128000" && efk="102400"
+[[ "${total_ram_kb}" -le "4197304" ]] && minfree="12800,19200,25600,32000,76800,102400" && efk="76800"
+[[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
+[[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
+[[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
 
 sync
 
@@ -4094,7 +4072,7 @@ write "${vm}dirty_writeback_centisecs" "4000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4096" ]]; then
+if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
     lock_value "${vm}swappiness" "150"
 else
     lock_value "${vm}swappiness" "100"
@@ -4116,7 +4094,7 @@ if [[ -e "${vm}oom_dump_tasks" ]]; then
 fi
 
 if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+    write "${lmk}parameters/minfree" "${minfree}"
 fi
 
 if [[ -e "${lmk}parameters/oom_reaper" ]]; then
@@ -4131,10 +4109,6 @@ if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
-if [[ -e "${vm}min_free_kbytes" ]]; then
-    write "${vm}min_free_kbytes" "$mfr"
-fi
-
 if [[ -e "${lmk}parameters/cost" ]]; then
     lock_value "${lmk}parameters/cost" "4096"
 fi
@@ -4144,24 +4118,13 @@ kmsg3 ""
 }
 
 vm_lmk_extreme(){
-fr=$(((total_ram * 3 / 100) * 1024 / 4))
-bg=$(((total_ram * 5 / 100) * 1024 / 4))
-et=$(((total_ram * 7 / 100) * 1024 / 4))
-mr=$(((total_ram * 9 / 100) * 1024 / 4))
-cd=$(((total_ram * 11 / 100) * 1024 / 4))
-ab=$(((total_ram * 13 / 100) * 1024 / 4))
-
-mfr=$((total_ram * 9 / 5))
-
-efr=$((mfr * 16 / 5))
-
-if [[ "${efr}" -le "18432" ]]; then
-    efr=18432
-fi
-
-if [[ "${mfr}" -le "3072" ]]; then
-    mfr=3072
-fi
+[[ "${total_ram_kb}" -gt "8388608" ]] && minfree="25600,38400,51200,64000,256000,307200" && efk="204800"
+[[ "${total_ram_kb}" -le "8388608" ]] && minfree="25600,38400,51200,64000,153600,179200" && efk="128000"
+[[ "${total_ram_kb}" -le "6291456" ]] && minfree="25600,38400,51200,64000,102400,128000" && efk="102400"
+[[ "${total_ram_kb}" -le "4197304" ]] && minfree="12800,19200,25600,32000,76800,102400" && efk="76800"
+[[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
+[[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
+[[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
 
 sync
 
@@ -4173,7 +4136,7 @@ write "${vm}dirty_writeback_centisecs" "5000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4096" ]]; then
+if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
     lock_value "${vm}swappiness" "150"
 else
     lock_value "${vm}swappiness" "100"
@@ -4195,7 +4158,7 @@ if [[ -e "${vm}oom_dump_tasks" ]]; then
 fi
 
 if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+    write "${lmk}parameters/minfree" "${minfree}"
 fi
 
 if [[ -e "${lmk}parameters/oom_reaper" ]]; then
@@ -4210,12 +4173,8 @@ if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
-if [[ -e "${vm}min_free_kbytes" ]]; then
-    write "${vm}min_free_kbytes" "$mfr"
-fi
-
 if [[ -e "${vm}extra_free_kbytes" ]]; then
-    write "${vm}extra_free_kbytes" "$efr"
+    write "${vm}extra_free_kbytes" "${efk}"
 fi
 
 if [[ -e "${lmk}parameters/cost" ]]; then
@@ -4227,24 +4186,13 @@ kmsg3 ""
 }
 
 vm_lmk_battery(){
-fr=$(((total_ram * 3 / 2 / 100) * 1024 / 4))
-bg=$(((total_ram * 4 / 100) * 1024 / 4))
-et=$(((total_ram * 5 / 100) * 1024 / 4))
-mr=$(((total_ram * 6 / 100) * 1024 / 4))
-cd=$(((total_ram * 8 / 100) * 1024 / 4))
-ab=$(((total_ram * 10 / 100) * 1024 / 4))
-
-mfr=$((total_ram * 6 / 5))
-
-efr=$((mfr * 16 / 5))
-
-if [[ "${efr}" -le "18432" ]]; then
-    efr=18432
-fi
-
-if [[ "${mfr}" -le "3072" ]]; then
-    mfr=3072
-fi
+[[ "${total_ram_kb}" -gt "8388608" ]] && minfree="25600,38400,51200,64000,256000,307200" && efk="204800"
+[[ "${total_ram_kb}" -le "8388608" ]] && minfree="25600,38400,51200,64000,153600,179200" && efk="128000"
+[[ "${total_ram_kb}" -le "6291456" ]] && minfree="25600,38400,51200,64000,102400,128000" && efk="102400"
+[[ "${total_ram_kb}" -le "4197304" ]] && minfree="12800,19200,25600,32000,76800,102400" && efk="76800"
+[[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
+[[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
+[[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
 
 sync
 
@@ -4256,7 +4204,7 @@ write "${vm}dirty_writeback_centisecs" "6000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4096" ]]; then
+if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
     lock_value "${vm}swappiness" "150"
 else
     lock_value "${vm}swappiness" "100"
@@ -4278,7 +4226,7 @@ if [[ -e "${vm}oom_dump_tasks" ]]; then
 fi
 
 if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+    write "${lmk}parameters/minfree" "${minfree}"
 fi
 
 if [[ -e "${lmk}parameters/oom_reaper" ]]; then
@@ -4293,12 +4241,8 @@ if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
     write "${lmk}parameters/enable_adaptive_lmk" "0"
 fi
 
-if [[ -e "${vm}min_free_kbytes" ]]; then
-    write "${vm}min_free_kbytes" "$mfr"
-fi
-
 if [[ -e "${vm}extra_free_kbytes" ]]; then
-    write "${vm}extra_free_kbytes" "$efr"
+    write "${vm}extra_free_kbytes" "${efk}"
 fi
 
 if [[ -e "${lmk}parameters/cost" ]]; then
@@ -4310,24 +4254,13 @@ kmsg3 ""
 }
 
 vm_lmk_gaming(){
-fr=$(((total_ram * 3 / 100) * 1024 / 4))
-bg=$(((total_ram * 5 / 100) * 1024 / 4))
-et=$(((total_ram * 7 / 100) * 1024 / 4))
-mr=$(((total_ram * 8 / 100) * 1024 / 4))
-cd=$(((total_ram * 9 / 100) * 1024 / 4))
-ab=$(((total_ram * 11 / 100) * 1024 / 4))
-
-mfr=$((total_ram * 9 / 5))
-
-efr=$((mfr * 16 / 5))
-
-if [[ "${efr}" -le "18432" ]]; then
-    efr=18432
-fi
-
-if [[ "${mfr}" -le "3072" ]]; then
-    mfr=3072
-fi
+[[ "${total_ram_kb}" -gt "8388608" ]] && minfree="25600,38400,51200,64000,256000,307200" && efk="204800"
+[[ "${total_ram_kb}" -le "8388608" ]] && minfree="25600,38400,51200,64000,153600,179200" && efk="128000"
+[[ "${total_ram_kb}" -le "6291456" ]] && minfree="25600,38400,51200,64000,102400,128000" && efk="102400"
+[[ "${total_ram_kb}" -le "4197304" ]] && minfree="12800,19200,25600,32000,76800,102400" && efk="76800"
+[[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
+[[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
+[[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
 
 sync
 
@@ -4339,7 +4272,7 @@ write "${vm}dirty_writeback_centisecs" "6000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4096" ]]; then
+if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
     lock_value "${vm}swappiness" "150"
 else
     lock_value "${vm}swappiness" "100"
@@ -4361,7 +4294,7 @@ if [[ -e "${vm}oom_dump_tasks" ]]; then
 fi
 
 if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}parameters/minfree" "$fr,$bg,$et,$mr,$cd,$ab"
+    write "${lmk}parameters/minfree" "${minfree}"
 fi
 
 if [[ -e "${lmk}parameters/oom_reaper" ]]; then
@@ -4376,12 +4309,8 @@ if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
     write "${lmk}parameters/enable_adaptive_lmk" "1"
 fi
 
-if [[ -e "${vm}min_free_kbytes" ]]; then
-    write "${vm}min_free_kbytes" "$mfr"
-fi
-  
 if [[ -e "${vm}extra_free_kbytes" ]]; then
-    write "${vm}extra_free_kbytes" "$efr"
+    write "${vm}extra_free_kbytes" "${efk}"
 fi
 
 if [[ -e "${lmk}parameters/cost" ]]; then
@@ -5614,9 +5543,8 @@ fscc_file_list=""
 
 latency(){
 init=$(date +%s)
-
+sync
 get_all
-
 apply_all
 
 kmsg "Latency profile applied. Enjoy!"
@@ -5629,20 +5557,20 @@ exit=$(date +%s)
 exec_time=$((exit - init))
 kmsg "Spent time: $exec_time seconds."
 }
-automatic(){     	
-kmsg "Applying automatic profile"
+automatic(){
 kmsg3 ""
+kmsg "Applying automatic profile"
 
 sync
 kingauto &
 	
 kmsg "Applied automatic profile"
+kmsg3 ""
 }
 balanced(){
 init=$(date +%s)
-
+sync
 get_all
-
 apply_all
 
 kmsg "Balanced profile applied. Enjoy!"
@@ -5657,9 +5585,8 @@ kmsg "Spent time: $exec_time seconds."
 }
 extreme(){
 init=$(date +%s)
-
+sync
 get_all
-
 apply_all
 
 kmsg "Extreme profile applied. Enjoy!"
@@ -5674,9 +5601,8 @@ kmsg "Spent time: $exec_time seconds."
 }
 battery(){
 init=$(date +%s)
-   
+sync
 get_all
-
 apply_all
 
 kmsg "Battery profile applied. Enjoy!"
@@ -5691,9 +5617,8 @@ kmsg "Spent time: $exec_time seconds."
 }
 gaming(){
 init=$(date +%s)
-     	
+sync
 get_all
-
 apply_all
 
 kmsg "Gaming profile applied. Enjoy!"

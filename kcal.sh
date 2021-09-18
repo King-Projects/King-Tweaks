@@ -1,10 +1,10 @@
 #!/system/bin/sh
-# KTSR by pedro (pedrozzz0 @ GitHub)
+# KTSR™ by pedro (pedrozzz0 @ GitHub)
 
 KXLOG=/data/media/0/KTSR/kxvision.log
 
-if [[ -e "$KXLOG" ]]; then
-    rm -rf "$KXLOG"
+if [[ -e "${KXLOG}" ]]; then
+    rm -rf "${KXLOG}"
 fi
 
 # King Xvision 
@@ -17,7 +17,6 @@ echo "258" > "/sys/devices/platform/kcal_ctrl.0/kcal_cont"
 if [[ $? == "0" ]]; then
     echo "[*] KCAL Xvision preset executed without any errors!" > "$KXLOG"
     exit 0
-
 elif [[ $? != "0" ]]; then
     echo "[!] KCAL Xvision preset executed with errors." > "$KXLOG"
     exit $?
