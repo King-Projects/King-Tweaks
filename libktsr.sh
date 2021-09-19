@@ -32,44 +32,34 @@ kmsg3(){
 
 # toasttext: <text content>
 toast(){
-	am start -a android.intent.action.MAIN -e toasttext "Applying ${ktsr_prof_en} profile..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
-}
+	am start -a android.intent.action.MAIN -e toasttext "Applying ${ktsr_prof_en} profile..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 	
 toast_1(){
-	am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_en} profile applied" -n bellavita.toast/.MainActivity >/dev/null 2>&1
-}
+	am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_en} profile applied" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
 toast_pt(){
-	am start -a android.intent.action.MAIN -e toasttext "Aplicando perfil ${ktsr_prof_pt}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
-}
+	am start -a android.intent.action.MAIN -e toasttext "Aplicando perfil ${ktsr_prof_pt}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
 toast_pt_1(){
-	am start -a android.intent.action.MAIN -e toasttext "Perfil ${ktsr_prof_pt} aplicado" -n bellavita.toast/.MainActivity >/dev/null 2>&1
-}
+	am start -a android.intent.action.MAIN -e toasttext "Perfil ${ktsr_prof_pt} aplicado" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
 toast_tr(){
-	am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_tr} profili uygulanıyor..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
-}
+	am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_tr} profili uygulanıyor..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
 toast_tr_1(){
-	am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_tr} profili uygulandı" -n bellavita.toast/.MainActivity >/dev/null 2>&1
-}
+	am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_tr} profili uygulandı" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
 toast_id(){
-	am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil ${ktsr_prof_id}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
-}
+	am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil ${ktsr_prof_id}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
 toast_id_1(){
-	am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_id} terpakai" -n bellavita.toast/.MainActivity >/dev/null 2>&1
-}
+	am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_id} terpakai" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
 toast_fr(){
-	am start -a android.intent.action.MAIN -e toasttext "Chargement du profil ${ktsr_prof_tr}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1
-}
+	am start -a android.intent.action.MAIN -e toasttext "Chargement du profil ${ktsr_prof_tr}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
-toast_fr_1(){
-	am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_fr} chargé" -n bellavita.toast/.MainActivity >/dev/null 2>&1
-}
+toast_fr_1(){ 
+    am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_fr} chargé" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
 # write:$1 $2
 write(){
@@ -337,13 +327,6 @@ elif [[ -e "${gpu}devfreq/governor" ]]; then
 fi
 }
 
-check_qcom(){
-# Check if qcom string is null, then define it as false
-if [[ -z "${qcom}" ]]; then
-    qcom=false
-fi
-}
-
 define_gpu_pl(){
 # Fetch the amount of power levels from the GPU
 gpu_num_pl=$(cat "${gpu}num_pwrlevels")
@@ -478,10 +461,6 @@ is_exynos(){
 # Detect if we're running on a exynos powered device
 if [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]]; then
     exynos=true
-    mtk=false
-    qcom=false
-else
-    exynos=false
 fi
 }
 
@@ -489,10 +468,6 @@ is_mtk(){
 # Detect if we're running on a mediatek powered device              
 if [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]]; then
     mtk=true
-    exynos=false
-    qcom=false
-else
-    mtk=false
 fi
 }
 
@@ -527,10 +502,7 @@ if [[ "$(which busybox)" ]]; then
     total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
     total_ram_kb=$(busybox cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1)
     # Fetch the amount of available RAM
-    avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')
-else
-    total_ram="N/A (Please install busybox first!)"
-    avail_ram="N/A (Please install busybox first!)"
+    avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')    
 fi
 }
 
@@ -644,19 +616,19 @@ else
 fi
 
 if [[ "${batt_sts}" == "1" ]]; then
-    batt_sts=Unknown
+    batt_sts="Unknown"
 
 elif [[ "${batt_sts}" == "2" ]]; then
-      batt_sts=Charging
+      batt_sts="Charging"
 
 elif [[ "${batt_sts}" == "3" ]]; then
-      batt_sts=Discharging
+      batt_sts="Discharging"
 
 elif [[ "${batt_sts}" == "4" ]]; then
-      batt_sts=Not charging
+      batt_sts="Not charging"
 
 elif [[ "${batt_sts}" == "5" ]]; then
-      batt_sts=Full
+      batt_sts="Full"
 else
     batt_sts=${batt_sts}
 fi
@@ -678,8 +650,6 @@ get_bb_ver(){
 # Fetch busybox version
 if [[ "$(which busybox)" ]]; then
     bb_ver=$(busybox | awk 'NR==1{print $2}')
-else
-    bb_ver="N/A (Please install busybox first!)"
 fi
 }
 
@@ -697,9 +667,9 @@ fi
 get_slnx_stt(){
 # Fetch SELinux state
 if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
-    slnx_stt=Enforcing
+    slnx_stt="Enforcing"
 else
-    slnx_stt=Permissive
+    slnx_stt="Permissive"
 fi
 }
 
@@ -754,9 +724,6 @@ check_one_ui(){
 if [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]]; then
     one_ui=true
     samsung=true
-else
-    one_ui=false
-    samsung=false
 fi
 }
                
@@ -773,12 +740,8 @@ get_sql_info(){
 if [[ "$(which sqlite3)" ]]; then
     # Fetch SQLite version
     sql_ver=$(sqlite3 -version | awk '{print $1}')
-
     # Fetch SQLite build date
     sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}')
-else
-    sql_ver="N/A (Install SQLite3 first!)"
-    sql_bd_dt="N/A (Install SQLite3 first!)"
 fi
 }
 
@@ -802,9 +765,15 @@ cpu_load=$((100*( cpu_active_cur-cpu_active_prev ) / (cpu_total_cur-cpu_total_pr
 check_ppm_support(){
 if [[ -d "/proc/ppm/" ]] && [[ "${mtk}" == "true" ]]; then
     ppm=true
-else
-    ppm=false
 fi
+}
+
+is_big_little(){
+for i in 1 2 3 4 5 6 7; do 
+    if [[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]]; then
+        big_little=true
+    fi
+done
 }
 
 enable_devfreq_boost(){
@@ -833,16 +802,6 @@ done
 
 kmsg "Disabled devfreq boost"
 kmsg3 ""
-}
-
-is_big_little(){
-for i in 1 2 3 4 5 6 7; do 
-    if [[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]]; then
-        big_little=true
-    else
-        big_little=false
-    fi
-done
 }
 
 print_info(){
@@ -960,30 +919,12 @@ elif [[ -e "/sys/power/cpuhotplug/enabled" ]]; then
 elif [[ -e "/sys/devices/system/cpu/cpuhotplug/enabled" ]]; then
       lock_value "/sys/devices/system/cpu/cpuhotplug/enabled" "0"
 fi
-
-if [[ -e "/sys/kernel/intelli_plug" ]]; then
-    lock_value "/sys/kernel/intelli_plug/intelli_plug_active" "0"
-fi
-
-if [[ -e "/sys/module/blu_plug" ]]; then
-    lock_value "/sys/module/blu_plug/parameters/enabled" "0"
-fi
-
-if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
-    lock_value "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
-fi
-
-if [[ -e "/sys/module/autosmp" ]]; then
-    lock_value "/sys/module/autosmp/parameters/enabled" "0"
-fi
- 
-if [[ -e "/sys/kernel/zen_decision" ]]; then
-    lock_value "/sys/kernel/zen_decision/enabled" "0"
-fi
-
-if [[ -e "/proc/hps" ]]; then
-    lock_value "/proc/hps/enabled" "0"
-fi
+[[ -e "/sys/kernel/intelli_plug" ]] && lock_value "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+[[ -e "/sys/module/blu_plug" ]] && lock_value "/sys/module/blu_plug/parameters/enabled" "0"
+[[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]] && lock_value "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+[[ -e "/sys/module/autosmp" ]] && lock_value "/sys/module/autosmp/parameters/enabled" "0"
+[[ -e "/sys/kernel/zen_decision" ]] && lock_value "/sys/kernel/zen_decision/enabled" "0"
+[[ -e "/proc/hps" ]] && lock_value "/proc/hps/enabled" "0"
 
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
@@ -1009,30 +950,12 @@ elif [[ -e "/sys/power/cpuhotplug/enabled" ]]; then
 elif [[ -e "/sys/devices/system/cpu/cpuhotplug/enabled" ]]; then
       lock_value "/sys/devices/system/cpu/cpuhotplug/enabled" "1"
 fi
-
-if [[ -e "/sys/kernel/intelli_plug" ]]; then
-    lock_value "/sys/kernel/intelli_plug/intelli_plug_active" "1"
-fi
-
-if [[ -e "/sys/module/blu_plug" ]]; then
-    lock_value "/sys/module/blu_plug/parameters/enabled" "1"
-fi
-
-if [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]]; then
-    lock_value "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "1"
-fi
-
-if [[ -e "/sys/module/autosmp" ]]; then
-    lock_value "/sys/module/autosmp/parameters/enabled" "1"
-fi
- 
-if [[ -e "/sys/kernel/zen_decision" ]]; then
-    lock_value "/sys/kernel/zen_decision/enabled" "1"
-fi
-
-if [[ -e "/proc/hps" ]]; then
-    lock_value "/proc/hps/enabled" "1"
-fi
+[[ -e "/sys/kernel/intelli_plug" ]] && lock_value "/sys/kernel/intelli_plug/intelli_plug_active" "1"
+[[ -e "/sys/module/blu_plug" ]] && lock_value "/sys/module/blu_plug/parameters/enabled" "1"
+[[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]] && lock_value "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "1"
+[[ -e "/sys/module/autosmp" ]] && lock_value "/sys/module/autosmp/parameters/enabled" "1" 
+[[ -e "/sys/kernel/zen_decision" ]] && lock_value "/sys/kernel/zen_decision/enabled" "1"
+[[ -e "/proc/hps" ]] && lock_value "/proc/hps/enabled" "1"
 
 kmsg "Enabled core control & CPU hotplug"
 kmsg3 ""
@@ -1549,7 +1472,7 @@ do
     write "${governor}/iowait_boost_enable" "1"
     write "${governor}/rate_limit_us" "5000"
     write "${governor}/hispeed_load" "89"
-    write "${governor}/hispeed_freq" "$cpu_max_freq"
+    write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
@@ -1560,7 +1483,7 @@ do
     write "${governor}/iowait_boost_enable" "1"
     write "${governor}/rate_limit_us" "5000"
     write "${governor}/hispeed_load" "89"
-    write "${governor}/hispeed_freq" "$cpu_max_freq"
+    write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 # Apply governor specific tunables for interactive
@@ -1580,7 +1503,7 @@ do
     write "${governor}/sampling_rate_min" "5000"
     write "${governor}/min_sample_time" "5000"
     write "${governor}/go_hispeed_load" "89"
-    write "${governor}/hispeed_freq" "$cpu_max_freq"
+    write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 }
 
@@ -1606,7 +1529,7 @@ do
      write "${governor}/iowait_boost_enable" "1"
      write "${governor}/rate_limit_us" "20000"
      write "${governor}/hispeed_load" "80"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
@@ -1617,7 +1540,7 @@ do
      write "${governor}/iowait_boost_enable" "1"
      write "${governor}/rate_limit_us" "20000"
      write "${governor}/hispeed_load" "80"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
@@ -1637,7 +1560,7 @@ do
      write "${governor}/sampling_rate_min" "20000"
      write "${governor}/min_sample_time" "20000"
      write "${governor}/go_hispeed_load" "80"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 }
 
@@ -1663,7 +1586,7 @@ do
      write "${governor}/iowait_boost_enable" "1"
      write "${governor}/rate_limit_us" "0"
      write "${governor}/hispeed_load" "65"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
@@ -1674,7 +1597,7 @@ do
      write "${governor}/iowait_boost_enable" "1"
      write "${governor}/rate_limit_us" "0"
      write "${governor}/hispeed_load" "65"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
@@ -1693,7 +1616,7 @@ do
      write "${governor}/sampling_rate_min" "0"
      write "${governor}/min_sample_time" "0"
      write "${governor}/go_hispeed_load" "65"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 }
 
@@ -1719,7 +1642,7 @@ do
      write "${governor}/iowait_boost_enable" "0"
      write "${governor}/rate_limit_us" "46000"
      write "${governor}/hispeed_load" "99"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
@@ -1730,7 +1653,7 @@ do
      write "${governor}/iowait_boost_enable" "0"
      write "${governor}/rate_limit_us" "46000"
      write "{$governor}/hispeed_load" "99"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
@@ -1750,7 +1673,7 @@ do
      write "${governor}/sampling_rate_min" "46000"
      write "${governor}/min_sample_time" "46000"
      write "${governor}/go_hispeed_load" "99"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 }
 
@@ -1776,7 +1699,7 @@ do
       write "${governor}/iowait_boost_enable" "1"
       write "${governor}/rate_limit_us" "0"
       write "${governor}/hispeed_load" "65"
-      write "${governor}/hispeed_freq" "$cpu_max_freq"
+      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
@@ -1787,7 +1710,7 @@ do
      write "${governor}/iowait_boost_enable" "1"
      write "${governor}/rate_limit_us" "0"
      write "${governor}/hispeed_load" "65"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
@@ -1806,62 +1729,29 @@ do
      write "${governor}/sampling_rate_min" "0"
      write "${governor}/min_sample_time" "0"
      write "${governor}/go_hispeed_load" "65"
-     write "${governor}/hispeed_freq" "$cpu_max_freq"
+     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 }
 
 misc_cpu_default(){
-if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
-    write "/proc/cpufreq/cpufreq_power_mode" "0"
-fi
-
-if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
-    write "/proc/cpufreq/cpufreq_cci_mode" "0"
-fi
-
-if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
-    write "/proc/cpufreq/cpufreq_stress_test" "0"
-fi
-
-if [[ -e "/proc/cpufreq/cpufreq_sched_disable" ]]; then
-    write "/proc/cpufreq/cpufreq_sched_disable" "0"
-fi
+[[ -e "/proc/cpufreq/cpufreq_power_mode" ]] && write "/proc/cpufreq/cpufreq_power_mode" "0"
+[[ -e "/proc/cpufreq/cpufreq_cci_mode" ]] && write "/proc/cpufreq/cpufreq_cci_mode" "0"
+[[ -e "/proc/cpufreq/cpufreq_stress_test" ]] && write "/proc/cpufreq/cpufreq_stress_test" "0"
+[[ -e "/proc/cpufreq/cpufreq_sched_disable" ]] && write "/proc/cpufreq/cpufreq_sched_disable" "0"
 }
 
 misc_cpu_max_pwr(){
-if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
-    write "/proc/cpufreq/cpufreq_power_mode" "3"
-fi
-
-if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
-    write "/proc/cpufreq/cpufreq_cci_mode" "1"
-fi
-
-if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
-    write "/proc/cpufreq/cpufreq_stress_test" "1"
-fi
-
-if [[ -e "/proc/cpufreq/cpufreq_sched_disable" ]]; then
-    write "/proc/cpufreq/cpufreq_sched_disable" "0"
-fi
+[[ -e "/proc/cpufreq/cpufreq_power_mode" ]] && write "/proc/cpufreq/cpufreq_power_mode" "3"
+[[ -e "/proc/cpufreq/cpufreq_cci_mode" ]] && write "/proc/cpufreq/cpufreq_cci_mode" "1"
+[[ -e "/proc/cpufreq/cpufreq_stress_test" ]] && write "/proc/cpufreq/cpufreq_stress_test" "1"
+[[ -e "/proc/cpufreq/cpufreq_sched_disable" ]] && write "/proc/cpufreq/cpufreq_sched_disable" "0"
 }
 
 misc_cpu_pwr_saving(){
-if [[ -e "/proc/cpufreq/cpufreq_power_mode" ]]; then
-    write "/proc/cpufreq/cpufreq_power_mode" "1"
-fi
-
-if [[ -e "/proc/cpufreq/cpufreq_cci_mode" ]]; then
-    write "/proc/cpufreq/cpufreq_cci_mode" "0"
-fi
-
-if [[ -e "/proc/cpufreq/cpufreq_stress_test" ]]; then
-    write "/proc/cpufreq/cpufreq_stress_test" "0"
-fi
-
-if [[ -e "/proc/cpufreq/cpufreq_sched_disable" ]]; then
-    write "/proc/cpufreq/cpufreq_sched_disable" "0"
-fi
+[[ -e "/proc/cpufreq/cpufreq_power_mode" ]] && write "/proc/cpufreq/cpufreq_power_mode" "1"
+[[ -e "/proc/cpufreq/cpufreq_cci_mode" ]] && write "/proc/cpufreq/cpufreq_cci_mode" "0"
+[[ -e "/proc/cpufreq/cpufreq_stress_test" ]] && write "/proc/cpufreq/cpufreq_stress_test" "0"
+[[ -e "/proc/cpufreq/cpufreq_sched_disable" ]] && write "/proc/cpufreq/cpufreq_sched_disable" "0"
 }
 
 bring_all_cores(){
@@ -3227,99 +3117,41 @@ fi
 
 sched_latency(){
 # Tweak kernel settings to improve overall performance
-if [[ -e "${kernel}sched_child_runs_first" ]]; then
-    write "${kernel}sched_child_runs_first" "1"
-fi
-if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
-    write "${kernel}perf_cpu_time_max_percent" "4"
-fi
-if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
-    write "${kernel}sched_autogroup_enabled" "1"
-fi
-if [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
-fi
-if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
-fi
+[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "4"
+[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
+[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
+[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
 lock_value "${kernel}sched_tunable_scaling" "0"
-if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "200000"
-fi
-if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
-    write "${kernel}sched_min_granularity_ns" "1250000"
-fi
-if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
-    write "${kernel}sched_wakeup_granularity_ns" "2000000"
-fi
-if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "200000"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
-    write "${kernel}sched_min_task_util_for_colocation" "0"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
-    write "${kernel}sched_min_task_util_for_boost" "0"
-fi
+[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "200000"
+[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "1250000"
+[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "2000000"
+[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
+[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
+[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "4"
 write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_cstate_aware" ]]; then
-    write "${kernel}sched_cstate_aware" "1"
-fi
+[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 write "${kernel}printk_devkmsg" "off"
-if [[ -e "${kernel}timer_migration" ]]; then
-    write "${kernel}timer_migration" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "1"
-fi
-if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-    write "${kernel}sched_walt_rotate_big_tasks" "1"
-fi
-if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
-fi
-if [[ -e "${kernel}sched_boost_top_app" ]]; then
-    write "${kernel}sched_boost_top_app" "1"
-fi
-if [[ -e "${kernel}sched_init_task_load" ]]; then
-    write "${kernel}sched_init_task_load" "25"
-fi
-if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    lock_value "${kernel}sched_migration_fixup" "0"
-fi
-if [[ -e "${kernel}sched_energy_aware" ]]; then
-    write "${kernel}sched_energy_aware" "1"
-fi
-if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
-    write "${kernel}hung_task_timeout_secs" "0"
-fi
+[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
+[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "1"
+[[ -e "${kernel}sched_walt_rotate_big_tasks" ]] && write "${kernel}sched_walt_rotate_big_tasks" "1"
+[[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+[[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
+[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "25"
+[[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
+[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
+[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
 # We do not need it on android, and also is disabled by default on redhat for security purposes
-if [[ -e "${kernel}sysrq" ]]; then
-    write "${kernel}sysrq" "0"
-fi
+[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 # Set memory sleep mode to s2idle 
-if [[ -e "/sys/power/mem_sleep" ]]; then
-    write "/sys/power/mem_sleep" "s2idle"
-fi
-if [[ -e "${kernel}sched_conservative_pl" ]]; then
-    write "${kernel}sched_conservative_pl" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
-    write "/sys/devices/system/cpu/sched/sched_boost" "0"
-fi
-if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
-    lock_value "/sys/kernel/ems/eff_mode" "0"
-fi
-if [[ -e "/sys/module/opchain/parameters/chain_on" ]]; then
-    lock_value "/sys/module/opchain/parameters/chain_on" "0"
-fi
-if [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]]; then
-    lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
-    lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
-fi
+[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
+[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
+[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
+[[ -e "/sys/kernel/ems/eff_mode" ]] && lock_value "/sys/kernel/ems/eff_mode" "0"
+[[ -e "/sys/module/opchain/parameters/chain_on" ]] && lock_value "/sys/module/opchain/parameters/chain_on" "0"
+[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_is_big_little" "1" 
 elif [[ -e "${kernel}sched_is_big_little" ]]; then
@@ -3330,13 +3162,9 @@ if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]
 elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
       write "${kernel}sched_sync_hint_enable" "1"
 fi
-if [[ -e "${kernel}sched_initial_task_util" ]]; then
-    write "${kernel}sched_initial_task_util" "0"
-fi
+[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 # Disable ram-boost relying memplus prefetcher, use traditional swapping
-if [[ -d "/sys/module/memplus_core/" ]]; then
-    lock_value "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
-fi
+[[ -d "/sys/module/memplus_core/" ]] && lock_value "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
     lock_value "${bcl_md}" "0"
 done
@@ -3347,101 +3175,41 @@ kmsg3 ""
 }
 
 sched_balanced(){
-if [[ -e "${kernel}sched_child_runs_first" ]]; then
-    write "${kernel}sched_child_runs_first" "1"
-fi
-if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
-    write "${kernel}perf_cpu_time_max_percent" "6"
-fi
-if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
-    write "${kernel}sched_autogroup_enabled" "1"
-fi
-if [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
-fi
-if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
-fi
+[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "6"
+[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
+[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
+[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] &&.write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
 lock_value "${kernel}sched_tunable_scaling" "0"
-if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "${SCHED_PERIOD_BALANCE}"
-fi
-if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
-    write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BALANCE / SCHED_TASKS_BALANCE))"
-fi
-if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
-    write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BALANCE / 2))"
-fi
-if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "200000"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
-    write "${kernel}sched_min_task_util_for_colocation" "0"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
-    write "${kernel}sched_min_task_util_for_boost" "0"
-fi
+[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${SCHED_PERIOD_BALANCE}"
+[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BALANCE / SCHED_TASKS_BALANCE))"
+[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BALANCE / 2))"
+[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
+[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
+[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "32"
 write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_cstate_aware" ]]; then
-    write "${kernel}sched_cstate_aware" "1"
-fi
+[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 write "${kernel}printk_devkmsg" "off"
-if [[ -e "${kernel}timer_migration" ]]; then
-    write "${kernel}timer_migration" "0"
-fi
-if [[ -e "${kernel}sched_boost" ]]; then
-    write "${kernel}sched_boost" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "1"
-fi
-if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-    write "${kernel}sched_walt_rotate_big_tasks" "1"
-fi
-if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
-fi
-if [[ -e "${kernel}sched_boost_top_app" ]]; then
-    write "${kernel}sched_boost_top_app" "1"
-fi
-if [[ -e "${kernel}sched_init_task_load" ]]; then
-    write "${kernel}sched_init_task_load" "20"
-fi
-if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    lock_value "${kernel}sched_migration_fixup" "0"
-fi
-if [[ -e "${kernel}sched_energy_aware" ]]; then
-    write "${kernel}sched_energy_aware" "1"
-fi
-if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
-    write "${kernel}hung_task_timeout_secs" "0"
-fi
-if [[ -e "${kernel}sysrq" ]]; then
-    write "${kernel}sysrq" "0"
-fi
+[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
+[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
+[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "1"
+[[ -e "${kernel}sched_walt_rotate_big_tasks" ]] && write "${kernel}sched_walt_rotate_big_tasks" "1"
+[[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+[[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
+[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "20"
+[[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
+[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
+[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
+[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 # Set memory sleep mode to deep
-if [[ -e "/sys/power/mem_sleep" ]]; then
-    write "/sys/power/mem_sleep" "s2idle"
-fi
-if [[ -e "${kernel}sched_conservative_pl" ]]; then
-    write "${kernel}sched_conservative_pl" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
-    write "/sys/devices/system/cpu/sched/sched_boost" "0"
-fi
-if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
-    lock_value "/sys/kernel/ems/eff_mode" "0"
-fi
-if [[ -e "/sys/module/opchain/parameters/chain_on" ]]; then
-    lock_value "/sys/module/opchain/parameters/chain_on" "0"
-fi
-if [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]]; then
-    lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
-    lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
-fi
+[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
+[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
+[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
+[[ -e "/sys/kernel/ems/eff_mode" ]] && lock_value "/sys/kernel/ems/eff_mode" "0"
+[[ -e "/sys/module/opchain/parameters/chain_on" ]] && lock_value "/sys/module/opchain/parameters/chain_on" "0"
+[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_is_big_little" "1" 
 elif [[ -e "${kernel}sched_is_big_little" ]]; then
@@ -3452,12 +3220,8 @@ if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]
 elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
       write "${kernel}sched_sync_hint_enable" "1"
 fi
-if [[ -e "${kernel}sched_initial_task_util" ]]; then
-    write "${kernel}sched_initial_task_util" "0"
-fi
-if [[ -d "/sys/module/memplus_core/" ]]; then
-    write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
-fi
+[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
+[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
     lock_value "${bcl_md}" "0"
 done
@@ -3468,102 +3232,44 @@ kmsg3 ""
 }
 
 sched_extreme(){
-if [[ -e "${kernel}sched_child_runs_first" ]]; then
-    write "${kernel}sched_child_runs_first" "0"
-fi
-if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
-    write "${kernel}perf_cpu_time_max_percent" "25"
-fi
-if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
-    write "${kernel}sched_autogroup_enabled" "0"
-fi
-if [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
-fi
-if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
-fi
+[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "25"
+[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
+[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
+[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
 lock_value "${kernel}sched_tunable_scaling" "0"
-if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "${SCHED_PERIOD_THROUGHPUT}"
-fi
-if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
-    write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
-fi
-if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
-    write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
-fi
-if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "0"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
-    write "${kernel}sched_min_task_util_for_colocation" "0"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
-    write "${kernel}sched_min_task_util_for_boost" "0"
-fi
+[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${SCHED_PERIOD_THROUGHPUT}"
+[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
+[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
+[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "0"
+[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
+[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "128"
 write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_cstate_aware" ]]; then
-    write "${kernel}sched_cstate_aware" "1"
-fi
+[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 write "${kernel}printk_devkmsg" "off"
-if [[ -e "${kernel}timer_migration" ]]; then
-    write "${kernel}timer_migration" "0"
-fi
-if [[ -e "${kernel}sched_boost" ]]; then
-    lock_value "${kernel}sched_boost" "1"
-fi
+[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
+[[ -e "${kernel}sched_boost" ]] && lock_value "${kernel}sched_boost" "1"
 if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]]; then
     write "/sys/devices/system/cpu/eas/enable" "2"
 else
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
-if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-    write "${kernel}sched_walt_rotate_big_tasks" "1"
-fi
-if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
-fi
-if [[ -e "${kernel}sched_boost_top_app" ]]; then
-    write "${kernel}sched_boost_top_app" "1"
-fi
-if [[ -e "${kernel}sched_init_task_load" ]]; then
-    write "${kernel}sched_init_task_load" "30"
-fi
-if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    lock_value "${kernel}sched_migration_fixup" "0"
-fi
-if [[ -e "${kernel}sched_energy_aware" ]]; then
-    write "${kernel}sched_energy_aware" "1"
-fi
-if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
-    write "${kernel}hung_task_timeout_secs" "0"
-fi
-if [[ -e "${kernel}sysrq" ]]; then
-    write "${kernel}sysrq" "0"
-fi
-if [[ -e "/sys/power/mem_sleep" ]]; then
-    write "/sys/power/mem_sleep" "s2idle"
-fi
-if [[ -e "${kernel}sched_conservative_pl" ]]; then
-    write "${kernel}sched_conservative_pl" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
-    lock_value "/sys/devices/system/cpu/sched/sched_boost" "1"
-fi
-if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
-    lock_value "/sys/kernel/ems/eff_mode" "0"
-fi
-if [[ -e "/sys/module/opchain/parameters/chain_on" ]]; then
-    lock_value "/sys/module/opchain/parameters/chain_on" "0"
-fi
-if [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]]; then
-    lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
-    lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
-fi
+[[ -e "${kernel}sched_walt_rotate_big_tasks" ]] && write "${kernel}sched_walt_rotate_big_tasks" "1"
+[[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+[[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
+[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "30"
+[[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
+[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
+[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
+[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
+[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
+[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
+[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && lock_value "/sys/devices/system/cpu/sched/sched_boost" "1"
+[[ -e "/sys/kernel/ems/eff_mode" ]] && lock_value "/sys/kernel/ems/eff_mode" "0"
+[[ -e "/sys/module/opchain/parameters/chain_on" ]] && lock_value "/sys/module/opchain/parameters/chain_on" "0"
+[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_is_big_little" "1" 
 elif [[ -e "${kernel}sched_is_big_little" ]]; then
@@ -3571,15 +3277,11 @@ elif [[ -e "${kernel}sched_is_big_little" ]]; then
 fi
 if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_sync_hint_enable" "0"
-elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
+elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then 
       write "${kernel}sched_sync_hint_enable" "1"
 fi
-if [[ -e "${kernel}sched_initial_task_util" ]]; then
-    write "${kernel}sched_initial_task_util" "0"
-fi
-if [[ -d "/sys/module/memplus_core/" ]]; then
-    write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
-fi
+[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
+[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
     lock_value "${bcl_md}" "0"
 done
@@ -3590,100 +3292,40 @@ kmsg3 ""
 }
 
 sched_battery(){
-if [[ -e "${kernel}sched_child_runs_first" ]]; then
-    write "${kernel}sched_child_runs_first" "0"
-fi
-if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
-    write "${kernel}perf_cpu_time_max_percent" "3"
-fi
-if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
-    write "${kernel}sched_autogroup_enabled" "1"
-fi
-if [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
-fi
-if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
-fi
+[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "3"
+[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
+[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
+[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
 lock_value "${kernel}sched_tunable_scaling" "0"
-if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "${SCHED_PERIOD_BATTERY}"
-fi
-if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
-    write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
-fi
-if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
-    write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
-fi
-if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "200000"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
-    write "${kernel}sched_min_task_util_for_colocation" "0"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
-    write "${kernel}sched_min_task_util_for_boost" "0"
-fi
+[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${SCHED_PERIOD_BATTERY}"
+[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
+[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
+[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
+[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
+[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "192"
 write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_cstate_aware" ]]; then
-    write "${kernel}sched_cstate_aware" "1"
-fi
+[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 write "${kernel}printk_devkmsg" "off"
-if [[ -e "${kernel}timer_migration" ]]; then
-    write "${kernel}timer_migration" "1"
-fi
-if [[ -e "${kernel}sched_boost" ]]; then
-    write "${kernel}sched_boost" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "1"
-fi
-if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-    write "${kernel}sched_walt_rotate_big_tasks" "1"
-fi
-if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
-fi
-if [[ -e "${kernel}sched_boost_top_app" ]]; then
-    write "${kernel}sched_boost_top_app" "1"
-fi
-if [[ -e "${kernel}sched_init_task_load" ]]; then
-    write "${kernel}sched_init_task_load" "15"
-fi
-if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    lock_value "${kernel}sched_migration_fixup" "0"
-fi
-if [[ -e "${kernel}sched_energy_aware" ]]; then
-    write "${kernel}sched_energy_aware" "1"
-fi
-if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
-    write "${kernel}hung_task_timeout_secs" "0"
-fi
-if [[ -e "${kernel}sysrq" ]]; then
-    write "${kernel}sysrq" "0"
-fi
-if [[ -e "/sys/power/mem_sleep" ]]; then
-    write "/sys/power/mem_sleep" "deep"
-fi
-if [[ -e "${kernel}sched_conservative_pl" ]]; then
-    write "${kernel}sched_conservative_pl" "1"
-fi
-if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
-    write "/sys/devices/system/cpu/sched/sched_boost" "0"
-fi
-if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
-    lock_value "/sys/kernel/ems/eff_mode" "0"
-fi
-if [[ -e "/sys/module/opchain/parameters/chain_on" ]]; then
-    lock_value "/sys/module/opchain/parameters/chain_on" "0"
-fi
-if [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]]; then
-    lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
-    lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
-fi
+[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "1"
+[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
+[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "1"
+[[ -e "${kernel}sched_walt_rotate_big_tasks" ]] && write "${kernel}sched_walt_rotate_big_tasks" "1"
+[[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+[[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
+[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "15"
+[[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
+[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
+[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
+[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
+[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "deep"
+[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "1"
+[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
+[[ -e "/sys/kernel/ems/eff_mode" ]] && lock_value "/sys/kernel/ems/eff_mode" "0"
+[[ -e "/sys/module/opchain/parameters/chain_on" ]] && lock_value "/sys/module/opchain/parameters/chain_on" "0"
+[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_is_big_little" "1" 
 elif [[ -e "${kernel}sched_is_big_little" ]]; then
@@ -3694,12 +3336,8 @@ if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]
 elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
       write "${kernel}sched_sync_hint_enable" "1"
 fi
-if [[ -e "${kernel}sched_initial_task_util" ]]; then
-    write "${kernel}sched_initial_task_util" "0"
-fi
-if [[ -d "/sys/module/memplus_core/" ]]; then
-    write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
-fi
+[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
+[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
     lock_value "${bcl_md}" "0"
 done
@@ -3710,102 +3348,44 @@ kmsg3 ""
 }
 
 sched_gaming(){
-if [[ -e "${kernel}sched_child_runs_first" ]]; then
-    write "${kernel}sched_child_runs_first" "0"
-fi
-if [[ -e "${kernel}perf_cpu_time_max_percent" ]]; then
-    write "${kernel}perf_cpu_time_max_percent" "25"
-fi
-if [[ -e "${kernel}sched_autogroup_enabled" ]]; then
-    write "${kernel}sched_autogroup_enabled" "0"
-fi
-if [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
-fi
-if [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]]; then
-    write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
-fi
+[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "25"
+[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
+[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
+[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
 lock_value "${kernel}sched_tunable_scaling" "0"
-if [[ -e "${kernel}sched_latency_ns" ]]; then
-    write "${kernel}sched_latency_ns" "${SCHED_PERIOD_THROUGHPUT}"
-fi
-if [[ -e "${kernel}sched_min_granularity_ns" ]]; then
-    write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
-fi
-if [[ -e "${kernel}sched_wakeup_granularity_ns" ]]; then
-    write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
-fi
-if [[ -e "${kernel}sched_migration_cost_ns" ]]; then
-    write "${kernel}sched_migration_cost_ns" "0"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_colocation" ]]; then
-    write "${kernel}sched_min_task_util_for_colocation" "0"
-fi
-if [[ -e "${kernel}sched_min_task_util_for_boost" ]]; then
-    write "${kernel}sched_min_task_util_for_boost" "0"
-fi
+[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${SCHED_PERIOD_THROUGHPUT}"
+[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
+[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
+[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "0"
+[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
+[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "128"
 write "${kernel}sched_schedstats" "0"
-if [[ -e "${kernel}sched_cstate_aware" ]]; then
-    write "${kernel}sched_cstate_aware" "1"
-fi
+[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 write "${kernel}printk_devkmsg" "off"
-if [[ -e "${kernel}timer_migration" ]]; then
-    write "${kernel}timer_migration" "0"
-fi
-if [[ -e "${kernel}sched_boost" ]]; then
-    lock_value "${kernel}sched_boost" "1"
-fi
+[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
+[[ -e "${kernel}sched_boost" ]] && lock_value "${kernel}sched_boost" "1"
 if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]]; then
     write "/sys/devices/system/cpu/eas/enable" "2"
 else
     write "/sys/devices/system/cpu/eas/enable" "1"
 fi
-if [[ -e "${kernel}sched_walt_rotate_big_tasks" ]]; then
-    write "${kernel}sched_walt_rotate_big_tasks" "1"
-fi
-if [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]]; then
-    write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
-fi
-if [[ -e "${kernel}sched_boost_top_app" ]]; then
-    write "${kernel}sched_boost_top_app" "1"
-fi
-if [[ -e "${kernel}sched_init_task_load" ]]; then
-    write "${kernel}sched_init_task_load" "30"
-fi
-if [[ -e "${kernel}sched_migration_fixup" ]]; then
-    lock_value "${kernel}sched_migration_fixup" "0"
-fi
-if [[ -e "${kernel}sched_energy_aware" ]]; then
-    write "${kernel}sched_energy_aware" "1"
-fi
-if [[ -e "${kernel}hung_task_timeout_secs" ]]; then
-    write "${kernel}hung_task_timeout_secs" "0"
-fi
-if [[ -e "${kernel}sysrq" ]]; then
-    write "${kernel}sysrq" "0"
-fi
-if [[ -e "/sys/power/mem_sleep" ]]; then
-    write "/sys/power/mem_sleep" "s2idle"
-fi
-if [[ -e "${kernel}sched_conservative_pl" ]]; then
-    write "${kernel}sched_conservative_pl" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]]; then
-    lock_value "/sys/devices/system/cpu/sched/sched_boost" "1"
-fi
-if [[ -e "/sys/kernel/ems/eff_mode" ]]; then
-    lock_value "/sys/kernel/ems/eff_mode" "0"
-fi
-if [[ -e "/sys/module/opchain/parameters/chain_on" ]]; then
-    lock_value "/sys/module/opchain/parameters/chain_on" "0"
-fi
-if [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]]; then
-    lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-fi
-if [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]]; then
-    lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
-fi
+[[ -e "${kernel}sched_walt_rotate_big_tasks" ]] && write "${kernel}sched_walt_rotate_big_tasks" "1"
+[[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
+[[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
+[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "30"
+[[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
+[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
+[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
+[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
+[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
+[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
+[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && lock_value "/sys/devices/system/cpu/sched/sched_boost" "1"
+[[ -e "/sys/kernel/ems/eff_mode" ]] && lock_value "/sys/kernel/ems/eff_mode" "0"
+[[ -e "/sys/module/opchain/parameters/chain_on" ]] && lock_value "/sys/module/opchain/parameters/chain_on" "0"
+[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_is_big_little" "1" 
 elif [[ -e "${kernel}sched_is_big_little" ]]; then
@@ -3816,12 +3396,8 @@ if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]
 elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
       write "${kernel}sched_sync_hint_enable" "1"
 fi
-if [[ -e "${kernel}sched_initial_task_util" ]]; then
-    write "${kernel}sched_initial_task_util" "0"
-fi
-if [[ -d "/sys/module/memplus_core/" ]]; then
-    write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
-fi
+[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
+[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
     lock_value "${bcl_md}" "0"
 done
@@ -4006,48 +3582,15 @@ fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
 lock_value "${vm}watermark_scale_factor" "30"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
-    write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
-fi
-if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
-    write "${vm}reap_mem_on_sigkill" "1"
-fi
-if [[ -e "${vm}swap_ratio" ]]; then
-    write "${vm}swap_ratio" "100"
-fi
-if [[ -e "${vm}oom_dump_tasks" ]]; then
-    write "${vm}oom_dump_tasks" "0"
-fi
-
-# Tune lmk_minfree
-if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}parameters/minfree" "${minfree}"
-fi
-
-# Enable oom_reaper
-if [[ -e "${lmk}parameters/oom_reaper" ]]; then
-    write "${lmk}parameters/oom_reaper" "1"
-fi
-	
-# Disable lmk_fast_run
-if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
-    write "${lmk}parameters/lmk_fast_run" "0"
-fi
-
-# Disable adaptive_lmk
-if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
-    write "${lmk}parameters/enable_adaptive_lmk" "0"
-fi
-  
-# Tune vm_extra_free_kbytes
-if [[ -e "${vm}extra_free_kbytes" ]]; then
-    write "${vm}extra_free_kbytes" "${efk}"
-fi
-
-# Huge shrinker (LMK) calling interval
-if [[ -e "${lmk}parameters/cost" ]]; then
-    lock_value "${lmk}parameters/cost" "4096"
-fi
+[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
+[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
+[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
+[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
+[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
+[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
+[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
+[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
+[[ -e "${lmk}parameters/cost" ]] && lock_value "${lmk}parameters/cost" "4096"
 
 kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 kmsg3 ""
@@ -4080,38 +3623,15 @@ fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
 lock_value "${vm}watermark_scale_factor" "30"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
-    write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
-fi
-if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
-    write "${vm}reap_mem_on_sigkill" "1"
-fi
-if [[ -e "${vm}swap_ratio" ]]; then
-    write "${vm}swap_ratio" "100"
-fi
-if [[ -e "${vm}oom_dump_tasks" ]]; then
-    write "${vm}oom_dump_tasks" "0"
-fi
-
-if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}parameters/minfree" "${minfree}"
-fi
-
-if [[ -e "${lmk}parameters/oom_reaper" ]]; then
-    write "${lmk}parameters/oom_reaper" "1"
-fi
-	
-if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
-    write "${lmk}parameters/lmk_fast_run" "1"
-fi
-
-if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
-    write "${lmk}parameters/enable_adaptive_lmk" "0"
-fi
-
-if [[ -e "${lmk}parameters/cost" ]]; then
-    lock_value "${lmk}parameters/cost" "4096"
-fi
+[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
+[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
+[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
+[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
+[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
+[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
+[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
+[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
+[[ -e "${lmk}parameters/cost" ]] && lock_value "${lmk}parameters/cost" "4096"
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
@@ -4144,42 +3664,15 @@ fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "150"
 lock_value "${vm}watermark_scale_factor" "30"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
-    write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
-fi
-if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
-    write "${vm}reap_mem_on_sigkill" "1"
-fi
-if [[ -e "${vm}swap_ratio" ]]; then
-write "${vm}swap_ratio" "100"
-fi
-if [[ -e "${vm}oom_dump_tasks" ]]; then
-    write "${vm}oom_dump_tasks" "0"
-fi
-
-if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}parameters/minfree" "${minfree}"
-fi
-
-if [[ -e "${lmk}parameters/oom_reaper" ]]; then
-    write "${lmk}parameters/oom_reaper" "1"
-fi
-	
-if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
-    write "${lmk}parameters/lmk_fast_run" "1"
-fi
-
-if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
-    write "${lmk}parameters/enable_adaptive_lmk" "0"
-fi
-
-if [[ -e "${vm}extra_free_kbytes" ]]; then
-    write "${vm}extra_free_kbytes" "${efk}"
-fi
-
-if [[ -e "${lmk}parameters/cost" ]]; then
-    lock_value "${lmk}parameters/cost" "4096"
-fi
+[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
+[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
+[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
+[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
+[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
+[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
+[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
+[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
+[[ -e "${lmk}parameters/cost" ]] && lock_value "${lmk}parameters/cost" "4096"
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
@@ -4212,42 +3705,15 @@ fi
 write "${vm}laptop_mode" "1"
 write "${vm}vfs_cache_pressure" "60"
 lock_value "${vm}watermark_scale_factor" "30"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
-    write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
-fi
-if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
-    write "${vm}reap_mem_on_sigkill" "1"
-fi
-if [[ -e "${vm}swap_ratio" ]]; then
-    write "${vm}swap_ratio" "100"
-fi
-if [[ -e "${vm}oom_dump_tasks" ]]; then
-    write "${vm}oom_dump_tasks" "0"
-fi
-
-if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}parameters/minfree" "${minfree}"
-fi
-
-if [[ -e "${lmk}parameters/oom_reaper" ]]; then
-    write "${lmk}parameters/oom_reaper" "1"
-fi
-
-if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
-    write "${lmk}parameters/lmk_fast_run" "1"
-fi
-
-if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
-    write "${lmk}parameters/enable_adaptive_lmk" "0"
-fi
-
-if [[ -e "${vm}extra_free_kbytes" ]]; then
-    write "${vm}extra_free_kbytes" "${efk}"
-fi
-
-if [[ -e "${lmk}parameters/cost" ]]; then
-    lock_value "${lmk}parameters/cost" "4096"
-fi
+[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
+[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
+[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
+[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
+[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
+[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
+[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
+[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
+[[ -e "${lmk}parameters/cost" ]] && lock_value "${lmk}parameters/cost" "4096"
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
@@ -4280,42 +3746,16 @@ fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "500"
 lock_value "${vm}watermark_scale_factor" "30"
-if [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]]; then
-    write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
-fi
-if [[ -e "${vm}reap_mem_on_sigkill" ]]; then
-    write "${vm}reap_mem_on_sigkill" "1"
-fi
-if [[ -e "${vm}swap_ratio" ]]; then
-    write "${vm}swap_ratio" "100"
-fi
-if [[ -e "${vm}oom_dump_tasks" ]]; then
-    write "${vm}oom_dump_tasks" "0"
-fi
-
-if [[ -e "${lmk}parameters/minfree" ]]; then
-    write "${lmk}parameters/minfree" "${minfree}"
-fi
-
-if [[ -e "${lmk}parameters/oom_reaper" ]]; then
-    write "${lmk}parameters/oom_reaper" "1"
-fi
-
-if [[ -e "${lmk}parameters/lmk_fast_run" ]]; then
-    write "${lmk}parameters/lmk_fast_run" "1"
-fi
-
-if [[ -e "${lmk}parameters/enable_adaptive_lmk" ]]; then
-    write "${lmk}parameters/enable_adaptive_lmk" "1"
-fi
-
-if [[ -e "${vm}extra_free_kbytes" ]]; then
-    write "${vm}extra_free_kbytes" "${efk}"
-fi
-
-if [[ -e "${lmk}parameters/cost" ]]; then
-    lock_value "${lmk}parameters/cost" "4096"
-fi
+[[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
+[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
+[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
+[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
+[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
+[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
+[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
+[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
+[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
+[[ -e "${lmk}parameters/cost" ]] && lock_value "${lmk}parameters/cost" "4096"
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
@@ -5051,7 +4491,7 @@ cgroup_bbn_opt(){
     # Heavy Scene Boost
     # boost app boot process, zygote--com.xxxx.xxx
     # boost android process pool, usap--com.xxxx.xxx
-    unpin_proc "zygote64|zygote|usap32|usap64"
+    unpin_proc "zygote|zygote64|usap32|usap64"
     
     # busybox fork from magiskd
     pin_proc_on_mid "magiskd"
@@ -5075,149 +4515,91 @@ fi
 
 get_all(){
 get_gpu_dir
-
 if [[ "${qcom}" != "true" ]]; then
     is_mtk
 fi
-
 if [[ "${mtk}" != "true" ]] && [[ "${qcom}" != "true" ]]; then
     is_exynos
 fi
-
-check_qcom
-
 if [[ "${qcom}" != "true" ]] && [[ "${exynos}" != "true" ]]; then
     check_ppm_support
 fi
-
 if [[ "${qcom}" == "true" ]]; then
     define_gpu_pl
 fi
-
 get_gpu_max
-
 get_gpu_min
-
 get_cpu_gov
-
 get_gpu_gov
-
 get_max_cpu_clk
-
 get_min_cpu_clk
-
 get_cpu_min_max_mhz
-
 get_gpu_min_max
-
 get_gpu_min_max_mhz
-
 get_soc_mf
-
 get_soc
-
 get_sdk
-
 get_arch
-
 get_andro_vs
-
 get_dvc_cdn
-
 get_root
-
 detect_cpu_sched
-
 get_kern_info
-
 get_ram_info
-
 get_batt_pctg
-
 get_ktsr_info
-
 get_batt_tmp
-
 get_gpu_mdl
-
 get_drvs_info
-
 get_max_rr
-
 get_batt_hth
-
 get_batt_sts
-
 get_batt_cpct
-
 get_bb_ver
-
 get_rom_info
-
 get_slnx_stt
-
 if [[ "${qcom}" == "true" ]]; then
     setup_adreno_gpu_thrtl
 fi
-
 get_gpu_load
-
 get_nr_cores
-
 get_dvc_brnd
-
 check_one_ui
-
 get_bt_dvc
-
 get_uptime
-
 get_sql_info
-
 is_big_little
-
 get_cpu_load
 }
 
 apply_all(){
 print_info
-
 stop_services
-
 if [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]] || [[ "${ktsr_prof_en}" == "latency" ]]; then
     thermal_default
 elif [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
       thermal_dynamic
 fi
-
 if [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]]; then
     enable_core_ctl
 else
     disable_core_ctl
 fi
-
 config_cpuset
-
 if [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
     enable_devfreq_boost
 else
     disable_devfreq_boost
 fi
-
 boost_${ktsr_prof_en}
-
 io_${ktsr_prof_en}
-
 cpu_${ktsr_prof_en}
-
 if [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
     enable_kvb
 else
     disable_kvb
 fi
-
 bring_all_cores
-
 if [[ "${ktsr_prof_en}" == "latency" ]] || [[ "${ktsr_prof_en}" == "balanced" ]]; then
     misc_cpu_default
 elif [[ "${ktsr_prof_en}" == "battery" ]]; then
@@ -5225,107 +4607,71 @@ elif [[ "${ktsr_prof_en}" == "battery" ]]; then
 else
     misc_cpu_max_pwr
 fi
-
 disable_ppm
-
 if [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]]; then
     cpu_clk_default
 else
     cpu_clk_max
 fi
-
 hmp_${ktsr_prof_en}
-
 gpu_${ktsr_prof_en}
-
 schedtune_${ktsr_prof_en}
-
 sched_ft_${ktsr_prof_en}
-
 disable_crc
-
 sched_${ktsr_prof_en}
-
 enable_fp_boost
-
 uclamp_${ktsr_prof_en}
-
 config_blkio
-
 config_fs
-
 config_dyn_fsync
-
 if [[ "${ktsr_prof_en}" != "battery" ]]; then
     ufs_default
 else
     ufs_pwr_saving
 fi
-
 vm_lmk_${ktsr_prof_en}
-
 disable_msm_thermal
-
 if [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]]; then
     enable_pewq
 else
     disable_pewq
 fi
-
 if [[ "${ktsr_prof_en}" == "battery" ]]; then
     enable_mcps
 else
     disable_mcps
 fi
-
 fix_dt2w
-
 if [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
     enable_tb
 else
     disable_tb
 fi
-
 config_tcp
-
 if [[ "${ktsr_prof_en}" == "battery" ]]; then
     enable_kern_batt_saver
 else
     disable_kern_batt_saver
 fi
-
-#if [[ "${ktsr_prof_en}" != "battery" ]]; then
-#    enable_hp_snd
-#else
-#    disable_hp_snd
-#fi
-
 if [[ "${ktsr_prof_en}" == "battery" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "latency" ]]; then
     enable_lpm
 else
     disable_lpm
 fi
-
 if [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]]; then
     enable_pm2_idle_mode
 else
     disable_pm2_idle_mode
 fi
-
 if [[ "${ktsr_prof_en}" == "battery" ]]; then
     enable_lcd_prdc
 else
     disable_lcd_prdc
 fi
-
 enable_usb_fast_chrg
-
 enable_sam_fast_chrg
-
 disable_spd_freqs
-
 config_pwr_spd
-
 if [[ "${ktsr_prof_en}" == "balanced" ]]; then
     emmc_clk_sclg_balanced
 elif [[ "${ktsr_prof_en}" == "battery" ]]; then
@@ -5333,9 +4679,7 @@ elif [[ "${ktsr_prof_en}" == "battery" ]]; then
 elif [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
       disable_emmc_clk_sclg
 fi
-
 disable_debug
-
 if [[ "${ktsr_prof_en}" != "battery" ]]; then
     perfmgr_default
 else
@@ -5345,48 +4689,33 @@ fi
 
 apply_all_auto(){
 print_info
-
 stop_services
-
 if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     thermal_default
 
 elif [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
       thermal_dynamic
 fi
-
 if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
     enable_devfreq_boost
 else
     disable_devfreq_boost
 fi
-
 if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     enable_core_ctl
 else
     disable_core_ctl
 fi
-
 config_cpuset
-
 boost_$(getprop kingauto.prof)
-
 io_$(getprop kingauto.prof)
-
-boost_$(getprop kingauto.prof)
-
-io_$(getprop kingauto.prof)
-
 cpu_$(getprop kingauto.prof)
-
 if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
     enable_kvb
 else
     disable_kvb
 fi
-
 bring_all_cores
-
 if [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
     misc_cpu_default
 
@@ -5395,107 +4724,71 @@ elif [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 else
     misc_cpu_max_pwr
 fi
-
 disable_ppm
-
 if [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
     cpu_clk_default
 else
     cpu_clk_max
 fi
-
 hmp_$(getprop kingauto.prof)
-
 gpu_$(getprop kingauto.prof)
-
 schedtune_$(getprop kingauto.prof)
-
 sched_ft_$(getprop kingauto.prof)
-
 disable_crc
-
 sched_$(getprop kingauto.prof)
-
 enable_fp_boost
-
 uclamp_$(getprop kingauto.prof)
-
 config_blkio
-
 config_fs
-
 config_dyn_fsync
-
 if [[ "$(getprop kingauto.prof)" != "battery" ]]; then
     ufs_default
 else
     ufs_pwr_saving
 fi
-
 vm_lmk_$(getprop kingauto.prof)
-
 disable_msm_thermal
-
 if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     enable_pewq
 else
     disable_pewq
 fi
-
 if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     enable_mcps
 else
     disable_mcps
 fi
-
 fix_dt2w
-
 if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
     enable_tb
 else
     disable_tb
 fi
-
 config_tcp
-
 if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     enable_kern_batt_saver
 else
     disable_kern_batt_saver
 fi
-
-#if [[ "$(getprop kingauto.prof)" != "battery" ]]; then
-#    enable_hp_snd
-#else
-#    disable_hp_snd
-#fi
-
 if [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
     enable_lpm
 else
     disable_lpm
 fi
-
 if [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
     enable_pm2_idle_mode
 else
     disable_pm2_idle_mode
 fi
-
 if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     enable_lcd_prdc
 else
     disable_lcd_prdc
 fi
-
 enable_usb_fast_chrg
-
 enable_sam_fast_chrg
-
 disable_spd_freqs
-
 config_pwr_spd
-
 if [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
     emmc_clk_sclg_balanced
 elif [[ "$(getprop kingauto.prof)" == "battery" ]]; then
@@ -5503,9 +4796,7 @@ elif [[ "$(getprop kingauto.prof)" == "battery" ]]; then
 elif [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
       disable_emmc_clk_sclg
 fi
-
 disable_debug
-
 if [[ "$(getprop kingauto.prof)" != "battery" ]]; then
     perfmgr_default
 else
@@ -5540,6 +4831,18 @@ apx1="/apex/com.android.art/javalib"
 apx2="/apex/com.android.runtime/javalib"
 perfmgr="/proc/perfmgr/"
 fscc_file_list=""
+one_ui=false
+samsung=false
+qcom=false
+exynos=false
+mtk=false
+total_ram="N/A (Please install busybox first!)"
+avail_ram="N/A (Please install busybox first!)"
+bb_ver="N/A (Please install busybox first!)"
+sql_ver="N/A (Install SQLite3 first!)"
+sql_bd_dt="N/A (Install SQLite3 first!)"
+ppm=false
+big_little=false
 
 latency(){
 init=$(date +%s)
