@@ -332,7 +332,7 @@ define_gpu_pl(){
 gpu_num_pl=$(cat "${gpu}num_pwrlevels")
 
 # Fetch the lower GPU power level
-gpu_min_pl=$(cat "${gpu}min_pwrlevel")
+gpu_min_pl=$((gpu_num_pl - 1))
 
 # Fetch the higher GPU power level
 gpu_max_pl=$(cat "${gpu}max_pwrlevel")
@@ -1865,19 +1865,20 @@ gpu_latency(){
       fi
 	
 if [[ "${qcom}" == "true" ]]; then
-    write "${gpu}throttling" "1"
+    write "${gpu}throttling" "0"
     write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
     write "${gpu}devfreq/adrenoboost" "0"
     write "${gpu}force_no_nap" "0"
-    write "${gpu}bus_split" "1"
+    write "${gpu}bus_split" "0"
     write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
     write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-    write "${gpu}default_pwrlevel" "$((gpu_min_pl - 2))"
+    write "${gpu}min_pwrlevel" "$((gpu_min_pl - 2))"
     write "${gpu}force_bus_on" "0"
     write "${gpu}force_clk_on" "0"
     write "${gpu}force_rail_on" "0"
-    write "${gpu}idle_timer" "150"
+    write "${gpu}idle_timer" "100"
     write "${gpu}pwrnap" "1"
+    write "${gpu}pwrscale" "1"
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
@@ -2005,12 +2006,13 @@ if [[ "${qcom}" == "true" ]]; then
     write "${gpu}bus_split" "1"
     write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
     write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-    write "${gpu}default_pwrlevel" "$((gpu_min_pl - 1))"
+    write "${gpu}min_pwrlevel" "$((gpu_min_pl - 1))"
     write "${gpu}force_bus_on" "0"
     write "${gpu}force_clk_on" "0"
     write "${gpu}force_rail_on" "0"
-    write "${gpu}idle_timer" "100"
+    write "${gpu}idle_timer" "80"
     write "${gpu}pwrnap" "1"
+    write "${gpu}pwrscale" "1"
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        lock_value "${gpui}gpu_max_clock" "${gpu_max_freq}"
@@ -2142,12 +2144,13 @@ if [[ "${qcom}" == "true" ]]; then
     write "${gpu}bus_split" "0"
     write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
     write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-    write "${gpu}default_pwrlevel" "0"
-    write "${gpu}force_bus_on" "0"
+    write "${gpu}default_pwrlevel" "${gpu_max_pl}"
+    write "${gpu}force_bus_on" "1"
     write "${gpu}force_clk_on" "1"
     write "${gpu}force_rail_on" "1"
-    write "${gpu}idle_timer" "1000"
+    write "${gpu}idle_timer" "10000"
     write "${gpu}pwrnap" "1"
+    write "${gpu}pwrscale" "1"
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
@@ -2271,12 +2274,13 @@ if [[ "${qcom}" == "true" ]]; then
     write "${gpu}force_no_nap" "0"
     write "${gpu}bus_split" "1"
     write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-    write "${gpu}default_pwrlevel" "${gpu_min_pl}"
+    write "${gpu}min_pwrlevel" "${gpu_min_pl}"
     write "${gpu}force_bus_on" "0"
     write "${gpu}force_clk_on" "0"
     write "${gpu}force_rail_on" "0"
     write "${gpu}idle_timer" "39"
     write "${gpu}pwrnap" "1"
+    write "${gpu}pwrscale" "1"
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
@@ -2410,12 +2414,13 @@ if [[ "${qcom}" == "true" ]]; then
     write "${gpu}bus_split" "0"
     lock_value "${gpu}devfreq/max_freq" "${gpu_max_freq}"
     lock_value "${gpu}devfreq/min_freq" "${gpu_max}"
-    write "${gpu}default_pwrlevel" "${gpu_max_pl}"
+    write "${gpu}min_pwrlevel" "${gpu_max_pl}"
     write "${gpu}force_bus_on" "1"
     write "${gpu}force_clk_on" "1"
     write "${gpu}force_rail_on" "1"
     write "${gpu}idle_timer" "1000000"
     write "${gpu}pwrnap" "0"
+    write "${gpu}pwrscale" "0"
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "0"
        lock_value "${gpui}gpu_max_clock" "${gpu_max_freq}"
@@ -3581,7 +3586,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
-lock_value "${vm}watermark_scale_factor" "30"
+lock_value "${vm}watermark_scale_factor" "1"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 [[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 [[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
@@ -3622,7 +3627,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
-lock_value "${vm}watermark_scale_factor" "30"
+lock_value "${vm}watermark_scale_factor" "1"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 [[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 [[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
@@ -3663,7 +3668,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "150"
-lock_value "${vm}watermark_scale_factor" "30"
+lock_value "${vm}watermark_scale_factor" "1"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 [[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 [[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
@@ -3704,7 +3709,7 @@ else
 fi
 write "${vm}laptop_mode" "1"
 write "${vm}vfs_cache_pressure" "60"
-lock_value "${vm}watermark_scale_factor" "30"
+lock_value "${vm}watermark_scale_factor" "1"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 [[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 [[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
@@ -3745,7 +3750,7 @@ else
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "500"
-lock_value "${vm}watermark_scale_factor" "30"
+lock_value "${vm}watermark_scale_factor" "1"
 [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 [[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
