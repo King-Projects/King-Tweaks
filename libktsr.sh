@@ -13,7 +13,7 @@ KDBG="/data/media/0/KTSR/KTSR_DBG.log"
 
 # Log in white and continue (unnecessary)
 kmsg(){
-	echo -e "[*] $@" >> "${KLOG}"
+	echo -e "["$(date | awk -F ' ' '{print $4}')"]: [*] $@" >> "${KLOG}"
 }
 
 kmsg1(){
@@ -476,15 +476,15 @@ detect_cpu_sched(){
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   if [[ "$(grep sched "${cpu}scaling_available_governors")" ]]; then
-      cpu_sched=EAS
+      cpu_sched="EAS"
 
   elif [[ "$(grep util "${cpu}scaling_available_governors")" ]]; then
-        cpu_sched=EAS
+        cpu_sched="EAS"
 
   elif [[ "$(grep interactive "${cpu}scaling_available_governors")" ]]; then
-        cpu_sched=HMP
+        cpu_sched="HMP"
   else
-      cpu_sched=Unknown
+      cpu_sched="Unknown"
   fi
 done
 }
@@ -583,25 +583,25 @@ else
 fi
 
 if [[ "${batt_hth}" == "1" ]]; then
-    batt_hth=Unknown
+    batt_hth="Unknown"
 
 elif [[ "${batt_hth}" == "2" ]]; then
-      batt_hth=Good
+      batt_hth="Good"
 
 elif [[ "${batt_hth}" == "3" ]]; then
-      batt_hth=Overheat
+      batt_hth="Overheat"
 
 elif [[ "${batt_hth}" == "4" ]]; then
-      batt_hth=Dead
+      batt_hth="Dead"
 
 elif [[ "${batt_hth}" == "5" ]]; then
-      batt_hth=OV
+      batt_hth="OV"
 
 elif [[ "${batt_hth}" == "6" ]]; then
-      batt_hth=UF
+      batt_hth="UF"
 
 elif [[ "${batt_hth}" == "7" ]]; then
-      batt_hth=Cold               
+      batt_hth="Cold"
 else
     batt_hth=$batt_hth
 fi
@@ -1523,32 +1523,32 @@ done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
-     write "${governor}/up_rate_limit_us" "500"
-     write "${governor}/down_rate_limit_us" "20000"
+     write "${governor}/up_rate_limit_us" "20000"
+     write "${governor}/down_rate_limit_us" "500"
      write "${governor}/pl" "1"
-     write "${governor}/iowait_boost_enable" "1"
-     write "${governor}/rate_limit_us" "20000"
-     write "${governor}/hispeed_load" "80"
+     write "${governor}/iowait_boost_enable" "0"
+     write "${governor}/rate_limit_us" "25000"
+     write "${governor}/hispeed_load" "86"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
-     write "${governor}/up_rate_limit_us" "500"
-     write "${governor}/down_rate_limit_us" "20000"
+     write "${governor}/up_rate_limit_us" "20000"
+     write "${governor}/down_rate_limit_us" "500"
      write "${governor}/pl" "1"
-     write "${governor}/iowait_boost_enable" "1"
-     write "${governor}/rate_limit_us" "20000"
-     write "${governor}/hispeed_load" "80"
+     write "${governor}/iowait_boost_enable" "0"
+     write "${governor}/rate_limit_us" "25000"
+     write "${governor}/hispeed_load" "86"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
-     write "${governor}/timer_rate" "10000"
+     write "${governor}/timer_rate" "20000"
      write "${governor}/boost" "0"
      write "${governor}/io_is_busy" "1"
-     write "${governor}/timer_slack" "20000"
+     write "${governor}/timer_slack" "24000"
      write "${governor}/input_boost" "0"
      write "${governor}/use_migration_notif" "0" 
      write "${governor}/ignore_hispeed_on_notif" "1"
@@ -1558,7 +1558,7 @@ do
      write "${governor}/fast_ramp_down" "0"
      write "${governor}/sampling_rate" "20000"
      write "${governor}/sampling_rate_min" "20000"
-     write "${governor}/min_sample_time" "20000"
+     write "${governor}/min_sample_time" "25000"
      write "${governor}/go_hispeed_load" "80"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
@@ -2373,7 +2373,7 @@ gpu_gaming(){
 	    avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 	    # Attempt to set the governor in this order
-	    for governor in msm-adreno-tz simple_ondemand ondemand
+	    for governor in performance msm-adreno-tz simple_ondemand ondemand
 	    do
 		  # Once a matching governor is found, set it and break
 		  if [[ "${avail_govs}" == *"$governor"* ]]
@@ -3123,7 +3123,7 @@ fi
 sched_latency(){
 # Tweak kernel settings to improve overall performance
 [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
-[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "4"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "5"
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
@@ -3181,7 +3181,7 @@ kmsg3 ""
 
 sched_balanced(){
 [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
-[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "6"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "10"
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] &&.write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
@@ -3573,7 +3573,7 @@ sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "25"
-write "${vm}dirty_expire_centisecs" "4500"
+write "${vm}dirty_expire_centisecs" "5000"
 write "${vm}dirty_writeback_centisecs" "5000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
@@ -3615,8 +3615,8 @@ sync
 write "${vm}drop_caches" "2"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "25"
-write "${vm}dirty_expire_centisecs" "3000"
-write "${vm}dirty_writeback_centisecs" "4000"
+write "${vm}dirty_expire_centisecs" "5500"
+write "${vm}dirty_writeback_centisecs" "5500"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
@@ -3656,7 +3656,7 @@ sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "4000"
+write "${vm}dirty_expire_centisecs" "5000"
 write "${vm}dirty_writeback_centisecs" "5000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
@@ -3738,7 +3738,7 @@ sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "15"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "5000"
+write "${vm}dirty_expire_centisecs" "6000"
 write "${vm}dirty_writeback_centisecs" "6000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
@@ -3920,7 +3920,7 @@ fi
 enable_hp_snd(){
 for hpm in /sys/module/snd_soc_wcd*/
 do
-  if [[ -d "$hpm" ]]; then
+  if [[ -d "${hpm}" ]]; then
       write "${hpm}parameters/high_perf_mode" "1"
       kmsg "Enabled high performance audio"
       kmsg3 ""
