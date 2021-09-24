@@ -13,7 +13,7 @@ KDBG="/data/media/0/KTSR/KTSR_DBG.log"
 
 # Log in white and continue (unnecessary)
 kmsg(){
-	echo -e "["$(date | awk -F ' ' '{print $4}')"]: [*] $@" >> "${KLOG}"
+	echo -e "[$(date | awk -F ' ' '{print $4}')]: [*] $@" >> "${KLOG}"
 }
 
 kmsg1(){
@@ -3493,25 +3493,34 @@ if [[ "${ppm}" == "true" ]]; then
 fi
 }
 
+cpu_clk_min(){
+# Set min CPU clock
+for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
+   for i in 576000 614400 633600 652800 748800 768000 787200 806400 825600 864000 902400 1113600; do
+      if [[ "$(grep $i ${pl}scaling_available_frequencies)" ]]; then
+          write ${pl}scaling_min_freq ${i}
+      else
+          write ${pl}scaling_min_freq "${cpu_min_freq}"
+      fi
+  done
+done
+}
+
 cpu_clk_default(){
-# Set min and max clocks
+# Set max CPU clock
 for cpus in /sys/devices/system/cpu/cpufreq/policy*/
 do
-  if [[ -e "${cpus}scaling_min_freq" ]]; then
-      write "${cpus}scaling_min_freq" "$cpu_min_freq"
-      write "${cpus}scaling_max_freq" "$cpu_max_freq"
-      write "${cpus}user_scaling_min_freq" "$cpu_min_freq"
-      write "${cpus}user_scaling_min_freq" "$cpu_max_freq"
+  if [[ -e "${cpus}scaling_max_freq" ]]; then
+      write "${cpus}scaling_max_freq" "${cpu_max_freq}"
+      write "${cpus}user_scaling_max_freq" "${cpu_max_freq}"
   fi
 done
 
 for cpus in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-  if [[ -e "${cpus}scaling_min_freq" ]]; then
-      write "${cpus}scaling_min_freq" "$cpu_min_freq"
-      write "${cpus}scaling_max_freq" "$cpu_max_freq"
-      write "${cpus}user_scaling_min_freq" "$cpu_min_freq"
-      write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
+  if [[ -e "${cpus}scaling_max_freq" ]]; then
+      write "${cpus}scaling_max_freq" "${cpu_max_freq}"
+      write "${cpus}user_scaling_max_freq" "${cpu_max_freq}"
   fi
 done
 
@@ -3520,30 +3529,30 @@ kmsg3 ""
 
 if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]]; then
     write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
-    kmsg "Allowed CPUs to use it's deepest sleep state"
+    kmsg "Allow CPUs to use it's deepest sleep state"
     kmsg3 ""
 fi
 }
 
 cpu_clk_max(){
-# Set min and max clocks
+# Set min & max CPU clock
 for cpus in /sys/devices/system/cpu/cpufreq/policy*/
 do
   if [[ -e "${cpus}scaling_min_freq" ]]; then
-      lock_value "${cpus}scaling_min_freq" "$cpu_max_freq"
-      lock_value "${cpus}scaling_max_freq" "$cpu_max_freq"
-      lock_value "${cpus}user_scaling_min_freq" "$cpu_max_freq"
-      lock_value "${cpus}user_scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}scaling_min_freq" "${cpu_max_freq}"
+      write "${cpus}scaling_max_freq" "${cpu_max_freq}"
+      write "${cpus}user_scaling_min_freq" "${cpu_max_freq}"
+      write "${cpus}user_scaling_max_freq" "${cpu_max_freq}"
   fi
 done
 
 for cpus in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   if [[ -e "${cpus}scaling_min_freq" ]]; then
-      lock_value "${cpus}scaling_min_freq" "$cpu_max_freq"
-      lock_value "${cpus}scaling_max_freq" "$cpu_max_freq"
-      lock_value "${cpus}user_scaling_min_freq" "$cpu_max_freq"
-      lock_value "${cpus}user_scaling_max_freq" "$cpu_max_freq"
+      write "${cpus}scaling_min_freq" "${cpu_max_freq}"
+      write "${cpus}scaling_max_freq" "${cpu_max_freq}"
+      write "${cpus}user_scaling_min_freq" "${cpu_max_freq}"
+      write "${cpus}user_scaling_max_freq" "${cpu_max_freq}"
   fi
 done
 
@@ -4614,6 +4623,7 @@ else
 fi
 disable_ppm
 if [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]]; then
+    cpu_clk_min
     cpu_clk_default
 else
     cpu_clk_max
