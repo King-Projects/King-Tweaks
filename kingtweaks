@@ -234,7 +234,7 @@ toast_pt
 ;;
 
 id-ID)
-toast_in
+toast_id
 ;;
 
 tr*)
@@ -262,7 +262,7 @@ toast_pt_1
 ;;
 
 id-ID)
-toast_in_1
+toast_id_1
 ;;
 
 tr*)
@@ -287,7 +287,7 @@ toast_pt
 ;;
 
 id-ID)
-toast_in
+toast_id
 ;;
 
 tr*)
@@ -313,7 +313,7 @@ toast_pt_1
 ;;
 
 id-ID)
-toast_in_1
+toast_id_1
 ;;
 
 tr*)
@@ -338,7 +338,7 @@ toast_pt
 ;;
 
 id-ID)
-toast_in
+toast_id
 ;;
 
 tr*)
@@ -364,7 +364,7 @@ toast_pt_1
 ;;
 
 id-ID)
-toast_in_1
+toast_id_1
 ;;
 
 tr*)
@@ -389,7 +389,7 @@ toast_pt
 ;;
 
 id-ID)
-toast_in
+toast_id
 ;;
 
 tr*)
@@ -415,7 +415,7 @@ toast_pt_1
 ;;
 
 id-ID)
-toast_in_1
+toast_id_1
 ;;
 
 tr*)
@@ -440,7 +440,7 @@ toast_pt
 ;;
 
 id-ID)
-toast_in
+toast_id
 ;;
 
 tr*)
@@ -466,7 +466,7 @@ toast_pt_1
 ;;
 
 id-ID)
-toast_in_1
+toast_id_1
 ;;
 
 tr*)
@@ -491,7 +491,7 @@ toast_pt
 ;;
 
 id-ID)
-toast_in
+toast_id
 ;;
 
 tr*)
@@ -517,7 +517,7 @@ toast_pt_1
 ;;
 
 id-ID)
-toast_in_1
+toast_id_1
 ;;
 
 tr*)

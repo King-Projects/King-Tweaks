@@ -51,51 +51,51 @@ ktsr_prof=$(getprop persist.king.tweaks.prof)
  	
 case "${ktsr_prof}" in
 1)
-  ktsr_prof_en=Automatic
+  ktsr_prof_en="Automatic"
   ;;
 
   2)
-    ktsr_prof_en=Battery
+    ktsr_prof_en="Battery"
     ;;
 
      3)
-      ktsr_prof_en=Balanced
+      ktsr_prof_en="Balanced"
       ;;
 
        4)
-        ktsr_prof_en=Extreme
+        ktsr_prof_en="Extreme"
         ;;
 
         5)
-         ktsr_prof_en=Gaming
+         ktsr_prof_en="Gaming"
          ;;
 
           6)
-           ktsr_prof_en=Latency
+           ktsr_prof_en="Latency"
            ;;
       esac
 
 if [[ "$(settings get global low_power)" == "1" ]]; then
-    low_power_mode=Enabled
+    low_power_mode="Enabled"
 else
-    low_power_mode=Disabled
+    low_power_mode="Disabled"
 fi
 if [[ "$(cmd netpolicy get restrict-background | awk '{print $4}')" == "enabled" ]]; then
-    data_saver=Enabled
+    data_saver="Enabled"
 else
-    data_saver=Disabled
+    data_saver="Disabled"
 fi
 if [[ "$(settings get secure location_providers_allowed)" == "" ]]; then
-    loc_mode_pwr_saving=Enabled
+    loc_mode_pwr_saving="Enabled"
 else
-    loc_mode_pwr_saving=Disabled
+    loc_mode_pwr_saving="Disabled"
 fi
 if [[ "$(getprop init.svc.thermal-engine)" == "running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "running" ]] || [[ "$(getprop init.svc.thermald)" == "running" ]] || [[ "$(getprop init.svc.thermalservice)" == "running" ]] || [[ "$(getprop init.svc.thermanager)" == "running" ]]; then
-    ts=On
+    ts="On"
 elif [[ "$(getprop init.svc.thermal-engine)" == "stopped" ]] || [[ "$(getprop init.svc.mi_thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermalservice)" == "stopped" ]] || [[ "$(getprop init.svc.thermanager)" == "stopped" ]]; then
-      ts=Off
+      ts="Off"
 else
-    ts=Unknown
+    ts="Unknown"
 fi
 menu(){
 clear
@@ -577,5 +577,4 @@ read -r option
 						  ;;
 					 esac                             
                 done
-
 shift $((OPTIND - 1))
