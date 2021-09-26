@@ -3503,8 +3503,6 @@ for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
    for i in 576000 614400 633600 652800 748800 768000 787200 806400 825600 864000 902400 998400 1113600; do
       if [[ "$(grep $i ${pl}scaling_available_frequencies)" ]]; then
           write ${pl}scaling_min_freq ${i}
-      else
-          write ${pl}scaling_min_freq "${cpu_min_freq}"
       fi
   done
 done
