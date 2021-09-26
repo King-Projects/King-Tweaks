@@ -90,13 +90,6 @@ if [[ "$(settings get secure location_providers_allowed)" == "" ]]; then
 else
     loc_mode_pwr_saving="Disabled"
 fi
-if [[ "$(getprop init.svc.thermal-engine)" == "running" ]] || [[ "$(getprop init.svc.mi_thermald)" == "running" ]] || [[ "$(getprop init.svc.thermald)" == "running" ]] || [[ "$(getprop init.svc.thermalservice)" == "running" ]] || [[ "$(getprop init.svc.thermanager)" == "running" ]]; then
-    ts="On"
-elif [[ "$(getprop init.svc.thermal-engine)" == "stopped" ]] || [[ "$(getprop init.svc.mi_thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermald)" == "stopped" ]] || [[ "$(getprop init.svc.thermalservice)" == "stopped" ]] || [[ "$(getprop init.svc.thermanager)" == "stopped" ]]; then
-      ts="Off"
-else
-    ts="Unknown"
-fi
 menu(){
 clear
 echo ""
@@ -104,11 +97,9 @@ echo "${Y}************${N}"
 echo "${Y}* KTSR CLI *${N}"
 echo "${Y}************${N}"
 echo ""
-echo "${G}Ver: 1.5.9.4-beta-r8${N}"
+echo "${G}Ver: 1.6.0.1-beta-r8${N}"
 echo ""
 echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
-echo ""
-echo "[*] Thermal: ${B}$ts${N}"
 echo ""
 echo "[*] Available profiles: "
 echo ""
@@ -153,50 +144,43 @@ echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
 echo ""
 echo "[15] Access our telegram group"
 echo ""
-if [[ "${ts}" == "On" ]]; then
-    echo "${B}[16] Disable thermal services (Can reduce throttling but also make your device heats up more)${N}"
-    echo ""
-elif [[ "${ts}" == "Off" ]]; then
-      echo "${B}[17] Enable thermal services${N}"
-      echo ""
-fi
 if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
-    echo "[18] 50 HZ Refresh Rate"   
+    echo "[16] 50 HZ Refresh Rate"   
     echo ""
 elif [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
-      echo "[18] 50 HZ Refresh Rate"   
+      echo "[16] 50 HZ Refresh Rate"   
       echo ""
-      echo "[19] 55 HZ Refresh Rate"
+      echo "[17] 55 HZ Refresh Rate"
       echo ""
 fi
 if [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "60" ]]; then
-    echo "[20] 60 HZ Refresh Rate"
+    echo "[18] 60 HZ Refresh Rate"
     echo ""
 elif [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]]; then
-    echo "[21] 90 HZ Refresh Rate"
+    echo "[19] 90 HZ Refresh Rate"
     echo ""
 elif [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]]; then
-    echo "[22] 120 HZ Refresh Rate"
+    echo "[20] 120 HZ Refresh Rate"
     echo ""
 fi
-echo "[23] Reset Refresh Rate config"
+echo "[21] Reset Refresh Rate config"
 echo ""
-echo "[24] Free RAM [ Balanced ] (Will only drop caches)."
+echo "[22] Free RAM [ Balanced ] (Will only drop caches)."
 echo ""
-echo "[25] Free RAM [ Agressive ] (Will kill all background apps and drop caches)."
+echo "[23] Free RAM [ Agressive ] (Will kill all background apps and drop caches)."
 echo ""
-echo "[26] Free RAM [ Extreme ] (Will kill all apps, and drop caches)."
+echo "[24] Free RAM [ Extreme ] (Will kill all apps, and drop caches)."
 echo ""
 if [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]]; then
-    echo "[27] Switch to dynamic thermal profile (May improve charging speed)"
+    echo "[25] Switch to dynamic thermal profile (May improve charging speed)"
     echo ""
 elif [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]]; then
-      echo "[28] Switch to default thermal profile"
+      echo "[26] Switch to default thermal profile"
       echo ""
 fi
-echo "[29] Reset battery stats"
+echo "[27] Reset battery stats"
 echo ""
-echo "[30] Access our Wiki"
+echo "[28] Access our Wiki"
 echo ""
 echo "${R}[0] Exit${N}"
 echo ""
@@ -328,36 +312,8 @@ read -r option
                                                                               am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
                                                                               menu
                                                                               ;;
-                                                                            
-						                                    "16")
-						                                    echo "${B}Disabling thermal...${N}"
-						                                    stop thermal 2>/dev/null
-						                                    stop thermald 2>/dev/null
-						                                    stop thermalservice 2>/dev/null
-						                                    stop mi_thermald 2>/dev/null
-						                                    stop thermal-engine 2>/dev/null
-						                                    stop thermanager 2>/dev/null
-						                                    stop thermal_manager 2>/dev/null
-						                                    echo "${G}Done!${N}"
-						                                    sleep 2 
-						                                    menu
-						                                    ;;
-
-						                              "17")
-						                              echo "${B}Enabling thermal...${N}"
-						                              start thermal 2>/dev/null
-						                              start thermald 2>/dev/null
-						                              start thermalservice 2>/dev/null
-						                              start mi_thermald 2>/dev/null
-						                              start thermal-engine 2>/dev/null
-						                              start thermanager 2>/dev/null
-						                              start thermal_manager 2>/dev/null
-						                              echo "${G}Done!${N}"
-						                              sleep 2 
-						                              menu
-						                              ;;
 						                            
-                                                 "18") 
+                                                 "16") 
                                                       if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]]; then
                                                           echo "50" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       else
@@ -368,7 +324,7 @@ read -r option
                                                       menu
                                                       ;;
                                                       
-                                                 "19")
+                                                 "17")
                                                       if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]]; then
                                                           echo "55" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       fi
@@ -377,7 +333,7 @@ read -r option
                                                       menu
                                                       ;;
                                                       
-                                                 "20")
+                                                 "18")
                                                       if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]]; then
                                                           echo "60" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       else
@@ -392,7 +348,7 @@ read -r option
                                                       menu
                                                       ;;
        
-                                                "21")
+                                                "19")
                                                      settings put system min_refresh_rate 90 2>/dev/null
                                                      settings put system peak_refresh_rate 90 2>/dev/null
                                                      settings put system user_refresh_rate 90 2>/dev/null
@@ -402,7 +358,7 @@ read -r option
                                                      menu
                                                      ;;
 
-                                            "22")
+                                            "20")
                                                  settings put system min_refresh_rate 120 2>/dev/null
                                                  settings put system peak_refresh_rate 120 2>/dev/null
                                                  settings put system user_refresh_rate 120 2>/dev/null
@@ -412,7 +368,7 @@ read -r option
                                                  menu
                                                  ;;
 						                      
-                                          "23")
+                                          "21")
                                                settings reset system min_refresh_rate >/dev/null 2>&1
                                                settings reset system peak_refresh_rate >/dev/null 2>&1
                                                settings reset system user_refresh_rate >/dev/null 2>&1
@@ -422,7 +378,7 @@ read -r option
                                                menu
                                                ;;
                                                
-                                        "24")
+                                        "22")
                                              sync
                                              echo "3" > "/proc/sys/vm/drop_caches"
                                              echo "${G}Done!${N}"
@@ -430,7 +386,7 @@ read -r option
                                              menu
                                              ;;
                                              
-                                      "25")
+                                      "23")
                                            sync
                                            echo "3" > "/proc/sys/vm/drop_caches"
                                            am kill-all
@@ -439,7 +395,7 @@ read -r option
                                            menu
                                            ;;
                                            
-                                       "26")
+                                       "24")
                                             sync
                                             echo "3" > "/proc/sys/vm/drop_caches"
                                             am kill-all
@@ -454,21 +410,21 @@ read -r option
                                             menu
                                             ;;
                                                
-                                              "27")
+                                              "25")
                                               echo "2" > "/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
                                               echo "${G}Done!${N}"
                                               sleep 2
                                               menu
                                               ;; 
                                                  
-                                              "28")
+                                              "26")
                                               echo "0" > "/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
                                               echo "${G}Done!${N}"
                                               sleep 2
                                               menu
                                               ;;
                                               
-                                              "29")
+                                              "27")
                                               rm -rf /data/system/batterystats* 2>/dev/null
                                               dumpsys batterystats --reset >/dev/null 2>&1
                                               echo "${G}Done!${N}"
@@ -476,7 +432,7 @@ read -r option
                                               menu
                                               ;;
                                               
-                                              "30")
+                                              "28")
                                               am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
                                               ;;
                                               
@@ -501,7 +457,6 @@ read -r option
                         echo "or: $_name [options]..."
                         echo "Supported options:"
                         echo "-p [profile] [1-6] [change between profiles without opening the terminal GUI]"
-                        echo "-t [thermal] [1/0] [enable / disable thermal services without opening the terminal GUI]"
                         echo "-f [free ram] [1-3] [Higher value means more agressive]"
                         echo "-h [help] [show this message]"
                         am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
@@ -515,63 +470,37 @@ read -r option
 						setprop persist.king.tweaks.prof "$2" 2>/dev/null
 						echo "${G}Done!${N}"
                         ;;
-
-						     t)
-						     if [[ "$2" == "0" ]]; then 
-						         echo "Disabling thermal services..."
-						         stop thermal 2>/dev/null
-						         stop thermald 2>/dev/null
-						         stop thermalservice 2>/dev/null
-						         stop mi_thermald 2>/dev/null
-						         stop thermal-engine 2>/dev/null
-						         stop thermanager 2>/dev/null
-						         stop thermal_manager 2>/dev/null
-						         echo "${G}Done!${N}"
-						     elif [[ "${ts}" == "1" ]]; then
-						           echo "${B}Enabling thermal...${N}"
-                                   start thermal 2>/dev/null
-						           start thermald 2>/dev/null
-						           start thermalservice 2>/dev/null
-						           start mi_thermald 2>/dev/null
-						           start thermal-engine 2>/dev/null
-						           start thermanager 2>/dev/null
-						           start thermal_manager 2>/dev/null
-						           echo "${G}Done!${N}"
-						     else
-                                 abort "${R}[!] No valid thermal controllers found / Unknown thermal state, aborting...${N}"
-						     fi
-						     ;;
 						
-						     f)
-						     if [[ "$2" == "1" ]]; then
-						         sync
-						         echo "3" > "/proc/sys/vm/drop_caches"
-						         echo "${G}Done!${N}"
-						         sleep 2
+						  f)
+						  if [[ "$2" == "1" ]]; then
+						      sync
+						      echo "3" > "/proc/sys/vm/drop_caches"
+						      echo "${G}Done!${N}"
+						      sleep 2
 						     
-                             elif [[ "$2" == "2" ]]; then
-                                   sync
-                                   echo "3" > "/proc/sys/vm/drop_caches"
-                                   am kill-all
-                                   echo "${G}Done!${N}"
-                                   sleep 3
+                           elif [[ "$2" == "2" ]]; then
+                                 sync
+                                 echo "3" > "/proc/sys/vm/drop_caches"
+                                 am kill-all
+                                 echo "${G}Done!${N}"
+                                 sleep 3
                              
-                             elif [[ "$2" == "3" ]]; then
-                                   sync
-                                   echo "3" > "/proc/sys/vm/drop_caches"
-                                   am kill-all
-                                   sleep 3
-                                   while IFS= read -r pkg_nm; do
-                                   if [[ "${pkg_nm}" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]]; then
-                                       am force-stop "$pkg_nm"
-                                   fi
-                                   done <<< "$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
-                                   echo "${G}Done!${N}"
-                                   sleep 2
-                             else
+                           elif [[ "$2" == "3" ]]; then
+                                 sync
+                                 echo "3" > "/proc/sys/vm/drop_caches"
+                                 am kill-all
+                                 sleep 3
+                                 while IFS= read -r pkg_nm; do
+                                      if [[ "${pkg_nm}" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]]; then
+                                          am force-stop "$pkg_nm"
+                                      fi
+                                 done <<< "$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
+                                 echo "${G}Done!${N}"
+                                 sleep 2
+                            else
                                  help_me
-                             fi
-                             ;;
+                            fi
+                            ;;
 
 					      h | *) help_me
 						  ;;

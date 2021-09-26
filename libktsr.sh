@@ -797,7 +797,7 @@ for dir in /sys/class/devfreq/*/; do
      if [[ "${min_devfreq2}" -lt "${min_devfreq}" ]]; then
          min_devfreq=${min_devfreq2}
      fi
-     write "${dir}min_freq" "${min_devfreq}"
+     write "${dir}min_freq" "${min_devfreq}" 
 done
 
 kmsg "Disabled devfreq boost"
@@ -858,6 +858,10 @@ kmsg3 ""
 
 stop_services(){
 # Disable perfd, mpdecision and few debug services
+for v in 0 1 2 3 4; do
+    stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
+    stop perf-hal-$v-$v 2>/dev/null
+done
 stop perfd 2>/dev/null
 if [[ "${ktsr_prof_en}" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
     start mpdecision 2>/dev/null
@@ -870,6 +874,23 @@ stop vendor.tcpdump 2>/dev/null
 stop statsd 2>/dev/null
 stop charge_logger 2>/dev/null
 stop oneplus_brain_service 2>/dev/null
+if [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+    stop thermal 2>/dev/null
+    stop thermald 2>/dev/null
+    stop thermalservice 2>/dev/null
+	stop mi_thermald 2>/dev/null
+	stop thermal-engine 2>/dev/null
+    stop thermanager 2>/dev/null
+	stop thermal_manager 2>/dev/null
+else
+    start thermal 2>/dev/null
+    start thermald 2>/dev/null
+    start thermalservice 2>/dev/null
+	start mi_thermald 2>/dev/null
+	start thermal-engine 2>/dev/null
+    start thermanager 2>/dev/null
+	start thermal_manager 2>/dev/null
+fi
 
 if [[ -e "/data/system/perfd/default_values" ]]; then
     rm -rf "/data/system/perfd/default_values"
@@ -880,23 +901,6 @@ fi
 
 kmsg "Disabled perfd, mpdecision and few debug services"
 kmsg3 ""
-}
-
-thermal_default(){
-# Configure thermal profile
-if [[ -e "/sys/class/thermal/thermal_message" ]]; then
-    write "/sys/class/thermal/thermal_message/sconfig" "0"
-    kmsg "Tweaked thermal profile"
-    kmsg3 ""
-fi
-}
-
-thermal_dynamic(){
-if [[ -e "/sys/class/thermal/thermal_message" ]]; then
-    write "/sys/class/thermal/thermal_message/sconfig" "10"
-    kmsg "Tweaked thermal profile"
-    kmsg3 ""
-fi
 }
 
 disable_core_ctl(){
@@ -1569,7 +1573,7 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in performance schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
 		  lock_value "${cpu}scaling_governor" "$governor"
@@ -1682,7 +1686,7 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in performance schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
 		  lock_value "${cpu}scaling_governor" "$governor"
@@ -3496,7 +3500,7 @@ fi
 cpu_clk_min(){
 # Set min CPU clock
 for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
-   for i in 576000 614400 633600 652800 748800 768000 787200 806400 825600 864000 902400 1113600; do
+   for i in 576000 614400 633600 652800 748800 768000 787200 806400 825600 864000 902400 998400 1113600; do
       if [[ "$(grep $i ${pl}scaling_available_frequencies)" ]]; then
           write ${pl}scaling_min_freq ${i}
       else
@@ -4589,11 +4593,6 @@ get_cpu_load
 apply_all(){
 print_info
 stop_services
-if [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]] || [[ "${ktsr_prof_en}" == "latency" ]]; then
-    thermal_default
-elif [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
-      thermal_dynamic
-fi
 if [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]]; then
     enable_core_ctl
 else
@@ -4705,12 +4704,6 @@ fi
 apply_all_auto(){
 print_info
 stop_services
-if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    thermal_default
-
-elif [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-      thermal_dynamic
-fi
 if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
     enable_devfreq_boost
 else
