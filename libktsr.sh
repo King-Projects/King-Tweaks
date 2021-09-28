@@ -871,7 +871,6 @@ fi
 # stop vendor.perfservice 2>/dev/null
 stop vendor.cnss_diag 2>/dev/null
 stop vendor.tcpdump 2>/dev/null
-stop statsd 2>/dev/null
 stop charge_logger 2>/dev/null
 stop oneplus_brain_service 2>/dev/null
 if [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
@@ -2273,7 +2272,7 @@ gpu_battery(){
 
 if [[ "${qcom}" == "true" ]]; then
     write "${gpu}throttling" "1"
-    write "${gpu}thermal_pwrlevel" "1"
+    write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
     write "${gpu}devfreq/adrenoboost" "0"
     write "${gpu}force_no_nap" "0"
     write "${gpu}bus_split" "1"
@@ -4130,11 +4129,11 @@ write_panel(){
 save_panel(){
     write_panel "[*] Bourbon - the essential process optimizer"
     write_panel ""
-    write_panel "Version: 1.2-r1"
+    write_panel "Version: 1.2.1-r2"
     write_panel ""
     write_panel "Last performed: $(date '+%Y-%m-%d %H:%M:%S')"
     write_panel ""
-    write_panel "FSCACHE status: $(fscc_status)"
+    write_panel "FSCC status: $(fscc_status)"
     write_panel ""
     write_panel "Adjshield status: $(adjshield_status)"
     write_panel ""
