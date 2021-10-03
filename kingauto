@@ -87,4 +87,4 @@ if [[ "${avail_ram}" -le "${full_ram}" ]]; then
     write "${vm}drop_caches" "3"
 fi
 done
-)&
+)

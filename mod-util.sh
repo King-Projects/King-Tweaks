@@ -142,7 +142,7 @@ if [[ "${ABILONG}" == "arm64-v8a" ]]; then ARCH=arm64; ARCH32=arm; IS64BIT=true;
 if [[ "${ABILONG}" == "x86_64" ]]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
   
 # Version Number
-VER=$(grep_prop version "$MODDIR/module.prop')
+VER=$(grep_prop version "$MODDIR/module.prop")
 # Version Code
 REL=$(grep_prop versionCode "$MODDIR/module.prop")
 # Author
@@ -222,7 +222,6 @@ printf "\rProgress : ${BGBL}|${N}${_done// /${BGBL}$loadBar${N}}${_left// / }${B
 #https://github.com/fearside/SimpleProgressSpinner
 # Spinner <message>
 Spinner(){
-
 # Choose which character to show.
 case ${_indicator} in
   "|") _indicator="/";;
@@ -232,7 +231,6 @@ case ${_indicator} in
   # Initiate spinner character
   *) _indicator="\\";;
 esac
-
 # Print simple progress spinner
 printf "\r${@} [${_indicator}]"
 }
@@ -251,7 +249,7 @@ e_spinner(){
 # test_connection
 # tests if there's internet connection
 test_connection(){
-  (
+(
   if ping -q -c 1 -W 1 google.com >/dev/null 2>&1; then
     true
   elif ping -q -c 1 -W 1 baidu.com >/dev/null 2>&1; then
