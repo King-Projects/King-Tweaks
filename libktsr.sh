@@ -4,11 +4,50 @@
 # Thanks: GR for some help
 # If you wanna use it as part of your project, please maintain the credits to it's respectives authors.
 # TODO: Implement a proper debug flag & cleanup some variables
-
+###############################
+# Abbreviations
+###############################
+tcp="/proc/sys/net/ipv4/"
+kernel="/proc/sys/kernel/"
+vm="/proc/sys/vm/"
+cpuset="/dev/cpuset/"
+stune="/dev/stune/"
+lmk="/sys/module/lowmemorykiller/"
+blkio="/dev/blkio/"
+cpuctl="/dev/cpuctl/"
+fs="/proc/sys/fs/"
+bbn_log="/data/media/0/KTSR/bourbon.log"
+adj_rel="${BIN_DIR}"
+adj_nm="adjshield"
+adj_cfg="/data/media/0/KTSR/adjshield.conf"
+adj_log="/data/media/0/KTSR/adjshield.log"
+fscc_nm="fscache-ctrl"
+sys_frm="/system/framework"
+sys_lib="/system/lib64"
+vdr_lib="/vendor/lib64"
+dvk="/data/dalvik-cache"
+apx1="/apex/com.android.art/javalib"
+apx2="/apex/com.android.runtime/javalib"
+perfmgr="/proc/perfmgr/"
+fscc_file_list=""
+one_ui=false
+samsung=false
+qcom=false
+exynos=false
+mtk=false
+total_ram="N/A (Please install busybox first!)"
+avail_ram="N/A (Please install busybox first!)"
+bb_ver="N/A (Please install busybox first!)"
+sql_ver="N/A (Install SQLite3 first!)"
+sql_bd_dt="N/A (Install SQLite3 first!)"
+ppm=false
+big_little=false
+full_ram=$((total_ram * 20 / 100))
+toptsdir="/dev/stune/top-app/tasks"
+toptcdir="/dev/cpuset/top-app/tasks"
+scrn_on=0
 MODPATH="/data/adb/modules/KTSR/"
-
 KLOG="/data/media/0/KTSR/KTSR.log"
-
 KDBG="/data/media/0/KTSR/KTSR_DBG.log"
 
 # Log in white and continue (unnecessary)
@@ -1466,7 +1505,7 @@ do
 	avail_govs="$(cat "${cpu}/scaling_available_governors")"
 
 	# Attempt to set the governor in this order
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "${avail_govs}" == *"$governor"* ]]; then
@@ -1525,7 +1564,7 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
 		  lock_value "${cpu}scaling_governor" "${governor}"
@@ -1582,7 +1621,7 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-	for governor in performance schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in performance sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
 		  lock_value "${cpu}scaling_governor" "${governor}"
@@ -1638,7 +1677,7 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]; then
 		  lock_value "${cpu}scaling_governor" "${governor}"
@@ -1695,7 +1734,7 @@ for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
   avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-	for governor in performance schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
+	for governor in performance sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
 		  lock_value "${cpu}scaling_governor" "${governor}"
@@ -3357,7 +3396,7 @@ fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    lock_value "${bcl_md}" "0"
+    [[ -e "${bcl_md}" ]] && lock_value "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3453,6 +3492,18 @@ fi
 ufs_default(){
 if [[ -d "/sys/class/devfreq/1d84000.ufshc/" ]]; then
     write "/sys/class/devfreq/1d84000.ufshc/max_freq" "300000000"
+    write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "1"
+    write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "1"
+    kmsg "Tweaked UFS"
+    kmsg3 ""
+fi
+}
+
+ufs_max(){
+if [[ -d "/sys/class/devfreq/1d84000.ufshc/" ]]; then
+    write "/sys/class/devfreq/1d84000.ufshc/max_freq" "300000000"
+    write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "0"
+    write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
     kmsg "Tweaked UFS"
     kmsg3 ""
 fi
@@ -3461,6 +3512,8 @@ fi
 ufs_pwr_saving(){
 if [[ -d "/sys/class/devfreq/1d84000.ufshc/" ]]; then
     lock_value "/sys/class/devfreq/1d84000.ufshc/max_freq" "75000000"
+    write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "1"
+    write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "1"
     kmsg "Tweaked UFS"
     kmsg3 ""
 fi
@@ -4129,7 +4182,7 @@ write_panel(){
 save_panel(){
     write_panel "[*] Bourbon - the essential process optimizer"
     write_panel ""
-    write_panel "Version: 1.2.1-r2"
+    write_panel "Version: 1.2.5-r2"
     write_panel ""
     write_panel "Last performed: $(date '+%Y-%m-%d %H:%M:%S')"
     write_panel ""
@@ -4454,9 +4507,7 @@ cgroup_bbn_opt(){
     # Daemons
     pin_proc_on_pwr "crtc_commit|crtc_event|pp_event|msm_irqbalance|netd|mdnsd|analytics"
     pin_proc_on_pwr "imsdaemon|cnss-daemon|qadaemon|qseecomd|time_daemon|ATFWD-daemon|ims_rtp_daemon|qcrilNrd"
-    # ueventd related to hotplug of camera, wifi, usb... 
-    # pin_proc_on_pwr "ueventd"
-    # hardware services, eg. android.hardware.sensors@1.0-service
+    # Hardware services, eg. android.hardware.sensors
     pin_proc_on_pwr "android.hardware.bluetooth"
     pin_proc_on_pwr "android.hardware.gnss"
     pin_proc_on_pwr "android.hardware.health"
@@ -4464,49 +4515,37 @@ cgroup_bbn_opt(){
     pin_proc_on_pwr "android.hardware.wifi"
     pin_proc_on_pwr "android.hardware.keymaster"
     pin_proc_on_pwr "vendor.qti.hardware.qseecom"
-    pin_proc_on_pwr "hardware.sensors"
+    pin_proc_on_pwr "android.hardware.sensors"
     pin_proc_on_pwr "sensorservice"
-    # com.android.providers.media.module controlled by uperf
+    # com.android.providers.media.module controlled by bourbon
     pin_proc_on_pwr "android.process.media"
     # com.miui.securitycenter & com.miui.securityadd
     pin_proc_on_pwr "miui\.security"
-    # input dispatcher
+    # system_server controlled by bourbon
+    change_proc_cgroup "system_server" "" "cpuset"
+    # Input dispatcher
     change_thread_high_prio "system_server" "input"
-    # related to camera startup
-    # change_thread_affinity "system_server" "ProcessManager" "ff"
-    # not important
+    # Not important
     pin_thread_on_pwr "system_server" "Miui|Connect|Network|Wifi|backup|Sync|Observer|Power|Sensor|batterystats"
     pin_thread_on_pwr "system_server" "Thread-|pool-|Jit|CachedAppOpt|Greezer|TaskSnapshot|Oom"
     change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "4"
-    # pin_thread_on_pwr "system_server" "Async" # it blocks camera
-    # pin_thread_on_pwr "system_server" "\.bg" # it blocks binders
-    # do not let GC thread block system_server
-    # pin_thread_on_mid "system_server" "HeapTaskDaemon"
-    # pin_thread_on_mid "system_server" "FinalizerDaemon"
-
-    # Render Pipeline
-    # surfaceflinger controlled by uperf
-    # android.phone controlled by uperf
     # speed up searching service binder
     change_task_cgroup "servicemanag" "top-app" "cpuset"
-    # prevent display service from being preempted by normal tasks
-    # vendor.qti.hardware.display.allocator-service cannot be set to RT policy, will be reset to 120
+    # Pevent display service from being preempted by normal tasks
     unpin_proc "\.hardware\.display"
     change_task_affinity "\.hardware\.display" "7f"
     change_task_rt "\.hardware\.display" "2"
     # let UX related Binders run with top-app
     change_thread_cgroup "\.hardware\.display" "^Binder" "top-app" "cpuset"
     change_thread_cgroup "\.hardware\.display" "^HwBinder" "top-app" "cpuset"
-    change_thread_cgroup "\.composer" "^Binder" "top-app" "cpuset"
-
-    # Heavy Scene Boost
+    change_thread_cgroup "\.hwcomposer" "^Binder" "top-app" "cpuset"
+    change_thread_cgroup "\.hwcomposer" "^HwBinder" "top-app" "cpuset"
+    change_thread_cgroup "\.hardware\.composer" "^Binder" "top-app" "cpuset"
+    change_thread_cgroup "\.hardware\.composer" "^HwBinder" "top-app" "cpuset"
     # boost app boot process, zygote--com.xxxx.xxx
-    # boost android process pool, usap--com.xxxx.xxx
-    unpin_proc "zygote|zygote64|usap32|usap64"
-    
-    # busybox fork from magiskd
-    pin_proc_on_mid "magiskd"
-    change_task_nice "magiskd" "19"
+    # usap nicing isn't necessary as it is already set to -20 by default
+    unpin_proc "zygote|usap"
+    change_task_nice "zygote" "-20"
 }
 
 clear_logs(){
@@ -4633,8 +4672,10 @@ uclamp_${ktsr_prof_en}
 config_blkio
 config_fs
 config_dyn_fsync
-if [[ "${ktsr_prof_en}" != "battery" ]]; then
+if [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "latency" ]]; then
     ufs_default
+elif [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
+      ufs_max
 else
     ufs_pwr_saving
 fi
@@ -4729,6 +4770,7 @@ else
 fi
 disable_ppm
 if [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
+    cpu_clk_min
     cpu_clk_default
 else
     cpu_clk_max
@@ -4744,8 +4786,10 @@ uclamp_$(getprop kingauto.prof)
 config_blkio
 config_fs
 config_dyn_fsync
-if [[ "$(getprop kingauto.prof)" != "battery" ]]; then
+if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
     ufs_default
+elif [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
+      ufs_max
 else
     ufs_pwr_saving
 fi
@@ -4807,50 +4851,6 @@ else
 fi
 }
 
-###############################
-# Abbreviations
-###############################
-
-tcp="/proc/sys/net/ipv4/"
-kernel="/proc/sys/kernel/"
-vm="/proc/sys/vm/"
-cpuset="/dev/cpuset/"
-stune="/dev/stune/"
-lmk="/sys/module/lowmemorykiller/"
-blkio="/dev/blkio/"
-cpuctl="/dev/cpuctl/"
-fs="/proc/sys/fs/"
-bbn_log="/data/media/0/KTSR/bourbon.log"
-adj_rel="${BIN_DIR}"
-adj_nm="adjshield"
-adj_cfg="/data/media/0/KTSR/adjshield.conf"
-adj_log="/data/media/0/KTSR/adjshield.log"
-fscc_nm="fscache-ctrl"
-sys_frm="/system/framework"
-sys_lib="/system/lib64"
-vdr_lib="/vendor/lib64"
-dvk="/data/dalvik-cache"
-apx1="/apex/com.android.art/javalib"
-apx2="/apex/com.android.runtime/javalib"
-perfmgr="/proc/perfmgr/"
-fscc_file_list=""
-one_ui=false
-samsung=false
-qcom=false
-exynos=false
-mtk=false
-total_ram="N/A (Please install busybox first!)"
-avail_ram="N/A (Please install busybox first!)"
-bb_ver="N/A (Please install busybox first!)"
-sql_ver="N/A (Install SQLite3 first!)"
-sql_bd_dt="N/A (Install SQLite3 first!)"
-ppm=false
-big_little=false
-full_ram=$((total_ram * 20 / 100))
-toptsdir="/dev/stune/top-app/tasks"
-toptcdir="/dev/cpuset/top-app/tasks"
-scrn_on=0
-
 latency(){
 init=$(date +%s)
 sync
@@ -4870,7 +4870,6 @@ kmsg "Spent time: $exec_time seconds."
 automatic(){
 kmsg3 ""
 kmsg "Applying automatic profile"
-
 sync
 kingauto &
 	
