@@ -13,7 +13,7 @@ KDBG="/data/media/0/KTSR/KTSR_DBG.log"
 
 # Log in white and continue (unnecessary)
 kmsg(){
-	echo -e "[$(date | awk -F ' ' '{print $4}')]: [*] $@" >> "${KLOG}"
+	echo -e "[$(date +%T)]: [*] $@" >> "${KLOG}"
 }
 
 kmsg1(){
@@ -239,6 +239,14 @@ done
                    qcom=false
                fi
            done
+
+           for gpul10 in /sys/devices/platform/*.mali/devfreq/*.mali/subsystem/*.mali; do
+           do
+             if [[ -d "${gpul10}" ]]; then
+                 gpu=${gpul10}
+                 qcom=false
+             fi
+         done
 
                if [[ -d "/sys/class/kgsl/kgsl-3d0/" ]]; then
                    gpu="/sys/class/kgsl/kgsl-3d0/"
@@ -603,7 +611,7 @@ elif [[ "${batt_hth}" == "6" ]]; then
 elif [[ "${batt_hth}" == "7" ]]; then
       batt_hth="Cold"
 else
-    batt_hth=$batt_hth
+    batt_hth=${batt_hth}
 fi
 }
 
@@ -859,8 +867,8 @@ kmsg3 ""
 stop_services(){
 # Disable perfd, mpdecision and few debug services
 for v in 0 1 2 3 4; do
-    stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
-    stop perf-hal-$v-$v 2>/dev/null
+    stop vendor.qti.hardware.perf@${v}.${v}-service 2>/dev/null
+    stop perf-hal-${v}-${v} 2>/dev/null
 done
 stop perfd 2>/dev/null
 if [[ "${ktsr_prof_en}" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
@@ -879,6 +887,7 @@ if [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] |
     stop thermalservice 2>/dev/null
 	stop mi_thermald 2>/dev/null
 	stop thermal-engine 2>/dev/null
+    stop vendor.thermal-engine 2>/dev/null
     stop thermanager 2>/dev/null
 	stop thermal_manager 2>/dev/null
 else
@@ -887,6 +896,7 @@ else
     start thermalservice 2>/dev/null
 	start mi_thermald 2>/dev/null
 	start thermal-engine 2>/dev/null
+    start vendor.thermal-engine 2>/dev/null
     start thermanager 2>/dev/null
 	start thermal_manager 2>/dev/null
 fi
@@ -1323,10 +1333,10 @@ do
   avail_scheds="$(cat "${queue}scheduler")"
 
     # Select the first scheduler available
-	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety cfq noop none
+	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
 	do
 	  if [[ "${avail_scheds}" == *"$sched"* ]]; then
-		  write "${queue}scheduler" "$sched"
+		  write "${queue}scheduler" "${sched}"
         break
       fi
   done
@@ -1349,10 +1359,10 @@ for queue in /sys/block/*/queue/
 do
   avail_scheds="$(cat "${queue}scheduler")"
 
-	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety cfq noop none
+	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
 	do
 		if [[ "$avail_scheds" == *"$sched"* ]]; then
-			write "${queue}scheduler" "$sched"
+			write "${queue}scheduler" "${sched}"
 	      break
 		fi
 	done
@@ -1375,10 +1385,10 @@ for queue in /sys/block/*/queue/
 do
   avail_scheds="$(cat "${queue}scheduler")"
 
-	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq cfq noop none
+	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple anxiety mq-deadline deadline cfq noop none
 	do
 		if [[ "${avail_scheds}" == *"$sched"* ]]; then
-			write "${queue}scheduler" "$sched"
+			write "${queue}scheduler" "${sched}"
 	      break
 		fi
 	done
@@ -1401,10 +1411,10 @@ for queue in /sys/block/*/queue/
 do
   avail_scheds="$(cat "${queue}scheduler")"
 
-	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety cfq noop none
+	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
 	do
 		if [[ "${avail_scheds}" == *"$sched"* ]]; then
-			write "${queue}scheduler" "$sched"
+			write "${queue}scheduler" "${sched}"
 		  break
 		fi
 	done
@@ -1427,10 +1437,10 @@ for queue in /sys/block/*/queue/
 do
   avail_scheds="$(cat "${queue}scheduler")"
 
-	for sched in tripndroid fiops maple bfq-sq bfq-mq bfq zen sio anxiety cfq noop none
+	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
 	do
 	  if [[ "${avail_scheds}" == *"$sched"* ]]; then
-		  write "${queue}scheduler" "$sched"
+		  write "${queue}scheduler" "${sched}"
 		break
 	  fi
   done
@@ -1460,7 +1470,7 @@ do
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "${avail_govs}" == *"$governor"* ]]; then
-			lock_value "${cpu}scaling_governor" "$governor"
+			lock_value "${cpu}scaling_governor" "${governor}"
 		  break
 		fi
 	done
@@ -1518,7 +1528,7 @@ do
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
-		  lock_value "${cpu}scaling_governor" "$governor"
+		  lock_value "${cpu}scaling_governor" "${governor}"
 		break
 	  fi
   done
@@ -1575,7 +1585,7 @@ do
 	for governor in performance schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
-		  lock_value "${cpu}scaling_governor" "$governor"
+		  lock_value "${cpu}scaling_governor" "${governor}"
 	    break
 	  fi
   done
@@ -1631,7 +1641,7 @@ do
 	for governor in schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]; then
-		  lock_value "${cpu}scaling_governor" "$governor"
+		  lock_value "${cpu}scaling_governor" "${governor}"
 		break
       fi
   done
@@ -1688,7 +1698,7 @@ do
 	for governor in performance schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
-		  lock_value "${cpu}scaling_governor" "$governor"
+		  lock_value "${cpu}scaling_governor" "${governor}"
 		break
       fi
   done
@@ -1839,7 +1849,7 @@ gpu_latency(){
 	    do
 		  # Once a matching governor is found, set it and break
 		  if [[ "${avail_govs}" == *"$governor"* ]]; then
-			  lock_value "${gpu}devfreq/governor" "$governor"
+			  lock_value "${gpu}devfreq/governor" "${governor}"
 		    break
 		  fi
 	  done
@@ -1850,7 +1860,7 @@ gpu_latency(){
 	      for governor in Interactive Dynamic Static ondemand
 	      do
 		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpui}gpu_governor" "$governor"
+			    lock_value "${gpui}gpu_governor" "${governor}"
 			  break
 		    fi
 	    done
@@ -1861,7 +1871,7 @@ gpu_latency(){
 	      for governor in Interactive Dynamic Static ondemand
 	      do
 		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpu}governor" "$governor"
+			    lock_value "${gpu}governor" "${governor}"
 			  break
 	        fi
         done
@@ -1972,7 +1982,7 @@ gpu_balanced(){
 	    do
 		  if [[ "$avail_govs" == *"$governor"* ]]
 		  then
-			  lock_value "${gpu}devfreq/governor" "$governor"
+			  lock_value "${gpu}devfreq/governor" "${governor}"
 			  break
 		    fi
 	    done
@@ -1983,7 +1993,7 @@ gpu_balanced(){
 	      for governor in Interactive Dynamic Static ondemand
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]; then
-			    lock_value "${gpui}gpu_governor" "$governor"
+			    lock_value "${gpui}gpu_governor" "${governor}"
 			    break
 		      fi
 	      done
@@ -1995,7 +2005,7 @@ gpu_balanced(){
 	      do
 		    if [[ "$avail_govs" == *"$governor"* ]]
 		    then
-			    lock_value "${gpu}governor" "$governor"
+			    lock_value "${gpu}governor" "${governor}"
 			    break
 	          fi
           done
@@ -2111,7 +2121,7 @@ gpu_extreme(){
 	    do
 		  # Once a matching governor is found, set it and break
 		  if [[ "${avail_govs}" == *"$governor"* ]]; then
-			  lock_value "${gpu}devfreq/governor" "$governor"
+			  lock_value "${gpu}devfreq/governor" "${governor}"
 			break
 		  fi
 	  done
@@ -2122,7 +2132,7 @@ gpu_extreme(){
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
 		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpui}gpu_governor" "$governor"
+			    lock_value "${gpui}gpu_governor" "${governor}"
 			  break
 		    fi
 	    done
@@ -2133,7 +2143,7 @@ gpu_extreme(){
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
 		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpu}governor" "$governor"
+			    lock_value "${gpu}governor" "${governor}"
 			  break
 	        fi
         done
@@ -2242,7 +2252,7 @@ gpu_battery(){
 	    for governor in msm-adreno-tz simple_ondemand ondemand
 	    do
 		  if [[ "${avail_govs}" == *"$governor"* ]]; then
-			  lock_value "${gpu}devfreq/governor" "$governor"
+			  lock_value "${gpu}devfreq/governor" "${governor}"
 		    break
 		  fi
 	  done
@@ -2253,7 +2263,7 @@ gpu_battery(){
 	      for governor in Interactive mali_ondemand ondemand Dynamic Static
 	      do
 		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpui}gpu_governor" "$governor"
+			    lock_value "${gpui}gpu_governor" "${governor}"
 			  break
 		    fi
 	    done
@@ -2264,7 +2274,7 @@ gpu_battery(){
 	      for governor in Interactive mali_ondemand ondemand Dynamic Static
 	      do
 		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpu}governor" "$governor"
+			    lock_value "${gpu}governor" "${governor}"
 			  break
 	        fi
         done
@@ -2381,7 +2391,7 @@ gpu_gaming(){
 		  # Once a matching governor is found, set it and break
 		  if [[ "${avail_govs}" == *"$governor"* ]]
 		  then
-			  lock_value "${gpu}devfreq/governor" "$governor"
+			  lock_value "${gpu}devfreq/governor" "${governor}"
 			break
 		  fi
 	  done
@@ -2392,7 +2402,7 @@ gpu_gaming(){
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
 		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpui}gpu_governor" "$governor"
+			    lock_value "${gpui}gpu_governor" "${governor}"
 			  break
 		    fi
 	    done
@@ -2403,7 +2413,7 @@ gpu_gaming(){
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
 		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpu}governor" "$governor"
+			    lock_value "${gpu}governor" "${governor}"
 			  break
 	        fi
         done
@@ -2495,7 +2505,7 @@ if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]; t
     kmsg3 ""
 fi
 
-if [[ -d "/sys/module/adreno_idler" ]]; then
+if [[ -d "/sys/module/adreno_idler/" ]]; then
     write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
     kmsg "Disabled adreno idler"
     kmsg3 ""
@@ -3268,7 +3278,7 @@ fi
 [[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
 [[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "30"
 [[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
-[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
+[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "0"
 [[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
 [[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 [[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
@@ -3384,7 +3394,7 @@ fi
 [[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
 [[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "30"
 [[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
-[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
+[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "0"
 [[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
 [[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 [[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
@@ -3497,7 +3507,7 @@ fi
 }
 
 cpu_clk_min(){
-# Set min CPU clock
+# Set min efficient CPU clock
 for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
    for i in 576000 614400 633600 652800 748800 768000 787200 806400 825600 864000 902400 998400 1113600; do
       if [[ "$(grep $i ${pl}scaling_available_frequencies)" ]]; then
@@ -3575,10 +3585,8 @@ vm_lmk_latency(){
 [[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
 [[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
 [[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
-
-# always sync before dropping caches
+# Always sync before dropping caches
 sync
-
 # VM settings to improve overall user experience and performance
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
@@ -3619,9 +3627,7 @@ vm_lmk_balanced(){
 [[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
 [[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
 [[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
-
 sync
-
 write "${vm}drop_caches" "2"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "25"
@@ -3660,9 +3666,7 @@ vm_lmk_extreme(){
 [[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
 [[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
 [[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
-
 sync
-
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
 write "${vm}dirty_ratio" "30"
@@ -3701,9 +3705,7 @@ vm_lmk_battery(){
 [[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
 [[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
 [[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
-
 sync
-
 write "${vm}drop_caches" "1"
 write "${vm}dirty_background_ratio" "5"
 write "${vm}dirty_ratio" "20"
@@ -3742,9 +3744,7 @@ vm_lmk_gaming(){
 [[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
 [[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
 [[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
-
 sync
-
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "15"
 write "${vm}dirty_ratio" "30"
@@ -4361,7 +4361,7 @@ fscc_path_apk_to_oat(){
 
 # $1:file/dir
 fscc_list_append(){
-    fscc_file_list="$fscc_file_list $1"
+    fscc_file_list="${fscc_file_list} $1"
 }
 
 # $1:file/dir
@@ -4431,7 +4431,7 @@ fscc_add_apex_lib(){
 # after appending fscc_file_list
 fscc_start(){
     # multiple parameters, cannot be warped by ""
-    ${MODPATH}system/bin/${fscc_nm} -fdlb0 $fscc_file_list
+    ${MODPATH}system/bin/${fscc_nm} -fdlb0 ${fscc_file_list}
 }
 
 fscc_stop(){
@@ -4470,10 +4470,6 @@ cgroup_bbn_opt(){
     pin_proc_on_pwr "android.process.media"
     # com.miui.securitycenter & com.miui.securityadd
     pin_proc_on_pwr "miui\.security"
-
-    # system_server blacklist
-    # system_server controlled by uperf
-    change_proc_cgroup "system_server" "" "cpuset"
     # input dispatcher
     change_thread_high_prio "system_server" "input"
     # related to camera startup
@@ -4528,20 +4524,24 @@ elif [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $
 fi
 }
 
+# Get screen state (ON | OFF)
+get_scrn_state(){
+	scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
+	if [[ "${scrn_state}" == "ON" ]]; then 
+	    scrn_on=1
+	fi
+}
+
 get_all(){
 get_gpu_dir
-if [[ "${qcom}" != "true" ]]; then
-    is_mtk
-fi
+[[ "${qcom}" != "true" ]] && is_mtk
 if [[ "${mtk}" != "true" ]] && [[ "${qcom}" != "true" ]]; then
     is_exynos
 fi
 if [[ "${qcom}" != "true" ]] && [[ "${exynos}" != "true" ]]; then
     check_ppm_support
 fi
-if [[ "${qcom}" == "true" ]]; then
-    define_gpu_pl
-fi
+[[ "${qcom}" == "true" ]] && define_gpu_pl
 get_gpu_max
 get_gpu_min
 get_cpu_gov
@@ -4573,9 +4573,7 @@ get_batt_cpct
 get_bb_ver
 get_rom_info
 get_slnx_stt
-if [[ "${qcom}" == "true" ]]; then
-    setup_adreno_gpu_thrtl
-fi
+[[ "${qcom}" == "true" ]] && setup_adreno_gpu_thrtl
 get_gpu_load
 get_nr_cores
 get_dvc_brnd
@@ -4848,6 +4846,10 @@ sql_ver="N/A (Install SQLite3 first!)"
 sql_bd_dt="N/A (Install SQLite3 first!)"
 ppm=false
 big_little=false
+full_ram=$((total_ram * 20 / 100))
+toptsdir="/dev/stune/top-app/tasks"
+toptcdir="/dev/cpuset/top-app/tasks"
+scrn_on=0
 
 latency(){
 init=$(date +%s)

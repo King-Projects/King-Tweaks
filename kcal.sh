@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# KTSR™ by pedro (pedrozzz0 @ GitHub)
+# KTSR™ & Xvision™ by pedro (pedrozzz0 @ GitHub)
 
 KXLOG=/data/media/0/KTSR/kxvision.log
 

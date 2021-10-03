@@ -8,8 +8,8 @@
 ##########################################################################################
 
 # Versions
-MODUTILVER=v2.6.1
-MODUTILVCODE=261
+MODUTILVER="v2.6.1"
+MODUTILVCODE="261"
 
 # Check A/B slot
 if [[ -d "/system_root" ]]; then
@@ -47,16 +47,16 @@ set_busybox(){
 _busybox=false
 if [[ -n "${_bb}" ]]; then
   true
-elif [[ -x "$SYSTEM2"/xbin/busybox ]]; then
-  _bb=$SYSTEM2/xbin/busybox
-elif [[ -x "$SYSTEM2"/bin/busybox ]]; then
-  _bb="$SYSTEM2"/bin/busybox
+elif [[ -x "$SYSTEM2/xbin/busybox" ]]; then
+  _bb="$SYSTEM2/xbin/busybox"
+elif [[ -x "$SYSTEM2/bin/busybox" ]]; then
+  _bb="$SYSTEM2/bin/busybox"
 else
   echo "[!] Busybox not detected"
   echo "Please install it (@osm0sis busybox recommended)"
   false
 fi
-set_busybox $_bb
+set_busybox ${_bb}
 [[ $? -ne 0 ]] && { echo "[!] Something went wrong"; exit $?; }
 [[ -n "$ANDROID_SOCKET_adbd" ]] && alias clear='echo'
 _bbname="$($_bb | head -n 1 | awk '{print $1,$2}')"
@@ -88,17 +88,17 @@ set_perm(){
 # Set perm recursive
 set_perm_recursive(){
   find "$1" -type d 2>/dev/null | while read dir; do
-    set_perm "$dir" "$2" "$3" "$4" "$6"
+      set_perm "${dir}" "$2" "$3" "$4" "$6"
   done
   find "$1" -type f -o -type l 2>/dev/null | while read file; do
-    set_perm "$file" "$2" "$3" "$5" "$6"
+      set_perm "${file}" "$2" "$3" "$5" "$6"
   done
 }
 
 # Mktouch
 mktouch(){
   mkdir -p "${1%/*}" 2>/dev/null
-  [[ -z $2 ]] && touch "$1" || echo "$2" > "$1"
+  [[ -z "$2" ]] && touch "$1" || echo "$2" > "$1"
   chmod 644 "$1"
 }
 
@@ -108,7 +108,7 @@ grep_prop(){
   shift
   FILES=$@
   [[ -z "${FILES}" ]] && FILES="/system/build.prop"
-  sed -n "$REGEX" $FILES 2>/dev/null | head -n 1
+  sed -n "$REGEX" "${FILES}" 2>/dev/null | head -n 1
 }
 
 # Is mounted
@@ -136,19 +136,19 @@ ABILONG=$(grep_prop ro.product.cpu.abi)
 ARCH=arm
 ARCH32=arm
 IS64BIT=false
-if [[ "$ABI" = "x86" ]]; then ARCH=x86; ARCH32=x86; fi;
-if [[ "$ABI2" = "x86" ]]; then ARCH=x86; ARCH32=x86; fi;
-if [[ "$ABILONG" = "arm64-v8a" ]]; then ARCH=arm64; ARCH32=arm; IS64BIT=true; fi;
-if [[ "$ABILONG" = "x86_64" ]]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
+if [[ "${ABI}" == "x86" ]]; then ARCH=x86; ARCH32=x86; fi;
+if [[ "${ABI2}" == "x86" ]]; then ARCH=x86; ARCH32=x86; fi;
+if [[ "${ABILONG}" == "arm64-v8a" ]]; then ARCH=arm64; ARCH32=arm; IS64BIT=true; fi;
+if [[ "${ABILONG}" == "x86_64" ]]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
   
 # Version Number
-VER=$(grep_prop version "$MODDIR"/module.prop)
+VER=$(grep_prop version "$MODDIR/module.prop')
 # Version Code
-REL=$(grep_prop versionCode "$MODDIR"/module.prop)
+REL=$(grep_prop versionCode "$MODDIR/module.prop")
 # Author
-AUTHOR=$(grep_prop author "$MODDIR"/module.prop)
+AUTHOR=$(grep_prop author "$MODDIR/module.prop")
 # Mod Name/Title
-MODTITLE=$(grep_prop name "$MODDIR"/module.prop)
+MODTITLE=$(grep_prop name "$MODDIR/module.prop")
 
 # Colors
 G='\e[01;32m'		# GREEN TEXT
@@ -164,7 +164,7 @@ N='\e[0m'			# How to use (example): echo "${G}example${N}"
 loadBar=' '			# Load UI
 # Remove color codes if -nc or in ADB Shell
 [[ -n "$1" ]] && [[ "$1" = "-nc" ]] && shift && NC=true
-[[ "$NC" ]] || [[ -n "$ANDROID_SOCKET_adbd" ]] && {
+[[ "${NC}" ]] || [[ -n "${ANDROID_SOCKET_adbd}" ]] && {
   G=''; R=''; Y=''; B=''; V=''; Bl=''; C=''; W=''; N=''; BGBL=''; loadBar='=';
 }
 
@@ -179,7 +179,7 @@ div="${Bl}$(printf '%*s' "${character_no}" '' | tr " " "=")${N}"
 title_div(){
   [[ "$1" = "-c" ]] && character_no=$2 && shift 2
   [[ -z "$1" ]] && { message=; no=0; } || { message="$@ "; no=$(echo "$@" | wc -c); }
-  [[ $character_no -gt $no ]] && local extdiv=$((character_no-no)) || { echo "Invalid!"; return 1; }
+  [[ '${character_no}" -gt "${no}" ]] && local extdiv=$((character_no-no)) || { echo "Invalid!"; return 1; }
   echo "${W}$message${N}${Bl}$(printf '%*s' "$extdiv" '' | tr " " "=")${N}"
 }
 
@@ -266,15 +266,15 @@ test_connection(){
 # Log files will be uploaded to termbin.com
 # Logs included: VERLOG LOG oldVERLOG oldLOG
 upload_logs(){
-  $BBok && {
+  "${BBok}" && {
     test_connection || exit
-    echo "Uploading logs"
-    [[ -s $VERLOG ]] && verUp=$(cat "$VERLOG" | nc termbin.com 9999) || verUp=none
-    [[ -s $oldVERLOG ]] && oldverUp=$(cat "$oldVERLOG" | nc termbin.com 9999) || oldverUp=none
-    [[ -s $LOG ]] && logUp=$(cat "$LOG" | nc termbin.com 9999) || logUp=none
-    [[ -s $oldLOG ]] && oldlogUp=$(cat "$oldLOG" | nc termbin.com 9999) || oldlogUp=none
-    [[ -s $stdoutLOG ]] && stdoutUp=$(cat "$stdoutLOG" | nc termbin.com 9999) || stdoutUp=none
-    [[ -s $oldstdoutLOG ]] && oldstdoutUp=$(cat "$oldstdoutLOG" | nc termbin.com 9999) || oldstdoutUp=none
+    echo "Uploading logs..."
+    [[ -s "$(VERLOG}" ]] && verUp=$(cat "${VERLOG}" | nc termbin.com 9999) || verUp=none
+    [[ -s "${oldVERLOG}" ]] && oldverUp=$(cat "${oldVERLOG}" | nc termbin.com 9999) || oldverUp=none
+    [[ -s "${LOG}" ]] && logUp=$(cat "${LOG}" | nc termbin.com 9999) || logUp=none
+    [[ -s "${oldLOG}" ]] && oldlogUp=$(cat "${oldLOG}" | nc termbin.com 9999) || oldlogUp=none
+    [[ -s "${stdoutLOG}" ]] && stdoutUp=$(cat "${stdoutLOG}" | nc termbin.com 9999) || stdoutUp=none
+    [[ -s "${oldstdoutLOG}" ]] && oldstdoutUp=$(cat "${oldstdoutLOG}" | nc termbin.com 9999) || oldstdoutUp=none
     echo -n "Link: "
     echo "$MODEL ($DEVICE) API $API\n$ROM\n$ID\n
     O_Verbose: $oldverUp

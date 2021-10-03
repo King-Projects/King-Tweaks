@@ -7,21 +7,6 @@ MODPATH="/data/adb/modules/KTSR"
 # Load libraries
 . "$MODPATH/libs/libktsr.sh"
 
-# Calc 80% of the total amount of the total device RAM
-full_ram=$((total_ram * 20 / 100))
-toptsdir="/dev/stune/top-app/tasks"
-toptcdir="/dev/cpuset/top-app/tasks"
-
-# Get screen state (ON | OFF)
-get_scrn_state(){
-	scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
-	if [[ "${scrn_state}" == "ON" ]]; then 
-	    scrn_on=1
-	else 
-	    scrn_on=0
-	fi
-}
-
 (
 while true; do
 # This script basically check if packages PIDs is found on stune / cpuset top-app tasks
