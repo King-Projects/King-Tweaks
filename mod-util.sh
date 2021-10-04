@@ -179,7 +179,7 @@ div="${Bl}$(printf '%*s' "${character_no}" '' | tr " " "=")${N}"
 title_div(){
   [[ "$1" = "-c" ]] && character_no=$2 && shift 2
   [[ -z "$1" ]] && { message=; no=0; } || { message="$@ "; no=$(echo "$@" | wc -c); }
-  [[ '${character_no}" -gt "${no}" ]] && local extdiv=$((character_no-no)) || { echo "Invalid!"; return 1; }
+  [[ "${character_no}" -gt "${no}" ]] && local extdiv=$((character_no-no)) || { echo "Invalid!"; return 1; }
   echo "${W}$message${N}${Bl}$(printf '%*s' "$extdiv" '' | tr " " "=")${N}"
 }
 
@@ -267,7 +267,7 @@ upload_logs(){
   "${BBok}" && {
     test_connection || exit
     echo "Uploading logs..."
-    [[ -s "$(VERLOG}" ]] && verUp=$(cat "${VERLOG}" | nc termbin.com 9999) || verUp=none
+    [[ -s "${VERLOG}" ]] && verUp=$(cat "${VERLOG}" | nc termbin.com 9999) || verUp=none
     [[ -s "${oldVERLOG}" ]] && oldverUp=$(cat "${oldVERLOG}" | nc termbin.com 9999) || oldverUp=none
     [[ -s "${LOG}" ]] && logUp=$(cat "${LOG}" | nc termbin.com 9999) || logUp=none
     [[ -s "${oldLOG}" ]] && oldlogUp=$(cat "${oldLOG}" | nc termbin.com 9999) || oldlogUp=none

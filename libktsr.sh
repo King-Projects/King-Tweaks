@@ -35,14 +35,14 @@ samsung=false
 qcom=false
 exynos=false
 mtk=false
-total_ram="N/A (Please install busybox first!)"
-avail_ram="N/A (Please install busybox first!)"
-bb_ver="N/A (Please install busybox first!)"
-sql_ver="N/A (Install SQLite3 first!)"
-sql_bd_dt="N/A (Install SQLite3 first!)"
+total_ram="NA (Please install busybox first!)"
+avail_ram="NA (Please install busybox first!)"
+full_ram=$((total_ram * 20 / 100))
+bb_ver="NA (Please install busybox first!)"
+sql_ver="NA (Install SQLite3 first!)"
+sql_bd_dt="NA (Install SQLite3 first!)"
 ppm=false
 big_little=false
-full_ram=$((total_ram * 20 / 100))
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=0
@@ -279,7 +279,7 @@ done
                fi
            done
 
-           for gpul10 in /sys/devices/platform/*.mali/devfreq/*.mali/subsystem/*.mali; do
+           for gpul10 in /sys/devices/platform/*.mali/devfreq/*.mali/subsystem/*.mali
            do
              if [[ -d "${gpul10}" ]]; then
                  gpu=${gpul10}
