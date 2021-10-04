@@ -61,7 +61,7 @@ set_busybox ${_bb}
 [[ -n "$ANDROID_SOCKET_adbd" ]] && alias clear='echo'
 _bbname="$($_bb | head -n 1 | awk '{print $1,$2}')"
 BBok=true
-if [[ "$_bbname" = "" ]]; then
+if [[ "${_bbname}" = "" ]]; then
   _bbname="[!] Busybox not found"
   BBok=false
 fi
@@ -87,10 +87,10 @@ set_perm(){
 
 # Set perm recursive
 set_perm_recursive(){
-  find "$1" -type d 2>/dev/null | while read dir; do
+  find "$1" -type d 2>/dev/null | while read -r dir; do
       set_perm "${dir}" "$2" "$3" "$4" "$6"
   done
-  find "$1" -type f -o -type l 2>/dev/null | while read file; do
+  find "$1" -type f -o -type l 2>/dev/null | while read -r file; do
       set_perm "${file}" "$2" "$3" "$5" "$6"
   done
 }
@@ -208,9 +208,9 @@ ProgressBar(){
     var2=40
   fi
 # Process data
-  _progress=$(((${1}*100/${2}*100)/100))
-  _done=$(((${_progress}*${var1})/10))
-  _left=$((${var2}-$_done))
+  _progress=$((($1*100/$2*100)/100))
+  _done=$((($_progress*$var1)/10))
+  _left=$(($var2-$_done))
 # Build progressbar string lengths
   _done=$(printf "%${_done}s")
   _left=$(printf "%${_left}s")

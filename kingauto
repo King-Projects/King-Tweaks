@@ -7,6 +7,8 @@ MODPATH="/data/adb/modules/KTSR"
 # Load libraries
 . "$MODPATH/libs/libktsr.sh"
 
+full_ram=$((total_ram * 20 / 100))
+
 (
 while true; do
 # This script basically check if packages PIDs is found on stune / cpuset top-app tasks
