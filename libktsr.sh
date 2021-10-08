@@ -4135,21 +4135,16 @@ fi
 
 # $1:content
 write_panel(){
-    echo "$1" >> "${bbn_log}"
+    echo "$1" >> "${bbn_banner}"
 }
 
 save_panel(){
-    write_panel "[*] Bourbon - the essential process optimizer"
-    write_panel ""
-    write_panel "Version: 1.2.5-r2"
-    write_panel ""
-    write_panel "Last performed: $(date '+%Y-%m-%d %H:%M:%S')"
-    write_panel ""
-    write_panel "FSCC status: $(fscc_status)"
-    write_panel ""
-    write_panel "Adjshield status: $(adjshield_status)"
-    write_panel ""
-    write_panel "Adjshield config file: $adj_cfg"
+write_panel "[*] Bourbon - the essential process optimizer 
+Version: 1.2.6-r3
+Last performed: $(date '+%Y-%m-%d %H:%M:%S')
+FSCC status: $(fscc_status)
+Adjshield status: $(adjshield_status)
+Adjshield config file: ${adj_cfg}"
 }
 
 # $1:str
@@ -4159,8 +4154,8 @@ adjshield_write_cfg(){
 
 adjshield_create_default_cfg(){
     adjshield_write_cfg "# AdjShield Config File"
-    adjshield_write_cfg "# Prevent given processes from being killed by Android LMK by protecting oom_score_adj"
-    adjshield_write_cfg "# List all the package names of your Apps which you want to keep alive."
+    adjshield_write_cfg "# Prevent given packages from being killed by LMK by protecting oom_score_adj"
+    adjshield_write_cfg "# List all the package names of the apps which you want to keep alive."
     adjshield_write_cfg "com.riotgames.league.wildrift"
     adjshield_write_cfg "com.activision.callofduty.shooter"
     adjshield_write_cfg "com.mobile.legends"
@@ -4182,7 +4177,7 @@ adjshield_stop(){
 # return:status
 adjshield_status(){
     if [[ "$(ps -A | grep "${adj_nm}")" != "" ]]; then
-        echo "Adjshield running. see $adj_log for details."
+        echo "Adjshield running. see ${adj_log} for details."
     else
         # "Error: Log file not found"
         err="$(cat "${adj_log}" | grep Error | head -n 1 | cut -d: -f2)"
@@ -4823,6 +4818,7 @@ blkio="/dev/blkio/"
 cpuctl="/dev/cpuctl/"
 fs="/proc/sys/fs/"
 bbn_log="/data/media/0/KTSR/bourbon.log"
+bbn_banner="/data/media/0/KTSR/bourbon.info"
 adj_rel="${BIN_DIR}"
 adj_nm="adjshield"
 adj_cfg="/data/media/0/KTSR/adjshield.conf"
