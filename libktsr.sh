@@ -975,10 +975,10 @@ kmsg3 ""
 # Some of these are based from @helloklf (GitHub) vtools, credits to him.
 config_cpuset(){
 if [[ "${soc}" == "msm8937" ]]; then
-    write "${cpuset}camera-daemon/cpus" "0-6"
-    write "${cpuset}foreground/cpus" "0-6"
-    write "${cpuset}foreground/boost/cpus" "0-6"
-    write "${cpuset}background/cpus" "0-1"
+    write "${cpuset}camera-daemon/cpus" "0-7"
+    write "${cpuset}foreground/cpus" "0-7"
+    write "${cpuset}foreground/boost/cpus" "4-7"
+    write "${cpuset}background/cpus" "0-5"
     write "${cpuset}system-background/cpus" "0-3"
     write "${cpuset}top-app/cpus" "0-7"
     write "${cpuset}restricted/cpus" "0-3"
@@ -986,10 +986,10 @@ if [[ "${soc}" == "msm8937" ]]; then
     kmsg3 ""
 
 elif [[ "${soc}" == "msm8952" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -997,10 +997,10 @@ elif [[ "${soc}" == "msm8952" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "msm8953" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1008,20 +1008,20 @@ elif [[ "${soc}" == "msm8953" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "msm8996" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-2"
-      write "${cpuset}foreground/cpus" "0-2"
-      write "${cpuset}foreground/boost/cpus" "0-2"
-      write "${cpuset}background/cpus" "0-1"
-      write "${cpuset}system-background/cpus" "0-2"
+      write "${cpuset}camera-daemon/cpus" "0-3"
+      write "${cpuset}foreground/cpus" "0-3"
+      write "${cpuset}foreground/boost/cpus" "0-3"
+      write "${cpuset}background/cpus" "0-3"
+      write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "${soc}" == "msm8998" ]]; then
       write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1029,10 +1029,10 @@ elif [[ "${soc}" == "msm8998" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "msmnile" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-3"
-      write "${cpuset}foreground/cpus" "0-3,5-6"
-      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "6-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1040,10 +1040,10 @@ elif [[ "${soc}" == "msmnile" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "mt6768" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1051,10 +1051,10 @@ elif [[ "${soc}" == "mt6768" ]]; then
       kmsg3 ""
 
 elif [[ "${soc}" == "mt6785" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}top-app/boost/cpus" "0-7"
@@ -1063,10 +1063,10 @@ elif [[ "${soc}" == "mt6785" ]]; then
       kmsg3 ""
 
 elif [[ "${soc}" == "mt6873" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1074,10 +1074,10 @@ elif [[ "${soc}" == "mt6873" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "mt6885" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1085,10 +1085,10 @@ elif [[ "${soc}" == "mt6885" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "sdm710" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1096,10 +1096,10 @@ elif [[ "${soc}" == "sdm710" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "sdm845" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-3"
-      write "${cpuset}foreground/cpus" "0-3,5-6"
-      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1107,10 +1107,10 @@ elif [[ "${soc}" == "sdm845" ]]; then
       kmsg3 ""
       
 elif [[ "${soc}" == "sm6150" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1118,10 +1118,10 @@ elif [[ "${soc}" == "sm6150" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "lito" ]]; then
-	  write "${cpuset}camera-daemon/cpus" "0-3"
-      write "${cpuset}camera-daemon-dedicated/cpus" "0-3"
-      write "${cpuset}foreground/cpus" "0-3,5-6"
-      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
+	  write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "6-7"
       write "${cpuset}background/cpus" "5-6"
       write "${cpuset}system-background/cpus" "2-5"
       write "${cpuset}top-app/cpus" "0-7"
@@ -1130,10 +1130,10 @@ elif [[ "${soc}" == "lito" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "lahaina" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-3"
-      write "${cpuset}foreground/cpus" "0-3,5-6"
-      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "6-7"
+      write "${cpuset}background/cpus" "5-6"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1141,22 +1141,22 @@ elif [[ "${soc}" == "lahaina" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "exynos5" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}dex2oat/cpus" "0-3,5-6"
+      write "${cpuset}dex2oat/cpus" "0-6"
       write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
     
 elif [[ "${soc}" == "trinket" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1164,10 +1164,10 @@ elif [[ "${soc}" == "trinket" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "kona" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-3"
-      write "${cpuset}foreground/cpus" "0-3,5-6"
-      write "${cpuset}foreground/boost/cpus" "0-3,5-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "0-3"
@@ -1175,35 +1175,35 @@ elif [[ "${soc}" == "kona" ]]; then
       kmsg3 ""
     
 elif [[ "${soc}" == "universal9811" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}dexopt/cpus" "0-3,5-6"
+      write "${cpuset}dexopt/cpus" "0-6"
       write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
 
 elif [[ "${soc}" == "universal9820" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-1"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "0-5"
       write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}dexopt/cpus" "0-3,5-6"
+      write "${cpuset}dexopt/cpus" "0-6"
       write "${cpuset}restricted/cpus" "0-3"
       kmsg "Tweaked cpusets"
       kmsg3 ""
 
 elif [[ "${soc}" == "atoll" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-6"
-      write "${cpuset}foreground/boost/cpus" "0-6"
-      write "${cpuset}background/cpus" "0-2"
-      write "${cpuset}system-background/cpus" "2-5"
+      write "${cpuset}camera-daemon/cpus" "0-7"
+      write "${cpuset}foreground/cpus" "0-7"
+      write "${cpuset}foreground/boost/cpus" "4-7"
+      write "${cpuset}background/cpus" "2-5"
+      write "${cpuset}system-background/cpus" "0-3"
       write "${cpuset}top-app/cpus" "0-7"
       write "${cpuset}restricted/cpus" "2-5"
       kmsg "Tweaked cpusets"
@@ -4861,7 +4861,7 @@ apply_all
 kmsg "Latency profile applied. Enjoy!"
 kmsg3 ""
 
-kmsg "End of execution: $(date)"
+kmsg "End of execution"
 kmsg3 ""
 exit=$(date +%s)
 
@@ -4886,7 +4886,7 @@ apply_all
 kmsg "Balanced profile applied. Enjoy!"
 kmsg3 ""
 
-kmsg "End of execution: $(date)"
+kmsg "End of execution"
 kmsg3 ""
 exit=$(date +%s)
 
@@ -4902,7 +4902,7 @@ apply_all
 kmsg "Extreme profile applied. Enjoy!"
 kmsg3 ""
 
-kmsg "End of execution: $(date)"
+kmsg "End of execution"
 kmsg3 ""
 exit=$(date +%s)
 
@@ -4918,7 +4918,7 @@ apply_all
 kmsg "Battery profile applied. Enjoy!"
 kmsg3 ""
 
-kmsg "End of execution: $(date)"
+kmsg "End of execution"
 kmsg3 ""
 exit=$(date +%s)
 
@@ -4934,7 +4934,7 @@ apply_all
 kmsg "Gaming profile applied. Enjoy!"
 kmsg3 ""
 
-kmsg "End of execution: $(date)"
+kmsg "End of execution"
 kmsg3 ""
 exit=$(date +%s)
 
