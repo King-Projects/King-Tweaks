@@ -4174,9 +4174,9 @@ adjshield_create_default_cfg(){
 
 adjshield_start(){
     # clear logs
-    true > "${adj_log}"
-    true > "${bbn_log}"
-    true > "${bbn_banner}"
+    rm -rf "${adj_log}"
+    rm -rf "${bbn_log}"
+    rm -rf "${bbn_banner}"
     # check interval: 120 seconds - Deprecated, use event driven instead
     ${MODPATH}system/bin/adjshield -o "${adj_log}" -c "${adj_cfg}" &
 }
