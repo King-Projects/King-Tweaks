@@ -317,19 +317,19 @@ fi
 
 get_cpu_gov(){
 # Fetch the CPU governor    
-cpu_gov=$(chmod +r /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor && cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor && chmod -r /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
+cpu_gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
 }
 
 get_gpu_gov(){
 # Fetch the GPU governor
 if [[ -e "${gpui}gpu_governor" ]]; then
-    gpu_gov=$(chmod +r "${gpui}gpu_governor" && cat "${gpui}gpu_governor" && chmod -r "${gpui}gpu_governor")
+    gpu_gov=$(cat "${gpui}gpu_governor")
     
 elif [[ -e "${gpu}governor" ]]; then
-      gpu_gov=$(chmod +r "${gpu}governor" && cat "${gpu}governor" && chmod -r "${gpu}governor")
+      gpu_gov=$(cat "${gpu}governor")
     
 elif [[ -e "${gpu}devfreq/governor" ]]; then
-      gpu_gov=$(chmod +r "${gpu}devfreq/governor" && cat "${gpu}devfreq/governor" && chmod -r "${gpu}devfreq/governor")
+      gpu_gov=$(cat "${gpu}devfreq/governor")
 fi
 }
 
@@ -346,9 +346,9 @@ gpu_max_pl=$(cat "${gpu}max_pwrlevel")
 
 get_max_cpu_clk(){
 # Fetch max CPU clock
-cpu_max_freq=$(chmod +r /sys/devices/system/cpu/cpu7/cpufreq/cpuinfo_max_freq && cat /sys/devices/system/cpu/cpu7/cpufreq/cpuinfo_max_freq)
-cpu_max_freq2=$(chmod +r /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_max_freq && cat /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_max_freq && chmod -r /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_max_freq)
-cpu_max_freq3=$(chmod +r /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_max_freq && cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_max_freq && chmod -r /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_max_freq)
+cpu_max_freq=$(cat /sys/devices/system/cpu/cpu7/cpufreq/cpuinfo_max_freq)
+cpu_max_freq2=$(cat /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_max_freq)
+cpu_max_freq3=$(cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_max_freq)
 
 if [[ "${cpu_max_freq2}" -gt "${cpu_max_freq}" ]] && [[ "${cpu_max_freq2}" -gt "${cpu_max_freq3}" ]]; then
     cpu_max_freq=${cpu_max_freq2}
@@ -360,8 +360,8 @@ fi
 
 get_min_cpu_clk(){
 # Fetch min CPU clock
-cpu_min_freq=$(chmod +r /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && chmod -r /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
-cpu_min_freq2=$(chmod +r /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_min_freq && chmod -r /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_min_freq)
+cpu_min_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
+cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_min_freq)
 
 if [[ "${cpu_min_freq2}" -lt "${cpu_min_freq}" ]]; then
     cpu_min_freq=${cpu_min_freq2}
@@ -382,7 +382,7 @@ if [[ -e "${gpu}max_gpuclk" ]]; then
     gpu_max_freq=$(cat "${gpu}max_gpuclk")
 
 elif [[ -e "${gpu}max_clock" ]]; then
-      gpu_max_freq=$(chmod +r "${gpu}max_clock" && cat "${gpu}max_clock" && chmod -r "${gpu}max_clock")
+      gpu_max_freq=$(cat "${gpu}max_clock")
 
 elif [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]]; then
       gpu_max_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | awk '{print $4}' | cut -f1 -d "," | head -n 1)
@@ -395,7 +395,7 @@ if [[ -e "${gpu}min_clock_mhz" ]]; then
     gpu_min_freq=$((gpu_min_freq * 1000000))
 
 elif [[ -e "${gpu}min_clock" ]]; then
-      gpu_min_freq=$(chmod +r && cat "${gpu}min_clock" && chmod -r "${gpu}max_clock")
+      gpu_min_freq=$(cat "${gpu}min_clock")
 
 elif [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]]; then
       gpu_min_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | tail -1 | awk '{print $4}' | cut -f1 -d ",")
@@ -508,7 +508,11 @@ if [[ "$(which busybox)" ]]; then
     total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
     total_ram_kb=$(busybox cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1)
     # Fetch the amount of available RAM
-    avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')    
+    avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')   
+else
+    total_ram="NA (Please install busybox first!)"
+    total_ram_kb="NA (Please install busybox first!)"
+    avail_ram="NA (Please install busybox first!)"
 fi
 }
 
@@ -656,6 +660,8 @@ get_bb_ver(){
 # Fetch busybox version
 if [[ "$(which busybox)" ]]; then
     bb_ver=$(busybox | awk 'NR==1{print $2}')
+else
+    bb_ver="NA (Please install busybox first!)"
 fi
 }
 
@@ -748,6 +754,9 @@ if [[ "$(which sqlite3)" ]]; then
     sql_ver=$(sqlite3 -version | awk '{print $1}')
     # Fetch SQLite build date
     sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}')
+else
+    sql_ver="NA (Install SQLite3 first)"
+    sql_bd_dt="NA (Install SQLite3 first)"
 fi
 }
 
@@ -789,7 +798,7 @@ for dir in /sys/class/devfreq/*/; do
      if [[ "${max_devfreq2}" -gt "${max_devfreq}" ]]; then
          max_devfreq=${max_devfreq2}
      fi
-     lock_value "${dir}min_freq" "${max_devfreq}"
+     write "${dir}min_freq" "${max_devfreq}"
 done
 
 kmsg "Enabled devfreq boost"
@@ -914,28 +923,28 @@ disable_core_ctl(){
 for core_ctl in /sys/devices/system/cpu/cpu*/core_ctl/
 do
   if [[ -e "${core_ctl}enable" ]]; then
-      lock_value "${core_ctl}enable" "0"
+      write "${core_ctl}enable" "0"
 
   elif [[ -e "${core_ctl}disable" ]]; then
-        lock_value "${core_ctl}disable" "1"
+        write "${core_ctl}disable" "1"
   fi
 done
 
 if [[ -e "/sys/power/cpuhotplug/enable" ]]; then
-    lock_value "/sys/power/cpuhotplug/enable" "0"
+    write "/sys/power/cpuhotplug/enable" "0"
 
 elif [[ -e "/sys/power/cpuhotplug/enabled" ]]; then
-      lock_value "/sys/power/cpuhotplug/enabled" "0"
+      write "/sys/power/cpuhotplug/enabled" "0"
 
 elif [[ -e "/sys/devices/system/cpu/cpuhotplug/enabled" ]]; then
-      lock_value "/sys/devices/system/cpu/cpuhotplug/enabled" "0"
+      write "/sys/devices/system/cpu/cpuhotplug/enabled" "0"
 fi
-[[ -e "/sys/kernel/intelli_plug" ]] && lock_value "/sys/kernel/intelli_plug/intelli_plug_active" "0"
-[[ -e "/sys/module/blu_plug" ]] && lock_value "/sys/module/blu_plug/parameters/enabled" "0"
-[[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]] && lock_value "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
-[[ -e "/sys/module/autosmp" ]] && lock_value "/sys/module/autosmp/parameters/enabled" "0"
-[[ -e "/sys/kernel/zen_decision" ]] && lock_value "/sys/kernel/zen_decision/enabled" "0"
-[[ -e "/proc/hps" ]] && lock_value "/proc/hps/enabled" "0"
+[[ -e "/sys/kernel/intelli_plug" ]] && write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+[[ -e "/sys/module/blu_plug" ]] && write "/sys/module/blu_plug/parameters/enabled" "0"
+[[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]] && write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+[[ -e "/sys/module/autosmp" ]] && write "/sys/module/autosmp/parameters/enabled" "0"
+[[ -e "/sys/kernel/zen_decision" ]] && write "/sys/kernel/zen_decision/enabled" "0"
+[[ -e "/proc/hps" ]] && write "/proc/hps/enabled" "0"
 
 kmsg "Disabled core control & CPU hotplug"
 kmsg3 ""
@@ -945,28 +954,28 @@ enable_core_ctl(){
 for core_ctl in /sys/devices/system/cpu/cpu*/core_ctl/
 do
   if [[ -e "${core_ctl}enable" ]]; then
-      lock_value "${core_ctl}enable" "1"
+      write "${core_ctl}enable" "1"
 
   elif [[ -e "${core_ctl}disable" ]]; then
-        lock_value "${core_ctl}disable" "0"
+        write "${core_ctl}disable" "0"
   fi
 done
 
 if [[ -e "/sys/power/cpuhotplug/enable" ]]; then
-    lock_value "/sys/power/cpuhotplug/enable" "1"
+    write "/sys/power/cpuhotplug/enable" "1"
 
 elif [[ -e "/sys/power/cpuhotplug/enabled" ]]; then
-      lock_value "/sys/power/cpuhotplug/enabled" "1"
+      write "/sys/power/cpuhotplug/enabled" "1"
 
 elif [[ -e "/sys/devices/system/cpu/cpuhotplug/enabled" ]]; then
-      lock_value "/sys/devices/system/cpu/cpuhotplug/enabled" "1"
+      write "/sys/devices/system/cpu/cpuhotplug/enabled" "1"
 fi
-[[ -e "/sys/kernel/intelli_plug" ]] && lock_value "/sys/kernel/intelli_plug/intelli_plug_active" "1"
-[[ -e "/sys/module/blu_plug" ]] && lock_value "/sys/module/blu_plug/parameters/enabled" "1"
-[[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]] && lock_value "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "1"
-[[ -e "/sys/module/autosmp" ]] && lock_value "/sys/module/autosmp/parameters/enabled" "1" 
-[[ -e "/sys/kernel/zen_decision" ]] && lock_value "/sys/kernel/zen_decision/enabled" "1"
-[[ -e "/proc/hps" ]] && lock_value "/proc/hps/enabled" "1"
+[[ -e "/sys/kernel/intelli_plug" ]] && write "/sys/kernel/intelli_plug/intelli_plug_active" "1"
+[[ -e "/sys/module/blu_plug" ]] && write "/sys/module/blu_plug/parameters/enabled" "1"
+[[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]] && write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "1"
+[[ -e "/sys/module/autosmp" ]] && write "/sys/module/autosmp/parameters/enabled" "1" 
+[[ -e "/sys/kernel/zen_decision" ]] && write "/sys/kernel/zen_decision/enabled" "1"
+[[ -e "/proc/hps" ]] && write "/proc/hps/enabled" "1"
 
 kmsg "Enabled core control & CPU hotplug"
 kmsg3 ""
@@ -1468,7 +1477,7 @@ do
 	do
 		# Once a matching governor is found, set it and break for this CPU
 		if [[ "${avail_govs}" == *"$governor"* ]]; then
-			lock_value "${cpu}scaling_governor" "${governor}"
+			write "${cpu}scaling_governor" "${governor}"
 		  break
 		fi
 	done
@@ -1526,7 +1535,7 @@ do
 	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
-		  lock_value "${cpu}scaling_governor" "${governor}"
+		  write "${cpu}scaling_governor" "${governor}"
 		break
 	  fi
   done
@@ -1583,7 +1592,7 @@ do
 	for governor in performance sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
-		  lock_value "${cpu}scaling_governor" "${governor}"
+		  write "${cpu}scaling_governor" "${governor}"
 	    break
 	  fi
   done
@@ -1639,7 +1648,7 @@ do
 	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "$avail_govs" == *"$governor"* ]]; then
-		  lock_value "${cpu}scaling_governor" "${governor}"
+		  write "${cpu}scaling_governor" "${governor}"
 		break
       fi
   done
@@ -1696,7 +1705,7 @@ do
 	for governor in performance sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
 	  if [[ "${avail_govs}" == *"$governor"* ]]; then
-		  lock_value "${cpu}scaling_governor" "${governor}"
+		  write "${cpu}scaling_governor" "${governor}"
 		break
       fi
   done
@@ -1846,33 +1855,27 @@ gpu_latency(){
 	    for governor in msm-adreno-tz simple_ondemand ondemand
 	    do
 		  # Once a matching governor is found, set it and break
-		  if [[ "${avail_govs}" == *"$governor"* ]]; then
-			  lock_value "${gpu}devfreq/governor" "${governor}"
-		    break
-		  fi
-	  done
+		  [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}devfreq/governor" "${governor}"
+		   break
+	    done
 	
     elif [[ "${exynos}" == "true" ]]; then
 	      avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 	      for governor in Interactive Dynamic Static ondemand
 	      do
-		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpui}gpu_governor" "${governor}"
-			  break
-		    fi
-	    done
+		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpui}gpu_governor" "${governor}"
+			 break
+	      done
 	
 	elif [[ "${mtk}" == "true" ]]; then
 	      avail_govs="$(cat "${gpu}available_governors")"
 
 	      for governor in Interactive Dynamic Static ondemand
 	      do
-		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpu}governor" "${governor}"
-			  break
-	        fi
-        done
+		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}governor" "${governor}"
+			 break
+          done
       fi
 	
 if [[ "${qcom}" == "true" ]]; then
@@ -1978,11 +1981,8 @@ gpu_balanced(){
 
 	    for governor in msm-adreno-tz simple_ondemand ondemand
 	    do
-		  if [[ "$avail_govs" == *"$governor"* ]]
-		  then
-			  lock_value "${gpu}devfreq/governor" "${governor}"
-			  break
-		    fi
+		  [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}devfreq/governor" "${governor}"
+		   break
 	    done
 	
     elif [[ "${exynos}" == "true" ]]; then
@@ -1990,10 +1990,8 @@ gpu_balanced(){
 
 	      for governor in Interactive Dynamic Static ondemand
 	      do
-		    if [[ "$avail_govs" == *"$governor"* ]]; then
-			    lock_value "${gpui}gpu_governor" "${governor}"
-			    break
-		      fi
+		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpui}gpu_governor" "${governor}"
+			 break
 	      done
 	
 	elif [[ "${mtk}" == "true" ]]; then
@@ -2001,13 +1999,10 @@ gpu_balanced(){
 
 	      for governor in Interactive Dynamic Static ondemand
 	      do
-		    if [[ "$avail_govs" == *"$governor"* ]]
-		    then
-			    lock_value "${gpu}governor" "${governor}"
-			    break
-	          fi
+		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}governor" "${governor}"
+			 break
           done
-        fi
+      fi
 
 if [[ "${qcom}" == "true" ]]; then
     write "${gpu}throttling" "1"
@@ -2026,8 +2021,8 @@ if [[ "${qcom}" == "true" ]]; then
     write "${gpu}pwrscale" "1"
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
-       lock_value "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       lock_value "${gpui}gpu_min_clock" "${gpu_min}"
+       write "${gpui}gpu_max_clock" "${gpu_max_freq}"
+       write "${gpui}gpu_min_clock" "${gpu_min}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "86"
        write "${gpu}highspeed_delay" "0"
@@ -2118,33 +2113,27 @@ gpu_extreme(){
 	    for governor in msm-adreno-tz simple_ondemand ondemand
 	    do
 		  # Once a matching governor is found, set it and break
-		  if [[ "${avail_govs}" == *"$governor"* ]]; then
-			  lock_value "${gpu}devfreq/governor" "${governor}"
-			break
-		  fi
-	  done
+		  [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}devfreq/governor" "${governor}"
+		   break
+	    done
 	
     elif [[ "${exynos}" == "true" ]]; then
 	      avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
-		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpui}gpu_governor" "${governor}"
-			  break
-		    fi
-	    done
+		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpui}gpu_governor" "${governor}"
+			 break
+	      done
 	
 	elif [[ "${mtk}" == "true" ]]; then
 	      avail_govs="$(cat "${gpu}available_governors")"
 
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
-		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpu}governor" "${governor}"
-			  break
-	        fi
-        done
+		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}governor" "${governor}"
+			break
+          done
       fi
 
 if [[ "${qcom}" == "true" ]]; then
@@ -2249,33 +2238,27 @@ gpu_battery(){
 	    
 	    for governor in msm-adreno-tz simple_ondemand ondemand
 	    do
-		  if [[ "${avail_govs}" == *"$governor"* ]]; then
-			  lock_value "${gpu}devfreq/governor" "${governor}"
-		    break
-		  fi
-	  done
+		  [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}devfreq/governor" "${governor}"
+		   break
+	    done
 	
     elif [[ "${exynos}" == "true" ]]; then
 	      avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 	      for governor in Interactive mali_ondemand ondemand Dynamic Static
 	      do
-		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpui}gpu_governor" "${governor}"
-			  break
-		    fi
-	    done
+		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpui}gpu_governor" "${governor}"
+			 break
+	      done
 	
 	elif [[ "${mtk}" == "true" ]]; then
 	      avail_govs="$(cat "${gpu}available_governors")"
 
 	      for governor in Interactive mali_ondemand ondemand Dynamic Static
 	      do
-		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpu}governor" "${governor}"
-			  break
-	        fi
-        done
+		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}governor" "${governor}"
+			 break
+	      done
       fi
 
 if [[ "${qcom}" == "true" ]]; then
@@ -2353,7 +2336,7 @@ if [[ -d "/proc/mali/" ]]; then
      write "/proc/mali/always_on" "0"
 fi
 
-if [[ -e "/sys/module/pvrsrvkm/" ]]; then
+if [[ -d "/sys/module/pvrsrvkm/" ]]; then
     write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 fi
 
@@ -2387,34 +2370,27 @@ gpu_gaming(){
 	    for governor in performance msm-adreno-tz simple_ondemand ondemand
 	    do
 		  # Once a matching governor is found, set it and break
-		  if [[ "${avail_govs}" == *"$governor"* ]]
-		  then
-			  lock_value "${gpu}devfreq/governor" "${governor}"
-			break
-		  fi
-	  done
+		  [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}devfreq/governor" "${governor}"
+		   break
+	    done
 	
     elif [[ "${exynos}" == "true" ]]; then
 	      avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
-		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpui}gpu_governor" "${governor}"
-			  break
-		    fi
-	    done
+	        [[ "${avail_govs}" == *"$governor"* ]] && write "${gpui}gpu_governor" "${governor}"
+	         break
+	      done
 	
 	elif [[ "${mtk}" == "true" ]]; then
 	      avail_govs="$(cat "${gpu}available_governors")"
 
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
-		    if [[ "${avail_govs}" == *"$governor"* ]]; then
-			    lock_value "${gpu}governor" "${governor}"
-			  break
-	        fi
-        done
+		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}governor" "${governor}"
+			 break
+          done
       fi
 
 if [[ "${qcom}" == "true" ]]; then
@@ -2423,8 +2399,8 @@ if [[ "${qcom}" == "true" ]]; then
     write "${gpu}devfreq/adrenoboost" "0"
     write "${gpu}force_no_nap" "1"
     write "${gpu}bus_split" "0"
-    lock_value "${gpu}devfreq/max_freq" "${gpu_max_freq}"
-    lock_value "${gpu}devfreq/min_freq" "${gpu_max}"
+    write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
+    write "${gpu}devfreq/min_freq" "${gpu_max}"
     write "${gpu}min_pwrlevel" "${gpu_max_pl}"
     write "${gpu}force_bus_on" "1"
     write "${gpu}force_clk_on" "1"
@@ -2434,8 +2410,8 @@ if [[ "${qcom}" == "true" ]]; then
     write "${gpu}pwrscale" "0"
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "0"
-       lock_value "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       lock_value "${gpui}gpu_min_clock" "${gpu_max2}"
+       write "${gpui}gpu_max_clock" "${gpu_max_freq}"
+       write "${gpui}gpu_min_clock" "${gpu_max2}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "76"
        write "${gpu}highspeed_delay" "0"
@@ -2443,8 +2419,8 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}cl_boost_disable" "0"
        write "${gpui}boost" "1"
        write "${gpug}mali_touch_boost_level" "1"
-       lock_value "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
-       lock_value "${gpu}devfreq/gpufreq/min_freq" "${gpu_max_freq}"
+       write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_max_freq}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "35"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "15"
@@ -3138,7 +3114,7 @@ sched_latency(){
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
-lock_value "${kernel}sched_tunable_scaling" "0"
+write "${kernel}sched_tunable_scaling" "0"
 [[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "200000"
 [[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "1250000"
 [[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "2000000"
@@ -3155,7 +3131,7 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 [[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
 [[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "25"
-[[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
+[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 [[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
 [[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
 # We do not need it on android, and also is disabled by default on redhat for security purposes
@@ -3164,10 +3140,10 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 [[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
 [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
-[[ -e "/sys/kernel/ems/eff_mode" ]] && lock_value "/sys/kernel/ems/eff_mode" "0"
-[[ -e "/sys/module/opchain/parameters/chain_on" ]] && lock_value "/sys/module/opchain/parameters/chain_on" "0"
-[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
+[[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
+[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_is_big_little" "1" 
 elif [[ -e "${kernel}sched_is_big_little" ]]; then
@@ -3180,9 +3156,9 @@ elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
 fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 # Disable ram-boost relying memplus prefetcher, use traditional swapping
-[[ -d "/sys/module/memplus_core/" ]] && lock_value "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
+[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    lock_value "${bcl_md}" "0"
+    write "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3196,7 +3172,7 @@ sched_balanced(){
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] &&.write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
-lock_value "${kernel}sched_tunable_scaling" "0"
+write "${kernel}sched_tunable_scaling" "0"
 [[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${SCHED_PERIOD_BALANCE}"
 [[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BALANCE / SCHED_TASKS_BALANCE))"
 [[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BALANCE / 2))"
@@ -3214,7 +3190,7 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 [[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
 [[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "20"
-[[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
+[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 [[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
 [[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
 [[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
@@ -3222,10 +3198,10 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 [[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
 [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
-[[ -e "/sys/kernel/ems/eff_mode" ]] && lock_value "/sys/kernel/ems/eff_mode" "0"
-[[ -e "/sys/module/opchain/parameters/chain_on" ]] && lock_value "/sys/module/opchain/parameters/chain_on" "0"
-[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
+[[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
+[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_is_big_little" "1" 
 elif [[ -e "${kernel}sched_is_big_little" ]]; then
@@ -3239,7 +3215,7 @@ fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    lock_value "${bcl_md}" "0"
+    write "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3253,7 +3229,7 @@ sched_extreme(){
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
-lock_value "${kernel}sched_tunable_scaling" "0"
+write "${kernel}sched_tunable_scaling" "0"
 [[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${SCHED_PERIOD_THROUGHPUT}"
 [[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
 [[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
@@ -3265,7 +3241,7 @@ write "${kernel}sched_schedstats" "0"
 [[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 write "${kernel}printk_devkmsg" "off"
 [[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
-[[ -e "${kernel}sched_boost" ]] && lock_value "${kernel}sched_boost" "1"
+[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "1"
 if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]]; then
     write "/sys/devices/system/cpu/eas/enable" "2"
 else
@@ -3275,17 +3251,17 @@ fi
 [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 [[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
 [[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "30"
-[[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
+[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 [[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "0"
 [[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
 [[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 [[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 [[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
-[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && lock_value "/sys/devices/system/cpu/sched/sched_boost" "1"
-[[ -e "/sys/kernel/ems/eff_mode" ]] && lock_value "/sys/kernel/ems/eff_mode" "0"
-[[ -e "/sys/module/opchain/parameters/chain_on" ]] && lock_value "/sys/module/opchain/parameters/chain_on" "0"
-[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "1"
+[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
+[[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
+[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_is_big_little" "1" 
 elif [[ -e "${kernel}sched_is_big_little" ]]; then
@@ -3299,7 +3275,7 @@ fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    lock_value "${bcl_md}" "0"
+    write "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3313,7 +3289,7 @@ sched_battery(){
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
-lock_value "${kernel}sched_tunable_scaling" "0"
+write "${kernel}sched_tunable_scaling" "0"
 [[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${SCHED_PERIOD_BATTERY}"
 [[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_BATTERY / SCHED_TASKS_BATTERY))"
 [[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_BATTERY / 2))"
@@ -3331,17 +3307,17 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 [[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
 [[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "15"
-[[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
+[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 [[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
 [[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
 [[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 [[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "deep"
 [[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "1"
 [[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
-[[ -e "/sys/kernel/ems/eff_mode" ]] && lock_value "/sys/kernel/ems/eff_mode" "0"
-[[ -e "/sys/module/opchain/parameters/chain_on" ]] && lock_value "/sys/module/opchain/parameters/chain_on" "0"
-[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
+[[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
+[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_is_big_little" "1" 
 elif [[ -e "${kernel}sched_is_big_little" ]]; then
@@ -3355,7 +3331,7 @@ fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    [[ -e "${bcl_md}" ]] && lock_value "${bcl_md}" "0"
+    [[ -e "${bcl_md}" ]] && write "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3369,7 +3345,7 @@ sched_gaming(){
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
-lock_value "${kernel}sched_tunable_scaling" "0"
+write "${kernel}sched_tunable_scaling" "0"
 [[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${SCHED_PERIOD_THROUGHPUT}"
 [[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / SCHED_TASKS_THROUGHPUT))"
 [[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_THROUGHPUT / 2))"
@@ -3381,7 +3357,7 @@ write "${kernel}sched_schedstats" "0"
 [[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 write "${kernel}printk_devkmsg" "off"
 [[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
-[[ -e "${kernel}sched_boost" ]] && lock_value "${kernel}sched_boost" "1"
+[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "1"
 if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]]; then
     write "/sys/devices/system/cpu/eas/enable" "2"
 else
@@ -3391,17 +3367,17 @@ fi
 [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 [[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
 [[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "30"
-[[ -e "${kernel}sched_migration_fixup" ]] && lock_value "${kernel}sched_migration_fixup" "0"
+[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 [[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "0"
 [[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
 [[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 [[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 [[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
-[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && lock_value "/sys/devices/system/cpu/sched/sched_boost" "1"
-[[ -e "/sys/kernel/ems/eff_mode" ]] && lock_value "/sys/kernel/ems/eff_mode" "0"
-[[ -e "/sys/module/opchain/parameters/chain_on" ]] && lock_value "/sys/module/opchain/parameters/chain_on" "0"
-[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && lock_value "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && lock_value "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "1"
+[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
+[[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
+[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
     write "${kernel}sched_is_big_little" "1" 
 elif [[ -e "${kernel}sched_is_big_little" ]]; then
@@ -3415,7 +3391,7 @@ fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    lock_value "${bcl_md}" "0"
+    write "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3470,7 +3446,7 @@ fi
 
 ufs_pwr_saving(){
 if [[ -d "/sys/class/devfreq/1d84000.ufshc/" ]]; then
-    lock_value "/sys/class/devfreq/1d84000.ufshc/max_freq" "75000000"
+    write "/sys/class/devfreq/1d84000.ufshc/max_freq" "75000000"
     write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "1"
     write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "1"
     kmsg "Tweaked UFS"
@@ -3522,7 +3498,7 @@ cpu_clk_min(){
 # Set min efficient CPU clock
 for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
    for i in 576000 614400 633600 652800 748800 768000 787200 806400 825600 864000 902400 998400 1113600; do
-      if [[ "$(grep $i ${pl}scaling_available_frequencies)" ]]; then
+      if [[ "$(grep ${i} ${pl}scaling_available_frequencies)" ]]; then
           write ${pl}scaling_min_freq ${i}
       fi
   done
@@ -3610,13 +3586,13 @@ write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP on samsung devices if it do not have more than 4 GB RAM
 if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
-    lock_value "${vm}swappiness" "150"
+    write "${vm}swappiness" "150"
 else
-    lock_value "${vm}swappiness" "100"
+    write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
-lock_value "${vm}watermark_scale_factor" "1"
+write "${vm}watermark_scale_factor" "1"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 [[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 [[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
@@ -3625,7 +3601,7 @@ lock_value "${vm}watermark_scale_factor" "1"
 [[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
 [[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
 [[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
-[[ -e "${lmk}parameters/cost" ]] && lock_value "${lmk}parameters/cost" "4096"
+[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
 
 kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 kmsg3 ""
@@ -3649,13 +3625,13 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
-    lock_value "${vm}swappiness" "150"
+    write "${vm}swappiness" "150"
 else
-    lock_value "${vm}swappiness" "100"
+    write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
-lock_value "${vm}watermark_scale_factor" "1"
+write "${vm}watermark_scale_factor" "1"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 [[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 [[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
@@ -3664,7 +3640,7 @@ lock_value "${vm}watermark_scale_factor" "1"
 [[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
 [[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
 [[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
-[[ -e "${lmk}parameters/cost" ]] && lock_value "${lmk}parameters/cost" "4096"
+[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
@@ -3688,13 +3664,13 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
-    lock_value "${vm}swappiness" "150"
+    write "${vm}swappiness" "150"
 else
-    lock_value "${vm}swappiness" "100"
+    write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "150"
-lock_value "${vm}watermark_scale_factor" "1"
+write "${vm}watermark_scale_factor" "1"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 [[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 [[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
@@ -3703,7 +3679,7 @@ lock_value "${vm}watermark_scale_factor" "1"
 [[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
 [[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
 [[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
-[[ -e "${lmk}parameters/cost" ]] && lock_value "${lmk}parameters/cost" "4096"
+[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
@@ -3727,13 +3703,13 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
-    lock_value "${vm}swappiness" "150"
+    write "${vm}swappiness" "150"
 else
-    lock_value "${vm}swappiness" "100"
+    write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "1"
 write "${vm}vfs_cache_pressure" "60"
-lock_value "${vm}watermark_scale_factor" "1"
+write "${vm}watermark_scale_factor" "1"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 [[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 [[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
@@ -3742,7 +3718,7 @@ lock_value "${vm}watermark_scale_factor" "1"
 [[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
 [[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
 [[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
-[[ -e "${lmk}parameters/cost" ]] && lock_value "${lmk}parameters/cost" "4096"
+[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
@@ -3766,13 +3742,13 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
-    lock_value "${vm}swappiness" "150"
+    write "${vm}swappiness" "150"
 else
-    lock_value "${vm}swappiness" "100"
+    write "${vm}swappiness" "100"
 fi
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "500"
-lock_value "${vm}watermark_scale_factor" "1"
+write "${vm}watermark_scale_factor" "1"
 [[ -e "/sys/module/process_reclaim/parameters/enable_process_reclaim" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 [[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
@@ -3782,7 +3758,7 @@ lock_value "${vm}watermark_scale_factor" "1"
 [[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
 [[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
 [[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
-[[ -e "${lmk}parameters/cost" ]] && lock_value "${lmk}parameters/cost" "4096"
+[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
 
 kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 kmsg3 ""
@@ -3790,9 +3766,9 @@ kmsg3 ""
 
 disable_msm_thermal(){
 if [[ -d "/sys/module/msm_thermal/" ]]; then
-    lock_value "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
-    lock_value "/sys/module/msm_thermal/core_control/enabled" "0"
-    lock_value "/sys/module/msm_thermal/parameters/enabled" "N"
+    write "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
+    write "/sys/module/msm_thermal/core_control/enabled" "0"
+    write "/sys/module/msm_thermal/parameters/enabled" "N"
     kmsg "Disabled msm_thermal"
     kmsg3 ""
 fi
@@ -3800,7 +3776,7 @@ fi
 
 enable_pewq(){
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]; then 
-    lock_value "/sys/module/workqueue/parameters/power_efficient" "Y"
+    write "/sys/module/workqueue/parameters/power_efficient" "Y"
     kmsg "Enabled power efficient workqueue"
     kmsg3 ""
 fi
@@ -3808,7 +3784,7 @@ fi
 
 disable_pewq(){
 if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]; then 
-    lock_value "/sys/module/workqueue/parameters/power_efficient" "N"
+    write "/sys/module/workqueue/parameters/power_efficient" "N"
     kmsg "Disabled power efficient workqueue"
     kmsg3 ""
 fi
@@ -3890,10 +3866,7 @@ avail_con="$(cat "${tcp}tcp_available_congestion_control")"
     for tcpcc in bbr2 bbr westwood cubic bic
 	do
 	    # Once a matching TCP congestion control is found, set it and break
-		if [[ "${avail_con}" == *"${tcpcc}"* ]]; then
-			write "${tcp}"tcp_congestion_control "${tcpcc}"
-		  break
-		fi
+		[[ "${avail_con}" == *"${tcpcc}"* ]] && write "${tcp}tcp_congestion_control" "${tcpcc}"
 	done
 
 write "${tcp}ip_no_pmtu_disc" "0"
@@ -3983,11 +3956,11 @@ disable_lpm(){
 for lpm in /sys/module/lpm_levels/system/*/*/*/
 do
   if [[ -d "/sys/module/lpm_levels/" ]]; then
-      lock_value "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
-      lock_value "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "N"
-      lock_value "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
-      lock_value "${lpm}idle_enabled" "N"
-      lock_value "${lpm}suspend_enabled" "N"
+      write "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
+      write "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "N"
+      write "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
+      write "${lpm}idle_enabled" "N"
+      write "${lpm}suspend_enabled" "N"
   fi
 done
 
@@ -4166,6 +4139,7 @@ adjshield_start(){
     # clear logs
     true > "${adj_log}"
     true > "${bbn_log}"
+    true > "${bbn_banner}"
     # check interval: 120 seconds - Deprecated, use event driven instead
     ${MODPATH}system/bin/adjshield -o "${adj_log}" -c "${adj_cfg}" &
 }
@@ -4497,7 +4471,7 @@ cgroup_bbn_opt(){
     change_thread_cgroup "\.hardware\.composer" "^Binder" "top-app" "cpuset"
     change_thread_cgroup "\.hardware\.composer" "^HwBinder" "top-app" "cpuset"
     # boost app boot process, zygote--com.xxxx.xxx
-    # usap nicing isn't necessary as it is already set to -20 by default
+    # usap nicing isn't necessary as it is already set to the max nice possible (-20) by default
     unpin_proc "zygote|usap"
     change_task_nice "zygote" "-20"
 }
@@ -4837,11 +4811,6 @@ samsung=false
 qcom=false
 exynos=false
 mtk=false
-total_ram="NA (Please install busybox first!)"
-avail_ram="NA (Please install busybox first!)"
-bb_ver="NA (Please install busybox first!)"
-sql_ver="NA (Install SQLite3 first)"
-sql_bd_dt="NA (Install SQLite3 first)"
 ppm=false
 big_little=false
 toptsdir="/dev/stune/top-app/tasks"
@@ -4855,9 +4824,6 @@ get_all
 apply_all
 
 kmsg "Latency profile applied. Enjoy!"
-kmsg3 ""
-
-kmsg "End of execution"
 kmsg3 ""
 exit=$(date +%s)
 
@@ -4881,9 +4847,6 @@ apply_all
 
 kmsg "Balanced profile applied. Enjoy!"
 kmsg3 ""
-
-kmsg "End of execution"
-kmsg3 ""
 exit=$(date +%s)
 
 exec_time=$((exit - init))
@@ -4896,9 +4859,6 @@ get_all
 apply_all
 
 kmsg "Extreme profile applied. Enjoy!"
-kmsg3 ""
-
-kmsg "End of execution"
 kmsg3 ""
 exit=$(date +%s)
 
@@ -4913,9 +4873,6 @@ apply_all
 
 kmsg "Battery profile applied. Enjoy!"
 kmsg3 ""
-
-kmsg "End of execution"
-kmsg3 ""
 exit=$(date +%s)
 
 exec_time=$((exit - init))
@@ -4928,9 +4885,6 @@ get_all
 apply_all
 
 kmsg "Gaming profile applied. Enjoy!"
-kmsg3 ""
-
-kmsg "End of execution"
 kmsg3 ""
 exit=$(date +%s)
 
