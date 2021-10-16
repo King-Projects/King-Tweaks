@@ -5,9 +5,46 @@
 # If you wanna use it as part of your project, please maintain the credits to it's respectives authors.
 # TODO: Implement a proper debug flag & cleanup some variables
 
+###############################
+# Variables
+###############################
 MODPATH="/data/adb/modules/KTSR/"
 KLOG="/data/media/0/KTSR/KTSR.log"
 KDBG="/data/media/0/KTSR/KTSR_DBG.log"
+tcp="/proc/sys/net/ipv4/"
+kernel="/proc/sys/kernel/"
+vm="/proc/sys/vm/"
+cpuset="/dev/cpuset/"
+stune="/dev/stune/"
+lmk="/sys/module/lowmemorykiller/"
+blkio="/dev/blkio/"
+cpuctl="/dev/cpuctl/"
+fs="/proc/sys/fs/"
+bbn_log="/data/media/0/KTSR/bourbon.log"
+bbn_banner="/data/media/0/KTSR/bourbon.info"
+adj_rel="${BIN_DIR}"
+adj_nm="adjshield"
+adj_cfg="/data/media/0/KTSR/adjshield.conf"
+adj_log="/data/media/0/KTSR/adjshield.log"
+fscc_nm="fscache-ctrl"
+sys_frm="/system/framework"
+sys_lib="/system/lib64"
+vdr_lib="/vendor/lib64"
+dvk="/data/dalvik-cache"
+apx1="/apex/com.android.art/javalib"
+apx2="/apex/com.android.runtime/javalib"
+perfmgr="/proc/perfmgr/"
+fscc_file_list=""
+one_ui=false
+samsung=false
+qcom=false
+exynos=false
+mtk=false
+ppm=false
+big_little=false
+toptsdir="/dev/stune/top-app/tasks"
+toptcdir="/dev/cpuset/top-app/tasks"
+scrn_on=0
 
 # Log in white and continue (unnecessary)
 kmsg(){
@@ -4778,44 +4815,6 @@ else
     perfmgr_pwr_saving
 fi
 }
-
-###############################
-# Abbreviations
-###############################
-tcp="/proc/sys/net/ipv4/"
-kernel="/proc/sys/kernel/"
-vm="/proc/sys/vm/"
-cpuset="/dev/cpuset/"
-stune="/dev/stune/"
-lmk="/sys/module/lowmemorykiller/"
-blkio="/dev/blkio/"
-cpuctl="/dev/cpuctl/"
-fs="/proc/sys/fs/"
-bbn_log="/data/media/0/KTSR/bourbon.log"
-bbn_banner="/data/media/0/KTSR/bourbon.info"
-adj_rel="${BIN_DIR}"
-adj_nm="adjshield"
-adj_cfg="/data/media/0/KTSR/adjshield.conf"
-adj_log="/data/media/0/KTSR/adjshield.log"
-fscc_nm="fscache-ctrl"
-sys_frm="/system/framework"
-sys_lib="/system/lib64"
-vdr_lib="/vendor/lib64"
-dvk="/data/dalvik-cache"
-apx1="/apex/com.android.art/javalib"
-apx2="/apex/com.android.runtime/javalib"
-perfmgr="/proc/perfmgr/"
-fscc_file_list=""
-one_ui=false
-samsung=false
-qcom=false
-exynos=false
-mtk=false
-ppm=false
-big_little=false
-toptsdir="/dev/stune/top-app/tasks"
-toptcdir="/dev/cpuset/top-app/tasks"
-scrn_on=0
 
 latency(){
 init=$(date +%s)

@@ -175,7 +175,6 @@ case "${ktsr_prof}" in
 clear_logs
 
 # Similiar to PinnerService, Mlock(Unevictable) 200~350MB
-if [[ "${qcom}" == "true" ]]; then
 fscc_add_obj "${sys_frm}/framework.jar"
 fscc_add_obj "${sys_frm}/services.jar"
 fscc_add_obj "${sys_frm}/ext.jar"
@@ -216,7 +215,6 @@ fscc_start
 [[ ! -f "${adj_cfg}" ]] && adjshield_create_default_cfg
 adjshield_stop
 adjshield_start
-fi
 rebuild_process_scan_cache
 cgroup_bbn_opt
 
