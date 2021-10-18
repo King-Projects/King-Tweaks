@@ -392,8 +392,8 @@ fi
 
 get_gpu_min_max_mhz(){
 # Fetch maximum & minimum GPU clock in MHz
-[[ "${gpu_max_freq}" -ge "100000" ]] && gpu_max_clk_mhz=$((gpu_max_freq / 1000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000))
-[[ "${gpu_max_freq}" -ge "100000000" ]] && gpu_max_clk_mhz=$((gpu_max_freq / 1000000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000000))
+[[ "${gpu_max_freq}" -ge "100000" ]] && gpu_max_clk_mhz=$((gpu_max_freq / 1000)) && gpu_min_clk_mhz=$((gpu_min_freq / 1000))
+[[ "${gpu_max_freq}" -ge "100000000" ]] && gpu_max_clk_mhz=$((gpu_max_freq / 1000000)) && gpu_min_clk_mhz=$((gpu_min_freq / 1000000))
 }
 
 get_soc_mf(){
@@ -4292,7 +4292,7 @@ bring_all_cores
 [[ "${ktsr_prof_en}" == "latency" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] && misc_cpu_default
 [[ "${ktsr_prof_en}" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
 disable_ppm
-[[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "latency" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && cpu_clk_min && cpu_clk_default && cpu_clk_max
+[[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "latency" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && cpu_clk_min && cpu_clk_default || cpu_clk_max
 hmp_${ktsr_prof_en}
 gpu_${ktsr_prof_en}
 schedtune_${ktsr_prof_en}
@@ -4316,7 +4316,7 @@ config_tcp
 [[ "${ktsr_prof_en}" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
 [[ "${ktsr_prof_en}" == "battery" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "latency" ]] && enable_lpm || disable_lpm
 [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
-[[ "${ktsr_prof_en}" == "battery" ]] && enable_lcd_prdc && disable_lcd_prdc
+[[ "${ktsr_prof_en}" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
 enable_usb_fast_chrg
 enable_sam_fast_chrg
 disable_spd_freqs
@@ -4342,7 +4342,7 @@ bring_all_cores
 [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] && misc_cpu_default
 [[ "$(getprop kingauto.prof)" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
 disable_ppm
-[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && cpu_clk_min && cpu_clk_default && cpu_clk_max
+[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && cpu_clk_min && cpu_clk_default || cpu_clk_max
 hmp_$(getprop kingauto.prof)
 gpu_$(getprop kingauto.prof)
 schedtune_$(getprop kingauto.prof)
@@ -4366,7 +4366,7 @@ config_tcp
 [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
 [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && enable_lpm || disable_lpm
 [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
-[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_lcd_prdc && disable_lcd_prdc
+[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
 enable_usb_fast_chrg
 enable_sam_fast_chrg
 disable_spd_freqs
