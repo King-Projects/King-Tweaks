@@ -9,26 +9,12 @@ MODPATH="/data/adb/modules/KTSR"
 . "${MODPATH}/libs/libktsr.sh"
 
 # Check for root permissions and bail if not granted
-if [[ "$(id -u)" != "0" ]]; then
-    kmsg2 "No root permissions. Exiting..."
-    exit 1
-fi
+[[ "$(id -u)" != "0" ]] && kmsg2 "No root permissions. Exiting..." && exit 1
 
-if [[ -e "${KLOG}" ]]; then
-    rm -rf "${KLOG}"
-fi
-
-if [[ ! -d "/data/media/0/KTSR" ]]; then
-    mkdir -p "/data/media/0/KTSR"
-fi
-
-if [[ -d "/data/media/0/KTSR" ]]; then
-    touch "${KLOG}"
-fi
-
-if [[ -e "${KDBG}" ]]; then
-    rm -rf "${KDBG}"
-fi
+[[ -e "${KLOG}" ]] && rm -rf "${KLOG}"
+[[ ! -d "/data/media/0/KTSR" ]] && mkdir -p "/data/media/0/KTSR"
+[[ -d "/data/media/0/KTSR" ]] && touch "${KLOG}"
+[[ -e "${KDBG}" ]] && rm -rf "${KDBG}"
 
 boot_run_once=false
 ktsr_prof=$(getprop persist.king.tweaks.prof)

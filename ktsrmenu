@@ -75,21 +75,9 @@ case "${ktsr_prof}" in
            ;;
       esac
 
-if [[ "$(settings get global low_power)" == "1" ]]; then
-    low_power_mode="Enabled"
-else
-    low_power_mode="Disabled"
-fi
-if [[ "$(cmd netpolicy get restrict-background | awk '{print $4}')" == "enabled" ]]; then
-    data_saver="Enabled"
-else
-    data_saver="Disabled"
-fi
-if [[ "$(settings get secure location_providers_allowed)" == "" ]]; then
-    loc_mode_pwr_saving="Enabled"
-else
-    loc_mode_pwr_saving="Disabled"
-fi
+[[ "$(settings get global low_power)" == "1" ]] && low_power_mode="Enabled" || low_power_mode="Disabled"
+[[ "$(cmd netpolicy get restrict-background | awk '{print $4}')" == "enabled" ]] && data_saver="Enabled" || data_saver="Disabled"
+[[ "$(settings get secure location_providers_allowed)" == "" ]] && loc_mode_pwr_saving="Enabled" || loc_mode_pwr_saving="Disabled"
 menu(){
 clear
 echo ""
@@ -314,31 +302,21 @@ read -r option
                                                                               ;;
 						                            
                                                  "16") 
-                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]]; then
-                                                          echo "50" > "/sys/module/mdss_mdp/parameters/custom_hz"
-                                                      else
-                                                          echo "Y" > "/sys/module/mdss_mdp/parameters/custom_hz"
-                                                      fi
+                                                      [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "50" > "/sys/module/mdss_mdp/parameters/custom_hz" || echo "Y" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       echo "${G}Done!${N}"
                                                       sleep 2
                                                       menu
                                                       ;;
                                                       
                                                  "17")
-                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]]; then
-                                                          echo "55" > "/sys/module/mdss_mdp/parameters/custom_hz"
-                                                      fi
+                                                      [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "55" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       echo "${G}Done!${N}"
                                                       sleep 2
                                                       menu
                                                       ;;
                                                       
                                                  "18")
-                                                      if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]]; then
-                                                          echo "60" > "/sys/module/mdss_mdp/parameters/custom_hz"
-                                                      else
-                                                          echo "N" > "/sys/module/mdss_mdp/parameters/custom_hz"
-                                                      fi
+                                                      [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "60" > "/sys/module/mdss_mdp/parameters/custom_hz" || echo "N" > "/sys/module/mdss_mdp/parameters/custom_hz"
                                                       settings put system min_refresh_rate 60 2>/dev/null
                                                       settings put system peak_refresh_rate 60 2>/dev/null
                                                       settings put system user_refresh_rate 60 2>/dev/null
@@ -401,9 +379,7 @@ read -r option
                                             am kill-all
                                             sleep 3
                                             while IFS= read -r pkg_nm; do
-                                            if [[ "$pkg_nm" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]]; then
-                                                am force-stop "$pkg_nm"
-                                            fi
+                                            [[ "${pkg_nm}" != "com.termux" ]] && [[ "${pkg_nm}" != "jackpal.androidterm" ]] && [[ "${pkg_nm}" != "yarolegovich.materialterminal" ]] && [[ "${pkg_nm}" != "com.google.android.inputmethod.latin" ]] && [[ "${pkg_nm}" != "com.termoneplus" ]] && am force-stop "${pkg_nm}"
                                             done <<< "$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
                                             echo "${G}Done!${N}"
                                             sleep 2
@@ -446,9 +422,7 @@ read -r option
 						        esac
 }
 
-						if [[ -z "$1" ]]; then
-						    menu
-						fi
+						[[ -z "$1" ]] && menu
 
 						help_me(){
                         echo "$MODTITLE $VER($REL)"
@@ -491,9 +465,7 @@ read -r option
                                  am kill-all
                                  sleep 3
                                  while IFS= read -r pkg_nm; do
-                                      if [[ "${pkg_nm}" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]]; then
-                                          am force-stop "$pkg_nm"
-                                      fi
+                                      [[ "${pkg_nm}" != "com.termux" ]] && [[ "${pkg_nm}" != "jackpal.androidterm" ]] && [[ "${pkg_nm}" != "yarolegovich.materialterminal" ]] && [[ "${pkg_nm}" != "com.google.android.inputmethod.latin" ]] && [[ "${pkg_nm}" != "com.termoneplus" ]] && am force-stop "${pkg_nm}"
                                  done <<< "$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
                                  echo "${G}Done!${N}"
                                  sleep 2

@@ -47,9 +47,7 @@ toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=0
 
 # Log in white and continue (unnecessary)
-kmsg(){
-	echo -e "[$(date +%T)]: [*] $@" >> "${KLOG}"
-}
+kmsg(){ echo -e "[$(date +%T)]: [*] $@" >> "${KLOG}"; }
 
 kmsg1(){
 	echo -e "$@" >> "${KDBG}"
@@ -61,40 +59,28 @@ kmsg2(){
 	echo -e "[!] $@"
 }
 
-kmsg3(){
-	echo -e "$@" >> "${KLOG}"
-}
+kmsg3(){ echo -e "$@" >> "${KLOG}"; }
 
 # toasttext: <text content>
-toast(){
-	am start -a android.intent.action.MAIN -e toasttext "Applying ${ktsr_prof_en} profile..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
+toast(){ am start -a android.intent.action.MAIN -e toasttext "Applying ${ktsr_prof_en} profile..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 	
-toast_1(){
-	am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_en} profile applied" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
+toast_1(){ am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_en} profile applied" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
-toast_pt(){
-	am start -a android.intent.action.MAIN -e toasttext "Aplicando perfil ${ktsr_prof_pt}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
+toast_pt(){ am start -a android.intent.action.MAIN -e toasttext "Aplicando perfil ${ktsr_prof_pt}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
-toast_pt_1(){
-	am start -a android.intent.action.MAIN -e toasttext "Perfil ${ktsr_prof_pt} aplicado" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
+toast_pt_1(){ am start -a android.intent.action.MAIN -e toasttext "Perfil ${ktsr_prof_pt} aplicado" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
-toast_tr(){
-	am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_tr} profili uygulanıyor..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
+toast_tr(){ am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_tr} profili uygulanıyor..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
-toast_tr_1(){
-	am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_tr} profili uygulandı" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
+toast_tr_1(){ am start -a android.intent.action.MAIN -e toasttext "${ktsr_prof_tr} profili uygulandı" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
-toast_id(){
-	am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil ${ktsr_prof_id}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
+toast_id(){ am start -a android.intent.action.MAIN -e toasttext "Menerapkan profil ${ktsr_prof_id}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
-toast_id_1(){
-	am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_id} terpakai" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
+toast_id_1(){ am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_id} terpakai" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
-toast_fr(){
-	am start -a android.intent.action.MAIN -e toasttext "Chargement du profil ${ktsr_prof_tr}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
+toast_fr(){ am start -a android.intent.action.MAIN -e toasttext "Chargement du profil ${ktsr_prof_tr}..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
-toast_fr_1(){ 
-    am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_fr} chargé" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
+toast_fr_1(){ am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_fr} chargé" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
 # write:$1 $2
 write(){
@@ -196,92 +182,59 @@ SCHED_TASKS_THROUGHPUT="6"
 # Fetch GPU directories
 get_gpu_dir(){
 for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/
-  do
-    if [[ -d "${gpul}" ]]; then
-        gpu=${gpul}
-        qcom=true
-    fi
+do
+  [[ -d "${gpul}" ]] && gpu=${gpul} && qcom=true
 done
     
      for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/
-     do
-       if [[ -d "${gpul1}" ]]; then
-           gpu=${gpul1}
-           qcom=true
-       fi
-   done
+     do 
+       [[ -d "${gpul1}" ]] && gpu=${gpul1} && qcom=true
+     done
        
       for gpul2 in /sys/devices/*.mali/
       do
-        if [[ -d "${gpul2}" ]]; then
-            gpu=${gpul2}
-            qcom=false
-        fi
-    done
+        [[ -d "${gpul2}" ]] && gpu=${gpul2} && qcom=false
+      done
          
        for gpul3 in /sys/devices/platform/*.gpu/
        do
-         if [[ -d "${gpul3}" ]]; then
-             gpu=${gpul3}
-             qcom=false
-         fi
-     done
+         [[ -d "${gpul3}" ]] && gpu=${gpul3} && qcom=false
+       done
        
          for gpul4 in /sys/devices/platform/mali-*/
          do
-           if [[ -d "${gpul4}" ]]; then
-               gpu=${gpul4}
-               qcom=false
-           fi
-       done
+           [[ -d "${gpul4}" ]] && gpu=${gpul4} && qcom=false
+         done
            
            for gpul5 in /sys/devices/platform/*.mali/
            do
-             if [[ -d "${gpul5}" ]]; then
-                 gpu=${gpul5}
-                 qcom=false
-             fi
-         done
+             [[ -d "${gpul5}" ]] && gpu=${gpul5} && qcom=false
+           done
                  
              for gpul6 in /sys/class/misc/mali*/device/devfreq/gpufreq/
              do
-               if [[ -d "${gpul6}" ]]; then
-                   gpu=${gpul6}
-                   qcom=false
-               fi
-           done
+               [[ -d "${gpul6}" ]] && gpu=${gpul6} && qcom=false
+             done
              
               for gpul7 in /sys/class/misc/mali*/device/devfreq/*.gpu/
               do
-                if [[ -d "${gpul7}" ]]; then
-                    gpu=${gpul7}
-                    qcom=false
-                fi
-            done
+                [[ -d "${gpul7}" ]] && gpu=${gpul7} && qcom=false 
+              done
 
                for gpul8 in /sys/devices/platform/*.mali/misc/mali0/
                do
-                 if [[ -d "${gpul8}" ]]; then
-                     gpu=${gpul8}
-                     qcom=false
-                 fi
-             done
+                 [[ -d "${gpul8}" ]] && gpu=${gpul8} && qcom=false
+               done
              
              for gpul9 in /sys/devices/platform/mali.*/
              do
-               if [[ -d "${gpul9}" ]]; then
-                   gpu=${gpul9}
-                   qcom=false
-               fi
-           done
+               [[ -d "${gpul9}" ]] && gpu=${gpul9} && qcom=false
+             done
 
            for gpul10 in /sys/devices/platform/*.mali/devfreq/*.mali/subsystem/*.mali
            do
-             if [[ -d "${gpul10}" ]]; then
-                 gpu=${gpul10}
-                 qcom=false
-             fi
-         done
+             [[ -d "${gpul10}" ]] && gpu=${gpul10} && qcom=false
+           done
 
                if [[ -d "/sys/class/kgsl/kgsl-3d0/" ]]; then
                    gpu="/sys/class/kgsl/kgsl-3d0/"
@@ -300,14 +253,8 @@ done
                      qcom=false
                fi
 		
-               if [[ -d "/sys/module/mali/parameters" ]]; then
-                   gpug="/sys/module/mali/parameters/"
-                   qcom=false
-               fi
-		
-               if [[ -d "/sys/kernel/gpu" ]]; then
-                   gpui="/sys/kernel/gpu/"
-               fi
+               [[ -d "/sys/module/mali/parameters" ]] && gpug="/sys/module/mali/parameters/" && qcom=false
+               [[ -d "/sys/kernel/gpu" ]] && gpui="/sys/kernel/gpu/"
 }
 
 get_gpu_max(){
@@ -386,23 +333,27 @@ get_max_cpu_clk(){
 cpu_max_freq=$(cat /sys/devices/system/cpu/cpu7/cpufreq/cpuinfo_max_freq)
 cpu_max_freq2=$(cat /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_max_freq)
 cpu_max_freq3=$(cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_max_freq)
+cpu_max_freq1=$(cat /sys/devices/system/cpu/cpu7/cpufreq/scaling_max_freq)
+cpu_max_freq1_2=$(cat /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq)
+cpu_max_freq1_3=$(cat /sys/devices/system/cpu/cpu5/cpufreq/scaling_max_freq)
 
-if [[ "${cpu_max_freq2}" -gt "${cpu_max_freq}" ]] && [[ "${cpu_max_freq2}" -gt "${cpu_max_freq3}" ]]; then
-    cpu_max_freq=${cpu_max_freq2}
-
-elif [[ "${cpu_max_freq3}" -gt "${cpu_max_freq}" ]] && [[ "${cpu_max_freq3}" -gt "${cpu_max_freq2}" ]]; then
-      cpu_max_freq=${cpu_max_freq3}
-fi
+[[ "${cpu_max_freq2}" -gt "${cpu_max_freq}" ]] && [[ "${cpu_max_freq2}" -gt "${cpu_max_freq3}" ]] && cpu_max_freq=${cpu_max_freq2}
+[[ "${cpu_max_freq3}" -gt "${cpu_max_freq}" ]] && [[ "${cpu_max_freq3}" -gt "${cpu_max_freq2}" ]] && cpu_max_freq=${cpu_max_freq3}
+[[ "${cpu_max_freq1_2}" -gt "${cpu_max_freq1}" ]] && [[ "${cpu_max_freq1_2}" -gt "${cpu_max_freq1_3}" ]] && cpu_max_freq1=${cpu_max_freq1_2}
+[[ "${cpu_max_freq1_3}" -gt "${cpu_max_freq1}" ]] && [[ "${cpu_max_freq1_3}" -gt "${cpu_max_freq1_2}" ]] && cpu_max_freq1=${cpu_max_freq1_3}
+[[ "${cpu_max_freq1}" -gt "${cpu_max_freq}" ]] && cpu_max_freq=${cpu_max_freq1}
 }
 
 get_min_cpu_clk(){
 # Fetch min CPU clock
 cpu_min_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
 cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_min_freq)
+cpu_min_freq1=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
+cpu_min_freq1_2=$(cat /sys/devices/system/cpu/cpu5/cpufreq/scaling_min_freq)
 
-if [[ "${cpu_min_freq2}" -lt "${cpu_min_freq}" ]]; then
-    cpu_min_freq=${cpu_min_freq2}
-fi
+[[ "${cpu_min_freq2}" -lt "${cpu_min_freq}" ]] && cpu_min_freq=${cpu_min_freq2}
+[[ "${cpu_min_freq1_2}" -lt "${cpu_min_freq1}" ]] && cpu_min_freq1=${cpu_min_freq1_2}
+[[ "${cpu_min_freq1}" -lt "${cpu_min_freq}" ]] && cpu_min_freq=${cpu_min_freq1}
 }
 
 get_cpu_min_max_mhz(){
@@ -441,13 +392,8 @@ fi
 
 get_gpu_min_max_mhz(){
 # Fetch maximum & minimum GPU clock in MHz
-if [[ "${gpu_max_freq}" -ge "100000" ]]; then
-    gpu_max_clk_mhz=$((gpu_max_freq / 1000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000))
-fi
-
-if [[ "${gpu_max_freq}" -ge "100000000" ]]; then
-    gpu_max_clk_mhz=$((gpu_max_freq / 1000000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000000))
-fi
+[[ "${gpu_max_freq}" -ge "100000" ]] && gpu_max_clk_mhz=$((gpu_max_freq / 1000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000))
+[[ "${gpu_max_freq}" -ge "100000000" ]] && gpu_max_clk_mhz=$((gpu_max_freq / 1000000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000000))
 }
 
 get_soc_mf(){
@@ -459,25 +405,17 @@ get_soc(){
 # Fetch the device SOC
 soc=$(getprop ro.board.platform)
 
-if [[ "${soc}" == "" ]]; then
-    soc=$(getprop ro.product.board)
-elif [[ "${soc}" == "" ]]; then
-      soc=$(getprop ro.product.platform)
-elif [[ "${soc}" == "" ]]; then
-      soc=$(getprop ro.chipname)
-fi
+[[ "${soc}" == "" ]] && soc=$(getprop ro.product.board)
+[[ "${soc}" == "" ]] && soc=$(getprop ro.product.platform)
+[[ "${soc}" == "" ]] && soc=$(getprop ro.chipname)
 }
 
 get_sdk(){
 # Fetch the device SDK              
 sdk=$(getprop ro.build.version.sdk)
 
-if [[ "${sdk}" == "" ]]; then
-    sdk=$(getprop ro.vendor.build.version.sdk)
-
-elif [[ "${sdk}" == "" ]]; then
-      sdk=$(getprop ro.vndk.version)
-fi
+[[ "${sdk}" == "" ]] && sdk=$(getprop ro.vendor.build.version.sdk)
+[[ "${sdk}" == "" ]] && sdk=$(getprop ro.vndk.version)
 }
 
 get_arch(){
@@ -502,16 +440,12 @@ root=$(su -v)
 
 is_exynos(){
 # Detect if we're running on a exynos powered device
-if [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]]; then
-    exynos=true
-fi
+[[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]] && exynos=true
 }
 
 is_mtk(){ 
 # Detect if we're running on a mediatek powered device              
-if [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]]; then
-    mtk=true
-fi
+[[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]] && mtk=true
 }
 
 detect_cpu_sched(){
@@ -540,26 +474,12 @@ kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 }
 
 get_ram_info(){
-if [[ "$(which busybox)" ]]; then
-    # Fetch the total amount of memory RAM
-    total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
-    total_ram_kb=$(busybox cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1)
-    # Fetch the amount of available RAM
-    avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')   
-else
-    total_ram="NA (Please install busybox first!)"
-    total_ram_kb="NA (Please install busybox first!)"
-    avail_ram="NA (Please install busybox first!)"
-fi
+[[ "$(which busybox)" ]] && total_ram=$(busybox free -m | awk '/Mem:/{print $2}'); total_ram_kb=$(cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1); avail_ram=$(busybox free -m | awk '/Mem:/{print $7}') || total_ram="NA (Please install busybox first)"; total_ram_kb="NA (Please install busybox first)"; avail_ram="NA (Please install busybox first)"
 }
 
 get_batt_pctg(){               
 # Fetch battery actual capacity
-if [[ -e "/sys/class/power_supply/battery/capacity" ]]; then
-    batt_pctg=$(cat /sys/class/power_supply/battery/capacity)             
-else
-    batt_pctg=$(dumpsys battery 2>/dev/null | awk '/level/{print $2}')
-fi
+[[ -e "/sys/class/power_supply/battery/capacity" ]] && batt_pctg=$(cat /sys/class/power_supply/battery/capacity) || batt_pctg=$(dumpsys battery 2>/dev/null | awk '/level/{print $2}')
 }
 
 get_ktsr_info(){
@@ -602,23 +522,15 @@ fi
 
 get_drvs_info(){
 # Fetch drivers info
-if [[ "${exynos}" == "true" ]] || [[ "${mtk}" == "true" ]]; then
-    drvs_info=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $4,5,$6,$7,$8,$9,$10,$11,$12,$13}')
-else
-    drvs_info=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
-fi
+[[ "${exynos}" == "true" ]] || [[ "${mtk}" == "true" ]] && drvs_info=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $4,5,$6,$7,$8,$9,$10,$11,$12,$13}') || drvs_info=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
 }
 
 get_max_rr(){
 # Fetch max refresh rate
 rr=$(dumpsys display 2>/dev/null | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
 
-if [[ -z "${rr}" ]]; then
-    rr=$(dumpsys display 2>/dev/null | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
-
-elif [[ -z "${rr}" ]]; then
-      rr=$(dumpsys display 2>/dev/null | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
-fi
+[[ -z "${rr}" ]] && rr=$(dumpsys display 2>/dev/null | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
+[[ -z "${rr}" ]] && rr=$(dumpsys display 2>/dev/null | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 }
 
 get_batt_hth(){
@@ -684,53 +596,33 @@ fi
 get_batt_cpct(){
 batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
 
-if [[ "${batt_cpct}" == "" ]]; then
-    batt_cpct=$(dumpsys batterystats 2>/dev/null | awk '/Capacity:/{print $2}' | cut -d "," -f 1)
-fi
-               
-if [[ "${batt_cpct}" -ge "1000000" ]]; then
-    batt_cpct=$((batt_cpct / 1000))
-fi
+[[ "${batt_cpct}" == "" ]] && batt_cpct=$(dumpsys batterystats 2>/dev/null | awk '/Capacity:/{print $2}' | cut -d "," -f 1)             
+[[ "${batt_cpct}" -ge "1000000" ]] && batt_cpct=$((batt_cpct / 1000))
 }
 
 get_bb_ver(){
 # Fetch busybox version
-if [[ "$(which busybox)" ]]; then
-    bb_ver=$(busybox | awk 'NR==1{print $2}')
-else
-    bb_ver="NA (Please install busybox first!)"
-fi
+[[ "$(which busybox)" ]] && bb_ver=$(busybox | awk 'NR==1{print $2}') || bb_ver="NA (Please install busybox first)"
 }
 
 get_rom_info(){
 # Fetch ROM info
 rom_info=$(getprop ro.build.description | awk '{print $1,$3,$4,$5}')
 
-if [[ "${rom_info}" == "" ]]; then
-    rom_info=$(getprop ro.bootimage.build.description | awk '{print $1,$3,$4,$5}')
-elif [[ "${rom_info}" == "" ]]; then
-      rom_info=$(getprop ro.system.build.description | awk '{print $1,$3,$4,$5}')
-fi
+[[ "${rom_info}" == "" ]] && rom_info=$(getprop ro.bootimage.build.description | awk '{print $1,$3,$4,$5}')
+[[ "${rom_info}" == "" ]] && rom_info=$(getprop ro.system.build.description | awk '{print $1,$3,$4,$5}')
 }
 
 get_slnx_stt(){
 # Fetch SELinux state
-if [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]]; then
-    slnx_stt="Enforcing"
-else
-    slnx_stt="Permissive"
-fi
+[[ "$(cat /sys/fs/selinux/enforce)" == "1" ]] && slnx_stt="Enforcing" || slnx_stt="Permissive"
 }
 
 setup_adreno_gpu_thrtl(){
 gpu_thrtl_lvl=$(cat "${gpu}thermal_pwrlevel")
 
-# Disable the GPU thermal throttling clock restriction
-if [[ "${gpu_thrtl_lvl}" -eq "1" ]] || [[ "${gpu_thrtl_lvl}" -gt "1" ]]; then
-    gpu_calc_thrtl=$((gpu_thrtl_lvl - gpu_thrtl_lvl))
-else
-    gpu_calc_thrtl=0
-fi
+# Disable Adreno GPU thermal throttling clock restriction if enabled
+[[ "${gpu_thrtl_lvl}" -eq "1" ]] || [[ "${gpu_thrtl_lvl}" -gt "1" ]] && gpu_calc_thrtl=$((gpu_thrtl_lvl - gpu_thrtl_lvl)) || gpu_calc_thrtl=0
 }
 
 get_gpu_load(){
@@ -758,9 +650,7 @@ nr_cores=$(cat /sys/devices/system/cpu/possible | awk -F "-" '{print $2}')
                
 nr_cores=$((nr_cores + 1))
                
-if [[ "${nr_cores}" -eq "0" ]]; then
-    nr_cores=1
-fi
+[[ "${nr_cores}" -eq "0" ]] && nr_cores=1
 }
 
 get_dvc_brnd(){
@@ -770,10 +660,7 @@ dvc_brnd=$(getprop ro.product.brand)
 
 check_one_ui(){
 # Check if we're running on OneUI
-if [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]]; then
-    one_ui=true
-    samsung=true
-fi
+[[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]] && one_ui=true; samsung=true
 }
                
 get_bt_dvc(){
@@ -786,15 +673,7 @@ sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 }
 
 get_sql_info(){
-if [[ "$(which sqlite3)" ]]; then
-    # Fetch SQLite version
-    sql_ver=$(sqlite3 -version | awk '{print $1}')
-    # Fetch SQLite build date
-    sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}')
-else
-    sql_ver="NA (Install SQLite3 first)"
-    sql_bd_dt="NA (Install SQLite3 first)"
-fi
+[[ "$(which sqlite3)" ]] && sql_ver=$(sqlite3 -version | awk '{print $1}') && sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}') || sql_ver="NA (Install SQLite3 first)" && sql_bd_dt="NA (Install SQLite3 first)"
 }
 
 get_cpu_load(){
@@ -815,16 +694,12 @@ cpu_load=$((100*( cpu_active_cur-cpu_active_prev ) / (cpu_total_cur-cpu_total_pr
 }
 
 check_ppm_support(){
-if [[ -d "/proc/ppm/" ]] && [[ "${mtk}" == "true" ]]; then
-    ppm=true
-fi
+[[ -d "/proc/ppm/" ]] && [[ "${mtk}" == "true" ]] && ppm=true
 }
 
 is_big_little(){
 for i in 1 2 3 4 5 6 7; do 
-    if [[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]]; then
-        big_little=true
-    fi
+   [[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
 done
 }
 
@@ -832,9 +707,7 @@ enable_devfreq_boost(){
 for dir in /sys/class/devfreq/*/; do
      max_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
      max_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
-     if [[ "${max_devfreq2}" -gt "${max_devfreq}" ]]; then
-         max_devfreq=${max_devfreq2}
-     fi
+     [[ "${max_devfreq2}" -gt "${max_devfreq}" ]] && max_devfreq=${max_devfreq2}
      write "${dir}min_freq" "${max_devfreq}"
 done
 
@@ -846,9 +719,7 @@ disable_devfreq_boost(){
 for dir in /sys/class/devfreq/*/; do
      min_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
      min_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
-     if [[ "${min_devfreq2}" -lt "${min_devfreq}" ]]; then
-         min_devfreq=${min_devfreq2}
-     fi
+     [[ "${min_devfreq2}" -lt "${min_devfreq}" ]] && min_devfreq=${min_devfreq2}
      write "${dir}min_freq" "${min_devfreq}" 
 done
 
@@ -915,42 +786,16 @@ for v in 0 1 2 3 4; do
     stop perf-hal-${v}-${v} 2>/dev/null
 done
 stop perfd 2>/dev/null
-if [[ "${ktsr_prof_en}" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    start mpdecision 2>/dev/null
-else
-    stop mpdecision 2>/dev/null
-fi
+[[ "${ktsr_prof_en}" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && start mpdecision 2>/dev/null || stop mpdecision 2>/dev/null
 # stop vendor.perfservice 2>/dev/null
 stop vendor.cnss_diag 2>/dev/null
 stop vendor.tcpdump 2>/dev/null
 stop charge_logger 2>/dev/null
 stop oneplus_brain_service 2>/dev/null
-if [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-    stop thermal 2>/dev/null
-    stop thermald 2>/dev/null
-    stop thermalservice 2>/dev/null
-	stop mi_thermald 2>/dev/null
-	stop thermal-engine 2>/dev/null
-    stop vendor.thermal-engine 2>/dev/null
-    stop thermanager 2>/dev/null
-	stop thermal_manager 2>/dev/null
-else
-    start thermal 2>/dev/null
-    start thermald 2>/dev/null
-    start thermalservice 2>/dev/null
-	start mi_thermald 2>/dev/null
-	start thermal-engine 2>/dev/null
-    start vendor.thermal-engine 2>/dev/null
-    start thermanager 2>/dev/null
-	start thermal_manager 2>/dev/null
-fi
+[[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && stop thermal 2>/dev/null && stop thermald 2>/dev/null && stop thermalservice 2>/dev/null && stop mi_thermald 2>/dev/null && stop thermal-engine 2>/dev/null && stop vendor.thermal-engine 2>/dev/null && stop thermanager 2>/dev/null && stop thermal_manager 2>/dev/null || start thermal 2>/dev/null && start thermald 2>/dev/null && start thermalservice 2>/dev/null && start mi_thermald 2>/dev/null && start thermal-engine 2>/dev/null && start vendor.thermal-engine 2>/dev/null && start thermanager 2>/dev/null && start thermal_manager 2>/dev/null
 
-if [[ -e "/data/system/perfd/default_values" ]]; then
-    rm -rf "/data/system/perfd/default_values"
-
-elif [[ -e "/data/vendor/perfd/default_values" ]]; then
-      rm -rf "/data/vendor/perfd/default_values"
-fi
+[[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values"
+[[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
 
 kmsg "Disabled perfd, mpdecision and few debug services"
 kmsg3 ""
@@ -959,23 +804,13 @@ kmsg3 ""
 disable_core_ctl(){
 for core_ctl in /sys/devices/system/cpu/cpu*/core_ctl/
 do
-  if [[ -e "${core_ctl}enable" ]]; then
-      write "${core_ctl}enable" "0"
-
-  elif [[ -e "${core_ctl}disable" ]]; then
-        write "${core_ctl}disable" "1"
-  fi
+  [[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "0"
+    [[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "1"
 done
 
-if [[ -e "/sys/power/cpuhotplug/enable" ]]; then
-    write "/sys/power/cpuhotplug/enable" "0"
-
-elif [[ -e "/sys/power/cpuhotplug/enabled" ]]; then
-      write "/sys/power/cpuhotplug/enabled" "0"
-
-elif [[ -e "/sys/devices/system/cpu/cpuhotplug/enabled" ]]; then
-      write "/sys/devices/system/cpu/cpuhotplug/enabled" "0"
-fi
+[[ -e "/sys/power/cpuhotplug/enable" ]] && write "/sys/power/cpuhotplug/enable" "0"
+[[ -e "/sys/power/cpuhotplug/enabled" ]] && write "/sys/power/cpuhotplug/enabled" "0"
+[[ -e "/sys/devices/system/cpu/cpuhotplug/enabled" ]] && write "/sys/devices/system/cpu/cpuhotplug/enabled" "0"
 [[ -e "/sys/kernel/intelli_plug" ]] && write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
 [[ -e "/sys/module/blu_plug" ]] && write "/sys/module/blu_plug/parameters/enabled" "0"
 [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]] && write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
@@ -990,23 +825,13 @@ kmsg3 ""
 enable_core_ctl(){
 for core_ctl in /sys/devices/system/cpu/cpu*/core_ctl/
 do
-  if [[ -e "${core_ctl}enable" ]]; then
-      write "${core_ctl}enable" "1"
-
-  elif [[ -e "${core_ctl}disable" ]]; then
-        write "${core_ctl}disable" "0"
-  fi
+  [[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
+    [[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "0"
 done
 
-if [[ -e "/sys/power/cpuhotplug/enable" ]]; then
-    write "/sys/power/cpuhotplug/enable" "1"
-
-elif [[ -e "/sys/power/cpuhotplug/enabled" ]]; then
-      write "/sys/power/cpuhotplug/enabled" "1"
-
-elif [[ -e "/sys/devices/system/cpu/cpuhotplug/enabled" ]]; then
-      write "/sys/devices/system/cpu/cpuhotplug/enabled" "1"
-fi
+[[ -e "/sys/power/cpuhotplug/enable" ]] && write "/sys/power/cpuhotplug/enable" "1"
+[[ -e "/sys/power/cpuhotplug/enabled" ]] && write "/sys/power/cpuhotplug/enabled" "1"
+[[ -e "/sys/devices/system/cpu/cpuhotplug/enabled" ]] && write "/sys/devices/system/cpu/cpuhotplug/enabled" "1"
 [[ -e "/sys/kernel/intelli_plug" ]] && write "/sys/kernel/intelli_plug/intelli_plug_active" "1"
 [[ -e "/sys/module/blu_plug" ]] && write "/sys/module/blu_plug/parameters/enabled" "1"
 [[ -e "/sys/devices/virtual/misc/mako_hotplug_control" ]] && write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "1"
@@ -1379,11 +1204,9 @@ do
     # Select the first scheduler available
 	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
 	do
-	  if [[ "${avail_scheds}" == *"$sched"* ]]; then
-		  write "${queue}scheduler" "${sched}"
-        break
-      fi
-  done
+	  [[ "${avail_scheds}" == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
+       break
+    done
 	
      write "${queue}add_random" "0"
      write "${queue}iostats" "0"
@@ -1405,10 +1228,8 @@ do
 
 	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
 	do
-		if [[ "$avail_scheds" == *"$sched"* ]]; then
-			write "${queue}scheduler" "${sched}"
-	      break
-		fi
+	  [[ "${avail_scheds}" == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
+	   break
 	done
 	
      write "${queue}add_random" "0"
@@ -1431,10 +1252,8 @@ do
 
 	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple anxiety mq-deadline deadline cfq noop none
 	do
-		if [[ "${avail_scheds}" == *"$sched"* ]]; then
-			write "${queue}scheduler" "${sched}"
-	      break
-		fi
+	  [[ "${avail_scheds}" == *"$sched"* ]] && "${queue}scheduler" "${sched}"
+	   break
 	done
 	
      write "${queue}add_random" "0"
@@ -1457,10 +1276,8 @@ do
 
 	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
 	do
-		if [[ "${avail_scheds}" == *"$sched"* ]]; then
-			write "${queue}scheduler" "${sched}"
-		  break
-		fi
+	  [[ "${avail_scheds}" == *"$sched"* ]] && "${queue}scheduler" "${sched}"
+       break
 	done
 	
      write "${queue}add_random" "0"
@@ -1483,11 +1300,9 @@ do
 
 	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
 	do
-	  if [[ "${avail_scheds}" == *"$sched"* ]]; then
-		  write "${queue}scheduler" "${sched}"
-		break
-	  fi
-  done
+	  [[ "${avail_scheds}" == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
+	   break
+    done
 	
      write "${queue}add_random" "0"
      write "${queue}iostats" "0"
@@ -1512,11 +1327,9 @@ do
 	# Attempt to set the governor in this order
 	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-		# Once a matching governor is found, set it and break for this CPU
-		if [[ "${avail_govs}" == *"$governor"* ]]; then
-			write "${cpu}scaling_governor" "${governor}"
-		  break
-		fi
+       # Once a matching governor is found, set it and break for this CPU
+	   [[ "${avail_govs}" == *"$governor"* ]] && write "${cpu}scaling_governor" "${governor}"
+	    break
 	done
 done
 
@@ -1571,11 +1384,9 @@ do
 
 	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  if [[ "${avail_govs}" == *"$governor"* ]]; then
-		  write "${cpu}scaling_governor" "${governor}"
-		break
-	  fi
-  done
+	  [[ "${avail_govs}" == *"$governor"* ]] && write "${cpu}scaling_governor" "${governor}"
+	   break
+    done
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
@@ -1628,11 +1439,9 @@ do
 
 	for governor in performance sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  if [[ "${avail_govs}" == *"$governor"* ]]; then
-		  write "${cpu}scaling_governor" "${governor}"
-	    break
-	  fi
-  done
+	  [[ "${avail_govs}" == *"$governor"* ]] && write "${cpu}scaling_governor" "${governor}"
+	   break
+    done
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
@@ -1684,11 +1493,9 @@ do
 
 	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  if [[ "$avail_govs" == *"$governor"* ]]; then
-		  write "${cpu}scaling_governor" "${governor}"
-		break
-      fi
-  done
+	  [[ "$avail_govs" == *"$governor"* ]] && write "${cpu}scaling_governor" "${governor}"
+	   break
+    done
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
@@ -1741,11 +1548,9 @@ do
 
 	for governor in performance sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  if [[ "${avail_govs}" == *"$governor"* ]]; then
-		  write "${cpu}scaling_governor" "${governor}"
-		break
-      fi
-  done
+	  [[ "${avail_govs}" == *"$governor"* ]] && write "${cpu}scaling_governor" "${governor}"
+	   break
+    done
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
@@ -1990,9 +1795,7 @@ if [[ -d "/proc/mali/" ]]; then
      write "/proc/mali/always_on" "1"
 fi
 
-if [[ -d "/sys/module/pvrsrvkm/parameters/" ]]; then
-    write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
-fi
+[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
 if [[ -d "/sys/module/simple_gpu_algorithm/parameters/" ]]; then
     write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
@@ -2116,9 +1919,7 @@ if [[ -d "/proc/mali/" ]]; then
      write "/proc/mali/always_on" "1"
 fi
 
-if [[ -e "/sys/module/pvrsrvkm/parameters/" ]]; then
-    write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
-fi
+[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
 if [[ -d "/sys/module/simple_gpu_algorithm/parameters/" ]]; then
     write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
@@ -2249,9 +2050,7 @@ if [[ -d "/proc/mali/" ]]; then
      write "/proc/mali/always_on" "1"
 fi
 
-if [[ -e "/sys/module/pvrsrvkm/" ]]; then
-    write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
-fi
+[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
 if [[ -d "/sys/module/simple_gpu_algorithm/" ]]; then
     write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "0"
@@ -2373,9 +2172,7 @@ if [[ -d "/proc/mali/" ]]; then
      write "/proc/mali/always_on" "0"
 fi
 
-if [[ -d "/sys/module/pvrsrvkm/" ]]; then
-    write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
-fi
+[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
 if [[ -d "/sys/module/simple_gpu_algorithm/" ]]; then
     write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
@@ -2506,9 +2303,7 @@ if [[ -d "/proc/mali/" ]]; then
      write "/proc/mali/always_on" "1"
 fi
 
-if [[ -e "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" ]]; then
-    write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "0"
-fi
+[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
 if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]; then
     write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "0"
@@ -3181,16 +2976,6 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
 [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
 [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
-if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
-    write "${kernel}sched_is_big_little" "1" 
-elif [[ -e "${kernel}sched_is_big_little" ]]; then
-      write "${kernel}sched_is_big_little" "0"
-fi
-if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
-    write "${kernel}sched_sync_hint_enable" "0"
-elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
-      write "${kernel}sched_sync_hint_enable" "1"
-fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 # Disable ram-boost relying memplus prefetcher, use traditional swapping
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
@@ -3239,16 +3024,6 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
 [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
 [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
-if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
-    write "${kernel}sched_is_big_little" "1" 
-elif [[ -e "${kernel}sched_is_big_little" ]]; then
-      write "${kernel}sched_is_big_little" "0"
-fi
-if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
-    write "${kernel}sched_sync_hint_enable" "0"
-elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
-      write "${kernel}sched_sync_hint_enable" "1"
-fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
@@ -3279,11 +3054,7 @@ write "${kernel}sched_schedstats" "0"
 write "${kernel}printk_devkmsg" "off"
 [[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 [[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "1"
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "2"
-else
-    write "/sys/devices/system/cpu/eas/enable" "1"
-fi
+[[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]] && write "/sys/devices/system/cpu/eas/enable" "2" || write "/sys/devices/system/cpu/eas/enable" "1"
 [[ -e "${kernel}sched_walt_rotate_big_tasks" ]] && write "${kernel}sched_walt_rotate_big_tasks" "1"
 [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 [[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
@@ -3299,16 +3070,6 @@ fi
 [[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
 [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
 [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
-if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
-    write "${kernel}sched_is_big_little" "1" 
-elif [[ -e "${kernel}sched_is_big_little" ]]; then
-      write "${kernel}sched_is_big_little" "0"
-fi
-if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
-    write "${kernel}sched_sync_hint_enable" "0"
-elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then 
-      write "${kernel}sched_sync_hint_enable" "1"
-fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
@@ -3355,16 +3116,6 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
 [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
 [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
-if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
-    write "${kernel}sched_is_big_little" "1" 
-elif [[ -e "${kernel}sched_is_big_little" ]]; then
-      write "${kernel}sched_is_big_little" "0"
-fi
-if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
-    write "${kernel}sched_sync_hint_enable" "0"
-elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
-      write "${kernel}sched_sync_hint_enable" "1"
-fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
@@ -3395,11 +3146,7 @@ write "${kernel}sched_schedstats" "0"
 write "${kernel}printk_devkmsg" "off"
 [[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 [[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "1"
-if [[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]]; then
-    write "/sys/devices/system/cpu/eas/enable" "2"
-else
-    write "/sys/devices/system/cpu/eas/enable" "1"
-fi
+[[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ "${mtk}" == "true" ]] && write "/sys/devices/system/cpu/eas/enable" "2" || write "/sys/devices/system/cpu/eas/enable" "1"
 [[ -e "${kernel}sched_walt_rotate_big_tasks" ]] && write "${kernel}sched_walt_rotate_big_tasks" "1"
 [[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 [[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
@@ -3415,16 +3162,6 @@ fi
 [[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
 [[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
 [[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
-if [[ -e "${kernel}sched_is_big_little" ]] && [[ "${big_little}" == "true" ]]; then
-    write "${kernel}sched_is_big_little" "1" 
-elif [[ -e "${kernel}sched_is_big_little" ]]; then
-      write "${kernel}sched_is_big_little" "0"
-fi
-if [[ -e "${kernel}sched_sync_hint_enable" ]] && [[ "${big_little}" == "true" ]]; then
-    write "${kernel}sched_sync_hint_enable" "0"
-elif [[ -e "${kernel}sched_sync_hint_enable" ]]; then
-      write "${kernel}sched_sync_hint_enable" "1"
-fi
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
@@ -3622,11 +3359,7 @@ write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
 # Use SSWAP on samsung devices if it do not have more than 4 GB RAM
-if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
-    write "${vm}swappiness" "150"
-else
-    write "${vm}swappiness" "100"
-fi
+[[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "200"
 write "${vm}watermark_scale_factor" "1"
@@ -3662,11 +3395,7 @@ write "${vm}dirty_writeback_centisecs" "5500"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
-    write "${vm}swappiness" "150"
-else
-    write "${vm}swappiness" "100"
-fi
+[[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
 write "${vm}watermark_scale_factor" "1"
@@ -3702,11 +3431,7 @@ write "${vm}dirty_writeback_centisecs" "5000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
-    write "${vm}swappiness" "150"
-else
-    write "${vm}swappiness" "100"
-fi
+[[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "150"
 write "${vm}watermark_scale_factor" "1"
@@ -3742,11 +3467,7 @@ write "${vm}dirty_writeback_centisecs" "6000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
-    write "${vm}swappiness" "150"
-else
-    write "${vm}swappiness" "100"
-fi
+[[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 write "${vm}laptop_mode" "1"
 write "${vm}vfs_cache_pressure" "60"
 write "${vm}watermark_scale_factor" "1"
@@ -3782,11 +3503,7 @@ write "${vm}dirty_writeback_centisecs" "6000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
 write "${vm}extfrag_threshold" "750"
-if [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]]; then
-    write "${vm}swappiness" "150"
-else
-    write "${vm}swappiness" "100"
-fi
+[[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "500"
 write "${vm}watermark_scale_factor" "1"
@@ -3906,8 +3623,9 @@ avail_con="$(cat "${tcp}tcp_available_congestion_control")"
     # Attempt to set the TCP congestion control in this order
     for tcpcc in bbr2 bbr westwood cubic bic
 	do
-	    # Once a matching TCP congestion control is found, set it and break
-		[[ "${avail_con}" == *"${tcpcc}"* ]] && write "${tcp}tcp_congestion_control" "${tcpcc}"
+	  # Once a matching TCP congestion control is found, set it and break
+	  [[ "${avail_con}" == *"${tcpcc}"* ]] && write "${tcp}tcp_congestion_control" "${tcpcc}"
+       break
 	done
 
 write "${tcp}ip_no_pmtu_disc" "0"
@@ -4090,13 +3808,8 @@ fi
 }
 
 disable_emmc_clk_sclg(){
-if [[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]]; then
-    write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
-    write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"
-
-elif [[ -d "/sys/class/mmc_host/mmc0/" ]]; then
-      write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
-fi
+[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0" && write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"
+[[ -d "/sys/class/mmc_host/mmc0/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
 }
 
 disable_debug(){
@@ -4196,11 +3909,7 @@ adjshield_status(){
     else
         # "Error: Log file not found"
         err="$(cat "${adj_log}" | grep Error | head -n 1 | cut -d: -f2)"
-        if [[ "${err}" != "" ]]; then
-            echo "Not running. ${err}."
-        else
-            echo "Not running. Unknown reason."
-        fi
+        [[ "${err}" != "" ]] && echo "Not running. ${err}." || echo "Not running. Unknown reason."
     fi
 }
 
@@ -4227,9 +3936,7 @@ change_thread_cgroup(){
     for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
         for temp_tid in $(ls "/proc/$temp_pid/task/"); do
             comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
-            if [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]]; then
-                echo "${temp_tid}" > "/dev/$4/$3/tasks"
-            fi
+            [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && echo "${temp_tid}" > "/dev/$4/$3/tasks"
         done
     done
 }
@@ -4257,9 +3964,7 @@ change_thread_affinity(){
     for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
         for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
             comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
-            if [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]]; then
-                taskset -p "$3" "${temp_tid}" >> "${bbn_log}"
-            fi
+            [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && taskset -p "$3" "${temp_tid}" >> "${bbn_log}"
         done
     done
 }
@@ -4280,11 +3985,7 @@ change_thread_nice(){
     for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
         for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
             comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
-            if [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]]; then
-                renice -n +40 -p "${temp_tid}"
-                renice -n -19 -p "${temp_tid}"
-                renice -n "$3" -p "${temp_tid}"
-            fi
+            [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && renice -n +40 -p "${temp_tid}" && renice -n -19 -p "${temp_tid}" && renice -n "$3" -p "${temp_tid}"
         done
     done
 }
@@ -4304,9 +4005,7 @@ change_thread_rt(){
     for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
         for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
             comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
-            if [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]]; then
-                chrt -f -p "$3" "${temp_tid}" >> "${bbn_log}"
-            fi
+            [[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && chrt -f -p "$3" "${temp_tid}" >> "${bbn_log}"
         done
     done
 }
@@ -4389,17 +4088,13 @@ fscc_list_append(){
 # $1:file/dir
 fscc_add_obj(){
     # whether file or dir exists
-    if [[ -e "$1" ]]; then
-        fscc_list_append "$1"
-    fi
+    [[ -e "$1" ]] && fscc_list_append "$1"
 }
 
 # $1:package_name
 fscc_add_apk(){
-    if [[ "$1" != "" ]]; then
-        # pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
-        fscc_add_obj "$(pm path "$1" | head -n 1 | cut -d: -f2)"
-    fi
+    # pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
+    [[ "$1" != "" ]] && fscc_add_obj "$(pm path "$1" | head -n 1 | cut -d: -f2)"
 }
 
 # $1:package_name
@@ -4464,11 +4159,7 @@ fscc_stop(){
 fscc_status(){
     # get the correct value after waiting for fscc loading files
     sleep 2
-    if [[ "$(ps -A | grep "${fscc_nm}")" != "" ]]; then
-        echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache."
-    else
-        echo "Not running."
-    fi
+    [[ "$(ps -A | grep "${fscc_nm}")" != "" ]] && echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache." || echo "Not running."
 }
 
 cgroup_bbn_opt(){
@@ -4524,20 +4215,14 @@ kdbg_max_size=1000000
 # Do the same to sqlite opt log
 sqlite_opt_max_size=1000000
 
-if [[ "$(stat -t "${KDBG}" 2>/dev/null | awk '{print $2}')" -ge "${kdbg_max_size}" ]]; then
-    rm -rf "${KDBG}"
-
-elif [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -ge "${sqlite_opt_max_size}" ]]; then
-      rm -rf "/data/media/0/KTSR/sqlite_opt.log"
-fi
+[[ "$(stat -t "${KDBG}" 2>/dev/null | awk '{print $2}')" -ge "${kdbg_max_size}" ]] && rm -rf "${KDBG}"
+[[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -ge "${sqlite_opt_max_size}" ]] && rm -rf "/data/media/0/KTSR/sqlite_opt.log"
 }
 
 # Get screen state (ON | OFF)
 get_scrn_state(){
 	scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
-	if [[ "${scrn_state}" == "ON" ]]; then 
-	    scrn_on=1
-	fi
+	[[ "${scrn_state}" == "ON" ]] && scrn_on=1
 }
 
 get_all(){
@@ -4596,40 +4281,18 @@ get_cpu_load
 apply_all(){
 print_info
 stop_services
-if [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]]; then
-    enable_core_ctl
-else
-    disable_core_ctl
-fi
+[[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] && enable_devfreq_boost || disable_devfreq_boost
+[[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]] && enable_core_ctl || disable_core_ctl
 config_cpuset
-if [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
-    enable_devfreq_boost
-else
-    disable_devfreq_boost
-fi
 boost_${ktsr_prof_en}
 io_${ktsr_prof_en}
 cpu_${ktsr_prof_en}
-if [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
-    enable_kvb
-else
-    disable_kvb
-fi
+[[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] && enable_kvb || disable_kvb
 bring_all_cores
-if [[ "${ktsr_prof_en}" == "latency" ]] || [[ "${ktsr_prof_en}" == "balanced" ]]; then
-    misc_cpu_default
-elif [[ "${ktsr_prof_en}" == "battery" ]]; then
-      misc_cpu_pwr_saving
-else
-    misc_cpu_max_pwr
-fi
+[[ "${ktsr_prof_en}" == "latency" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] && misc_cpu_default
+[[ "${ktsr_prof_en}" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
 disable_ppm
-if [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]]; then
-    cpu_clk_min
-    cpu_clk_default
-else
-    cpu_clk_max
-fi
+[[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "latency" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && cpu_clk_min && cpu_clk_default && cpu_clk_max
 hmp_${ktsr_prof_en}
 gpu_${ktsr_prof_en}
 schedtune_${ktsr_prof_en}
@@ -4641,109 +4304,45 @@ uclamp_${ktsr_prof_en}
 config_blkio
 config_fs
 config_dyn_fsync
-if [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "latency" ]]; then
-    ufs_default
-elif [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
-      ufs_max
-else
-    ufs_pwr_saving
-fi
+[[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en" == "latency" ]] && ufs_default
+[[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] && ufs_max || ufs_pwr_saving
 vm_lmk_${ktsr_prof_en}
 disable_msm_thermal
-if [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]]; then
-    enable_pewq
-else
-    disable_pewq
-fi
-if [[ "${ktsr_prof_en}" == "battery" ]]; then
-    enable_mcps
-else
-    disable_mcps
-fi
+[[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]] && enable_pewq || disable_pewq
+[[ "${ktsr_prof_en}" == "battery" ]] && enable_mcps || disable_mcps
 fix_dt2w
-if [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
-    enable_tb
-else
-    disable_tb
-fi
+[[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] && enable_tb || disable_tb
 config_tcp
-if [[ "${ktsr_prof_en}" == "battery" ]]; then
-    enable_kern_batt_saver
-else
-    disable_kern_batt_saver
-fi
-if [[ "${ktsr_prof_en}" == "battery" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "latency" ]]; then
-    enable_lpm
-else
-    disable_lpm
-fi
-if [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]]; then
-    enable_pm2_idle_mode
-else
-    disable_pm2_idle_mode
-fi
-if [[ "${ktsr_prof_en}" == "battery" ]]; then
-    enable_lcd_prdc
-else
-    disable_lcd_prdc
-fi
+[[ "${ktsr_prof_en}" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
+[[ "${ktsr_prof_en}" == "battery" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "latency" ]] && enable_lpm || disable_lpm
+[[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
+[[ "${ktsr_prof_en}" == "battery" ]] && enable_lcd_prdc && disable_lcd_prdc
 enable_usb_fast_chrg
 enable_sam_fast_chrg
 disable_spd_freqs
 config_pwr_spd
-if [[ "${ktsr_prof_en}" == "balanced" ]]; then
-    emmc_clk_sclg_balanced
-elif [[ "${ktsr_prof_en}" == "battery" ]]; then
-      emmc_clk_sclg_pwr_saving
-elif [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]]; then
-      disable_emmc_clk_sclg
-fi
+[[ "${ktsr_prof_en}" == "balanced" ]] && emmc_clk_sclg_balanced
+[[ "${ktsr_prof_en}" == "battery" ]] && emmc_clk_sclg_pwr_saving
+[[ "${ktsr_prof_en" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] && disable_emmc_clk_sclg
 disable_debug
-if [[ "${ktsr_prof_en}" != "battery" ]]; then
-    perfmgr_default
-else
-    perfmgr_pwr_saving
-fi
+[[ "${ktsr_prof_en}" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 }
 
 apply_all_auto(){
 print_info
 stop_services
-if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-    enable_devfreq_boost
-else
-    disable_devfreq_boost
-fi
-if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    enable_core_ctl
-else
-    disable_core_ctl
-fi
+[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_devfreq_boost || disable_devfreq_boost
+[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_core_ctl || disable_core_ctl
 config_cpuset
 boost_$(getprop kingauto.prof)
 io_$(getprop kingauto.prof)
 cpu_$(getprop kingauto.prof)
-if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-    enable_kvb
-else
-    disable_kvb
-fi
+[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_kvb || disable_kvb
 bring_all_cores
-if [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
-    misc_cpu_default
-
-elif [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-      misc_cpu_pwr_saving
-else
-    misc_cpu_max_pwr
-fi
+[[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] && misc_cpu_default
+[[ "$(getprop kingauto.prof)" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
 disable_ppm
-if [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
-    cpu_clk_min
-    cpu_clk_default
-else
-    cpu_clk_max
-fi
+[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && cpu_clk_min && cpu_clk_default && cpu_clk_max
 hmp_$(getprop kingauto.prof)
 gpu_$(getprop kingauto.prof)
 schedtune_$(getprop kingauto.prof)
@@ -4755,69 +4354,28 @@ uclamp_$(getprop kingauto.prof)
 config_blkio
 config_fs
 config_dyn_fsync
-if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
-    ufs_default
-elif [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-      ufs_max
-else
-    ufs_pwr_saving
-fi
+[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && ufs_default
+[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && ufs_max || ufs_pwr_saving
 vm_lmk_$(getprop kingauto.prof)
 disable_msm_thermal
-if [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    enable_pewq
-else
-    disable_pewq
-fi
-if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    enable_mcps
-else
-    disable_mcps
-fi
+[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_pewq || disable_pewq
+[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_mcps || disable_mcps
 fix_dt2w
-if [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-    enable_tb
-else
-    disable_tb
-fi
+[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_tb || disable_tb
 config_tcp
-if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    enable_kern_batt_saver
-else
-    disable_kern_batt_saver
-fi
-if [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]]; then
-    enable_lpm
-else
-    disable_lpm
-fi
-if [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]]; then
-    enable_pm2_idle_mode
-else
-    disable_pm2_idle_mode
-fi
-if [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-    enable_lcd_prdc
-else
-    disable_lcd_prdc
-fi
+[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
+[[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && enable_lpm || disable_lpm
+[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
+[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_lcd_prdc && disable_lcd_prdc
 enable_usb_fast_chrg
 enable_sam_fast_chrg
 disable_spd_freqs
 config_pwr_spd
-if [[ "$(getprop kingauto.prof)" == "balanced" ]]; then
-    emmc_clk_sclg_balanced
-elif [[ "$(getprop kingauto.prof)" == "battery" ]]; then
-      emmc_clk_sclg_pwr_saving
-elif [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]]; then
-      disable_emmc_clk_sclg
-fi
+[[ "$(getprop kingauto.prof)" == "balanced" ]] && emmc_clk_sclg_balanced
+[[ "$(getprop kingauto.prof)" == "battery" ]] && emmc_clk_sclg_pwr_saving
+[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_emmc_clk_sclg
 disable_debug
-if [[ "$(getprop kingauto.prof)" != "battery" ]]; then
-    perfmgr_default
-else
-    perfmgr_pwr_saving
-fi
+[[ "$(getprop kingauto.prof)" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 }
 
 latency(){
