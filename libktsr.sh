@@ -4304,7 +4304,7 @@ uclamp_${ktsr_prof_en}
 config_blkio
 config_fs
 config_dyn_fsync
-[[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en" == "latency" ]] && ufs_default
+[[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "latency" ]] && ufs_default
 [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] && ufs_max || ufs_pwr_saving
 vm_lmk_${ktsr_prof_en}
 disable_msm_thermal
@@ -4323,7 +4323,7 @@ disable_spd_freqs
 config_pwr_spd
 [[ "${ktsr_prof_en}" == "balanced" ]] && emmc_clk_sclg_balanced
 [[ "${ktsr_prof_en}" == "battery" ]] && emmc_clk_sclg_pwr_saving
-[[ "${ktsr_prof_en" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] && disable_emmc_clk_sclg
+[[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] && disable_emmc_clk_sclg
 disable_debug
 [[ "${ktsr_prof_en}" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 }
