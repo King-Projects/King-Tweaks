@@ -49,15 +49,9 @@ scrn_on=0
 # Log in white and continue (unnecessary)
 kmsg(){ echo -e "[$(date +%T)]: [*] $@" >> "${KLOG}"; }
 
-kmsg1(){
-	echo -e "$@" >> "${KDBG}"
-	echo -e "$@"
-}
+kmsg1(){ echo -e "$@" >> "${KDBG}" && echo -e "$@"; }
 
-kmsg2(){
-	echo -e "[!] $@" >> "${KDBG}"
-	echo -e "[!] $@"
-}
+kmsg2(){ echo -e "[!] $@" >> "${KDBG}" && echo -e "[!] $@"; }
 
 kmsg3(){ echo -e "$@" >> "${KLOG}"; }
 
@@ -299,10 +293,7 @@ elif [[ "${gpu_min}" -gt "${gpu_min_freq}" ]]; then
 fi
 }
 
-get_cpu_gov(){
-# Fetch the CPU governor    
-cpu_gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
-}
+get_cpu_gov(){ cpu_gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor); } # Fetch the CPU governor    
 
 get_gpu_gov(){
 # Fetch the GPU governor
@@ -418,50 +409,30 @@ sdk=$(getprop ro.build.version.sdk)
 [[ "${sdk}" == "" ]] && sdk=$(getprop ro.vndk.version)
 }
 
-get_arch(){
-# Fetch the device architeture
-arch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}')
-}
+get_arch(){ arch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}'); } # Fetch the device architeture
 
-get_andro_vs(){
-# Fetch the android version
-avs=$(getprop ro.build.version.release)
-}
+get_andro_vs(){ avs=$(getprop ro.build.version.release); } # Fetch the android version
 
-get_dvc_cdn(){
-# Fetch the device codename
-dvc_cdn=$(getprop ro.product.device)
-}
+get_dvc_cdn(){ dvc_cdn=$(getprop ro.product.device); } # Fetch the device codename
 
-get_root(){
-# Fetch root method
-root=$(su -v)
-}
+get_root(){ root=$(su -v); } # Fetch root method
 
-is_exynos(){
-# Detect if we're running on a exynos powered device
-[[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]] && exynos=true
-}
+#  Detect if we're running on a exynos powered device
+is_exynos(){ [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]] && exynos=true; }
 
-is_mtk(){ 
-# Detect if we're running on a mediatek powered device              
-[[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]] && mtk=true
-}
+# Detect if we're running on a mediatek powered device
+is_mtk(){ [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]] && mtk=true; }
 
 detect_cpu_sched(){
 # Fetch the CPU scheduling type
+cpu_sched="Unknown"
+
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
 do
-  if [[ "$(grep sched "${cpu}scaling_available_governors")" ]]; then
+  if [[ "$(grep sched "${cpu}scaling_available_governors")" ]] || [[ "$(grep util "${cpu}scaling_available_governors")" ]]; then
       cpu_sched="EAS"
-
-  elif [[ "$(grep util "${cpu}scaling_available_governors")" ]]; then
-        cpu_sched="EAS"
-
   elif [[ "$(grep interactive "${cpu}scaling_available_governors")" ]]; then
         cpu_sched="HMP"
-  else
-      cpu_sched="Unknown"
   fi
 done
 }
@@ -473,14 +444,10 @@ kern_ver_name=$(uname -r)
 kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 }
 
-get_ram_info(){
-[[ "$(which busybox)" ]] && total_ram=$(busybox free -m | awk '/Mem:/{print $2}'); total_ram_kb=$(cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1); avail_ram=$(busybox free -m | awk '/Mem:/{print $7}') || total_ram="Please install busybox first"; total_ram_kb="NA (Please install busybox first)"; avail_ram="Please install busybox first"
-}
+get_ram_info(){ [[ "$(which busybox)" ]] && total_ram=$(busybox free -m | awk '/Mem:/{print $2}'); total_ram_kb=$(cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1); avail_ram=$(busybox free -m | awk '/Mem:/{print $7}') || total_ram="Please install busybox first"; total_ram_kb="NA (Please install busybox first)"; avail_ram="Please install busybox first"; }
 
-get_batt_pctg(){               
 # Fetch battery actual capacity
-[[ -e "/sys/class/power_supply/battery/capacity" ]] && batt_pctg=$(cat /sys/class/power_supply/battery/capacity) || batt_pctg=$(dumpsys battery 2>/dev/null | awk '/level/{print $2}')
-}
+get_batt_pctg(){ [[ -e "/sys/class/power_supply/battery/capacity" ]] && batt_pctg=$(cat /sys/class/power_supply/battery/capacity) || batt_pctg=$(dumpsys battery 2>/dev/null | awk '/level/{print $2}'); }
 
 get_ktsr_info(){
 # Fetch version
@@ -495,16 +462,14 @@ bd_cdn=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-"
 
 get_batt_tmp(){
 # Fetch battery temperature
+batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
+batt_tmp=$((batt_tmp / 10)) Ignore the battery temperature decimal
+
 if [[ -e "/sys/class/power_supply/battery/temp" ]]; then
     batt_tmp=$(cat /sys/class/power_supply/battery/temp)
-
 elif [[ -e "/sys/class/power_supply/battery/batt_temp" ]]; then 
       batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
-else 
-    batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
 fi
-# Ignore the battery temperature decimal
-batt_tmp=$((batt_tmp / 10))
 }
 
 get_gpu_mdl(){
@@ -528,62 +493,36 @@ rr=$(dumpsys display 2>/dev/null | awk '/PhysicalDisplayInfo/{print $4}' | cut -
 
 get_batt_hth(){
 # Fetch battery health
-if [[ -e "/sys/class/power_supply/battery/health" ]]; then
-    batt_hth=$(cat /sys/class/power_supply/battery/health)
-else
-    batt_hth=$(dumpsys battery 2>/dev/null | awk '/health/{print $2}')
-fi
+batt_hth=$(dumpsys battery 2>/dev/null | awk '/health/{print $2}')
 
-if [[ "${batt_hth}" == "1" ]]; then
-    batt_hth="Unknown"
+[[ -e "/sys/class/power_supply/battery/health" ]] && batt_hth=$(cat /sys/class/power_supply/battery/health)
 
-elif [[ "${batt_hth}" == "2" ]]; then
-      batt_hth="Good"
-
-elif [[ "${batt_hth}" == "3" ]]; then
-      batt_hth="Overheat"
-
-elif [[ "${batt_hth}" == "4" ]]; then
-      batt_hth="Dead"
-
-elif [[ "${batt_hth}" == "5" ]]; then
-      batt_hth="OV"
-
-elif [[ "${batt_hth}" == "6" ]]; then
-      batt_hth="UF"
-
-elif [[ "${batt_hth}" == "7" ]]; then
-      batt_hth="Cold"
-else
-    batt_hth=${batt_hth}
-fi
+case "${batt_hth}" in
+	1) batt_hth="Unknown" ;;
+	2) batt_hth="Good" ;;
+	3) batt_hth="Overheat" ;;
+	4) batt_hth="Dead" ;;
+	5) batt_hth="OV" ;;
+	6) batt_hth="UF" ;;
+	7) batt_hth="Cold" ;;
+	*) batt_hth=${batt_hth} ;;
+esac
 }
 
 get_batt_sts(){
 # Fetch battery status
-if [[ -e "/sys/class/power_supply/battery/status" ]]; then
-    batt_sts=$(cat /sys/class/power_supply/battery/status)
-else
-    batt_sts=$(dumpsys battery 2>/dev/null | awk '/status/{print $2}')
-fi
+batt_sts=$(dumpsys battery 2>/dev/null | awk '/status/{print $2}')
 
-if [[ "${batt_sts}" == "1" ]]; then
-    batt_sts="Unknown"
+[[ -e "/sys/class/power_supply/battery/status" ]] && batt_sts=$(cat /sys/class/power_supply/battery/status)
 
-elif [[ "${batt_sts}" == "2" ]]; then
-      batt_sts="Charging"
-
-elif [[ "${batt_sts}" == "3" ]]; then
-      batt_sts="Discharging"
-
-elif [[ "${batt_sts}" == "4" ]]; then
-      batt_sts="Not charging"
-
-elif [[ "${batt_sts}" == "5" ]]; then
-      batt_sts="Full"
-else
-    batt_sts=${batt_sts}
-fi
+case "${batt_sts}" in
+	1) batt_sts="Unknown" ;;
+	2) batt_sts="Charging" ;;
+	3) batt_sts="Discharging" ;;
+	4) batt_sts="Not charging" ;;
+	5) batt_sts="Full" ;;
+	*) batt_sts=${batt_sts} ;;
+esac
 }
 
 get_batt_cpct(){
@@ -640,28 +579,16 @@ nr_cores=$((nr_cores + 1))
 [[ "${nr_cores}" -eq "0" ]] && nr_cores=1
 }
 
-get_dvc_brnd(){
-# Fetch device brand
-dvc_brnd=$(getprop ro.product.brand)
-}
+get_dvc_brnd(){ dvc_brnd=$(getprop ro.product.brand); } # Fetch device brand
 
-check_one_ui(){
 # Check if we're running on OneUI
-[[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]] && one_ui=true; samsung=true
-}
-               
-get_bt_dvc(){
-bt_dvc=$(getprop ro.boot.bootdevice)
-}
+check_one_ui(){ [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]] && one_ui=true; samsung=true; }
+           
+get_bt_dvc(){ bt_dvc=$(getprop ro.boot.bootdevice); }
 
-get_uptime(){
-# Fetch the amount of time since the system is running
-sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
-}
+get_uptime(){ sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1); } # Fetch the amount of time since the system is running
 
-get_sql_info(){
-[[ "$(which sqlite3)" ]] && sql_ver=$(sqlite3 -version | awk '{print $1}') && sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}') || sql_ver="Please install SQLite3 first" && sql_bd_dt="Please install SQLite3 first"
-}
+get_sql_info(){ [[ "$(which sqlite3)" ]] && sql_ver=$(sqlite3 -version | awk '{print $1}') && sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}') || sql_ver="Please install SQLite3 first" && sql_bd_dt="Please install SQLite3 first"; }
 
 get_cpu_load(){
 # Calculate CPU load (50 ms)
@@ -675,9 +602,7 @@ cpu_total_cur=$((user+system+nice+softirq+steal+idle+iowait))
 cpu_load=$((100*( cpu_active_cur-cpu_active_prev ) / (cpu_total_cur-cpu_total_prev) ))
 }
 
-check_ppm_support(){
-[[ -d "/proc/ppm/" ]] && [[ "${mtk}" == "true" ]] && ppm=true
-}
+check_ppm_support(){ [[ -d "/proc/ppm/" ]] && [[ "${mtk}" == "true" ]] && ppm=true; }
 
 is_big_little(){
 for i in 1 2 3 4 5 6 7; do 
@@ -721,13 +646,13 @@ kmsg3 "** SOC: ${soc_mf}, ${soc}"
 kmsg3 "** SDK: ${sdk}"
 kmsg3 "** Android Version: ${avs}"    
 kmsg3 "** CPU Governor: ${cpu_gov}"   
-kmsg3 "** CPU Load: $cpu_load %"
+kmsg3 "** CPU Load: ${cpu_load}%"
 kmsg3 "** Number of cores: ${nr_cores}"
-kmsg3 "** CPU Freq: ${cpu_min_clk_mhz}-${cpu_max_clk_mhz} MHz"
+kmsg3 "** CPU Freq: ${cpu_min_clk_mhz}-${cpu_max_clk_mhz}MHz"
 kmsg3 "** CPU Scheduling Type: ${cpu_sched}"                                                                               
 kmsg3 "** AArch: ${arch}"        
 kmsg3 "** GPU Load: ${gpu_load}%"
-kmsg3 "** GPU Freq: ${gpu_min_clk_mhz}-${gpu_max_clk_mhz} MHz"
+kmsg3 "** GPU Freq: ${gpu_min_clk_mhz}-${gpu_max_clk_mhz}MHz"
 kmsg3 "** GPU Model: ${gpu_mdl}"                                                                                         
 kmsg3 "** GPU Drivers Info: ${drvs_info}"                                                                                  
 kmsg3 "** GPU Governor: ${gpu_gov}"                                                                                  
@@ -735,18 +660,18 @@ kmsg3 "** Device: ${dvc_brnd}, ${dvc_cdn}"
 kmsg3 "** ROM: ${rom_info}"                 
 kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}' | tail -n 1)"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}' | tail -n 1) PPI"
-kmsg3 "** Refresh Rate: $rr HZ"                                         
+kmsg3 "** Refresh Rate: ${rr}HZ"                                         
 kmsg3 "** Build Version: ${bd_ver}"                                                                                     
 kmsg3 "** Build Codename: ${bd_cdn}"                                                                                   
 kmsg3 "** Build Release: ${bd_rel}"                                                                                         
 kmsg3 "** Build Date: ${bd_dt}"                                                                                          
 kmsg3 "** Battery Charge Level: $batt_pctg %"  
-kmsg3 "** Battery Capacity: $batt_cpct mAh"
+kmsg3 "** Battery Capacity: ${batt_cpct}mAh"
 kmsg3 "** Battery Health: ${batt_hth}"                                                                                     
 kmsg3 "** Battery Status: ${batt_sts}"                                                                                     
 kmsg3 "** Battery Temperature: $batt_tmp °C"                                                                               
-kmsg3 "** Device RAM: $total_ram MB"                                                                                     
-kmsg3 "** Device Available RAM: $avail_ram MB"
+kmsg3 "** Device RAM: ${total_ram}MB"                                                                                     
+kmsg3 "** Device Available RAM: ${avail_ram}MB"
 kmsg3 "** Root: ${root}"
 kmsg3 "** SQLite Version: ${sql_ver}"
 kmsg3 "** SQLite Build Date: ${sql_bd_dt}"
@@ -785,7 +710,7 @@ kmsg3 ""
 disable_core_ctl(){
 for core_ctl in /sys/devices/system/cpu/cpu*/core_ctl/
 do
-  [[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "0"
+    [[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "0"
     [[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "1"
 done
 
