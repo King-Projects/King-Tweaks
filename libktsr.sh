@@ -1702,7 +1702,7 @@ gpu_latency(){
       fi
 	
 if [[ "${qcom}" == "true" ]]; then
-    write "${gpu}throttling" "0"
+    write "${gpu}throttling" "1"
     write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
     write "${gpu}devfreq/adrenoboost" "0"
     write "${gpu}force_no_nap" "0"
@@ -1719,15 +1719,19 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_min}"
+       write "${gpui}gpu_min_clock" "${gpu_min_freq}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "80"
        write "${gpu}highspeed_delay" "0"
        write "${gpu}power_policy" "always_on"
        write "${gpui}boost" "0"
+       write "${gpu}cl_boost_disable" "0"
        write "${gpug}mali_touch_boost_level" "0"
        write "${gpu}max_freq" "${gpu_max_freq}"
        write "${gpu}min_freq" "${gpu_min_freq}"
+       write "${gpu}tmu" "1"
+       write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min_freq}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "60"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "40"
@@ -1843,15 +1847,19 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_min}"
+       write "${gpui}gpu_min_clock" "${gpu_min_freq}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "86"
        write "${gpu}highspeed_delay" "0"
        write "${gpu}power_policy" "always_on"
-       write "${gpui}boost" "0"
+       write "${gpu}boost" "0"
+       write "${gpu}cl_boost_disable" "0"
        write "${gpug}mali_touch_boost_level" "0"
        write "${gpu}max_freq" "${gpu_max_freq}"
        write "${gpu}min_freq" "${gpu_min_freq}"
+       write "${gpu}tmu" "1"
+       write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min_freq}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "70"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "45"
@@ -1978,11 +1986,14 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}highspeed_load" "76"
        write "${gpu}highspeed_delay" "0"
        write "${gpu}power_policy" "always_on"
-       write "${gpu}cl_boost_disable" "0"
        write "${gpui}boost" "0"
-       write "${gpug}mali_touch_boost_level" "1"
+       write "${gpu}cl_boost_disable" "0"
+       write "${gpug}mali_touch_boost_level" "0"
        write "${gpu}max_freq" "${gpu_max_freq}"
        write "${gpu}min_freq" "${gpu_min_freq}"
+       write "${gpu}tmu" "0"
+       write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min_freq}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "40"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "20"
@@ -1991,13 +2002,13 @@ elif [[ "${qcom}" == "false" ]]; then
 fi
 
 if [[ -d "/sys/modules/ged/" ]]; then
-    write "/sys/module/ged/parameters/ged_boost_enable" "0"
+    write "/sys/module/ged/parameters/ged_boost_enable" "1"
     write "/sys/module/ged/parameters/boost_gpu_enable" "0"
-    write "/sys/module/ged/parameters/boost_extra" "0"
+    write "/sys/module/ged/parameters/boost_extra" "1"
     write "/sys/module/ged/parameters/enable_cpu_boost" "0"
     write "/sys/module/ged/parameters/enable_gpu_boost" "0"
     write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
-    write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
+    write "/sys/module/ged/parameters/ged_force_mdp_enable" "1"
     write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
     write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
     write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
@@ -2005,21 +2016,21 @@ if [[ -d "/sys/modules/ged/" ]]; then
     write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
     write "/sys/module/ged/parameters/ged_smart_boost" "0"
     write "/sys/module/ged/parameters/gpu_debug_enable" "0"
-    write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
-    write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
+    write "/sys/module/ged/parameters/gpu_dvfs_enable" "0"
+    write "/sys/module/ged/parameters/gx_3D_benchmark_on" "1"
     write "/sys/module/ged/parameters/gx_dfps" "0"
     write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
     write "/sys/module/ged/parameters/gx_frc_mode" "0"
     write "/sys/module/ged/parameters/gx_game_mode" "0"
     write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
-    write "/sys/module/ged/parameters/boost_amp" "0"
-    write "/sys/module/ged/parameters/gx_boost_on" "0"
+    write "/sys/module/ged/parameters/boost_amp" "1"
+    write "/sys/module/ged/parameters/gx_boost_on" "1"
 fi
 
 if [[ -d "/proc/gpufreq/" ]]; then
-    write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
-    write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max_freq"
-    write "/proc/gpufreq/gpufreq_input_boost" "1"
+    write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
+    write "/proc/gpufreq/gpufreq_opp_freq" "0"
+    write "/proc/gpufreq/gpufreq_input_boost" "0"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
@@ -2027,7 +2038,7 @@ if [[ -d "/proc/gpufreq/" ]]; then
 fi
 
 if [[ -d "/proc/mali/" ]]; then
-     [[ "${one_ui}" == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+     [[ "${one_ui}" == "false" ]] && write "/proc/mali/dvfs_enable" "0"
      write "/proc/mali/always_on" "1"
 fi
 
@@ -2095,7 +2106,7 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_min}"
+       write "${gpui}gpu_min_clock" "${gpu_min_freq}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "95"
        write "${gpu}highspeed_delay" "0"
@@ -2105,6 +2116,9 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpug}mali_touch_boost_level" "0"
        write "${gpu}max_freq" "${gpu_max_freq}"
        write "${gpu}min_freq" "${gpu_min_freq}"
+       write "${gpu}tmu" "1"
+       write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min_freq}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "85"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "65"
@@ -2116,7 +2130,7 @@ if [[ -d "/sys/modules/ged/" ]]; then
     write "/sys/module/ged/parameters/ged_boost_enable" "0"
     write "/sys/module/ged/parameters/boost_gpu_enable" "0"
     write "/sys/module/ged/parameters/boost_extra" "0"
-    write "/sys/module/ged/parameters/enable_cpu_boost" "0"
+    write "/sys/module/ged/parameters/enable_cpu_boost" "1"
     write "/sys/module/ged/parameters/enable_gpu_boost" "0"
     write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
     write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
@@ -2130,10 +2144,10 @@ if [[ -d "/sys/modules/ged/" ]]; then
     write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
     write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
     write "/sys/module/ged/parameters/gx_dfps" "0"
-    write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
+    write "/sys/module/ged/parameters/gx_force_cpu_boost" "1"
     write "/sys/module/ged/parameters/gx_frc_mode" "0"
     write "/sys/module/ged/parameters/gx_game_mode" "0"
-    write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
+    write "/sys/module/ged/parameters/is_GED_KPI_enabled" "0"
     write "/sys/module/ged/parameters/boost_amp" "0"
     write "/sys/module/ged/parameters/gx_boost_on" "0"
 fi
@@ -2226,16 +2240,19 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "0"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_max2}"
+       write "${gpui}gpu_min_clock" "${gpu_min}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "76"
        write "${gpu}highspeed_delay" "0"
        write "${gpu}power_policy" "always_on"
+       write "${gpui}boost" "0"
        write "${gpu}cl_boost_disable" "0"
-       write "${gpui}boost" "1"
-       write "${gpug}mali_touch_boost_level" "1"
+       write "${gpug}mali_touch_boost_level" "0"
+       write "${gpu}max_freq" "${gpu_max_freq}"
+       write "${gpu}min_freq" "${gpu_min}"
+       write "${gpu}tmu" "0"
        write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
-       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_max_freq}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "35"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "15"
@@ -2244,13 +2261,13 @@ elif [[ "${qcom}" == "false" ]]; then
 fi
 
 if [[ -d "/sys/modules/ged/" ]]; then
-    write "/sys/module/ged/parameters/ged_boost_enable" "0"
+    write "/sys/module/ged/parameters/ged_boost_enable" "1"
     write "/sys/module/ged/parameters/boost_gpu_enable" "0"
-    write "/sys/module/ged/parameters/boost_extra" "0"
-    write "/sys/module/ged/parameters/enable_cpu_boost" "0"
+    write "/sys/module/ged/parameters/boost_extra" "1"
+    write "/sys/module/ged/parameters/enable_cpu_boost" "1"
     write "/sys/module/ged/parameters/enable_gpu_boost" "0"
-    write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
-    write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
+    write "/sys/module/ged/parameters/enable_game_self_frc_detect" "1"
+    write "/sys/module/ged/parameters/ged_force_mdp_enable" "1"
     write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
     write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
     write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
@@ -2259,19 +2276,19 @@ if [[ -d "/sys/modules/ged/" ]]; then
     write "/sys/module/ged/parameters/ged_smart_boost" "0"
     write "/sys/module/ged/parameters/gpu_debug_enable" "0"
     write "/sys/module/ged/parameters/gpu_dvfs_enable" "0"
-    write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
+    write "/sys/module/ged/parameters/gx_3D_benchmark_on" "1"
     write "/sys/module/ged/parameters/gx_dfps" "0"
-    write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
-    write "/sys/module/ged/parameters/gx_frc_mode" "0"
-    write "/sys/module/ged/parameters/gx_game_mode" "0"
+    write "/sys/module/ged/parameters/gx_force_cpu_boost" "1"
+    write "/sys/module/ged/parameters/gx_frc_mode" "1"
+    write "/sys/module/ged/parameters/gx_game_mode" "1"
     write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
-    write "/sys/module/ged/parameters/boost_amp" "0"
-    write "/sys/module/ged/parameters/gx_boost_on" "0"
+    write "/sys/module/ged/parameters/boost_amp" "1"
+    write "/sys/module/ged/parameters/gx_boost_on" "1"
 fi
 
 if [[ -d "/proc/gpufreq/" ]]; then
     write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
-    write "/proc/gpufreq/gpufreq_opp_freq" "${gpu_max2}"
+    write "/proc/gpufreq/gpufreq_opp_freq" "${gpu_min}"
     write "/proc/gpufreq/gpufreq_input_boost" "1"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
@@ -4243,7 +4260,7 @@ get_batt_cpct
 get_bb_ver
 get_rom_info
 get_slnx_stt
-[[ "${qcom}" == "true" ]] && setup_adreno_gpu_thrtl
+[[ "${qcom}" == "true" ]] && disable_adreno_gpu_thrtl
 get_gpu_load
 get_nr_cores
 get_dvc_brnd
@@ -4268,7 +4285,9 @@ cpu_${ktsr_prof_en}
 bring_all_cores
 [[ "${ktsr_prof_en}" == "latency" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] && misc_cpu_default
 [[ "${ktsr_prof_en}" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
-disable_ppm
+[[ "${ktsr_prof_en}" != "gaming" ]] && disable_ppm || enable_ppm
+[[ "${ktsr_prof_en}" == "latency" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]] && ppm_policy_default
+[[ "${ktsr_prof_en}" == "extreme" ]] && ppm_policy_max
 [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "latency" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && cpu_clk_min && cpu_clk_default || cpu_clk_max
 hmp_${ktsr_prof_en}
 gpu_${ktsr_prof_en}
@@ -4288,11 +4307,11 @@ disable_msm_thermal
 [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]] && enable_pewq || disable_pewq
 [[ "${ktsr_prof_en}" == "battery" ]] && enable_mcps || disable_mcps
 fix_dt2w
-[[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] && enable_tb || disable_tb
+disable_tb
 config_tcp
 [[ "${ktsr_prof_en}" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
 [[ "${ktsr_prof_en}" == "battery" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "latency" ]] && enable_lpm || disable_lpm
-[[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
+[[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && disable_pm2_idle_mode || enable_pm2_idle_mode
 [[ "${ktsr_prof_en}" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
 enable_usb_fast_chrg
 enable_sam_fast_chrg
@@ -4318,7 +4337,9 @@ cpu_$(getprop kingauto.prof)
 bring_all_cores
 [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] && misc_cpu_default
 [[ "$(getprop kingauto.prof)" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
-disable_ppm
+[[ "$(getprop kingauto.prof)" != "gaming" ]] && disable_ppm || enable_ppm
+[[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && ppm_policy_default
+[[ "$(getprop kingauto.prof)" == "extreme" ]] && ppm_policy_max
 [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && cpu_clk_min && cpu_clk_default || cpu_clk_max
 hmp_$(getprop kingauto.prof)
 gpu_$(getprop kingauto.prof)
@@ -4342,7 +4363,7 @@ fix_dt2w
 config_tcp
 [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
 [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && enable_lpm || disable_lpm
-[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
+[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && disable_pm2_idle_mode || enable_pm2_idle_mode
 [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
 enable_usb_fast_chrg
 enable_sam_fast_chrg
