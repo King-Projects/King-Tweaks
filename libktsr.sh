@@ -474,7 +474,7 @@ kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 }
 
 get_ram_info(){
-[[ "$(which busybox)" ]] && total_ram=$(busybox free -m | awk '/Mem:/{print $2}'); total_ram_kb=$(cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1); avail_ram=$(busybox free -m | awk '/Mem:/{print $7}') || total_ram="NA (Please install busybox first)"; total_ram_kb="NA (Please install busybox first)"; avail_ram="NA (Please install busybox first)"
+[[ "$(which busybox)" ]] && total_ram=$(busybox free -m | awk '/Mem:/{print $2}'); total_ram_kb=$(cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1); avail_ram=$(busybox free -m | awk '/Mem:/{print $7}') || total_ram="Please install busybox first"; total_ram_kb="NA (Please install busybox first)"; avail_ram="Please install busybox first"
 }
 
 get_batt_pctg(){               
@@ -509,15 +509,9 @@ batt_tmp=$((batt_tmp / 10))
 
 get_gpu_mdl(){
 # Fetch GPU model
-if [[ "${exynos}" == "true" ]] || [[ "${mtk}" == "true" ]]; then
-    gpu_mdl=$(cat "${gpu}gpuinfo" | awk '{print $1,$2,$3}')
-
-elif [[ "${qcom}" == "true" ]]; then
-      gpu_mdl=$(cat "${gpui}gpu_model")
-      
-elif [[ "${gpu_mdl}" == "" ]]; then
-      gpu_mdl=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
-fi
+[[ "${exynos}" == "true" ]] || [[ "${mtk}" == "true" ]] && gpu_mdl=$(cat "${gpu}gpuinfo" | awk '{print $1,$2,$3}')
+[[ "${qcom}" == "true" ]] && gpu_mdl=$(cat "${gpui}gpu_model")
+[[ "${gpu_mdl}" == "" ]] && gpu_mdl=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 }
 
 get_drvs_info(){
@@ -528,7 +522,6 @@ get_drvs_info(){
 get_max_rr(){
 # Fetch max refresh rate
 rr=$(dumpsys display 2>/dev/null | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
-
 [[ -z "${rr}" ]] && rr=$(dumpsys display 2>/dev/null | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 [[ -z "${rr}" ]] && rr=$(dumpsys display 2>/dev/null | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 }
@@ -595,20 +588,18 @@ fi
 
 get_batt_cpct(){
 batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
-
 [[ "${batt_cpct}" == "" ]] && batt_cpct=$(dumpsys batterystats 2>/dev/null | awk '/Capacity:/{print $2}' | cut -d "," -f 1)             
 [[ "${batt_cpct}" -ge "1000000" ]] && batt_cpct=$((batt_cpct / 1000))
 }
 
 get_bb_ver(){
 # Fetch busybox version
-[[ "$(which busybox)" ]] && bb_ver=$(busybox | awk 'NR==1{print $2}') || bb_ver="NA (Please install busybox first)"
+[[ "$(which busybox)" ]] && bb_ver=$(busybox | awk 'NR==1{print $2}') || bb_ver="Please install busybox first"
 }
 
 get_rom_info(){
 # Fetch ROM info
 rom_info=$(getprop ro.build.description | awk '{print $1,$3,$4,$5}')
-
 [[ "${rom_info}" == "" ]] && rom_info=$(getprop ro.bootimage.build.description | awk '{print $1,$3,$4,$5}')
 [[ "${rom_info}" == "" ]] && rom_info=$(getprop ro.system.build.description | awk '{print $1,$3,$4,$5}')
 }
@@ -618,10 +609,8 @@ get_slnx_stt(){
 [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]] && slnx_stt="Enforcing" || slnx_stt="Permissive"
 }
 
-setup_adreno_gpu_thrtl(){
+disable_adreno_gpu_thrtl(){
 gpu_thrtl_lvl=$(cat "${gpu}thermal_pwrlevel")
-
-# Disable Adreno GPU thermal throttling clock restriction if enabled
 [[ "${gpu_thrtl_lvl}" -eq "1" ]] || [[ "${gpu_thrtl_lvl}" -gt "1" ]] && gpu_calc_thrtl=$((gpu_thrtl_lvl - gpu_thrtl_lvl)) || gpu_calc_thrtl=0
 }
 
@@ -646,10 +635,8 @@ fi
 
 get_nr_cores(){
 # Fetch the number of CPU cores
-nr_cores=$(cat /sys/devices/system/cpu/possible | awk -F "-" '{print $2}')
-               
+nr_cores=$(cat /sys/devices/system/cpu/possible | awk -F "-" '{print $2}')               
 nr_cores=$((nr_cores + 1))
-               
 [[ "${nr_cores}" -eq "0" ]] && nr_cores=1
 }
 
@@ -679,17 +666,12 @@ get_sql_info(){
 get_cpu_load(){
 # Calculate CPU load (50 ms)
 read -r cpu user nice system idle iowait irq softirq steal guest< /proc/stat
-
 cpu_active_prev=$((user+system+nice+softirq+steal))
 cpu_total_prev=$((user+system+nice+softirq+steal+idle+iowait))
-
 usleep 50000
-
 read -r cpu user nice system idle iowait irq softirq steal guest< /proc/stat
-
 cpu_active_cur=$((user+system+nice+softirq+steal))
 cpu_total_cur=$((user+system+nice+softirq+steal+idle+iowait))
-
 cpu_load=$((100*( cpu_active_cur-cpu_active_prev ) / (cpu_total_cur-cpu_total_prev) ))
 }
 
@@ -793,7 +775,6 @@ stop vendor.tcpdump 2>/dev/null
 stop charge_logger 2>/dev/null
 stop oneplus_brain_service 2>/dev/null
 [[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && stop thermal 2>/dev/null && stop thermald 2>/dev/null && stop thermalservice 2>/dev/null && stop mi_thermald 2>/dev/null && stop thermal-engine 2>/dev/null && stop vendor.thermal-engine 2>/dev/null && stop thermanager 2>/dev/null && stop thermal_manager 2>/dev/null || start thermal 2>/dev/null && start thermald 2>/dev/null && start thermalservice 2>/dev/null && start mi_thermald 2>/dev/null && start thermal-engine 2>/dev/null && start vendor.thermal-engine 2>/dev/null && start thermanager 2>/dev/null && start thermal_manager 2>/dev/null
-
 [[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values"
 [[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
 
@@ -1992,7 +1973,7 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_min}"
+       write "${gpui}gpu_min_clock" "${gpu_min_freq}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "76"
        write "${gpu}highspeed_delay" "0"
@@ -4228,12 +4209,8 @@ get_scrn_state(){
 get_all(){
 get_gpu_dir
 [[ "${qcom}" != "true" ]] && is_mtk
-if [[ "${mtk}" != "true" ]] && [[ "${qcom}" != "true" ]]; then
-    is_exynos
-fi
-if [[ "${qcom}" != "true" ]] && [[ "${exynos}" != "true" ]]; then
-    check_ppm_support
-fi
+[[ "${mtk}" != "true" ]] && [[ "${qcom}" != "true" ]] && is_exynos
+[[ "${qcom}" != "true" ]] && [[ "${exynos}" != "true" ]] && check_ppm_support
 [[ "${qcom}" == "true" ]] && define_gpu_pl
 get_gpu_max
 get_gpu_min
