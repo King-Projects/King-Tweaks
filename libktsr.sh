@@ -660,7 +660,7 @@ sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 }
 
 get_sql_info(){
-[[ "$(which sqlite3)" ]] && sql_ver=$(sqlite3 -version | awk '{print $1}') && sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}') || sql_ver="NA (Install SQLite3 first)" && sql_bd_dt="NA (Install SQLite3 first)"
+[[ "$(which sqlite3)" ]] && sql_ver=$(sqlite3 -version | awk '{print $1}') && sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}') || sql_ver="Please install SQLite3 first" && sql_bd_dt="Please install SQLite3 first"
 }
 
 get_cpu_load(){
@@ -1739,7 +1739,7 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "30"
 fi
 
-if [[ -d "/sys/modules/ged/" ]]; then
+if [[ -d "/sys/module/ged/" ]]; then
     write "/sys/module/ged/parameters/ged_boost_enable" "0"
     write "/sys/module/ged/parameters/boost_gpu_enable" "0"
     write "/sys/module/ged/parameters/boost_extra" "0"
@@ -1867,7 +1867,7 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "40"
 fi
 
-if [[ -d "/sys/modules/ged/" ]]; then
+if [[ -d "/sys/module/ged/" ]]; then
     write "/sys/module/ged/parameters/ged_boost_enable" "0"
     write "/sys/module/ged/parameters/boost_gpu_enable" "0"
     write "/sys/module/ged/parameters/boost_extra" "0"
@@ -2001,7 +2001,7 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "10"
 fi
 
-if [[ -d "/sys/modules/ged/" ]]; then
+if [[ -d "/sys/module/ged/" ]]; then
     write "/sys/module/ged/parameters/ged_boost_enable" "1"
     write "/sys/module/ged/parameters/boost_gpu_enable" "0"
     write "/sys/module/ged/parameters/boost_extra" "1"
@@ -2126,7 +2126,7 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "55"
 fi
 
-if [[ -d "/sys/modules/ged/" ]]; then
+if [[ -d "/sys/module/ged/" ]]; then
     write "/sys/module/ged/parameters/ged_boost_enable" "0"
     write "/sys/module/ged/parameters/boost_gpu_enable" "0"
     write "/sys/module/ged/parameters/boost_extra" "0"
@@ -2240,7 +2240,7 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "0"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_min}"
+       write "${gpui}gpu_min_clock" "${gpu_max2}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "76"
        write "${gpu}highspeed_delay" "0"
@@ -2249,10 +2249,10 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}cl_boost_disable" "0"
        write "${gpug}mali_touch_boost_level" "0"
        write "${gpu}max_freq" "${gpu_max_freq}"
-       write "${gpu}min_freq" "${gpu_min}"
+       write "${gpu}min_freq" "${gpu_max2}"
        write "${gpu}tmu" "0"
        write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
-       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_max2}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "35"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "15"
@@ -2260,7 +2260,7 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "10"
 fi
 
-if [[ -d "/sys/modules/ged/" ]]; then
+if [[ -d "/sys/module/ged/" ]]; then
     write "/sys/module/ged/parameters/ged_boost_enable" "1"
     write "/sys/module/ged/parameters/boost_gpu_enable" "0"
     write "/sys/module/ged/parameters/boost_extra" "1"
@@ -2288,7 +2288,7 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]]; then
     write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
-    write "/proc/gpufreq/gpufreq_opp_freq" "${gpu_min}"
+    write "/proc/gpufreq/gpufreq_opp_freq" "${gpu_max2}"
     write "/proc/gpufreq/gpufreq_input_boost" "1"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
@@ -3897,7 +3897,7 @@ adjshield_start(){
 }
 
 adjshield_stop(){
-    killall "${adj_nm}" 2>/dev/null
+    killall -9 "${adj_nm}" 2>/dev/null
 }
 
 # return:status
