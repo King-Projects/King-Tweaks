@@ -264,7 +264,7 @@ fi
 if [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_max}" -lt "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" ]]; then
     gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
     
-elif [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
+elif [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_max}" -lt "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" ]]; then
       gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
     
 elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "${gpu_max}" -lt "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" ]]; then
@@ -1063,7 +1063,7 @@ if [[ -d "/sys/module/cpu_boost/" ]]; then
     kmsg3 ""
 
 elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
-    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "20"
+    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "0"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
@@ -1493,7 +1493,7 @@ misc_cpu_pwr_saving(){
 
 bring_all_cores(){
 for i in 0 1 2 3 4 5 6 7 8 9; do
-     write "/sys/devices/system/cpu/cpu$i/online" "1"
+    write "/sys/devices/system/cpu/cpu$i/online" "1"
 done
 }
 
@@ -3172,9 +3172,7 @@ cpu_clk_min(){
 # Set min efficient CPU clock
 for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
    for i in 576000 614400 633600 652800 748800 768000 787200 806400 825600 864000 902400 998400 1113600; do
-      if [[ "$(grep ${i} ${pl}scaling_available_frequencies)" ]]; then
-          write ${pl}scaling_min_freq ${i}
-      fi
+      [[ "$(grep ${i} ${pl}scaling_available_frequencies)" ]] && write ${pl}scaling_min_freq ${i}
   done
 done
 }
@@ -3637,7 +3635,7 @@ fi
 
 disable_pm2_idle_mode(){
 if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]]; then
-    write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
+    write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
     kmsg "Disabled pm2 idle sleep mode"
     kmsg3 ""
 fi
@@ -4173,7 +4171,7 @@ disable_tb
 config_tcp
 [[ "${ktsr_prof_en}" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
 [[ "${ktsr_prof_en}" == "battery" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "latency" ]] && enable_lpm || disable_lpm
-[[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && disable_pm2_idle_mode || enable_pm2_idle_mode
+[[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
 [[ "${ktsr_prof_en}" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
 enable_usb_fast_chrg
 enable_sam_fast_chrg
