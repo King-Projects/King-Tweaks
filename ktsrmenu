@@ -22,7 +22,7 @@ MODDIR="$MOUNTPATH/$ID"
 _bb=
 
 # Load mod-util.sh
-. "$MODDIR/mod-util.sh" || exit $?
+. "${MODDIR}/mod-util.sh" || exit $?
 
 # Set Log Files
 mount -o remount,rw /cache 2>/dev/null
@@ -47,33 +47,15 @@ mv -f "${VERLOG}" "${oldVERLOG}" 2>/dev/null; mv -f "$LOG" "$oldLOG" 2>/dev/null
 
 set -x 2>"${VERLOG}"
 
-ktsr_prof=$(getprop persist.king.tweaks.prof)
- 	
+ktsr_prof=$(getprop persist.king.tweaks.prof) 	
 case "${ktsr_prof}" in
-1)
-  ktsr_prof_en="Automatic"
-  ;;
-
-  2)
-    ktsr_prof_en="Battery"
-    ;;
-
-     3)
-      ktsr_prof_en="Balanced"
-      ;;
-
-       4)
-        ktsr_prof_en="Extreme"
-        ;;
-
-        5)
-         ktsr_prof_en="Gaming"
-         ;;
-
-          6)
-           ktsr_prof_en="Latency"
-           ;;
-      esac
+1) ktsr_prof_en="Automatic";;
+2) ktsr_prof_en="Battery";;
+3) ktsr_prof_en="Balanced";;
+4) ktsr_prof_en="Extreme";;
+5) ktsr_prof_en="Gaming";;
+6) ktsr_prof_en="Latency";;
+esac
 
 [[ "$(settings get global low_power)" == "1" ]] && low_power_mode="Enabled" || low_power_mode="Disabled"
 [[ "$(cmd netpolicy get restrict-background | awk '{print $4}')" == "enabled" ]] && data_saver="Enabled" || data_saver="Disabled"
@@ -107,27 +89,9 @@ echo "[*] Other misc options: "
 echo ""
 echo "[7] Optimize apps package"
 echo ""
-if [[ "${low_power_mode}" == "Disabled" ]]; then
-    echo "[8] Enable low power mode"
-    echo ""
-else
-    echo "[9] Disable low power mode"
-    echo ""
-fi
-if [[ "${data_saver}" == "Disabled" ]]; then
-    echo "[10] Enable data saver"
-    echo ""
-else
-    echo "[11] Disable data saver"
-    echo ""
-fi
-if [[ "${loc_mode_pwr_saving}" == "Disabled" ]]; then
-    echo "[12] Enable power-saving location mode"
-    echo ""
-else
-    echo "[13] Disable power-saving location mode"
-    echo ""
-fi
+[[ "${low_power_mode}" == "Disabled" ]] && { echo "[8] Enable low power mode"; echo ""; } || { echo "[9] Disable low power mode"; echo ""; }
+[[ "${data_saver}" == "Disabled" ]] && { echo "[10] Enable data saver"; echo ""; } || { echo "[11] Disable data saver"; echo ""; }
+[[ "${loc_mode_pwr_saving}" == "Disabled" ]] && { echo "[12] Enable power-saving location mode"; echo ""; } || { echo "[13] Disable power-saving location mode"; echo ""; }
 echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
 echo ""
 echo "[15] Access our telegram group"

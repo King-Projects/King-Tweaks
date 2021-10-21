@@ -252,53 +252,43 @@ done
 }
 
 get_gpu_max(){
-gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')
+gpu_max=${gpu_max_freq}
 
-if [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
-    gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -v var="$gpu_num_pl" '{print $var}')
-    
-elif [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
+if [[ "${gpu_max}" -lt "$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')" ]]; then
+    gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')
+
+elif [[ "${gpu_max}" -lt "$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')" ]]; then
       gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')
-               
-elif [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
-      gpu_max=${gpu_max_freq}
-
-elif [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
-      gpu_max=${gpu_max_freq}
 fi
 
-if [[ -e "${gpu}available_frequencies" ]]; then
-    gpu_max2=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
+if [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_max}" -lt "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" ]]; then
+    gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
     
-elif [[ "${gpu_max2}" -lt "${gpu_max_freq}" ]]; then
-      gpu_max2=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
+elif [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
+      gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
     
-elif [[ -e "${gpui}gpu_freq_table" ]]; then
-      gpu_max2=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
+elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "${gpu_max}" -lt "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" ]]; then
+      gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
 
-elif [[ "${gpu_max2}" -lt "${gpu_max_freq}" ]]; then
-      gpu_max2=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
-
-elif [[ "${gpu_max2}" -lt "${gpu_max_freq}" ]]; then
-      gpu_max2=${gpu_max_freq}
+elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "${gpu_max}" -lt "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" ]]; then
+      gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
 fi
 }
 
 get_gpu_min(){
-if [[ -e "${gpu}available_frequencies" ]]; then
+gpu_min=${gpu_min_freq}
+
+if [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_min}" -gt "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" ]]; then
     gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
 
-elif [[ "${gpu_min}" -gt "${gpu_min_freq}" ]]; then
+elif [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_min}" -gt "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" ]]; then
       gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
 
-elif [[ -e "${gpui}gpu_freq_table" ]]; then
+elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "${gpu_min}" -gt "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" ]]; then
       gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
 
-elif [[ "${gpu_min}" -gt "${gpu_min_freq}" ]]; then
+elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "${gpu_min}" -gt "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" ]]; then
       gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
-
-elif [[ "${gpu_min}" -gt "${gpu_min_freq}" ]]; then
-      gpu_min=${gpu_min_freq}
 fi
 }
 
@@ -437,18 +427,10 @@ detect_cpu_sched(){
 for cpu in $(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_governors)
 do
 case "${cpu}" in
-*sched*)
-cpu_sched="EAS"
-;;
-*util*)
-cpu_sched="EAS"
-;;
-*interactive*)
-cpu_sched="HMP"
-;;
-*)
-cpu_sched="Unknown"
-;;
+    *sched*) cpu_sched="EAS";;
+    *util*) cpu_sched="EAS";;
+    *interactive*) cpu_sched="HMP";;
+    *) cpu_sched="Unknown";;
 esac
 done
 }
@@ -507,32 +489,15 @@ get_batt_hth(){
 # Fetch battery health
 batt_hth=$(dumpsys battery 2>/dev/null | awk '/health/{print $2}')
 [[ -e "/sys/class/power_supply/battery/health" ]] && batt_hth=$(cat /sys/class/power_supply/battery/health)
-
 case "${batt_hth}" in
-1)
-batt_hth="Unknown"
-;;
-2)
-batt_hth="Good"
-;;
-3)
-batt_hth="Overheat"
-;;
-4)
-batt_hth="Dead"
-;;
-5)
-batt_hth="OV"
-;;
-6)
-batt_hth="UF"
-;;
-7)
-batt_hth="Cold"
-;;
-*)
-batt_hth=${batt_hth}
-;;
+    1) batt_hth="Unknown";;
+    2) batt_hth="Good";;
+    3) batt_hth="Overheat";;
+    4) batt_hth="Dead";;
+    5) batt_hth="OV";;
+    6) batt_hth="UF";;
+    7) batt_hth="Cold";;
+    *) batt_hth=${batt_hth};;
 esac
 }
 
@@ -540,26 +505,13 @@ get_batt_sts(){
 # Fetch battery status
 batt_sts=$(dumpsys battery 2>/dev/null | awk '/status/{print $2}')
 [[ -e "/sys/class/power_supply/battery/status" ]] && batt_sts=$(cat /sys/class/power_supply/battery/status)
-
 case "${batt_sts}" in
-1)
-batt_sts="Unknown"
-;;
-2)
-batt_sts="Charging"
-;;
-3)
-batt_sts="Discharging"
-;;
-4)
-batt_sts="Not charging"
-;;
-5)
-batt_sts="Full"
-;;
-*)
-batt_sts=${batt_sts}
-;;
+    1) batt_sts="Unknown";;
+    2) batt_sts="Charging";;
+    3) batt_sts="Discharging";;
+    4) batt_sts="Not charging";;
+    5) batt_sts="Full";;
+    *) batt_sts=${batt_sts};;
 esac
 }
 
@@ -642,7 +594,7 @@ check_ppm_support(){ [[ -d "/proc/ppm/" ]] && [[ "${mtk}" == "true" ]] && ppm=tr
 
 is_big_little(){
 for i in 1 2 3 4 5 6 7; do 
-   [[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
+    [[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
 done
 }
 
@@ -705,7 +657,7 @@ kmsg3 "** Battery Charge Level: ${batt_pctg}%"
 kmsg3 "** Battery Capacity: ${batt_cpct}mAh"
 kmsg3 "** Battery Health: ${batt_hth}"                                                                                     
 kmsg3 "** Battery Status: ${batt_sts}"                                                                                     
-kmsg3 "** Battery Temperature: $batt_tmp °C"                                                                               
+kmsg3 "** Battery Temperature: ${batt_tmp}°C"                                                                               
 kmsg3 "** Device RAM: ${total_ram}MB"                                                                                     
 kmsg3 "** Device Available RAM: ${avail_ram}MB"
 kmsg3 "** Root: ${root}"
@@ -797,8 +749,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "msm8952")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -808,8 +759,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "msm8953")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -819,8 +769,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "msm8996")
 write "${cpuset}camera-daemon/cpus" "0-3"
 write "${cpuset}foreground/cpus" "0-3"
@@ -829,8 +778,7 @@ write "${cpuset}background/cpus" "0-3"
 write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "msm8998")
 write "${cpuset}camera-daemon/cpus" "0-6"
 write "${cpuset}foreground/cpus" "0-7"
@@ -840,8 +788,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "msmnile")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -851,8 +798,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "mt6768")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -862,8 +808,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "mt6785")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -874,8 +819,7 @@ write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}top-app/boost/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "mt6873")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -885,8 +829,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "mt6885")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -896,8 +839,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "sdm710")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -907,8 +849,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "sdm845")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -918,8 +859,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "sm6150")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -929,8 +869,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "lito")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
@@ -941,8 +880,7 @@ write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "lahaina")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -952,8 +890,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "exynos5")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -964,8 +901,7 @@ write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}dex2oat/cpus" "0-6"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "trinket")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -975,8 +911,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "kona")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -986,8 +921,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "universal9811")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -998,8 +932,7 @@ write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}dexopt/cpus" "0-6"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "universal9820")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -1010,8 +943,7 @@ write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}dexopt/cpus" "0-6"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 "atoll")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
@@ -1021,8 +953,7 @@ write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
-kmsg3 ""
-;;
+kmsg3 "";;
 esac
 }
 
@@ -1080,14 +1011,14 @@ fi
 
 
 if [[ -d "/sys/module/cpu_boost/" ]]; then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
-    write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
+    write "/sys/module/cpu_boost/parameters/input_boost_enabled" "0"
     write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 
 elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
-    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
+    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "0"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
@@ -1125,14 +1056,14 @@ if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
 fi
 
 if [[ -d "/sys/module/cpu_boost/" ]]; then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
-    write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
+    write "/sys/module/cpu_boost/parameters/input_boost_enabled" "0"
     write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 
 elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
-    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
+    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "20"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
@@ -1413,10 +1344,10 @@ done
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
      write "${governor}/timer_rate" "0"
-     write "${governor}/boost" "1"
+     write "${governor}/boost" "0"
      write "${governor}/io_is_busy" "1"
      write "${governor}/timer_slack" "0"
-     write "${governor}/input_boost" "1"
+     write "${governor}/input_boost" "0"
      write "${governor}/use_migration_notif" "0"
      write "${governor}/ignore_hispeed_on_notif" "1"
      write "${governor}/use_sched_load" "1"
@@ -1522,10 +1453,10 @@ done
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
      write "${governor}/timer_rate" "0"
-     write "${governor}/boost" "1"
+     write "${governor}/boost" "0"
      write "${governor}/io_is_busy" "1"
      write "${governor}/timer_slack" "0"
-     write "${governor}/input_boost" "1"
+     write "${governor}/input_boost" "0"
      write "${governor}/use_migration_notif" "0"
      write "${governor}/ignore_hispeed_on_notif" "1"
      write "${governor}/use_sched_load" "1"
@@ -1979,7 +1910,7 @@ if [[ -d "/sys/module/ged/" ]]; then
     write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
     write "/sys/module/ged/parameters/ged_smart_boost" "0"
     write "/sys/module/ged/parameters/gpu_debug_enable" "0"
-    write "/sys/module/ged/parameters/gpu_dvfs_enable" "0"
+    write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
     write "/sys/module/ged/parameters/gx_3D_benchmark_on" "1"
     write "/sys/module/ged/parameters/gx_dfps" "0"
     write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
@@ -2001,7 +1932,7 @@ if [[ -d "/proc/gpufreq/" ]]; then
 fi
 
 if [[ -d "/proc/mali/" ]]; then
-     [[ "${one_ui}" == "false" ]] && write "/proc/mali/dvfs_enable" "0"
+     [[ "${one_ui}" == "false" ]] && write "/proc/mali/dvfs_enable" "1"
      write "/proc/mali/always_on" "1"
 fi
 
@@ -2203,7 +2134,7 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "0"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_max2}"
+       write "${gpui}gpu_min_clock" "${gpu_max}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "76"
        write "${gpu}highspeed_delay" "0"
@@ -2212,10 +2143,10 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}cl_boost_disable" "0"
        write "${gpug}mali_touch_boost_level" "0"
        write "${gpu}max_freq" "${gpu_max_freq}"
-       write "${gpu}min_freq" "${gpu_max2}"
+       write "${gpu}min_freq" "${gpu_max}"
        write "${gpu}tmu" "0"
        write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
-       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_max2}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_max}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "35"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "15"
@@ -2251,8 +2182,8 @@ fi
 
 if [[ -d "/proc/gpufreq/" ]]; then
     write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
-    write "/proc/gpufreq/gpufreq_opp_freq" "${gpu_max2}"
-    write "/proc/gpufreq/gpufreq_input_boost" "1"
+    write "/proc/gpufreq/gpufreq_opp_freq" "${gpu_max}"
+    write "/proc/gpufreq/gpufreq_input_boost" "0"
     write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
     write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
@@ -3158,6 +3089,14 @@ if [[ -e "/sys/kernel/fp_boost/enabled" ]]; then
 fi
 }
 
+disable_fp_boost(){
+if [[ -e "/sys/kernel/fp_boost/enabled" ]]; then
+    write "/sys/kernel/fp_boost/enabled" "0"
+    kmsg "Disabled fingerprint boost"
+    kmsg3 ""
+fi
+}
+
 # Credits to helloklf again
 ufs_default(){
 if [[ -d "/sys/class/devfreq/1d84000.ufshc/" ]]; then
@@ -3822,9 +3761,7 @@ fi
 }
 
 # $1:content
-write_panel(){
-    echo "$1" >> "${bbn_banner}"
-}
+write_panel(){ echo "$1" >> "${bbn_banner}"; }
 
 save_panel(){
 write_panel "[*] Bourbon - the essential process optimizer 
@@ -3836,9 +3773,7 @@ Adjshield config file: ${adj_cfg}"
 }
 
 # $1:str
-adjshield_write_cfg(){
-    echo "$1" >> "${adj_cfg}"
-}
+adjshield_write_cfg(){ echo "$1" >> "${adj_cfg}"; }
 
 adjshield_create_default_cfg(){
     adjshield_write_cfg "# AdjShield Config File"
@@ -3859,9 +3794,7 @@ adjshield_start(){
     ${MODPATH}system/bin/adjshield -o "${adj_log}" -c "${adj_cfg}" &
 }
 
-adjshield_stop(){
-    killall -9 "${adj_nm}" 2>/dev/null
-}
+adjshield_stop(){ killall -9 "${adj_nm}" 2>/dev/null; }
 
 # return:status
 adjshield_status(){
@@ -3972,26 +3905,16 @@ change_thread_rt(){
 }
 
 # $1:task_name
-change_task_high_prio(){
-    # audio thread nice <= -16
-    change_task_nice "$1" "-19"
-}
+change_task_high_prio(){ change_task_nice "$1" "-19"; } # audio thread nice <= -16
 
 # $1:task_name $2:thread_name
-change_thread_high_prio(){
-    # audio thread nice <= -16
-    change_thread_nice "$1" "$2" "-19"
-}
+change_thread_high_prio(){ change_thread_nice "$1" "$2" "-19"; }
 
 # $1:task_name $2:thread_name
-unpin_thread(){
-    change_thread_cgroup "$1" "$2" "" "cpuset"
-}
+unpin_thread(){ change_thread_cgroup "$1" "$2" "" "cpuset"; }
 
 # $1:task_name $2:thread_name
-pin_thread_on_pwr(){
-    change_thread_cgroup "$1" "$2" "background" "cpuset"
-}
+pin_thread_on_pwr(){ change_thread_cgroup "$1" "$2" "background" "cpuset"; }
 
 # $1:task_name $2:thread_name
 pin_thread_on_mid(){
@@ -4006,14 +3929,10 @@ pin_thread_on_perf(){
 }
 
 # $1:task_name
-unpin_proc(){
-    change_task_cgroup "$1" "" "cpuset"
-}
+unpin_proc(){ change_task_cgroup "$1" "" "cpuset"; }
 
 # $1:task_name
-pin_proc_on_pwr(){
-    change_task_cgroup "$1" "background" "cpuset"
-}
+pin_proc_on_pwr(){ change_task_cgroup "$1" "background" "cpuset"; }
 
 # $1:task_name
 pin_proc_on_mid(){
@@ -4036,27 +3955,16 @@ rebuild_process_scan_cache(){
 }
 
 # $1:apk_path $return:oat_path
-fscc_path_apk_to_oat(){
-    # OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
-    echo "${1%/*}/oat"
-}
+fscc_path_apk_to_oat(){ echo "${1%/*}/oat"; } # OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
 
 # $1:file/dir
-fscc_list_append(){
-    fscc_file_list="${fscc_file_list} $1"
-}
+fscc_list_append(){ fscc_file_list="${fscc_file_list} $1"; }
 
 # $1:file/dir
-fscc_add_obj(){
-    # whether file or dir exists
-    [[ -e "$1" ]] && fscc_list_append "$1"
-}
+fscc_add_obj(){ [[ -e "$1" ]] && fscc_list_append "$1"; } # whether file or dir exists
 
 # $1:package_name
-fscc_add_apk(){
-    # pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
-    [[ "$1" != "" ]] && fscc_add_obj "$(pm path "$1" | head -n 1 | cut -d: -f2)"
-}
+fscc_add_apk(){ [[ "$1" != "" ]] && fscc_add_obj "$(pm path "$1" | head -n 1 | cut -d: -f2)"; } # pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
 
 # $1:package_name
 fscc_add_dex(){
@@ -4102,19 +4010,12 @@ fscc_add_app_ime(){
 }
 
 # $1:package_name
-fscc_add_apex_lib(){
-    fscc_add_obj "$(find /apex -name "$1" | head -n 1)"
-}
+fscc_add_apex_lib(){ fscc_add_obj "$(find /apex -name "$1" | head -n 1)"; }
 
 # after appending fscc_file_list
-fscc_start(){
-    # multiple parameters, cannot be warped by ""
-    ${MODPATH}system/bin/${fscc_nm} -fdlb0 ${fscc_file_list}
-}
+fscc_start(){ ${MODPATH}system/bin/${fscc_nm} -fdlb0 ${fscc_file_list}; } # multiple parameters, cannot be warped by ""
 
-fscc_stop(){
-    killall -9 "${fscc_nm}" 2>/dev/null
-}
+fscc_stop(){ killall -9 "${fscc_nm}" 2>/dev/null; } # multiple parameters, cannot be warped by ""
 
 # return:status
 fscc_status(){
@@ -4172,10 +4073,8 @@ cgroup_bbn_opt(){
 clear_logs(){
 # Remove debug log if size is >= 1 MB
 kdbg_max_size=1000000
-
 # Do the same to sqlite opt log
 sqlite_opt_max_size=1000000
-
 [[ "$(stat -t "${KDBG}" 2>/dev/null | awk '{print $2}')" -ge "${kdbg_max_size}" ]] && rm -rf "${KDBG}"
 [[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -ge "${sqlite_opt_max_size}" ]] && rm -rf "/data/media/0/KTSR/sqlite_opt.log"
 }
@@ -4248,7 +4147,7 @@ cpu_${ktsr_prof_en}
 bring_all_cores
 [[ "${ktsr_prof_en}" == "latency" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] && misc_cpu_default
 [[ "${ktsr_prof_en}" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
-[[ "${ktsr_prof_en}" != "gaming" ]] && disable_ppm || enable_ppm
+[[ "${ktsr_prof_en}" != "gaming" ]] && enable_ppm || disable_ppm
 [[ "${ktsr_prof_en}" == "latency" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]] && ppm_policy_default
 [[ "${ktsr_prof_en}" == "extreme" ]] && ppm_policy_max
 [[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "latency" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && cpu_clk_min && cpu_clk_default || cpu_clk_max
@@ -4258,7 +4157,7 @@ schedtune_${ktsr_prof_en}
 sched_ft_${ktsr_prof_en}
 disable_crc
 sched_${ktsr_prof_en}
-enable_fp_boost
+[[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] && disable_fp_boost || enable_fp_boost
 uclamp_${ktsr_prof_en}
 config_blkio
 config_fs
@@ -4300,7 +4199,7 @@ cpu_$(getprop kingauto.prof)
 bring_all_cores
 [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] && misc_cpu_default
 [[ "$(getprop kingauto.prof)" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
-[[ "$(getprop kingauto.prof)" != "gaming" ]] && disable_ppm || enable_ppm
+[[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_ppm || disable_ppm
 [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && ppm_policy_default
 [[ "$(getprop kingauto.prof)" == "extreme" ]] && ppm_policy_max
 [[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && cpu_clk_min && cpu_clk_default || cpu_clk_max
@@ -4310,7 +4209,7 @@ schedtune_$(getprop kingauto.prof)
 sched_ft_$(getprop kingauto.prof)
 disable_crc
 sched_$(getprop kingauto.prof)
-enable_fp_boost
+[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_fp_boost || enable_fp_boost
 uclamp_$(getprop kingauto.prof)
 config_blkio
 config_fs
@@ -4322,11 +4221,11 @@ disable_msm_thermal
 [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_pewq || disable_pewq
 [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_mcps || disable_mcps
 fix_dt2w
-[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_tb || disable_tb
+disable_tb
 config_tcp
 [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
 [[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && enable_lpm || disable_lpm
-[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && disable_pm2_idle_mode || enable_pm2_idle_mode
+[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
 [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
 enable_usb_fast_chrg
 enable_sam_fast_chrg
