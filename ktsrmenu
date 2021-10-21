@@ -47,7 +47,8 @@ mv -f "${VERLOG}" "${oldVERLOG}" 2>/dev/null; mv -f "$LOG" "$oldLOG" 2>/dev/null
 
 set -x 2>"${VERLOG}"
 
-ktsr_prof=$(getprop persist.king.tweaks.prof) 	
+ktsr_prof=$(getprop persist.king.tweaks.prof)
+
 case "${ktsr_prof}" in
 1) ktsr_prof_en="Automatic";;
 2) ktsr_prof_en="Battery";;
