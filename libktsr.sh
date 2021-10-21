@@ -177,57 +177,57 @@ SCHED_TASKS_THROUGHPUT="6"
 get_gpu_dir(){
 for gpul in /sys/devices/soc/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/
 do
-  [[ -d "${gpul}" ]] && gpu=${gpul} && qcom=true
+  [[ -d "${gpul}" ]] && { gpu=${gpul}; qcom=true; }
 done
     
      for gpul1 in /sys/devices/soc.0/*.qcom,kgsl-3d0/kgsl/kgsl-3d0/
      do 
-       [[ -d "${gpul1}" ]] && gpu=${gpul1} && qcom=true
+       [[ -d "${gpul1}" ]] && { gpu=${gpul1}; qcom=true; }
      done
        
       for gpul2 in /sys/devices/*.mali/
       do
-        [[ -d "${gpul2}" ]] && gpu=${gpul2} && qcom=false
+        [[ -d "${gpul2}" ]] && { gpu=${gpul2}; qcom=false; }
       done
          
        for gpul3 in /sys/devices/platform/*.gpu/
        do
-         [[ -d "${gpul3}" ]] && gpu=${gpul3} && qcom=false
+         [[ -d "${gpul3}" ]] && { gpu=${gpul3}; qcom=false; }
        done
        
          for gpul4 in /sys/devices/platform/mali-*/
          do
-           [[ -d "${gpul4}" ]] && gpu=${gpul4} && qcom=false
+           [[ -d "${gpul4}" ]] && { gpu=${gpul4}; qcom=false; }
          done
            
            for gpul5 in /sys/devices/platform/*.mali/
            do
-             [[ -d "${gpul5}" ]] && gpu=${gpul5} && qcom=false
+             [[ -d "${gpul5}" ]] && { gpu=${gpul5}; qcom=false; }
            done
                  
              for gpul6 in /sys/class/misc/mali*/device/devfreq/gpufreq/
              do
-               [[ -d "${gpul6}" ]] && gpu=${gpul6} && qcom=false
+               [[ -d "${gpul6}" ]] && { gpu=${gpul6}; qcom=false; }
              done
              
               for gpul7 in /sys/class/misc/mali*/device/devfreq/*.gpu/
               do
-                [[ -d "${gpul7}" ]] && gpu=${gpul7} && qcom=false 
+                [[ -d "${gpul7}" ]] && { gpu=${gpul7}; qcom=false; }
               done
 
                for gpul8 in /sys/devices/platform/*.mali/misc/mali0/
                do
-                 [[ -d "${gpul8}" ]] && gpu=${gpul8} && qcom=false
+                 [[ -d "${gpul8}" ]] && { gpu=${gpul8}; qcom=false; }
                done
              
              for gpul9 in /sys/devices/platform/mali.*/
              do
-               [[ -d "${gpul9}" ]] && gpu=${gpul9} && qcom=false
+               [[ -d "${gpul9}" ]] && { gpu=${gpul9}; qcom=false; }
              done
 
            for gpul10 in /sys/devices/platform/*.mali/devfreq/*.mali/subsystem/*.mali
            do
-             [[ -d "${gpul10}" ]] && gpu=${gpul10} && qcom=false
+             [[ -d "${gpul10}" ]] && { gpu=${gpul10}; qcom=false; }
            done
 
                if [[ -d "/sys/class/kgsl/kgsl-3d0/" ]]; then
@@ -247,7 +247,7 @@ done
                      qcom=false
                fi
 		
-               [[ -d "/sys/module/mali/parameters" ]] && gpug="/sys/module/mali/parameters/" && qcom=false
+               [[ -d "/sys/module/mali/parameters" ]] && { gpug="/sys/module/mali/parameters/"; qcom=false; }
                [[ -d "/sys/kernel/gpu" ]] && gpui="/sys/kernel/gpu/"
 }
 
@@ -260,6 +260,9 @@ if [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
 elif [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
       gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')
                
+elif [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
+      gpu_max=${gpu_max_freq}
+
 elif [[ "${gpu_max}" -lt "${gpu_max_freq}" ]]; then
       gpu_max=${gpu_max_freq}
 fi
@@ -275,6 +278,9 @@ elif [[ -e "${gpui}gpu_freq_table" ]]; then
 
 elif [[ "${gpu_max2}" -lt "${gpu_max_freq}" ]]; then
       gpu_max2=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
+
+elif [[ "${gpu_max2}" -lt "${gpu_max_freq}" ]]; then
+      gpu_max2=${gpu_max_freq}
 fi
 }
 
@@ -290,10 +296,14 @@ elif [[ -e "${gpui}gpu_freq_table" ]]; then
 
 elif [[ "${gpu_min}" -gt "${gpu_min_freq}" ]]; then
       gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
+
+elif [[ "${gpu_min}" -gt "${gpu_min_freq}" ]]; then
+      gpu_min=${gpu_min_freq}
 fi
 }
 
-get_cpu_gov(){ cpu_gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor); } # Fetch the CPU governor    
+# Fetch the CPU governor    
+get_cpu_gov(){ cpu_gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor); }
 
 get_gpu_gov(){
 # Fetch the GPU governor
@@ -383,19 +393,15 @@ fi
 
 get_gpu_min_max_mhz(){
 # Fetch maximum & minimum GPU clock in MHz
-[[ "${gpu_max_freq}" -ge "100000" ]] && gpu_max_clk_mhz=$((gpu_max_freq / 1000)) && gpu_min_clk_mhz=$((gpu_min_freq / 1000))
-[[ "${gpu_max_freq}" -ge "100000000" ]] && gpu_max_clk_mhz=$((gpu_max_freq / 1000000)) && gpu_min_clk_mhz=$((gpu_min_freq / 1000000))
+[[ "${gpu_max_freq}" -ge "100000" ]] && { gpu_max_clk_mhz=$((gpu_max_freq / 1000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000)); }
+[[ "${gpu_max_freq}" -ge "100000000" ]] && { gpu_max_clk_mhz=$((gpu_max_freq / 1000000)); gpu_min_clk_mhz=$((gpu_min_freq / 1000000)); }
 }
 
-get_soc_mf(){
-# Fetch the SOC manufacturer
-soc_mf=$(getprop ro.boot.hardware)
-}
+get_soc_mf(){ soc_mf=$(getprop ro.boot.hardware); }
 
 get_soc(){
 # Fetch the device SOC
 soc=$(getprop ro.board.platform)
-
 [[ "${soc}" == "" ]] && soc=$(getprop ro.product.board)
 [[ "${soc}" == "" ]] && soc=$(getprop ro.product.platform)
 [[ "${soc}" == "" ]] && soc=$(getprop ro.chipname)
@@ -404,20 +410,23 @@ soc=$(getprop ro.board.platform)
 get_sdk(){
 # Fetch the device SDK              
 sdk=$(getprop ro.build.version.sdk)
-
 [[ "${sdk}" == "" ]] && sdk=$(getprop ro.vendor.build.version.sdk)
 [[ "${sdk}" == "" ]] && sdk=$(getprop ro.vndk.version)
 }
 
-get_arch(){ arch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}'); } # Fetch the device architeture
+# Fetch the device architeture
+get_arch(){ arch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}'); } 
 
-get_andro_vs(){ avs=$(getprop ro.build.version.release); } # Fetch the android version
+# Fetch the android version
+get_andro_vs(){ avs=$(getprop ro.build.version.release); } 
 
-get_dvc_cdn(){ dvc_cdn=$(getprop ro.product.device); } # Fetch the device codename
+# Fetch the device codename
+get_dvc_cdn(){ dvc_cdn=$(getprop ro.product.device); }
 
-get_root(){ root=$(su -v); } # Fetch root method
+# Fetch root method
+get_root(){ root=$(su -v); }
 
-#  Detect if we're running on a exynos powered device
+# Detect if we're running on a exynos powered device
 is_exynos(){ [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]] && exynos=true; }
 
 # Detect if we're running on a mediatek powered device
@@ -425,15 +434,22 @@ is_mtk(){ [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.pro
 
 detect_cpu_sched(){
 # Fetch the CPU scheduling type
-cpu_sched="Unknown"
-
-for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+for cpu in $(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_governors)
 do
-  if [[ "$(grep sched "${cpu}scaling_available_governors")" ]] || [[ "$(grep util "${cpu}scaling_available_governors")" ]]; then
-      cpu_sched="EAS"
-  elif [[ "$(grep interactive "${cpu}scaling_available_governors")" ]]; then
-        cpu_sched="HMP"
-  fi
+case "${cpu}" in
+*sched*)
+cpu_sched="EAS"
+;;
+*util*)
+cpu_sched="EAS"
+;;
+*interactive*)
+cpu_sched="HMP"
+;;
+*)
+cpu_sched="Unknown"
+;;
+esac
 done
 }
 
@@ -444,13 +460,13 @@ kern_ver_name=$(uname -r)
 kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 }
 
-get_ram_info(){ [[ "$(which busybox)" ]] && total_ram=$(busybox free -m | awk '/Mem:/{print $2}'); total_ram_kb=$(cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1); avail_ram=$(busybox free -m | awk '/Mem:/{print $7}') || total_ram="Please install busybox first"; total_ram_kb="NA (Please install busybox first)"; avail_ram="Please install busybox first"; }
+get_ram_info(){ [[ "$(which busybox)" ]] && { total_ram=$(busybox free -m | awk '/Mem:/{print $2}'); total_ram_kb=$(cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1); avail_ram=$(busybox free -m | awk '/Mem:/{print $7}'); } || { total_ram="Please install busybox first"; total_ram_kb="Please install busybox first"; avail_ram="Please install busybox first"; } }
 
 # Fetch battery actual capacity
 get_batt_pctg(){ [[ -e "/sys/class/power_supply/battery/capacity" ]] && batt_pctg=$(cat /sys/class/power_supply/battery/capacity) || batt_pctg=$(dumpsys battery 2>/dev/null | awk '/level/{print $2}'); }
 
 get_ktsr_info(){
-# Fetch version
+# Fetch build version
 bd_ver=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-" '{print $1}')
 # Fetch build type
 bd_rel=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-" '{print $2}')
@@ -463,13 +479,11 @@ bd_cdn=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-"
 get_batt_tmp(){
 # Fetch battery temperature
 batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
-batt_tmp=$((batt_tmp / 10)) Ignore the battery temperature decimal
+[[ -e "/sys/class/power_supply/battery/temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/temp)
+[[ -e "/sys/class/power_supply/battery/batt_temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
 
-if [[ -e "/sys/class/power_supply/battery/temp" ]]; then
-    batt_tmp=$(cat /sys/class/power_supply/battery/temp)
-elif [[ -e "/sys/class/power_supply/battery/batt_temp" ]]; then 
-      batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
-fi
+# Ignore the battery temperature decimal
+batt_tmp=$((batt_tmp / 10))
 }
 
 get_gpu_mdl(){
@@ -479,10 +493,8 @@ get_gpu_mdl(){
 [[ "${gpu_mdl}" == "" ]] && gpu_mdl=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 }
 
-get_drvs_info(){
 # Fetch drivers info
-[[ "${exynos}" == "true" ]] || [[ "${mtk}" == "true" ]] && drvs_info=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $4,5,$6,$7,$8,$9,$10,$11,$12,$13}') || drvs_info=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
-}
+get_drvs_info(){ [[ "${exynos}" == "true" ]] || [[ "${mtk}" == "true" ]] && drvs_info=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $4,5,$6,$7,$8,$9,$10,$11,$12,$13}') || drvs_info=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,); }
 
 get_max_rr(){
 # Fetch max refresh rate
@@ -494,34 +506,60 @@ rr=$(dumpsys display 2>/dev/null | awk '/PhysicalDisplayInfo/{print $4}' | cut -
 get_batt_hth(){
 # Fetch battery health
 batt_hth=$(dumpsys battery 2>/dev/null | awk '/health/{print $2}')
-
 [[ -e "/sys/class/power_supply/battery/health" ]] && batt_hth=$(cat /sys/class/power_supply/battery/health)
 
 case "${batt_hth}" in
-	1) batt_hth="Unknown" ;;
-	2) batt_hth="Good" ;;
-	3) batt_hth="Overheat" ;;
-	4) batt_hth="Dead" ;;
-	5) batt_hth="OV" ;;
-	6) batt_hth="UF" ;;
-	7) batt_hth="Cold" ;;
-	*) batt_hth=${batt_hth} ;;
+1)
+batt_hth="Unknown"
+;;
+2)
+batt_hth="Good"
+;;
+3)
+batt_hth="Overheat"
+;;
+4)
+batt_hth="Dead"
+;;
+5)
+batt_hth="OV"
+;;
+6)
+batt_hth="UF"
+;;
+7)
+batt_hth="Cold"
+;;
+*)
+batt_hth=${batt_hth}
+;;
 esac
 }
 
 get_batt_sts(){
 # Fetch battery status
 batt_sts=$(dumpsys battery 2>/dev/null | awk '/status/{print $2}')
-
 [[ -e "/sys/class/power_supply/battery/status" ]] && batt_sts=$(cat /sys/class/power_supply/battery/status)
 
 case "${batt_sts}" in
-	1) batt_sts="Unknown" ;;
-	2) batt_sts="Charging" ;;
-	3) batt_sts="Discharging" ;;
-	4) batt_sts="Not charging" ;;
-	5) batt_sts="Full" ;;
-	*) batt_sts=${batt_sts} ;;
+1)
+batt_sts="Unknown"
+;;
+2)
+batt_sts="Charging"
+;;
+3)
+batt_sts="Discharging"
+;;
+4)
+batt_sts="Not charging"
+;;
+5)
+batt_sts="Full"
+;;
+*)
+batt_sts=${batt_sts}
+;;
 esac
 }
 
@@ -531,22 +569,18 @@ batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
 [[ "${batt_cpct}" -ge "1000000" ]] && batt_cpct=$((batt_cpct / 1000))
 }
 
-get_bb_ver(){
 # Fetch busybox version
-[[ "$(which busybox)" ]] && bb_ver=$(busybox | awk 'NR==1{print $2}') || bb_ver="Please install busybox first"
-}
+get_bb_ver(){ [[ "$(which busybox)" ]] && bb_ver=$(busybox | awk 'NR==1{print $2}') || bb_ver="Please install busybox first"; }
 
-get_rom_info(){
 # Fetch ROM info
+get_rom_info(){
 rom_info=$(getprop ro.build.description | awk '{print $1,$3,$4,$5}')
 [[ "${rom_info}" == "" ]] && rom_info=$(getprop ro.bootimage.build.description | awk '{print $1,$3,$4,$5}')
 [[ "${rom_info}" == "" ]] && rom_info=$(getprop ro.system.build.description | awk '{print $1,$3,$4,$5}')
 }
 
-get_slnx_stt(){
 # Fetch SELinux state
-[[ "$(cat /sys/fs/selinux/enforce)" == "1" ]] && slnx_stt="Enforcing" || slnx_stt="Permissive"
-}
+get_slnx_stt(){ [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]] && slnx_stt="Enforcing" || slnx_stt="Permissive"; }
 
 disable_adreno_gpu_thrtl(){
 gpu_thrtl_lvl=$(cat "${gpu}thermal_pwrlevel")
@@ -579,16 +613,18 @@ nr_cores=$((nr_cores + 1))
 [[ "${nr_cores}" -eq "0" ]] && nr_cores=1
 }
 
-get_dvc_brnd(){ dvc_brnd=$(getprop ro.product.brand); } # Fetch device brand
+# Fetch device brand
+get_dvc_brnd(){ dvc_brnd=$(getprop ro.product.brand); }
 
 # Check if we're running on OneUI
-check_one_ui(){ [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]] && one_ui=true; samsung=true; }
-           
+check_one_ui(){ [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]] && { one_ui=true; samsung=true; } }
+               
 get_bt_dvc(){ bt_dvc=$(getprop ro.boot.bootdevice); }
 
-get_uptime(){ sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1); } # Fetch the amount of time since the system is running
+# Fetch the amount of time since the system is running
+get_uptime(){ sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1); }
 
-get_sql_info(){ [[ "$(which sqlite3)" ]] && sql_ver=$(sqlite3 -version | awk '{print $1}') && sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}') || sql_ver="Please install SQLite3 first" && sql_bd_dt="Please install SQLite3 first"; }
+get_sql_info(){ [[ "$(which sqlite3)" ]] && { sql_ver=$(sqlite3 -version | awk '{print $1}'); sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}'); } || { sql_ver="Please install SQLite3 first"; sql_bd_dt="Please install SQLite3 first"; } }
 
 get_cpu_load(){
 # Calculate CPU load (50 ms)
@@ -665,7 +701,7 @@ kmsg3 "** Build Version: ${bd_ver}"
 kmsg3 "** Build Codename: ${bd_cdn}"                                                                                   
 kmsg3 "** Build Release: ${bd_rel}"                                                                                         
 kmsg3 "** Build Date: ${bd_dt}"                                                                                          
-kmsg3 "** Battery Charge Level: $batt_pctg %"  
+kmsg3 "** Battery Charge Level: ${batt_pctg}%"  
 kmsg3 "** Battery Capacity: ${batt_cpct}mAh"
 kmsg3 "** Battery Health: ${batt_hth}"                                                                                     
 kmsg3 "** Battery Status: ${batt_sts}"                                                                                     
@@ -699,7 +735,7 @@ stop vendor.cnss_diag 2>/dev/null
 stop vendor.tcpdump 2>/dev/null
 stop charge_logger 2>/dev/null
 stop oneplus_brain_service 2>/dev/null
-[[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && stop thermal 2>/dev/null && stop thermald 2>/dev/null && stop thermalservice 2>/dev/null && stop mi_thermald 2>/dev/null && stop thermal-engine 2>/dev/null && stop vendor.thermal-engine 2>/dev/null && stop thermanager 2>/dev/null && stop thermal_manager 2>/dev/null || start thermal 2>/dev/null && start thermald 2>/dev/null && start thermalservice 2>/dev/null && start mi_thermald 2>/dev/null && start thermal-engine 2>/dev/null && start vendor.thermal-engine 2>/dev/null && start thermanager 2>/dev/null && start thermal_manager 2>/dev/null
+[[ "${ktsr_prof_en}" == "extreme" ]] || [[ "${ktsr_prof_en}" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && { stop thermal 2>/dev/null; stop thermald 2>/dev/null; stop thermalservice 2>/dev/null; stop mi_thermald 2>/dev/null; stop thermal-engine 2>/dev/null; stop vendor.thermal-engine 2>/dev/null; stop thermanager 2>/dev/null; stop thermal_manager 2>/dev/null; } || { start thermal 2>/dev/null; start thermald 2>/dev/null; start thermalservice 2>/dev/null; start mi_thermald 2>/dev/null; start thermal-engine 2>/dev/null; start vendor.thermal-engine 2>/dev/null; start thermanager 2>/dev/null; start thermal_manager 2>/dev/null; } 
 [[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values"
 [[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
 
@@ -731,7 +767,7 @@ kmsg3 ""
 enable_core_ctl(){
 for core_ctl in /sys/devices/system/cpu/cpu*/core_ctl/
 do
-  [[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
+    [[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
     [[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "0"
 done
 
@@ -751,241 +787,243 @@ kmsg3 ""
 
 # Some of these are based from @helloklf (GitHub) vtools, credits to him.
 config_cpuset(){
-if [[ "${soc}" == "msm8937" ]]; then
-    write "${cpuset}camera-daemon/cpus" "0-7"
-    write "${cpuset}foreground/cpus" "0-7"
-    write "${cpuset}foreground/boost/cpus" "4-7"
-    write "${cpuset}background/cpus" "0-5"
-    write "${cpuset}system-background/cpus" "0-3"
-    write "${cpuset}top-app/cpus" "0-7"
-    write "${cpuset}restricted/cpus" "0-3"
-    kmsg "Tweaked cpusets"
-    kmsg3 ""
-
-elif [[ "${soc}" == "msm8952" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "msm8953" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "msm8996" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-3"
-      write "${cpuset}foreground/cpus" "0-3"
-      write "${cpuset}foreground/boost/cpus" "0-3"
-      write "${cpuset}background/cpus" "0-3"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "msm8998" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-6"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "msmnile" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "6-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "mt6768" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-
-elif [[ "${soc}" == "mt6785" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}top-app/boost/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-
-elif [[ "${soc}" == "mt6873" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "mt6885" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "sdm710" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "sdm845" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-      
-elif [[ "${soc}" == "sm6150" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "lito" ]]; then
-	  write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "6-7"
-      write "${cpuset}background/cpus" "5-6"
-      write "${cpuset}system-background/cpus" "2-5"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "2-5"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "lahaina" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "6-7"
-      write "${cpuset}background/cpus" "5-6"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "exynos5" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}dex2oat/cpus" "0-6"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "trinket" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "kona" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-    
-elif [[ "${soc}" == "universal9811" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}dexopt/cpus" "0-6"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-
-elif [[ "${soc}" == "universal9820" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "0-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}dexopt/cpus" "0-6"
-      write "${cpuset}restricted/cpus" "0-3"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-
-elif [[ "${soc}" == "atoll" ]]; then
-      write "${cpuset}camera-daemon/cpus" "0-7"
-      write "${cpuset}foreground/cpus" "0-7"
-      write "${cpuset}foreground/boost/cpus" "4-7"
-      write "${cpuset}background/cpus" "2-5"
-      write "${cpuset}system-background/cpus" "0-3"
-      write "${cpuset}top-app/cpus" "0-7"
-      write "${cpuset}restricted/cpus" "2-5"
-      kmsg "Tweaked cpusets"
-      kmsg3 ""
-fi
+case "${soc}" in
+"msm8937")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"msm8952")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"msm8953")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"msm8996")
+write "${cpuset}camera-daemon/cpus" "0-3"
+write "${cpuset}foreground/cpus" "0-3"
+write "${cpuset}foreground/boost/cpus" "0-3"
+write "${cpuset}background/cpus" "0-3"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"msm8998")
+write "${cpuset}camera-daemon/cpus" "0-6"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"msmnile")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "6-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"mt6768")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"mt6785")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}top-app/boost/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"mt6873")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"mt6885")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"sdm710")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"sdm845")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"sm6150")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"lito")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "6-7"
+write "${cpuset}background/cpus" "5-6"
+write "${cpuset}system-background/cpus" "2-5"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "2-5"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"lahaina")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "6-7"
+write "${cpuset}background/cpus" "5-6"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"exynos5")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}dex2oat/cpus" "0-6"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"trinket")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"kona")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"universal9811")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}dexopt/cpus" "0-6"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"universal9820")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "0-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}dexopt/cpus" "0-6"
+write "${cpuset}restricted/cpus" "0-3"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+"atoll")
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-7"
+write "${cpuset}foreground/boost/cpus" "4-7"
+write "${cpuset}background/cpus" "2-5"
+write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}top-app/cpus" "0-7"
+write "${cpuset}restricted/cpus" "2-5"
+kmsg "Tweaked cpusets"
+kmsg3 ""
+;;
+esac
 }
 
 boost_latency(){
@@ -1644,7 +1682,7 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_min_freq}"
+       write "${gpui}gpu_min_clock" "${gpu_min}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "80"
        write "${gpu}highspeed_delay" "0"
@@ -1653,10 +1691,10 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}cl_boost_disable" "0"
        write "${gpug}mali_touch_boost_level" "0"
        write "${gpu}max_freq" "${gpu_max_freq}"
-       write "${gpu}min_freq" "${gpu_min_freq}"
+       write "${gpu}min_freq" "${gpu_min}"
        write "${gpu}tmu" "1"
        write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
-       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min_freq}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "60"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "40"
@@ -1772,7 +1810,7 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_min_freq}"
+       write "${gpui}gpu_min_clock" "${gpu_min}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "86"
        write "${gpu}highspeed_delay" "0"
@@ -1781,10 +1819,10 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}cl_boost_disable" "0"
        write "${gpug}mali_touch_boost_level" "0"
        write "${gpu}max_freq" "${gpu_max_freq}"
-       write "${gpu}min_freq" "${gpu_min_freq}"
+       write "${gpu}min_freq" "${gpu_min}"
        write "${gpu}tmu" "1"
        write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
-       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min_freq}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "70"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "45"
@@ -1906,7 +1944,7 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_min_freq}"
+       write "${gpui}gpu_min_clock" "${gpu_min}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "76"
        write "${gpu}highspeed_delay" "0"
@@ -1915,10 +1953,10 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpu}cl_boost_disable" "0"
        write "${gpug}mali_touch_boost_level" "0"
        write "${gpu}max_freq" "${gpu_max_freq}"
-       write "${gpu}min_freq" "${gpu_min_freq}"
+       write "${gpu}min_freq" "${gpu_min}"
        write "${gpu}tmu" "0"
        write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
-       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min_freq}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "40"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "20"
@@ -2031,7 +2069,7 @@ if [[ "${qcom}" == "true" ]]; then
 elif [[ "${qcom}" == "false" ]]; then
       [[ "${one_ui}" == "false" ]] && write "${gpu}dvfs" "1"
        write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-       write "${gpui}gpu_min_clock" "${gpu_min_freq}"
+       write "${gpui}gpu_min_clock" "${gpu_min}"
        write "${gpu}highspeed_clock" "${gpu_max_freq}"
        write "${gpu}highspeed_load" "95"
        write "${gpu}highspeed_delay" "0"
@@ -2040,10 +2078,10 @@ elif [[ "${qcom}" == "false" ]]; then
        write "${gpui}boost" "0"
        write "${gpug}mali_touch_boost_level" "0"
        write "${gpu}max_freq" "${gpu_max_freq}"
-       write "${gpu}min_freq" "${gpu_min_freq}"
+       write "${gpu}min_freq" "${gpu_min}"
        write "${gpu}tmu" "1"
        write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
-       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min_freq}"
+       write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min}"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "1"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "85"
        write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "65"
@@ -2055,7 +2093,7 @@ if [[ -d "/sys/module/ged/" ]]; then
     write "/sys/module/ged/parameters/ged_boost_enable" "0"
     write "/sys/module/ged/parameters/boost_gpu_enable" "0"
     write "/sys/module/ged/parameters/boost_extra" "0"
-    write "/sys/module/ged/parameters/enable_cpu_boost" "1"
+    write "/sys/module/ged/parameters/enable_cpu_boost" "0"
     write "/sys/module/ged/parameters/enable_gpu_boost" "0"
     write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
     write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
@@ -2069,7 +2107,7 @@ if [[ -d "/sys/module/ged/" ]]; then
     write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
     write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
     write "/sys/module/ged/parameters/gx_dfps" "0"
-    write "/sys/module/ged/parameters/gx_force_cpu_boost" "1"
+    write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
     write "/sys/module/ged/parameters/gx_frc_mode" "0"
     write "/sys/module/ged/parameters/gx_game_mode" "0"
     write "/sys/module/ged/parameters/is_GED_KPI_enabled" "0"
@@ -3263,13 +3301,13 @@ fi
 }
 
 vm_lmk_latency(){
-[[ "${total_ram_kb}" -gt "8388608" ]] && minfree="25600,38400,51200,64000,256000,307200" && efk="204800"
-[[ "${total_ram_kb}" -le "8388608" ]] && minfree="25600,38400,51200,64000,153600,179200" && efk="128000"
-[[ "${total_ram_kb}" -le "6291456" ]] && minfree="25600,38400,51200,64000,102400,128000" && efk="102400"
-[[ "${total_ram_kb}" -le "4197304" ]] && minfree="12800,19200,25600,32000,76800,102400" && efk="76800"
-[[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
-[[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
-[[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
+[[ "${total_ram_kb}" -gt "8388608" ]] && { minfree="25600,38400,51200,64000,256000,307200"; efk="204800"; }
+[[ "${total_ram_kb}" -le "8388608" ]] && { minfree="25600,38400,51200,64000,153600,179200"; efk="128000"; }
+[[ "${total_ram_kb}" -le "6291456" ]] && { minfree="25600,38400,51200,64000,102400,128000"; efk="102400"; }
+[[ "${total_ram_kb}" -le "4197304" ]] && { minfree="12800,19200,25600,32000,76800,102400"; efk="76800"; }
+[[ "${total_ram_kb}" -le "3145728" ]] && { minfree="12800,19200,25600,32000,51200,76800"; efk="51200"; }
+[[ "${total_ram_kb}" -le "2098652" ]] && { minfree="12800,19200,25600,32000,38400,51200"; efk="25600"; }
+[[ "${total_ram_kb}" -le "1049326" ]] && { minfree="5120,10240,12800,15360,25600,38400";  efk="19200"; }
 # Always sync before dropping caches
 sync
 # VM settings to improve overall user experience and performance
@@ -3302,13 +3340,13 @@ kmsg3 ""
 }
 
 vm_lmk_balanced(){
-[[ "${total_ram_kb}" -gt "8388608" ]] && minfree="25600,38400,51200,64000,256000,307200" && efk="204800"
-[[ "${total_ram_kb}" -le "8388608" ]] && minfree="25600,38400,51200,64000,153600,179200" && efk="128000"
-[[ "${total_ram_kb}" -le "6291456" ]] && minfree="25600,38400,51200,64000,102400,128000" && efk="102400"
-[[ "${total_ram_kb}" -le "4197304" ]] && minfree="12800,19200,25600,32000,76800,102400" && efk="76800"
-[[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
-[[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
-[[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
+[[ "${total_ram_kb}" -gt "8388608" ]] && { minfree="25600,38400,51200,64000,256000,307200"; efk="204800"; }
+[[ "${total_ram_kb}" -le "8388608" ]] && { minfree="25600,38400,51200,64000,153600,179200"; efk="128000"; }
+[[ "${total_ram_kb}" -le "6291456" ]] && { minfree="25600,38400,51200,64000,102400,128000"; efk="102400"; }
+[[ "${total_ram_kb}" -le "4197304" ]] && { minfree="12800,19200,25600,32000,76800,102400"; efk="76800"; }
+[[ "${total_ram_kb}" -le "3145728" ]] && { minfree="12800,19200,25600,32000,51200,76800"; efk="51200"; }
+[[ "${total_ram_kb}" -le "2098652" ]] && { minfree="12800,19200,25600,32000,38400,51200"; efk="25600"; }
+[[ "${total_ram_kb}" -le "1049326" ]] && { minfree="5120,10240,12800,15360,25600,38400";  efk="19200"; }
 sync
 write "${vm}drop_caches" "2"
 write "${vm}dirty_background_ratio" "10"
@@ -3338,13 +3376,13 @@ kmsg3 ""
 }
 
 vm_lmk_extreme(){
-[[ "${total_ram_kb}" -gt "8388608" ]] && minfree="25600,38400,51200,64000,256000,307200" && efk="204800"
-[[ "${total_ram_kb}" -le "8388608" ]] && minfree="25600,38400,51200,64000,153600,179200" && efk="128000"
-[[ "${total_ram_kb}" -le "6291456" ]] && minfree="25600,38400,51200,64000,102400,128000" && efk="102400"
-[[ "${total_ram_kb}" -le "4197304" ]] && minfree="12800,19200,25600,32000,76800,102400" && efk="76800"
-[[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
-[[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
-[[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
+[[ "${total_ram_kb}" -gt "8388608" ]] && { minfree="25600,38400,51200,64000,256000,307200"; efk="204800"; }
+[[ "${total_ram_kb}" -le "8388608" ]] && { minfree="25600,38400,51200,64000,153600,179200"; efk="128000"; }
+[[ "${total_ram_kb}" -le "6291456" ]] && { minfree="25600,38400,51200,64000,102400,128000"; efk="102400"; }
+[[ "${total_ram_kb}" -le "4197304" ]] && { minfree="12800,19200,25600,32000,76800,102400"; efk="76800"; }
+[[ "${total_ram_kb}" -le "3145728" ]] && { minfree="12800,19200,25600,32000,51200,76800"; efk="51200"; }
+[[ "${total_ram_kb}" -le "2098652" ]] && { minfree="12800,19200,25600,32000,38400,51200"; efk="25600"; }
+[[ "${total_ram_kb}" -le "1049326" ]] && { minfree="5120,10240,12800,15360,25600,38400";  efk="19200"; }
 sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "10"
@@ -3374,13 +3412,13 @@ kmsg3 ""
 }
 
 vm_lmk_battery(){
-[[ "${total_ram_kb}" -gt "8388608" ]] && minfree="25600,38400,51200,64000,256000,307200" && efk="204800"
-[[ "${total_ram_kb}" -le "8388608" ]] && minfree="25600,38400,51200,64000,153600,179200" && efk="128000"
-[[ "${total_ram_kb}" -le "6291456" ]] && minfree="25600,38400,51200,64000,102400,128000" && efk="102400"
-[[ "${total_ram_kb}" -le "4197304" ]] && minfree="12800,19200,25600,32000,76800,102400" && efk="76800"
-[[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
-[[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
-[[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
+[[ "${total_ram_kb}" -gt "8388608" ]] && { minfree="25600,38400,51200,64000,256000,307200"; efk="204800"; }
+[[ "${total_ram_kb}" -le "8388608" ]] && { minfree="25600,38400,51200,64000,153600,179200"; efk="128000"; }
+[[ "${total_ram_kb}" -le "6291456" ]] && { minfree="25600,38400,51200,64000,102400,128000"; efk="102400"; }
+[[ "${total_ram_kb}" -le "4197304" ]] && { minfree="12800,19200,25600,32000,76800,102400"; efk="76800"; }
+[[ "${total_ram_kb}" -le "3145728" ]] && { minfree="12800,19200,25600,32000,51200,76800"; efk="51200"; }
+[[ "${total_ram_kb}" -le "2098652" ]] && { minfree="12800,19200,25600,32000,38400,51200"; efk="25600"; }
+[[ "${total_ram_kb}" -le "1049326" ]] && { minfree="5120,10240,12800,15360,25600,38400";  efk="19200"; }
 sync
 write "${vm}drop_caches" "1"
 write "${vm}dirty_background_ratio" "5"
@@ -3410,13 +3448,13 @@ kmsg3 ""
 }
 
 vm_lmk_gaming(){
-[[ "${total_ram_kb}" -gt "8388608" ]] && minfree="25600,38400,51200,64000,256000,307200" && efk="204800"
-[[ "${total_ram_kb}" -le "8388608" ]] && minfree="25600,38400,51200,64000,153600,179200" && efk="128000"
-[[ "${total_ram_kb}" -le "6291456" ]] && minfree="25600,38400,51200,64000,102400,128000" && efk="102400"
-[[ "${total_ram_kb}" -le "4197304" ]] && minfree="12800,19200,25600,32000,76800,102400" && efk="76800"
-[[ "${total_ram_kb}" -le "3145728" ]] && minfree="12800,19200,25600,32000,51200,76800" && efk="51200"
-[[ "${total_ram_kb}" -le "2098652" ]] && minfree="12800,19200,25600,32000,38400,51200" && efk="25600"
-[[ "${total_ram_kb}" -le "1049326" ]] && minfree="5120,10240,12800,15360,25600,38400"  && efk="19200"
+[[ "${total_ram_kb}" -gt "8388608" ]] && { minfree="25600,38400,51200,64000,256000,307200"; efk="204800"; }
+[[ "${total_ram_kb}" -le "8388608" ]] && { minfree="25600,38400,51200,64000,153600,179200"; efk="128000"; }
+[[ "${total_ram_kb}" -le "6291456" ]] && { minfree="25600,38400,51200,64000,102400,128000"; efk="102400"; }
+[[ "${total_ram_kb}" -le "4197304" ]] && { minfree="12800,19200,25600,32000,76800,102400"; efk="76800"; }
+[[ "${total_ram_kb}" -le "3145728" ]] && { minfree="12800,19200,25600,32000,51200,76800"; efk="51200"; }
+[[ "${total_ram_kb}" -le "2098652" ]] && { minfree="12800,19200,25600,32000,38400,51200"; efk="25600"; }
+[[ "${total_ram_kb}" -le "1049326" ]] && { minfree="5120,10240,12800,15360,25600,38400";  efk="19200"; }
 sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "15"
@@ -3731,7 +3769,7 @@ fi
 }
 
 disable_emmc_clk_sclg(){
-[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0" && write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"
+[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && { write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"; write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"; }
 [[ -d "/sys/class/mmc_host/mmc0/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
 }
 
