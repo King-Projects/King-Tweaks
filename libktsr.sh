@@ -745,7 +745,7 @@ write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
 write "${cpuset}foreground/boost/cpus" "4-7"
 write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}system-background/cpus" "0-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
@@ -755,7 +755,7 @@ write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
 write "${cpuset}foreground/boost/cpus" "4-7"
 write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}system-background/cpus" "0-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
@@ -765,7 +765,7 @@ write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
 write "${cpuset}foreground/boost/cpus" "4-7"
 write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}system-background/cpus" "0-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
@@ -780,10 +780,9 @@ write "${cpuset}top-app/cpus" "0-3"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "msm8998")
-write "${cpuset}camera-daemon/cpus" "0-6"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
+write "${cpuset}camera-daemon/cpus" "0-7"
+write "${cpuset}foreground/cpus" "0-3,6-7"
+write "${cpuset}background/cpus" "0-1"
 write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
@@ -862,20 +861,18 @@ kmsg "Tweaked cpusets"
 kmsg3 "";;
 "sm6150")
 write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}foreground/cpus" "0-5,7"
+write "${cpuset}background/cpus" "4-5"
+write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
-write "${cpuset}restricted/cpus" "0-3"
+write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "lito")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "6-7"
-write "${cpuset}background/cpus" "5-6"
+write "${cpuset}foreground/cpus" "0-5,7"
+write "${cpuset}background/cpus" "4-5"
 write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "2-5"
@@ -959,21 +956,21 @@ esac
 
 boost_latency(){
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
+    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
     write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
     kmsg "Tweaked dynamic stune boost"
     kmsg3 ""
 fi
 
 if [[ -d "/sys/module/cpu_boost/" ]]; then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "130"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
     write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 
 elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
-    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "130"
+    write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "156"
     kmsg "Tweaked CPU input boost"
     kmsg3 ""
 fi
@@ -981,14 +978,14 @@ fi
 
 boost_balanced(){
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "5"
+    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
     write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
     kmsg "Tweaked dynamic stune boost"
     kmsg3 ""
 fi
 
 if [[ -d "/sys/module/cpu_boost/" ]]; then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "100"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
     write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
     kmsg "Tweaked CAF CPU input boost"
@@ -1026,7 +1023,7 @@ fi
 
 boost_battery(){
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
+    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
     write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
     kmsg "Tweaked dynamic stune boost"
     kmsg3 ""
@@ -1215,8 +1212,8 @@ do
     write "${governor}/down_rate_limit_us" "1000"
     write "${governor}/pl" "1"
     write "${governor}/iowait_boost_enable" "1"
-    write "${governor}/rate_limit_us" "5000"
-    write "${governor}/hispeed_load" "89"
+    write "${governor}/rate_limit_us" "1000"
+    write "${governor}/hispeed_load" "79"
     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
@@ -1226,8 +1223,8 @@ do
     write "${governor}/down_rate_limit_us" "1000"
     write "${governor}/pl" "1"
     write "${governor}/iowait_boost_enable" "1"
-    write "${governor}/rate_limit_us" "5000"
-    write "${governor}/hispeed_load" "89"
+    write "${governor}/rate_limit_us" "1000"
+    write "${governor}/hispeed_load" "79"
     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
@@ -1245,9 +1242,9 @@ do
     write "${governor}/fastlane" "1"
     write "${governor}/fast_ramp_down" "0"
     write "${governor}/sampling_rate" "1000"
-    write "${governor}/sampling_rate_min" "5000"
-    write "${governor}/min_sample_time" "5000"
-    write "${governor}/go_hispeed_load" "89"
+    write "${governor}/sampling_rate_min" "1000"
+    write "${governor}/min_sample_time" "1000"
+    write "${governor}/go_hispeed_load" "79"
     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 }
@@ -1270,7 +1267,7 @@ do
      write "${governor}/down_rate_limit_us" "500"
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "0"
-     write "${governor}/rate_limit_us" "25000"
+     write "${governor}/rate_limit_us" "20000"
      write "${governor}/hispeed_load" "86"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
@@ -1281,7 +1278,7 @@ do
      write "${governor}/down_rate_limit_us" "500"
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "0"
-     write "${governor}/rate_limit_us" "25000"
+     write "${governor}/rate_limit_us" "20000"
      write "${governor}/hispeed_load" "86"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
@@ -1291,7 +1288,7 @@ do
      write "${governor}/timer_rate" "20000"
      write "${governor}/boost" "0"
      write "${governor}/io_is_busy" "1"
-     write "${governor}/timer_slack" "24000"
+     write "${governor}/timer_slack" "5000"
      write "${governor}/input_boost" "0"
      write "${governor}/use_migration_notif" "0" 
      write "${governor}/ignore_hispeed_on_notif" "1"
@@ -1301,7 +1298,7 @@ do
      write "${governor}/fast_ramp_down" "0"
      write "${governor}/sampling_rate" "20000"
      write "${governor}/sampling_rate_min" "20000"
-     write "${governor}/min_sample_time" "25000"
+     write "${governor}/min_sample_time" "20000"
      write "${governor}/go_hispeed_load" "80"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
@@ -1375,32 +1372,32 @@ done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
-     write "${governor}/up_rate_limit_us" "46000"
-     write "${governor}/down_rate_limit_us" "24000"
+     write "${governor}/up_rate_limit_us" "500"
+     write "${governor}/down_rate_limit_us" "20000"
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "0"
-     write "${governor}/rate_limit_us" "46000"
+     write "${governor}/rate_limit_us" "20000"
      write "${governor}/hispeed_load" "99"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
-     write "${governor}/up_rate_limit_us" "46000"
-     write "${governor}/down_rate_limit_us" "24000"
+     write "${governor}/up_rate_limit_us" "500"
+     write "${governor}/down_rate_limit_us" "20000"
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "0"
-     write "${governor}/rate_limit_us" "46000"
-     write "{$governor}/hispeed_load" "99"
+     write "${governor}/rate_limit_us" "20000"
+     write "${governor}/hispeed_load" "99"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
-     write "${governor}/timer_rate" "46000"
+     write "${governor}/timer_rate" "20000"
      write "${governor}/boost" "0"
      write "${governor}/io_is_busy" "1"
-     write "${governor}/timer_slack" "46000"
+     write "${governor}/timer_slack" "10000"
      write "${governor}/input_boost" "0"
      write "${governor}/use_migration_notif" "0" 
      write "${governor}/ignore_hispeed_on_notif" "1"
@@ -1408,9 +1405,9 @@ do
      write "${governor}/boostpulse" "0"
      write "${governor}/fastlane" "1"
      write "${governor}/fast_ramp_down" "1"
-     write "${governor}/sampling_rate" "46000"
-     write "${governor}/sampling_rate_min" "46000"
-     write "${governor}/min_sample_time" "46000"
+     write "${governor}/sampling_rate" "20000"
+     write "${governor}/sampling_rate_min" "20000"
+     write "${governor}/min_sample_time" "20000"
      write "${governor}/go_hispeed_load" "99"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
@@ -1515,7 +1512,7 @@ if [[ -d "/sys/kernel/hmp/" ]]; then
     write "/sys/kernel/hmp/down_compensation_enabled" "1"
     write "/sys/kernel/hmp/family_boost" "0"
     write "/sys/kernel/hmp/semiboost" "0"
-    write "/sys/kernel/hmp/up_threshold" "575"
+    write "/sys/kernel/hmp/up_threshold" "658"
     write "/sys/kernel/hmp/down_threshold" "256"
     kmsg "Tweaked HMP parameters"
     kmsg3 ""
@@ -1529,7 +1526,7 @@ if [[ -d "/sys/kernel/hmp/" ]]; then
     write "/sys/kernel/hmp/family_boost" "1"
     write "/sys/kernel/hmp/semiboost" "1"
     write "/sys/kernel/hmp/up_threshold" "500"
-    write "/sys/kernel/hmp/down_threshold" "180"
+    write "/sys/kernel/hmp/down_threshold" "150"
     kmsg "Tweaked HMP parameters"
     kmsg3 ""
 fi
@@ -2284,14 +2281,14 @@ if [[ -d "${stune}" ]]; then
     write "${stune}camera-daemon/schedtune.ontime_en" "0"
     write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
     
-    write "${stune}top-app/schedtune.boost" "10"
+    write "${stune}top-app/schedtune.boost" "15"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "0"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
     write "${stune}top-app/schedtune.prefer_perf" "1"
     write "${stune}top-app/schedtune.util_est_en" "1"
     write "${stune}top-app/schedtune.ontime_en" "1"
-    write "${stune}top-app/schedtune.prefer_high_cap" "1"
+    write "${stune}top-app/schedtune.prefer_high_cap" "0"
     
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
@@ -2354,14 +2351,14 @@ if [[ -d "${stune}" ]]; then
     write "${stune}camera-daemon/schedtune.ontime_en" "0"
     write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
     
-    write "${stune}top-app/schedtune.boost" "5"
+    write "${stune}top-app/schedtune.boost" "10"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "0"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
     write "${stune}top-app/schedtune.prefer_perf" "1"
     write "${stune}top-app/schedtune.util_est_en" "1"
     write "${stune}top-app/schedtune.ontime_en" "1"
-    write "${stune}top-app/schedtune.prefer_high_cap" "1"
+    write "${stune}top-app/schedtune.prefer_high_cap" "0"
     
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
@@ -2494,14 +2491,14 @@ if [[ -d "${stune}" ]]; then
     write "${stune}camera-daemon/schedtune.ontime_en" "0"
     write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
     
-    write "${stune}top-app/schedtune.boost" "1"
+    write "${stune}top-app/schedtune.boost" "10"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "0"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
     write "${stune}top-app/schedtune.prefer_perf" "1"
     write "${stune}top-app/schedtune.util_est_en" "1"
     write "${stune}top-app/schedtune.ontime_en" "1"
-    write "${stune}top-app/schedtune.prefer_high_cap" "1"
+    write "${stune}top-app/schedtune.prefer_high_cap" "0"
     
     write "${stune}schedtune.boost" "0"
     write "${stune}schedtune.prefer_idle" "0"
