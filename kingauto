@@ -18,7 +18,7 @@ for gpid in $(pgrep -f com.pubg) $(pgrep -f com.tgc.sky.android) $(pgrep -f jp.g
       sync
       setprop kingauto.prof "gaming"
       pin_proc_on_perf "${gpid}"
-      change_task_high_prio "${gpid}"
+      change_task_nice "${gpid}" "-18"
       get_all
       apply_all_auto
       sleep 45
@@ -36,7 +36,7 @@ for bpid in $(pgrep -f com.primatelabs)  $(pgrep -f com.ludashi.benchmark)  $(pg
       sync
       setprop kingauto.prof "extreme"
       pin_proc_on_perf "${bpid}"
-      change_task_high_prio "${bpid}"
+      change_task_nice "${bpid}" "-18"
       get_all
       apply_all_auto
       sleep 45

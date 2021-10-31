@@ -26,15 +26,7 @@ adj_rel="${BIN_DIR}"
 adj_nm="adjshield"
 adj_cfg="/data/media/0/KTSR/adjshield.conf"
 adj_log="/data/media/0/KTSR/adjshield.log"
-fscc_nm="fscache-ctrl"
-sys_frm="/system/framework"
-sys_lib="/system/lib64"
-vdr_lib="/vendor/lib64"
-dvk="/data/dalvik-cache"
-apx1="/apex/com.android.art/javalib"
-apx2="/apex/com.android.runtime/javalib"
 perfmgr="/proc/perfmgr/"
-fscc_file_list=""
 one_ui=false
 samsung=false
 qcom=false
@@ -45,6 +37,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=0
+lib_ver="1.0.0"
 
 # Log in white and continue (unnecessary)
 kmsg(){ echo -e "[$(date +%T)]: [*] $@" >> "${KLOG}"; }
@@ -160,14 +153,14 @@ SCHED_PERIOD_LATENCY="$((1 * 1000 * 1000))"
 
 SCHED_PERIOD_BALANCE="$((4 * 1000 * 1000))"
 	
-SCHED_PERIOD_BATTERY="$((8 * 1000 * 1000))"
+SCHED_PERIOD_BATTERY="$((5 * 1000 * 1000))"
 
 SCHED_PERIOD_THROUGHPUT="$((10 * 1000 * 1000))"
 
 # How many tasks should we have at a maximum in one scheduling period
 SCHED_TASKS_LATENCY="10"
 
-SCHED_TASKS_BATTERY="4"
+SCHED_TASKS_BATTERY="5"
 
 SCHED_TASKS_BALANCE="8"
 
@@ -627,44 +620,45 @@ kmsg3 ""
 kmsg "General Info"
 
 kmsg3 ""
-kmsg3 "** Date of execution: $(date)"                                                                                    
-kmsg3 "** Kernel: ${kern_ver_name}"                                                                                           
+kmsg3 "** Date of execution: $(date)"
+kmsg3 "** Kernel: ${kern_ver_name}"
 kmsg3 "** Kernel Build Date: ${kern_bd_dt}"
-kmsg3 "** SOC: ${soc_mf}, ${soc}"                                                                                               
+kmsg3 "** SOC: ${soc_mf}, ${soc}"
 kmsg3 "** SDK: ${sdk}"
-kmsg3 "** Android Version: ${avs}"    
-kmsg3 "** CPU Governor: ${cpu_gov}"   
+kmsg3 "** Android Version: ${avs}"
+kmsg3 "** CPU Governor: ${cpu_gov}"
 kmsg3 "** CPU Load: ${cpu_load}%"
 kmsg3 "** Number of cores: ${nr_cores}"
 kmsg3 "** CPU Freq: ${cpu_min_clk_mhz}-${cpu_max_clk_mhz}MHz"
-kmsg3 "** CPU Scheduling Type: ${cpu_sched}"                                                                               
-kmsg3 "** AArch: ${arch}"        
+kmsg3 "** CPU Scheduling Type: ${cpu_sched}"                                                                           
+kmsg3 "** AArch: ${arch}"
 kmsg3 "** GPU Load: ${gpu_load}%"
 kmsg3 "** GPU Freq: ${gpu_min_clk_mhz}-${gpu_max_clk_mhz}MHz"
-kmsg3 "** GPU Model: ${gpu_mdl}"                                                                                         
-kmsg3 "** GPU Drivers Info: ${drvs_info}"                                                                                  
-kmsg3 "** GPU Governor: ${gpu_gov}"                                                                                  
-kmsg3 "** Device: ${dvc_brnd}, ${dvc_cdn}"                                                                                                
-kmsg3 "** ROM: ${rom_info}"                 
+kmsg3 "** GPU Model: ${gpu_mdl}"
+kmsg3 "** GPU Drivers Info: ${drvs_info}"                                                       
+kmsg3 "** GPU Governor: ${gpu_gov}"
+kmsg3 "** Device: ${dvc_brnd}, ${dvc_cdn}"
+kmsg3 "** ROM: ${rom_info}"
 kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}' | tail -n 1)"
 kmsg3 "** Screen Density: $(wm density | awk '{print $3}' | tail -n 1) PPI"
-kmsg3 "** Refresh Rate: ${rr}HZ"                                         
-kmsg3 "** Build Version: ${bd_ver}"                                                                                     
-kmsg3 "** Build Codename: ${bd_cdn}"                                                                                   
-kmsg3 "** Build Release: ${bd_rel}"                                                                                         
-kmsg3 "** Build Date: ${bd_dt}"                                                                                          
-kmsg3 "** Battery Charge Level: ${batt_pctg}%"  
+kmsg3 "** Refresh Rate: ${rr}HZ"
+kmsg3 "** Build Version: ${bd_ver}"
+kmsg3 "** Build Codename: ${bd_cdn}"
+kmsg3 "** Build Release: ${bd_rel}"
+kmsg3 "** Build Date: ${bd_dt}"
+kmsg3 "** Lib Version: ${lib_ver}"
+kmsg3 "** Battery Charge Level: ${batt_pctg}%"
 kmsg3 "** Battery Capacity: ${batt_cpct}mAh"
-kmsg3 "** Battery Health: ${batt_hth}"                                                                                     
-kmsg3 "** Battery Status: ${batt_sts}"                                                                                     
-kmsg3 "** Battery Temperature: ${batt_tmp}°C"                                                                               
-kmsg3 "** Device RAM: ${total_ram}MB"                                                                                     
+kmsg3 "** Battery Health: ${batt_hth}"
+kmsg3 "** Battery Status: ${batt_sts}"
+kmsg3 "** Battery Temperature: ${batt_tmp}°C"
+kmsg3 "** Device RAM: ${total_ram}MB"
 kmsg3 "** Device Available RAM: ${avail_ram}MB"
 kmsg3 "** Root: ${root}"
 kmsg3 "** SQLite Version: ${sql_ver}"
 kmsg3 "** SQLite Build Date: ${sql_bd_dt}"
 kmsg3 "** System Uptime: ${sys_uptime}"
-kmsg3 "** SELinux: ${slnx_stt}"                                                                                   
+kmsg3 "** SELinux: ${slnx_stt}"
 kmsg3 "** Busybox: ${bb_ver}"
 kmsg3 ""
 kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
@@ -675,12 +669,12 @@ kmsg3 ""
 }
 
 stop_services(){
-# Disable perfd, mpdecision and few debug services
-for v in 0 1 2 3 4; do
-    stop vendor.qti.hardware.perf@${v}.${v}-service 2>/dev/null
-    stop perf-hal-${v}-${v} 2>/dev/null
-done
-stop perfd 2>/dev/null
+# Enable / disable mpdecision, and disable few debug services
+#for v in 0 1 2 3 4; do
+    #stop vendor.qti.hardware.perf@${v}.${v}-service 2>/dev/null
+    #stop perf-hal-${v}-${v} 2>/dev/null
+#done
+#stop perfd 2>/dev/null
 [[ "${ktsr_prof_en}" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && start mpdecision 2>/dev/null || stop mpdecision 2>/dev/null
 # stop vendor.perfservice 2>/dev/null
 stop vendor.cnss_diag 2>/dev/null
@@ -691,7 +685,7 @@ stop oneplus_brain_service 2>/dev/null
 [[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values"
 [[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
 
-kmsg "Disabled perfd, mpdecision and few debug services"
+kmsg "Disabled few debug services"
 kmsg3 ""
 }
 
@@ -742,30 +736,27 @@ config_cpuset(){
 case "${soc}" in
 "msm8937")
 write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-5"
+write "${cpuset}foreground/cpus" "0-3,6-7"
+write "${cpuset}background/cpus" "0-1"
+write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "msm8952")
 write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-5"
+write "${cpuset}foreground/cpus" "0-3,6-7"
+write "${cpuset}background/cpus" "0-1"
+write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "msm8953")
 write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-5"
+write "${cpuset}foreground/cpus" "0-3,6-7"
+write "${cpuset}background/cpus" "0-1"
+write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
@@ -790,19 +781,17 @@ kmsg "Tweaked cpusets"
 kmsg3 "";;
 "msmnile")
 write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "6-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}foreground/cpus" "0-5,7"
+write "${cpuset}background/cpus" "4-5"
+write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
-write "${cpuset}restricted/cpus" "0-3"
+write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "mt6768")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
+write "${cpuset}background/cpus" "0-1"
 write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
@@ -811,19 +800,16 @@ kmsg3 "";;
 "mt6785")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
+write "${cpuset}background/cpus" "0-1"
 write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
-write "${cpuset}top-app/boost/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "mt6873")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
+write "${cpuset}background/cpus" "0-1"
 write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
@@ -832,8 +818,7 @@ kmsg3 "";;
 "mt6885")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
+write "${cpuset}background/cpus" "0-1"
 write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
@@ -841,19 +826,17 @@ kmsg "Tweaked cpusets"
 kmsg3 "";;
 "sdm710")
 write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}foreground/cpus" "0-5,7"
+write "${cpuset}background/cpus" "4-5"
+write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
-write "${cpuset}restricted/cpus" "0-3"
+write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "sdm845")
 write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
+write "${cpuset}foreground/cpus" "0-3,6-7"
+write "${cpuset}background/cpus" "0-1"
 write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
@@ -880,9 +863,8 @@ kmsg "Tweaked cpusets"
 kmsg3 "";;
 "lahaina")
 write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "6-7"
-write "${cpuset}background/cpus" "5-6"
+write "${cpuset}foreground/cpus" "0-5,7"
+write "${cpuset}background/cpus" "4-5"
 write "${cpuset}system-background/cpus" "0-3"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
@@ -891,62 +873,56 @@ kmsg3 "";;
 "exynos5")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}background/cpus" "0-1"
+write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}dex2oat/cpus" "0-6"
-write "${cpuset}restricted/cpus" "0-3"
+write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "trinket")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}background/cpus" "4-5"
+write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
-write "${cpuset}restricted/cpus" "0-3"
+write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "kona")
 write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}foreground/cpus" "0-5,7"
+write "${cpuset}background/cpus" "4-5"
+write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
-write "${cpuset}restricted/cpus" "0-3"
+write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "universal9811")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}background/cpus" "4-5"
+write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}dexopt/cpus" "0-6"
-write "${cpuset}restricted/cpus" "0-3"
+write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "universal9820")
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "0-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}background/cpus" "4-5"
+write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}dexopt/cpus" "0-6"
-write "${cpuset}restricted/cpus" "0-3"
+write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
 kmsg3 "";;
 "atoll")
 write "${cpuset}camera-daemon/cpus" "0-7"
-write "${cpuset}foreground/cpus" "0-7"
-write "${cpuset}foreground/boost/cpus" "4-7"
-write "${cpuset}background/cpus" "2-5"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}foreground/cpus" "0-5,7"
+write "${cpuset}background/cpus" "4-5"
+write "${cpuset}system-background/cpus" "2-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "2-5"
 kmsg "Tweaked cpusets"
@@ -965,7 +941,8 @@ fi
 if [[ -d "/sys/module/cpu_boost/" ]]; then
     write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-    write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+    write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
+    write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 
@@ -985,9 +962,10 @@ if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
 fi
 
 if [[ -d "/sys/module/cpu_boost/" ]]; then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "100"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-    write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+    write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
+    write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 
@@ -1010,7 +988,8 @@ fi
 if [[ -d "/sys/module/cpu_boost/" ]]; then
     write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "0"
-    write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+    write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "N"
+    write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "0"
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 
@@ -1023,16 +1002,17 @@ fi
 
 boost_battery(){
 if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
-    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
+    write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
     write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
     kmsg "Tweaked dynamic stune boost"
     kmsg3 ""
 fi
 
 if [[ -e "/sys/module/cpu_boost/parameters/" ]]; then
-    write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-    write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+    write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
+    write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
+    write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 fi
@@ -1055,7 +1035,8 @@ fi
 if [[ -d "/sys/module/cpu_boost/" ]]; then
     write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
     write "/sys/module/cpu_boost/parameters/input_boost_enabled" "0"
-    write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+    write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "0"
+    write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "0"
     kmsg "Tweaked CAF CPU input boost"
     kmsg3 ""
 
@@ -1086,7 +1067,7 @@ do
      write "${queue}read_ahead_kb" "32"
      write "${queue}nomerges" "0"
      write "${queue}rq_affinity" "2"
-     write "${queue}nr_requests" "16"
+     write "${queue}nr_requests" "32"
 done
 
 kmsg "Tweaked I/O scheduler"
@@ -1208,43 +1189,43 @@ done
 # Apply governor specific tunables for schedutil, or it's modifications
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
-    write "${governor}/up_rate_limit_us" "1000"
-    write "${governor}/down_rate_limit_us" "1000"
+    write "${governor}/up_rate_limit_us" "0"
+    write "${governor}/down_rate_limit_us" "0"
     write "${governor}/pl" "1"
     write "${governor}/iowait_boost_enable" "1"
-    write "${governor}/rate_limit_us" "1000"
-    write "${governor}/hispeed_load" "79"
+    write "${governor}/rate_limit_us" "0"
+    write "${governor}/hispeed_load" "85"
     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
-    write "${governor}/up_rate_limit_us" "1000"
-    write "${governor}/down_rate_limit_us" "1000"
+    write "${governor}/up_rate_limit_us" "0"
+    write "${governor}/down_rate_limit_us" "0"
     write "${governor}/pl" "1"
     write "${governor}/iowait_boost_enable" "1"
-    write "${governor}/rate_limit_us" "1000"
-    write "${governor}/hispeed_load" "79"
+    write "${governor}/rate_limit_us" "0"
+    write "${governor}/hispeed_load" "85"
     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 # Apply governor specific tunables for interactive
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
-    write "${governor}/timer_rate" "1000"
+    write "${governor}/timer_rate" "0"
     write "${governor}/boost" "0"
     write "${governor}/io_is_busy" "1"
-    write "${governor}/timer_slack" "1000"
+    write "${governor}/timer_slack" "0"
     write "${governor}/input_boost" "0"
     write "${governor}/use_migration_notif" "0" 
     write "${governor}/ignore_hispeed_on_notif" "1"
     write "${governor}/use_sched_load" "1"
     write "${governor}/fastlane" "1"
     write "${governor}/fast_ramp_down" "0"
-    write "${governor}/sampling_rate" "1000"
-    write "${governor}/sampling_rate_min" "1000"
-    write "${governor}/min_sample_time" "1000"
-    write "${governor}/go_hispeed_load" "79"
+    write "${governor}/sampling_rate" "0"
+    write "${governor}/sampling_rate_min" "0"
+    write "${governor}/min_sample_time" "0"
+    write "${governor}/go_hispeed_load" "85"
     write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 }
@@ -1263,23 +1244,23 @@ done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
-     write "${governor}/up_rate_limit_us" "20000"
-     write "${governor}/down_rate_limit_us" "500"
+     write "${governor}/up_rate_limit_us" "500"
+     write "${governor}/down_rate_limit_us" "20000"
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "0"
      write "${governor}/rate_limit_us" "20000"
-     write "${governor}/hispeed_load" "86"
+     write "${governor}/hispeed_load" "89"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
-     write "${governor}/up_rate_limit_us" "20000"
-     write "${governor}/down_rate_limit_us" "500"
+     write "${governor}/up_rate_limit_us" "500"
+     write "${governor}/down_rate_limit_us" "20000"
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "0"
      write "${governor}/rate_limit_us" "20000"
-     write "${governor}/hispeed_load" "86"
+     write "${governor}/hispeed_load" "89"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
@@ -1288,7 +1269,7 @@ do
      write "${governor}/timer_rate" "20000"
      write "${governor}/boost" "0"
      write "${governor}/io_is_busy" "1"
-     write "${governor}/timer_slack" "5000"
+     write "${governor}/timer_slack" "2000"
      write "${governor}/input_boost" "0"
      write "${governor}/use_migration_notif" "0" 
      write "${governor}/ignore_hispeed_on_notif" "1"
@@ -1323,7 +1304,7 @@ do
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "1"
      write "${governor}/rate_limit_us" "0"
-     write "${governor}/hispeed_load" "65"
+     write "${governor}/hispeed_load" "99"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
@@ -1334,7 +1315,7 @@ do
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "1"
      write "${governor}/rate_limit_us" "0"
-     write "${governor}/hispeed_load" "65"
+     write "${governor}/hispeed_load" "99"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
@@ -1353,7 +1334,7 @@ do
      write "${governor}/sampling_rate" "0"
      write "${governor}/sampling_rate_min" "0"
      write "${governor}/min_sample_time" "0"
-     write "${governor}/go_hispeed_load" "65"
+     write "${governor}/go_hispeed_load" "99"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 }
@@ -1372,32 +1353,32 @@ done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
 do
-     write "${governor}/up_rate_limit_us" "500"
-     write "${governor}/down_rate_limit_us" "20000"
+     write "${governor}/up_rate_limit_us" "4500"
+     write "${governor}/down_rate_limit_us" "16000"
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "0"
-     write "${governor}/rate_limit_us" "20000"
+     write "${governor}/rate_limit_us" "16000"
      write "${governor}/hispeed_load" "99"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d)
 do
-     write "${governor}/up_rate_limit_us" "500"
-     write "${governor}/down_rate_limit_us" "20000"
+     write "${governor}/up_rate_limit_us" "4500"
+     write "${governor}/down_rate_limit_us" "16000"
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "0"
-     write "${governor}/rate_limit_us" "20000"
+     write "${governor}/rate_limit_us" "16000"
      write "${governor}/hispeed_load" "99"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d)
 do
-     write "${governor}/timer_rate" "20000"
+     write "${governor}/timer_rate" "16000"
      write "${governor}/boost" "0"
      write "${governor}/io_is_busy" "1"
-     write "${governor}/timer_slack" "10000"
+     write "${governor}/timer_slack" "4000"
      write "${governor}/input_boost" "0"
      write "${governor}/use_migration_notif" "0" 
      write "${governor}/ignore_hispeed_on_notif" "1"
@@ -1405,7 +1386,7 @@ do
      write "${governor}/boostpulse" "0"
      write "${governor}/fastlane" "1"
      write "${governor}/fast_ramp_down" "1"
-     write "${governor}/sampling_rate" "20000"
+     write "${governor}/sampling_rate" "16000"
      write "${governor}/sampling_rate_min" "20000"
      write "${governor}/min_sample_time" "20000"
      write "${governor}/go_hispeed_load" "99"
@@ -1432,7 +1413,7 @@ do
       write "${governor}/pl" "1"
       write "${governor}/iowait_boost_enable" "1"
       write "${governor}/rate_limit_us" "0"
-      write "${governor}/hispeed_load" "65"
+      write "${governor}/hispeed_load" "99"
       write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
@@ -1443,7 +1424,7 @@ do
      write "${governor}/pl" "1"
      write "${governor}/iowait_boost_enable" "1"
      write "${governor}/rate_limit_us" "0"
-     write "${governor}/hispeed_load" "65"
+     write "${governor}/hispeed_load" "99"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 
@@ -1462,7 +1443,7 @@ do
      write "${governor}/sampling_rate" "0"
      write "${governor}/sampling_rate_min" "0"
      write "${governor}/min_sample_time" "0"
-     write "${governor}/go_hispeed_load" "65"
+     write "${governor}/go_hispeed_load" "99"
      write "${governor}/hispeed_freq" "${cpu_max_freq}"
 done
 }
@@ -2491,7 +2472,7 @@ if [[ -d "${stune}" ]]; then
     write "${stune}camera-daemon/schedtune.ontime_en" "0"
     write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
     
-    write "${stune}top-app/schedtune.boost" "10"
+    write "${stune}top-app/schedtune.boost" "0"
     write "${stune}top-app/schedtune.prefer_idle" "1"
     write "${stune}top-app/schedtune.sched_boost" "0"
     write "${stune}top-app/schedtune.sched_boost_no_override" "1"
@@ -2734,7 +2715,7 @@ config_blkio(){
 if [[ -d "${blkio}" ]]; then
     write "${blkio}blkio.weight" "1000"
     write "${blkio}background/blkio.weight" "200"
-    write "${blkio}blkio.group_idle" "2000"
+    write "${blkio}blkio.group_idle" "0"
     write "${blkio}background/blkio.group_idle" "0"
     kmsg "Tweaked blkio"
     kmsg3 ""
@@ -2795,7 +2776,7 @@ fi
 sched_ft_battery(){
 if [[ -e "/sys/kernel/debug/sched_features" ]]; then
     write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
-    write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
+    write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
     kmsg "Tweaked scheduler features"
     kmsg3 ""
 fi
@@ -2831,15 +2812,15 @@ fi
 sched_latency(){
 # Tweak kernel settings to improve overall performance
 [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
-[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "5"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "3"
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
 write "${kernel}sched_tunable_scaling" "0"
-[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "200000"
-[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "1250000"
-[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "2000000"
-[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
+[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${SCHED_PERIOD_LATENCY}"
+[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LATENCY))"
+[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((SCHED_PERIOD_LATENCY / SCHED_TASKS_LATENCY))"
+[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "5000000"
 [[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 [[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 write "${kernel}sched_nr_migrate" "4"
@@ -2879,7 +2860,7 @@ kmsg3 ""
 
 sched_balanced(){
 [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
-[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "10"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "15"
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] &&.write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
@@ -2972,7 +2953,7 @@ kmsg3 ""
 
 sched_battery(){
 [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
-[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "3"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "2"
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
@@ -2983,7 +2964,7 @@ write "${kernel}sched_tunable_scaling" "0"
 [[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
 [[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 [[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
-write "${kernel}sched_nr_migrate" "192"
+write "${kernel}sched_nr_migrate" "256"
 write "${kernel}sched_schedstats" "0"
 [[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 write "${kernel}printk_devkmsg" "off"
@@ -3246,13 +3227,12 @@ vm_lmk_latency(){
 sync
 # VM settings to improve overall user experience and performance
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "10"
-write "${vm}dirty_ratio" "25"
+write "${vm}dirty_background_ratio" "3"
+write "${vm}dirty_ratio" "30"
 write "${vm}dirty_expire_centisecs" "5000"
 write "${vm}dirty_writeback_centisecs" "5000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
-write "${vm}extfrag_threshold" "750"
 # Use SSWAP on samsung devices if it do not have more than 4 GB RAM
 [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 write "${vm}laptop_mode" "0"
@@ -3283,13 +3263,12 @@ vm_lmk_balanced(){
 [[ "${total_ram_kb}" -le "1049326" ]] && { minfree="5120,10240,12800,15360,25600,38400";  efk="19200"; }
 sync
 write "${vm}drop_caches" "2"
-write "${vm}dirty_background_ratio" "10"
-write "${vm}dirty_ratio" "25"
-write "${vm}dirty_expire_centisecs" "5500"
-write "${vm}dirty_writeback_centisecs" "5500"
+write "${vm}dirty_background_ratio" "5"
+write "${vm}dirty_ratio" "30"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
-write "${vm}extfrag_threshold" "750"
 [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 write "${vm}laptop_mode" "0"
 write "${vm}vfs_cache_pressure" "100"
@@ -3319,16 +3298,15 @@ vm_lmk_extreme(){
 [[ "${total_ram_kb}" -le "1049326" ]] && { minfree="5120,10240,12800,15360,25600,38400";  efk="19200"; }
 sync
 write "${vm}drop_caches" "3"
-write "${vm}dirty_background_ratio" "10"
+write "${vm}dirty_background_ratio" "15"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "5000"
-write "${vm}dirty_writeback_centisecs" "5000"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
-write "${vm}extfrag_threshold" "750"
 [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "150"
+write "${vm}vfs_cache_pressure" "75"
 write "${vm}watermark_scale_factor" "1"
 [[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
@@ -3355,16 +3333,15 @@ vm_lmk_battery(){
 [[ "${total_ram_kb}" -le "1049326" ]] && { minfree="5120,10240,12800,15360,25600,38400";  efk="19200"; }
 sync
 write "${vm}drop_caches" "1"
-write "${vm}dirty_background_ratio" "5"
-write "${vm}dirty_ratio" "20"
-write "${vm}dirty_expire_centisecs" "6000"
-write "${vm}dirty_writeback_centisecs" "6000"
+write "${vm}dirty_background_ratio" "2"
+write "${vm}dirty_ratio" "5"
+write "${vm}dirty_expire_centisecs" "500"
+write "${vm}dirty_writeback_centisecs" "500"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
-write "${vm}extfrag_threshold" "750"
 [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
-write "${vm}laptop_mode" "1"
-write "${vm}vfs_cache_pressure" "60"
+write "${vm}laptop_mode" "0"
+write "${vm}vfs_cache_pressure" "100"
 write "${vm}watermark_scale_factor" "1"
 [[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
@@ -3393,14 +3370,13 @@ sync
 write "${vm}drop_caches" "3"
 write "${vm}dirty_background_ratio" "15"
 write "${vm}dirty_ratio" "30"
-write "${vm}dirty_expire_centisecs" "6000"
-write "${vm}dirty_writeback_centisecs" "6000"
+write "${vm}dirty_expire_centisecs" "3000"
+write "${vm}dirty_writeback_centisecs" "3000"
 write "${vm}page-cluster" "0"
 write "${vm}stat_interval" "60"
-write "${vm}extfrag_threshold" "750"
 [[ "${samsung}" == "true" ]] && [[ "${total_ram}" -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 write "${vm}laptop_mode" "0"
-write "${vm}vfs_cache_pressure" "500"
+write "${vm}vfs_cache_pressure" "75"
 write "${vm}watermark_scale_factor" "1"
 [[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
@@ -3573,8 +3549,8 @@ do
       write "${hpm}parameters/high_perf_mode" "1"
       kmsg "Enabled high performance audio"
       kmsg3 ""
-      break
-   fi
+    break
+  fi
 done
 }
 
@@ -3585,8 +3561,8 @@ do
       write "${hpm}parameters/high_perf_mode" "0"
       kmsg "Disabled high performance audio"
       kmsg3 ""
-      break
-   fi
+    break
+  fi
 done
 }
 
@@ -3762,7 +3738,6 @@ save_panel(){
 write_panel "[*] Bourbon - the essential process optimizer 
 Version: 1.2.6-r3
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
-FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
 Adjshield config file: ${adj_cfg}"
 }
@@ -3949,76 +3924,6 @@ rebuild_process_scan_cache(){
     ps_ret="$(ps -Ao pid,args)"
 }
 
-# $1:apk_path $return:oat_path
-fscc_path_apk_to_oat(){ echo "${1%/*}/oat"; } # OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
-
-# $1:file/dir
-fscc_list_append(){ fscc_file_list="${fscc_file_list} $1"; }
-
-# $1:file/dir
-fscc_add_obj(){ [[ -e "$1" ]] && fscc_list_append "$1"; } # whether file or dir exists
-
-# $1:package_name
-fscc_add_apk(){ [[ "$1" != "" ]] && fscc_add_obj "$(pm path "$1" | head -n 1 | cut -d: -f2)"; } # pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
-
-# $1:package_name
-fscc_add_dex(){
-    if [[ "$1" != "" ]]; then
-        # pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
-        package_apk_path="$(pm path "$1" | head -n 1 | cut -d: -f2)"
-        # user app: OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
-        fscc_add_obj "${package_apk_path%/*}/oat"
-
-        # remove apk name suffix
-        apk_nm="${package_apk_path%/*}"
-        # remove path prefix
-        apk_nm="${apk_nm##*/}"
-        # system app: get dex & vdex
-        # /data/dalvik-cache/arm64/system@product@priv-app@OPSystemUI@OPSystemUI.apk@classes.dex
-        for dex in $(find "${dvk}" | grep "@$apk_name@"); do
-            fscc_add_obj "${dex}"
-        done
-   fi
-}
-
-fscc_add_app_home(){
-    # well, not working on Android 7.1
-    intent_act="android.intent.action.MAIN"
-    intent_cat="android.intent.category.HOME"
-    # "  packageName=com.microsoft.launcher"
-    pkg_nm="$(pm resolve-activity -a "${intent_act}" -c "${intent_cat}" | grep packageName | head -n 1 | cut -d= -f2)"
-    # /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.dex 16M/31M  53.2%
-    # /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.vdex 120K/120K  100%
-    # /system/priv-app/OPLauncher2/OPLauncher2.apk 14M/30M  46.1%
-    fscc_add_apk "${pkg_nm}"
-    fscc_add_dex "${pkg_nm}"
-}
-
-fscc_add_app_ime(){
-    # "      packageName=com.baidu.input_yijia"
-    pkg_nm="$(ime list | grep packageName | head -n 1 | cut -d= -f2)"
-    # /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.dex 5M/17M  33.1%
-    # /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.vdex 2M/7M  28.1%
-    # /system/app/baidushurufa/baidushurufa.apk 1M/28M  5.71%
-    # pin apk file in memory is not valuable
-    fscc_add_dex "${pkg_nm}"
-}
-
-# $1:package_name
-fscc_add_apex_lib(){ fscc_add_obj "$(find /apex -name "$1" | head -n 1)"; }
-
-# after appending fscc_file_list
-fscc_start(){ ${MODPATH}system/bin/${fscc_nm} -fdlb0 ${fscc_file_list}; } # multiple parameters, cannot be warped by ""
-
-fscc_stop(){ killall -9 "${fscc_nm}" 2>/dev/null; } # multiple parameters, cannot be warped by ""
-
-# return:status
-fscc_status(){
-    # get the correct value after waiting for fscc loading files
-    sleep 2
-    [[ "$(ps -A | grep "${fscc_nm}")" != "" ]] && echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache." || echo "Not running."
-}
-
 cgroup_bbn_opt(){
     # Reduce perf cluster wakeup
     # Daemons
@@ -4145,7 +4050,7 @@ bring_all_cores
 [[ "${ktsr_prof_en}" != "gaming" ]] && enable_ppm || disable_ppm
 [[ "${ktsr_prof_en}" == "latency" ]] || [[ "${ktsr_prof_en}" == "balanced" ]] || [[ "${ktsr_prof_en}" == "battery" ]] && ppm_policy_default
 [[ "${ktsr_prof_en}" == "extreme" ]] && ppm_policy_max
-[[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "latency" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && cpu_clk_min && cpu_clk_default || cpu_clk_max
+[[ "${ktsr_prof_en}" != "extreme" ]] && [[ "${ktsr_prof_en}" != "latency" ]] && [[ "${ktsr_prof_en}" != "gaming" ]] && { cpu_clk_min; cpu_clk_default; } || cpu_clk_max
 hmp_${ktsr_prof_en}
 gpu_${ktsr_prof_en}
 schedtune_${ktsr_prof_en}
@@ -4197,7 +4102,7 @@ bring_all_cores
 [[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_ppm || disable_ppm
 [[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && ppm_policy_default
 [[ "$(getprop kingauto.prof)" == "extreme" ]] && ppm_policy_max
-[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && cpu_clk_min && cpu_clk_default || cpu_clk_max
+[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && { cpu_clk_min; cpu_clk_default; } || cpu_clk_max
 hmp_$(getprop kingauto.prof)
 gpu_$(getprop kingauto.prof)
 schedtune_$(getprop kingauto.prof)
