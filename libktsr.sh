@@ -42,9 +42,9 @@ lib_ver="1.0.0"
 # Log in white and continue (unnecessary)
 kmsg(){ echo -e "[$(date +%T)]: [*] $@" >> "${KLOG}"; }
 
-kmsg1(){ echo -e "$@" >> "${KDBG}" && echo -e "$@"; }
+kmsg1(){ { echo -e "$@" >> "${KDBG}"; echo -e "$@"; } }
 
-kmsg2(){ echo -e "[!] $@" >> "${KDBG}" && echo -e "[!] $@"; }
+kmsg2(){ { echo -e "[!] $@" >> "${KDBG}"; echo -e "[!] $@"; } }
 
 kmsg3(){ echo -e "$@" >> "${KLOG}"; }
 
@@ -77,7 +77,7 @@ write(){
         return 1
     fi
 
-    # Make file readable and writable in case it is not already
+    # Make file writable in case it is not already
 	chmod +rw "$1" 2>/dev/null
 
 	# Fetch the current key value
@@ -98,54 +98,6 @@ write(){
 	
 	# Log the success
 	kmsg1 "$1 $curval -> $2"
-}
-
-# lock:$1
-lock(){
-	# Bail out if file does not exist
-	if [[ ! -f "$1" ]]; then
-	    kmsg2 "$1 doesn't exist, skipping..."
-        return 1
-    fi
-
-	# Lock the node and bail out if there's an error
-	if ! chmod 000 "$1" 2>/dev/null
-    then
-	    kmsg2 "Lock: $1 failed"
-		return 1
-	fi
-	
-	# Log the success
-	kmsg1 "Lock: $1"
-	
-    chmod 000 "$1" 2>/dev/null
-}
-
-# lock_value:$1 $2
-lock_value(){
-    # Bail out if file does not exist
-	if [[ ! -f "$1" ]]; then
-	    kmsg2 "$1 doesn't exist, skipping..."
-        return 1
-    fi
-
-    # Make file readable and writable in case it is not already
-	chmod +rw "$1" 2>/dev/null
-
-	# Fetch the current key value
-    curval=$(cat "$1" 2>/dev/null)
-
-	# Write the new value and bail if there's an error
-	if ! echo -n "$2" > "$1" 2>/dev/null
-    then
-	    kmsg2 "Failed: $1 -> $2"
-		return 1
-	fi
-	
-	# Log the success
-	kmsg1 "Lock: $1 & $curval -> $2"
-	
-    chmod 000 "$1" 2>/dev/null
 }
 
 # Duration in nanoseconds of one scheduling period
@@ -417,8 +369,7 @@ is_mtk(){ [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.pro
 
 detect_cpu_sched(){
 # Fetch the CPU scheduling type
-for cpu in $(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_governors)
-do
+for cpu in $(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_governors); do
 case "${cpu}" in
     *sched*) cpu_sched="EAS";;
     *util*) cpu_sched="EAS";;
@@ -454,8 +405,7 @@ bd_cdn=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-"
 get_batt_tmp(){
 # Fetch battery temperature
 batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
-[[ -e "/sys/class/power_supply/battery/temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/temp)
-[[ -e "/sys/class/power_supply/battery/batt_temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
+[[ -e "/sys/class/power_supply/battery/temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/temp) || [[ -e "/sys/class/power_supply/battery/batt_temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
 
 # Ignore the battery temperature decimal
 batt_tmp=$((batt_tmp / 10))
@@ -474,8 +424,7 @@ get_drvs_info(){ [[ "${exynos}" == "true" ]] || [[ "${mtk}" == "true" ]] && drvs
 get_max_rr(){
 # Fetch max refresh rate
 rr=$(dumpsys display 2>/dev/null | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
-[[ -z "${rr}" ]] && rr=$(dumpsys display 2>/dev/null | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
-[[ -z "${rr}" ]] && rr=$(dumpsys display 2>/dev/null | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
+[[ -z "${rr}" ]] && rr=$(dumpsys display 2>/dev/null | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .) || [[ -z "${rr}" ]] && rr=$(dumpsys display 2>/dev/null | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 }
 
 get_batt_hth(){
@@ -1181,8 +1130,10 @@ do
 	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
        # Once a matching governor is found, set it and break for this CPU
-	   [[ "${avail_govs}" == *"$governor"* ]] && write "${cpu}scaling_governor" "${governor}"
-	    break
+	  if [[ "${avail_govs}" == *"$governor"* ]]; then
+          write "${cpu}scaling_governor" "${governor}"
+	     break
+       fi
 	done
 done
 
@@ -1237,9 +1188,11 @@ do
 
 	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  [[ "${avail_govs}" == *"$governor"* ]] && write "${cpu}scaling_governor" "${governor}"
-	   break
-    done
+	  if [[ "${avail_govs}" == *"$governor"* ]]; then
+          write "${cpu}scaling_governor" "${governor}"
+	    break
+      fi
+	done
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
@@ -1292,9 +1245,11 @@ do
 
 	for governor in performance sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  [[ "${avail_govs}" == *"$governor"* ]] && write "${cpu}scaling_governor" "${governor}"
-	   break
-    done
+	  if [[ "${avail_govs}" == *"$governor"* ]]; then
+          write "${cpu}scaling_governor" "${governor}"
+	    break
+      fi
+	done
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
@@ -1346,9 +1301,11 @@ do
 
 	for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  [[ "$avail_govs" == *"$governor"* ]] && write "${cpu}scaling_governor" "${governor}"
-	   break
-    done
+	  if [[ "${avail_govs}" == *"$governor"* ]]; then
+          write "${cpu}scaling_governor" "${governor}"
+	    break
+      fi
+	done
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
@@ -1401,9 +1358,11 @@ do
 
 	for governor in performance sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive
 	do
-	  [[ "${avail_govs}" == *"$governor"* ]] && write "${cpu}scaling_governor" "${governor}"
-	   break
-    done
+	  if [[ "${avail_govs}" == *"$governor"* ]]; then
+          write "${cpu}scaling_governor" "${governor}"
+	    break
+      fi
+	done
 done
 
 for governor in $(find /sys/devices/system/cpu/ -name *util* -type d)
@@ -1550,29 +1509,35 @@ gpu_latency(){
 	    for governor in msm-adreno-tz simple_ondemand ondemand
 	    do
 		  # Once a matching governor is found, set it and break
-		  [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}devfreq/governor" "${governor}"
-		   break
-	    done
+		  if [[ "${avail_govs}" == *"$governor"* ]]; then
+              write "${gpu}devfreq/governor" "${governor}"
+		    break
+          fi
+	 done
 	
     elif [[ "${exynos}" == "true" ]]; then
 	      avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 	      for governor in Interactive Dynamic Static ondemand
 	      do
-		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpui}gpu_governor" "${governor}"
-			 break
-	      done
+		    if [[ "${avail_govs}" == *"$governor"* ]]; then 
+                write "${gpui}gpu_governor" "${governor}"
+		      break
+            fi
+	    done
 	
 	elif [[ "${mtk}" == "true" ]]; then
 	      avail_govs="$(cat "${gpu}available_governors")"
 
 	      for governor in Interactive Dynamic Static ondemand
 	      do
-		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}governor" "${governor}"
-			 break
-          done
+		    if [[ "${avail_govs}" == *"$governor"* ]]; then 
+                write "${gpui}gpu_governor" "${governor}"
+			  break
+            fi
+	    done
       fi
-	
+
 if [[ "${qcom}" == "true" ]]; then
     write "${gpu}throttling" "1"
     write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
@@ -1678,27 +1643,33 @@ gpu_balanced(){
 
 	    for governor in msm-adreno-tz simple_ondemand ondemand
 	    do
-		  [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}devfreq/governor" "${governor}"
-		   break
-	    done
+		  if [[ "${avail_govs}" == *"$governor"* ]]; then
+              write "${gpu}devfreq/governor" "${governor}"
+		    break
+          fi
+	  done
 	
     elif [[ "${exynos}" == "true" ]]; then
 	      avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 	      for governor in Interactive Dynamic Static ondemand
 	      do
-		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpui}gpu_governor" "${governor}"
-			 break
-	      done
+		    if [[ "${avail_govs}" == *"$governor"* ]]; then
+                write "${gpui}gpu_governor" "${governor}"
+			  break
+            fi
+	    done
 	
 	elif [[ "${mtk}" == "true" ]]; then
 	      avail_govs="$(cat "${gpu}available_governors")"
 
 	      for governor in Interactive Dynamic Static ondemand
 	      do
-		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}governor" "${governor}"
-			 break
-          done
+		    if [[ "${avail_govs}" == *"$governor"* ]]; then
+                write "${gpui}gpu_governor" "${governor}"
+			  break
+            fi
+	    done
       fi
 
 if [[ "${qcom}" == "true" ]]; then
@@ -1805,34 +1776,37 @@ kmsg3 ""
 
 gpu_extreme(){
     if [[ "${qcom}" == "true" ]]; then
-        # Fetch the available governors from the GPU
-	    avail_govs="$(cat "${gpu}devfreq/available_governors")"
+        avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
-	    # Attempt to set the governor in this order
-	    for governor in msm-adreno-tz simple_ondemand ondemand
+        for governor in msm-adreno-tz simple_ondemand ondemand
 	    do
-		  # Once a matching governor is found, set it and break
-		  [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}devfreq/governor" "${governor}"
-		   break
-	    done
+		  if [[ "${avail_govs}" == *"$governor"* ]]; then
+              write "${gpu}devfreq/governor" "${governor}"
+		    break
+          fi
+	  done
 	
     elif [[ "${exynos}" == "true" ]]; then
 	      avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
-		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpui}gpu_governor" "${governor}"
-			 break
-	      done
+		    if [[ "${avail_govs}" == *"$governor"* ]]; then 
+                write "${gpui}gpu_governor" "${governor}"
+			  break
+            fi
+	    done
 	
 	elif [[ "${mtk}" == "true" ]]; then
 	      avail_govs="$(cat "${gpu}available_governors")"
 
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
-		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}governor" "${governor}"
-			break
-          done
+		    if [[ "${avail_govs}" == *"$governor"* ]]; then
+                write "${gpui}gpu_governor" "${governor}"
+		      break
+            fi
+	    done
       fi
 
 if [[ "${qcom}" == "true" ]]; then
@@ -1938,27 +1912,33 @@ gpu_battery(){
 	    
 	    for governor in msm-adreno-tz simple_ondemand ondemand
 	    do
-		  [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}devfreq/governor" "${governor}"
-		   break
-	    done
-	
+		  if [[ "${avail_govs}" == *"$governor"* ]]; then
+              write "${gpu}devfreq/governor" "${governor}"
+		    break
+          fi
+	  done
+
     elif [[ "${exynos}" == "true" ]]; then
 	      avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 	      for governor in Interactive mali_ondemand ondemand Dynamic Static
 	      do
-		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpui}gpu_governor" "${governor}"
-			 break
-	      done
+		    if [[ "${avail_govs}" == *"$governor"* ]]; then 
+                write "${gpui}gpu_governor" "${governor}"
+			  break
+            fi
+	    done
 	
 	elif [[ "${mtk}" == "true" ]]; then
 	      avail_govs="$(cat "${gpu}available_governors")"
 
 	      for governor in Interactive mali_ondemand ondemand Dynamic Static
 	      do
-		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}governor" "${governor}"
-			 break
-	      done
+		    if [[ "${avail_govs}" == *"$governor"* ]]; then
+                write "${gpui}gpu_governor" "${governor}"
+			  break
+            fi
+	    done
       fi
 
 if [[ "${qcom}" == "true" ]]; then
@@ -1967,6 +1947,7 @@ if [[ "${qcom}" == "true" ]]; then
     write "${gpu}devfreq/adrenoboost" "0"
     write "${gpu}force_no_nap" "0"
     write "${gpu}bus_split" "1"
+    write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
     write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
     write "${gpu}min_pwrlevel" "${gpu_min_pl}"
     write "${gpu}force_bus_on" "0"
@@ -2064,35 +2045,38 @@ kmsg3 ""
 
 gpu_gaming(){
 	if [[ "${qcom}" == "true" ]]; then
-        # Fetch the available governors from the GPU
-	    avail_govs="$(cat "${gpu}devfreq/available_governors")"
+        avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
-	    # Attempt to set the governor in this order
 	    for governor in performance msm-adreno-tz simple_ondemand ondemand
 	    do
-		  # Once a matching governor is found, set it and break
-		  [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}devfreq/governor" "${governor}"
-		   break
-	    done
-	
+		  if [[ "${avail_govs}" == *"$governor"* ]]; then 
+              write "${gpu}devfreq/governor" "${governor}"
+	        break
+          fi
+	  done
+
     elif [[ "${exynos}" == "true" ]]; then
 	      avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
-	        [[ "${avail_govs}" == *"$governor"* ]] && write "${gpui}gpu_governor" "${governor}"
-	         break
-	      done
+	        if [[ "${avail_govs}" == *"$governor"* ]]; then
+                write "${gpui}gpu_governor" "${governor}"
+			  break
+            fi
+	    done
 	
 	elif [[ "${mtk}" == "true" ]]; then
 	      avail_govs="$(cat "${gpu}available_governors")"
 
 	      for governor in Booster Interactive Dynamic Static ondemand
 	      do
-		    [[ "${avail_govs}" == *"$governor"* ]] && write "${gpu}governor" "${governor}"
-			 break
-          done
-      fi
+		    if [[ "${avail_govs}" == *"$governor"* ]]; then
+                write "${gpui}gpu_governor" "${governor}"
+			  break
+            fi
+	     done
+       fi
 
 if [[ "${qcom}" == "true" ]]; then
     write "${gpu}throttling" "0"
@@ -2850,7 +2834,7 @@ write "${kernel}printk_devkmsg" "off"
 # Disable ram-boost relying memplus prefetcher, use traditional swapping
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    write "${bcl_md}" "0"
+    [[ -e "${bcl_md}" ]] && write "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -2897,7 +2881,7 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    write "${bcl_md}" "0"
+    [[ -e "${bcl_md}" ]] && write "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -2943,7 +2927,7 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    write "${bcl_md}" "0"
+    [[ -e "${bcl_md}" ]] && write "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 
@@ -3035,7 +3019,7 @@ write "${kernel}printk_devkmsg" "off"
 [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
 for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
-    write "${bcl_md}" "0"
+    [[ -e "${bcl_md}" ]] && write "${bcl_md}" "0"
 done
 write "/proc/sys/dev/tty/ldisc_autoload" "0"
 

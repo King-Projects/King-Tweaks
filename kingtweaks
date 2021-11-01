@@ -9,7 +9,7 @@ MODPATH="/data/adb/modules/KTSR"
 . "${MODPATH}/libs/libktsr.sh"
 
 # Check for root permissions and bail if not granted
-[[ "$(id -u)" != "0" ]] && kmsg2 "No root permissions. Exiting..." && exit 1
+[[ "$(id -u)" != "0" ]] && { kmsg2 "No root permissions. Exiting..."; exit 1; }
 
 [[ -e "${KLOG}" ]] && rm -rf "${KLOG}"
 [[ ! -d "/data/media/0/KTSR" ]] && mkdir -p "/data/media/0/KTSR"
