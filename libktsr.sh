@@ -4130,7 +4130,7 @@ get_all
 apply_all
 cmd power set-adaptive-power-saver-enabled true 2>/dev/null
 cmd power set-fixed-performance-mode-enabled false 2>/dev/null
-cmd thermalservice override-status reset 2>/dev/null
+cmd thermalservice reset 2>/dev/null
 
 kmsg "Latency profile applied. Enjoy!"
 kmsg3 ""
@@ -4155,7 +4155,7 @@ get_all
 apply_all
 cmd power set-adaptive-power-saver-enabled true 2>/dev/null
 cmd power set-fixed-performance-mode-enabled false 2>/dev/null
-cmd thermalservice override-status reset 2>/dev/null
+cmd thermalservice reset 2>/dev/null
 
 kmsg "Balanced profile applied. Enjoy!"
 kmsg3 ""
@@ -4187,7 +4187,7 @@ get_all
 apply_all
 cmd power set-adaptive-power-saver-enabled true 2>/dev/null
 cmd power set-fixed-performance-mode-enabled false 2>/dev/null
-cmd thermalservice override-status reset 2>/dev/null
+cmd thermalservice reset 2>/dev/null
 
 kmsg "Battery profile applied. Enjoy!"
 kmsg3 ""
