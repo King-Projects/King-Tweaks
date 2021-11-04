@@ -336,10 +336,11 @@ get_soc_mf(){ soc_mf=$(getprop ro.boot.hardware); }
 
 get_soc(){
 # Fetch the device SOC
-soc=$(getprop ro.board.platform)
+soc=$(getprop ro.soc.model)
+[[ "${soc}" == "" ]] && soc=$(getprop ro.chipname)
+[[ "${soc}" == "" ]] && soc=$(getprop ro.board.platform)
 [[ "${soc}" == "" ]] && soc=$(getprop ro.product.board)
 [[ "${soc}" == "" ]] && soc=$(getprop ro.product.platform)
-[[ "${soc}" == "" ]] && soc=$(getprop ro.chipname)
 }
 
 get_sdk(){
@@ -741,7 +742,7 @@ kmsg3 "";;
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
 write "${cpuset}background/cpus" "0-1"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}system-background/cpus" "0-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
@@ -750,7 +751,7 @@ kmsg3 "";;
 write "${cpuset}camera-daemon/cpus" "0-7"
 write "${cpuset}foreground/cpus" "0-7"
 write "${cpuset}background/cpus" "0-1"
-write "${cpuset}system-background/cpus" "0-3"
+write "${cpuset}system-background/cpus" "0-5"
 write "${cpuset}top-app/cpus" "0-7"
 write "${cpuset}restricted/cpus" "0-3"
 kmsg "Tweaked cpusets"
@@ -1004,7 +1005,7 @@ do
   avail_scheds="$(cat "${queue}scheduler")"
 
     # Select the first scheduler available
-	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
+	for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none
 	do
 	  [[ "${avail_scheds}" == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
        break
@@ -1028,7 +1029,7 @@ for queue in /sys/block/*/queue/
 do
   avail_scheds="$(cat "${queue}scheduler")"
 
-	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
+	for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none
 	do
 	  [[ "${avail_scheds}" == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
 	   break
@@ -1052,7 +1053,7 @@ for queue in /sys/block/*/queue/
 do
   avail_scheds="$(cat "${queue}scheduler")"
 
-	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple anxiety mq-deadline deadline cfq noop none
+	for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid anxiety mq-deadline deadline cfq noop none
 	do
 	  [[ "${avail_scheds}" == *"$sched"* ]] && "${queue}scheduler" "${sched}"
 	   break
@@ -1076,7 +1077,7 @@ for queue in /sys/block/*/queue/
 do
   avail_scheds="$(cat "${queue}scheduler")"
 
-	for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none
+	for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none
 	do
 	  [[ "${avail_scheds}" == *"$sched"* ]] && "${queue}scheduler" "${sched}"
        break
@@ -2937,7 +2938,7 @@ kmsg3 ""
 
 sched_battery(){
 [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
-[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "2"
+[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "0"
 [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 [[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
@@ -3859,7 +3860,7 @@ change_thread_rt(){
 }
 
 # $1:task_name
-change_task_high_prio(){ change_task_nice "$1" "-19"; } # audio thread nice <= -16
+change_task_high_prio(){ change_task_nice "$1" "-19"; } # audio thread nice => -19
 
 # $1:task_name $2:thread_name
 change_thread_high_prio(){ change_thread_nice "$1" "$2" "-19"; }
@@ -4127,6 +4128,9 @@ init=$(date +%s)
 sync
 get_all
 apply_all
+cmd power set-adaptive-power-saver-enabled true 2>/dev/null
+cmd power set-fixed-performance-mode-enabled false 2>/dev/null
+cmd thermalservice override-status reset 2>/dev/null
 
 kmsg "Latency profile applied. Enjoy!"
 kmsg3 ""
@@ -4149,6 +4153,9 @@ init=$(date +%s)
 sync
 get_all
 apply_all
+cmd power set-adaptive-power-saver-enabled true 2>/dev/null
+cmd power set-fixed-performance-mode-enabled false 2>/dev/null
+cmd thermalservice override-status reset 2>/dev/null
 
 kmsg "Balanced profile applied. Enjoy!"
 kmsg3 ""
@@ -4162,6 +4169,9 @@ init=$(date +%s)
 sync
 get_all
 apply_all
+cmd power set-adaptive-power-saver-enabled false 2>/dev/null
+cmd power set-fixed-performance-mode-enabled true 2>/dev/null
+cmd thermalservice override-status 0 2>/dev/null
 
 kmsg "Extreme profile applied. Enjoy!"
 kmsg3 ""
@@ -4175,6 +4185,9 @@ init=$(date +%s)
 sync
 get_all
 apply_all
+cmd power set-adaptive-power-saver-enabled true 2>/dev/null
+cmd power set-fixed-performance-mode-enabled false 2>/dev/null
+cmd thermalservice override-status reset 2>/dev/null
 
 kmsg "Battery profile applied. Enjoy!"
 kmsg3 ""
@@ -4188,6 +4201,9 @@ init=$(date +%s)
 sync
 get_all
 apply_all
+cmd power set-adaptive-power-saver-enabled false 2>/dev/null
+cmd power set-fixed-performance-mode-enabled true 2>/dev/null
+cmd thermalservice override-status 0 2>/dev/null
 
 kmsg "Gaming profile applied. Enjoy!"
 kmsg3 ""

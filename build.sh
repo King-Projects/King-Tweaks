@@ -42,7 +42,7 @@ echo ""
 
 echo "Zipping ${blink}KTSR-$v-$br-$cdn${default}..."
 
-zip -r9T "KTSR-$v-$br-$cdn.zip" . -x *.git* -x cleantrash -x *.zip -x adjshield -x fscache-ctrl -x *.yml -x C1.sh -x kingauto -x ktsrmenu -x update.json -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
+zip -r9 "KTSR-$v-$br-$cdn.zip" . -x *.git* -x cleantrash -x *.zip -x adjshield -x fscache-ctrl -x *.yml -x C1.sh -x kingauto -x ktsrmenu -x update.json -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
 
 mv -f "KTSR-$v-$br-$cdn.zip" ../out
 
@@ -50,8 +50,4 @@ exit=$(date +%s)
 
 exec_time=$((exit - init))
 
-if [[ $? -ne 1 ]]; then
-    echo "${boldgreen}Build done in $((exec_time / 60)) minutes and $exec_time seconds!${blue} Check the folder to the finished build."
-else
-    echo "${boldred}Build failed in $((exec_time / 60)) minutes and $exec_time seconds!${yellow} Please fix the error(s) and try again."
-fi
+[[ $? -ne 1 ]] && { echo "${boldgreen}Build done in $((exec_time / 60)) minutes and $exec_time seconds!${blue} Check the folder to the finished build."; exit 0; } || { echo "${boldred}Build failed in $((exec_time / 60)) minutes and $exec_time seconds!${yellow} Please fix the error(s) and try again."; exit 1; }

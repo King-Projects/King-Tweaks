@@ -8,22 +8,23 @@
 ##########################################################################################
 
 # Versions
-MODUTILVER="v2.6.1"
-MODUTILVCODE="261"
+MODUTILVER="v2.6.5"
+MODUTILVCODE="265"
+
+isABDevice=false
 
 # Check A/B slot
 if [[ -d "/system_root" ]]; then
-  isABDevice=true
-  SYSTEM="/system_root/system"
-  SYSTEM2="/system"
-  CACHELOC="/data/cache"
+    isABDevice=true
+    SYSTEM="/system_root/system"
+    SYSTEM2="/system"
+    CACHELOC="/data/cache"
 else
-  isABDevice=false
-  SYSTEM="/system"
-  SYSTEM2="/system"
-  CACHELOC="/cache"
+    SYSTEM="/system"
+    SYSTEM2="/system"
+    CACHELOC="/cache"
 fi
-[[ -z "${isABDevice}" ]] && { echo "[!] Something went wrong"; exit 1; }
+[[ -z "${SYSTEM}" ]] && { echo "[!] Something went wrong"; exit 1; }
 
 #=========================== Set Busybox up
 # Variables:
@@ -108,7 +109,7 @@ grep_prop(){
   shift
   FILES=$@
   [[ -z "${FILES}" ]] && FILES="/system/build.prop"
-  sed -n "$REGEX" "${FILES}" 2>/dev/null | head -n 1
+  sed -n "${REGEX}" "${FILES}" 2>/dev/null | head -n 1
 }
 
 # Is mounted
@@ -294,8 +295,8 @@ upload_logs(){
 prandom(){
   CHANCES=2
   TARGET=2
-  [[ "$1" =  "-c" ]] && { CHANCES=$2; TARGET=$3; shift 3; }
-  [[ "$((RANDOM%CHANCES+1))" -eq "$TARGET" ]] && echo "$@"
+  [[ "$1" =  "-c" ]] && { CHANCES="$2"; TARGET="$3"; shift 3; }
+  [[ "$((RANDOM%CHANCES+1))" -eq "${TARGET}" ]] && echo "$@"
 }
 
 # Print Center
