@@ -160,6 +160,7 @@ read -r option
 						    echo "${B}Applying profile...${N}"
 						    setprop persist.king.tweaks.prof "3" 2>/dev/null
                             echo "${G}Done!${N}"
+                            menu
 						    ;;
 						
 						     "4")
