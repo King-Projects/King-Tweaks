@@ -22,16 +22,16 @@ read -r -p 'Codename: ' cdn
 init=$(date +%s)
 
 if [[ "$(grep build_date $(pwd)/module.prop)" ]]; then
-    sed -i -e "/build_date=/s/=.*/=$date/" "$(pwd)/module.prop"
+	sed -i -e "/build_date=/s/=.*/=$date/" "$(pwd)/module.prop"
 fi
 
 if [[ ! "$(grep build_date $(pwd)/module.prop)" ]]; then
-    echo "build_date=$date" >> "$(pwd)/module.prop"
+	echo "build_date=$date" >>"$(pwd)/module.prop"
 fi
 
 if [[ "$br" == b* ]]; then
-    vcd=$(printf "%.3d" "$((${vcd} + 1))")
-    sed -i -e "/versionCode=/s/=.*/=$vcd/" "$(pwd)/module.prop"
+	vcd=$(printf "%.3d" "$((${vcd} + 1))")
+	sed -i -e "/versionCode=/s/=.*/=$vcd/" "$(pwd)/module.prop"
 fi
 
 sed -i -e "/version=/s/=.*/=$v-$br-$cdn/" "$(pwd)/module.prop"
@@ -50,4 +50,10 @@ exit=$(date +%s)
 
 exec_time=$((exit - init))
 
-[[ $? -ne 1 ]] && { echo "${boldgreen}Build done in $((exec_time / 60)) minutes and $exec_time seconds!${blue} Check the folder to the finished build."; exit 0; } || { echo "${boldred}Build failed in $((exec_time / 60)) minutes and $exec_time seconds!${yellow} Please fix the error(s) and try again."; exit 1; }
+[[ $? -ne 1 ]] && {
+	echo "${boldgreen}Build done in $((exec_time / 60)) minutes and $exec_time seconds!${blue} Check the folder to the finished build."
+	exit 0
+} || {
+	echo "${boldred}Build failed in $((exec_time / 60)) minutes and $exec_time seconds!${yellow} Please fix the error(s) and try again."
+	exit 1
+}

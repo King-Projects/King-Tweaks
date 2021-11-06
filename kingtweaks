@@ -9,7 +9,10 @@ MODPATH="/data/adb/modules/KTSR"
 . "${MODPATH}/libs/libktsr.sh"
 
 # Check for root permissions and bail if not granted
-[[ "$(id -u)" != "0" ]] && { kmsg2 "No root permissions. Exiting..."; exit 1; }
+[[ "$(id -u)" != "0" ]] && {
+	kmsg2 "No root permissions. Exiting..."
+	exit 1
+}
 
 [[ -e "${KLOG}" ]] && rm -rf "${KLOG}"
 [[ ! -d "/data/media/0/KTSR" ]] && mkdir -p "/data/media/0/KTSR"
@@ -29,366 +32,366 @@ cgroup_bbn_opt
 save_panel
 
 while true; do
-  sleep 0.8
-  if "${boot_run_once}"; then
-      [[ "$(getprop persist.king.tweaks.prof)" == "${ktsr_prof}" ]] && continue
-  else
-      boot_run_once=true
-  fi
-ktsr_prof=$(getprop persist.king.tweaks.prof)
+	sleep 0.8
+	if "${boot_run_once}"; then
+		[[ "$(getprop persist.king.tweaks.prof)" == "${ktsr_prof}" ]] && continue
+	else
+		boot_run_once=true
+	fi
+	ktsr_prof=$(getprop persist.king.tweaks.prof)
 
-case "${ktsr_prof}" in
-1)
-ktsr_prof_id=otomatis
-;;
-2)
-ktsr_prof_id=baterai
-;;
-3)
-ktsr_prof_id=seimbang
-;;
-4)
-ktsr_prof_id=ekstrim
-;;
-5)
-ktsr_prof_id=gaming
-;;
-6)
-ktsr_prof_id=latensi
-;;
-esac
+	case "${ktsr_prof}" in
+	1)
+		ktsr_prof_id=otomatis
+		;;
+	2)
+		ktsr_prof_id=baterai
+		;;
+	3)
+		ktsr_prof_id=seimbang
+		;;
+	4)
+		ktsr_prof_id=ekstrim
+		;;
+	5)
+		ktsr_prof_id=gaming
+		;;
+	6)
+		ktsr_prof_id=latensi
+		;;
+	esac
 
-case "${ktsr_prof}" in
-1)
-ktsr_prof_pt=automático
-;;
-2)
-ktsr_prof_pt=bateria
-;;
-3)
-ktsr_prof_pt=balanceado
-;;
-4)
-ktsr_prof_pt=extremo
-;;
-5)
-ktsr_prof_pt=gaming
-;;
-6)
-ktsr_prof_pt=latência
-;;
-esac
+	case "${ktsr_prof}" in
+	1)
+		ktsr_prof_pt=automático
+		;;
+	2)
+		ktsr_prof_pt=bateria
+		;;
+	3)
+		ktsr_prof_pt=balanceado
+		;;
+	4)
+		ktsr_prof_pt=extremo
+		;;
+	5)
+		ktsr_prof_pt=gaming
+		;;
+	6)
+		ktsr_prof_pt=latência
+		;;
+	esac
 
-case "${ktsr_prof}" in
-1)
-ktsr_prof_en=automatic
-;;
-2)
-ktsr_prof_en=battery
-;;
-3)
-ktsr_prof_en=balanced
-;;
-4)
-ktsr_prof_en=extreme
-;;
-5)
-ktsr_prof_en=gaming
-;;
-6)
-ktsr_prof_en=latency
-;;
-esac
+	case "${ktsr_prof}" in
+	1)
+		ktsr_prof_en=automatic
+		;;
+	2)
+		ktsr_prof_en=battery
+		;;
+	3)
+		ktsr_prof_en=balanced
+		;;
+	4)
+		ktsr_prof_en=extreme
+		;;
+	5)
+		ktsr_prof_en=gaming
+		;;
+	6)
+		ktsr_prof_en=latency
+		;;
+	esac
 
-case "${ktsr_prof}" in 
-1)
-ktsr_prof_tr=gecikme
-;;
-2)
-ktsr_prof_tr=batarya
-;;
-3)
-ktsr_prof_tr=dengeli
-;;
-4)
-ktsr_prof_tr=aşırı
-;;
-5)
-ktsr_prof_tr=oyun
-;;
-6)
-ktsr_prof_tr=gecikme
-;;
-esac
+	case "${ktsr_prof}" in
+	1)
+		ktsr_prof_tr=gecikme
+		;;
+	2)
+		ktsr_prof_tr=batarya
+		;;
+	3)
+		ktsr_prof_tr=dengeli
+		;;
+	4)
+		ktsr_prof_tr=aşırı
+		;;
+	5)
+		ktsr_prof_tr=oyun
+		;;
+	6)
+		ktsr_prof_tr=gecikme
+		;;
+	esac
 
-case "${ktsr_prof}" in
-1)
-ktsr_prof_fr=automatique
-;;
-2)
-ktsr_prof_fr=batterie
-;;
-3)
-ktsr_prof_fr=modéré
-;;
-4)
-ktsr_prof_fr=extrême
-;;
-5)
-ktsr_prof_fr=jeu
-;;
-6)
-ktsr_prof_fr=latence
-;;
-esac
+	case "${ktsr_prof}" in
+	1)
+		ktsr_prof_fr=automatique
+		;;
+	2)
+		ktsr_prof_fr=batterie
+		;;
+	3)
+		ktsr_prof_fr=modéré
+		;;
+	4)
+		ktsr_prof_fr=extrême
+		;;
+	5)
+		ktsr_prof_fr=jeu
+		;;
+	6)
+		ktsr_prof_fr=latence
+		;;
+	esac
 
-case "${ktsr_prof_en}" in
-"automatic") 
-case "$(getprop persist.sys.locale)" in
-en*)
-toast
-;;
-pt*)        
-toast_pt
-;;
-id-ID)
-toast_id
-;;
-tr*)
-toast_tr
-;;
-fr*)
-toast_fr
-;;
-*)
-toast
-;;
-esac
+	case "${ktsr_prof_en}" in
+	"automatic")
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast
+			;;
+		pt*)
+			toast_pt
+			;;
+		id-ID)
+			toast_id
+			;;
+		tr*)
+			toast_tr
+			;;
+		fr*)
+			toast_fr
+			;;
+		*)
+			toast
+			;;
+		esac
 
-automatic
-         
-case "$(getprop persist.sys.locale)" in
-en*)
-toast_1
-;;
-pt*)
-toast_pt_1
-;;
-id-ID)
-toast_id_1
-;;
-tr*)
-toast_tr_1
-;;
-fr*)
-toast_fr_1
-;;
-esac
-;;
-"balanced")
-case "$(getprop persist.sys.locale)" in
-en*)
-toast
-;;
-pt*)        
-toast_pt
-;;
-id-ID)
-toast_id
-;;
-tr*)
-toast_tr
-;;
-fr*)
-toast_fr
-;;
-esac
+		automatic
 
-killall -9 kingauto >/dev/null 2>&1
-setprop kingauto.prof null
-balanced
-	 	
-case "$(getprop persist.sys.locale)" in
-en*)
-toast_1
-;;
-pt*)
-toast_pt_1
-;;
-id-ID)
-toast_id_1
-;;
-tr*)
-toast_tr_1
-;;
-fr*)
-toast_fr_1
-;;
-esac
-;;
-"extreme") 
-case "$(getprop persist.sys.locale)" in
-en*)
-toast
-;;
-pt*)        
-toast_pt
-;;
-id-ID)
-toast_id
-;;
-tr*)
-toast_tr
-;;
-fr*)
-toast_fr
-;;
-esac
-     	   
-killall -9 kingauto >/dev/null 2>&1
-setprop kingauto.prof null
-extreme
-	 		 
-case "$(getprop persist.sys.locale)" in
-en*)
-toast_1
-;;
-pt*)
-toast_pt_1
-;;
-id-ID)
-toast_id_1
-;;
-tr*)
-toast_tr_1
-;;
-fr*)
-toast_fr_1
-;;
-esac
-;;
-"battery")
-case "$(getprop persist.sys.locale)" in
-en*)
-toast
-;;
-pt*)        
-toast_pt
-;;
-id-ID)
-toast_id
-;;
-tr*)
-toast_tr
-;;
-fr*)
-toast_fr
-;;
-esac
-     	
-killall -9 kingauto >/dev/null 2>&1
-setprop kingauto.prof null
-battery
-	 			
-case "$(getprop persist.sys.locale)" in
-en*)
-toast_1
-;;
-pt*)
-toast_pt_1
-;;
-id-ID)
-toast_id_1
-;;
-tr*)
-toast_tr_1
-;;
-fr*)
-toast_fr_1
-;;
-esac
-;;
-"gaming")
-case "$(getprop persist.sys.locale)" in
-en*)
-toast
-;;
-pt*)        
-toast_pt
-;;
-id-ID)
-toast_id
-;;
-tr*)
-toast_tr
-;;
-fr*)
-toast_fr
-;;
-esac
-         
-killall -9 kingauto >/dev/null 2>&1
-setprop kingauto.prof null
-gaming
-	 				
-case "$(getprop persist.sys.locale)" in
-en*)
-toast_1
-;;
-pt*)
-toast_pt_1
-;;
-id-ID)
-toast_id_1
-;;
-tr*)
-toast_tr_1
-;;
-fr*)
-toast_fr_1
-;;
-esac
-;;
-"latency")
-case "$(getprop persist.sys.locale)" in
-en*)
-toast
-;;
-pt*)        
-toast_pt
-;;
-id-ID)
-toast_id
-;;
-tr*)
-toast_tr
-;;
-fr*)
-toast_fr
-;;
-esac
-         
-killall -9 kingauto >/dev/null 2>&1
-setprop kingauto.prof null
-latency
-	 				
-case "$(getprop persist.sys.locale)" in
-en*)
-toast_1
-;;
-pt*)
-toast_pt_1
-;;
-id-ID)
-toast_id_1
-;;
-tr*)
-toast_tr_1
-;;
-fr*)
-toast_fr_1
-;;
-esac
-;;
-esac
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast_1
+			;;
+		pt*)
+			toast_pt_1
+			;;
+		id-ID)
+			toast_id_1
+			;;
+		tr*)
+			toast_tr_1
+			;;
+		fr*)
+			toast_fr_1
+			;;
+		esac
+		;;
+	"balanced")
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast
+			;;
+		pt*)
+			toast_pt
+			;;
+		id-ID)
+			toast_id
+			;;
+		tr*)
+			toast_tr
+			;;
+		fr*)
+			toast_fr
+			;;
+		esac
+
+		killall -9 kingauto >/dev/null 2>&1
+		setprop kingauto.prof null
+		balanced
+
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast_1
+			;;
+		pt*)
+			toast_pt_1
+			;;
+		id-ID)
+			toast_id_1
+			;;
+		tr*)
+			toast_tr_1
+			;;
+		fr*)
+			toast_fr_1
+			;;
+		esac
+		;;
+	"extreme")
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast
+			;;
+		pt*)
+			toast_pt
+			;;
+		id-ID)
+			toast_id
+			;;
+		tr*)
+			toast_tr
+			;;
+		fr*)
+			toast_fr
+			;;
+		esac
+
+		killall -9 kingauto >/dev/null 2>&1
+		setprop kingauto.prof null
+		extreme
+
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast_1
+			;;
+		pt*)
+			toast_pt_1
+			;;
+		id-ID)
+			toast_id_1
+			;;
+		tr*)
+			toast_tr_1
+			;;
+		fr*)
+			toast_fr_1
+			;;
+		esac
+		;;
+	"battery")
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast
+			;;
+		pt*)
+			toast_pt
+			;;
+		id-ID)
+			toast_id
+			;;
+		tr*)
+			toast_tr
+			;;
+		fr*)
+			toast_fr
+			;;
+		esac
+
+		killall -9 kingauto >/dev/null 2>&1
+		setprop kingauto.prof null
+		battery
+
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast_1
+			;;
+		pt*)
+			toast_pt_1
+			;;
+		id-ID)
+			toast_id_1
+			;;
+		tr*)
+			toast_tr_1
+			;;
+		fr*)
+			toast_fr_1
+			;;
+		esac
+		;;
+	"gaming")
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast
+			;;
+		pt*)
+			toast_pt
+			;;
+		id-ID)
+			toast_id
+			;;
+		tr*)
+			toast_tr
+			;;
+		fr*)
+			toast_fr
+			;;
+		esac
+
+		killall -9 kingauto >/dev/null 2>&1
+		setprop kingauto.prof null
+		gaming
+
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast_1
+			;;
+		pt*)
+			toast_pt_1
+			;;
+		id-ID)
+			toast_id_1
+			;;
+		tr*)
+			toast_tr_1
+			;;
+		fr*)
+			toast_fr_1
+			;;
+		esac
+		;;
+	"latency")
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast
+			;;
+		pt*)
+			toast_pt
+			;;
+		id-ID)
+			toast_id
+			;;
+		tr*)
+			toast_tr
+			;;
+		fr*)
+			toast_fr
+			;;
+		esac
+
+		killall -9 kingauto >/dev/null 2>&1
+		setprop kingauto.prof null
+		latency
+
+		case "$(getprop persist.sys.locale)" in
+		en*)
+			toast_1
+			;;
+		pt*)
+			toast_pt_1
+			;;
+		id-ID)
+			toast_id_1
+			;;
+		tr*)
+			toast_tr_1
+			;;
+		fr*)
+			toast_fr_1
+			;;
+		esac
+		;;
+	esac
 done

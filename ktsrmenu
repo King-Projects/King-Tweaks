@@ -8,15 +8,25 @@ ID="KTSR"
 
 # Detect root
 _name=$(basename "$0")
-ls /data >/dev/null 2>&1 || { echo "[!] $ID needs to run as root"; echo "type 'su' then '$_name'"; exit 1; }
+ls /data >/dev/null 2>&1 || {
+	echo "[!] $ID needs to run as root"
+	echo "type 'su' then '$_name'"
+	exit 1
+}
 
 # Import magisk util_functions.sh
-[[ -f /data/adb/magisk/util_functions.sh ]] && . /data/adb/magisk/util_functions.sh || { echo "[!] util_functions.sh not detected"; exit 1; }
+[[ -f /data/adb/magisk/util_functions.sh ]] && . /data/adb/magisk/util_functions.sh || {
+	echo "[!] util_functions.sh not detected"
+	exit 1
+}
 
 # Magisk Mod Directory
 [[ -d "/sbin/.magisk" ]] && MOUNTPATH="/sbin/.magisk/modules" || MOUNTPATH="$(find /dev -mindepth 2 -maxdepth 2 -type d -name ".magisk")/modules"
 MODDIR="$MOUNTPATH/$ID"
-[[ ! -d "${MODDIR}" ]] && { echo "[!] Module not detected"; exit 1; }
+[[ ! -d "${MODDIR}" ]] && {
+	echo "[!] Module not detected"
+	exit 1
+}
 
 # Set path to your busybox if applicable
 _bb=
@@ -39,7 +49,9 @@ stdoutLOG=/data/media/0/KTSR/"${ID}"-CLI-STDOUT.log
 oldstdoutLOG=/data/media/0/KTSR/"${ID}"-CLI-STDOUT-old.log
 
 # Start logging verbosely
-mv -f "${VERLOG}" "${oldVERLOG}" 2>/dev/null; mv -f "$LOG" "$oldLOG" 2>/dev/null; mv -f "$stdoutLOG" "$oldstdoutLOG" 2>/dev/null
+mv -f "${VERLOG}" "${oldVERLOG}" 2>/dev/null
+mv -f "$LOG" "$oldLOG" 2>/dev/null
+mv -f "$stdoutLOG" "$oldstdoutLOG" 2>/dev/null
 
 # exec 3>&1
 
@@ -50,398 +62,417 @@ set -x 2>"${VERLOG}"
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 
 case "${ktsr_prof}" in
-1) ktsr_prof_en="Automatic";;
-2) ktsr_prof_en="Battery";;
-3) ktsr_prof_en="Balanced";;
-4) ktsr_prof_en="Extreme";;
-5) ktsr_prof_en="Gaming";;
-6) ktsr_prof_en="Latency";;
+1) ktsr_prof_en="Automatic" ;;
+2) ktsr_prof_en="Battery" ;;
+3) ktsr_prof_en="Balanced" ;;
+4) ktsr_prof_en="Extreme" ;;
+5) ktsr_prof_en="Gaming" ;;
+6) ktsr_prof_en="Latency" ;;
 esac
 
 [[ "$(settings get global low_power)" == "1" ]] && low_power_mode="Enabled" || low_power_mode="Disabled"
 [[ "$(cmd netpolicy get restrict-background | awk '{print $4}')" == "enabled" ]] && data_saver="Enabled" || data_saver="Disabled"
 [[ "$(settings get secure location_providers_allowed)" == "" ]] && loc_mode_pwr_saving="Enabled" || loc_mode_pwr_saving="Disabled"
-menu(){
-clear
-echo ""
-echo "${Y}************${N}"
-echo "${Y}* KTSR CLI *${N}"
-echo "${Y}************${N}"
-echo ""
-echo "${G}Ver: 1.6.0.1-beta-r9${N}"
-echo ""
-echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
-echo ""
-echo "[*] Available profiles: "
-echo ""
-echo "${C}[1] Automatic: Change between profiles automatically based on user activity for a better user-experience.${N}"
-echo ""
-echo "${B}[2] Battery: Reduce SOC power draw to less battery comsumption, ensuring a juicy battery life.${N}"
-echo ""
-echo "${G}[3] Balanced: Balanced between battery life and performance, perfect to be used on day-to-day activities.${N}"
-echo ""
-echo "${Y}[4] Extreme: Tweaks both CPU / GPU for a consistent experience while dealing with heavy apps. May drain more battery life compared to Balanced / Latency.${N}"
-echo ""
-echo "${R}[5] Gaming: Recommended to users who wants the best performance possible while playing, tweaking both CPU / GPU to it's max. May drain a lot of battery life.${N}"
-echo ""
-echo "[6] Latency: Recommended to users who want really silky / smooth UI"
-echo ""
-echo "[*] Other misc options: "
-echo ""
-echo "[7] Optimize apps package"
-echo ""
-[[ "${low_power_mode}" == "Disabled" ]] && { echo "[8] Enable low power mode"; echo ""; } || { echo "[9] Disable low power mode"; echo ""; }
-[[ "${data_saver}" == "Disabled" ]] && { echo "[10] Enable data saver"; echo ""; } || { echo "[11] Disable data saver"; echo ""; }
-[[ "${loc_mode_pwr_saving}" == "Disabled" ]] && { echo "[12] Enable power-saving location mode"; echo ""; } || { echo "[13] Disable power-saving location mode"; echo ""; }
-echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
-echo ""
-echo "[15] Access our telegram group"
-echo ""
-if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
-    echo "[16] 50 HZ Refresh Rate"   
-    echo ""
-elif [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
-      echo "[16] 50 HZ Refresh Rate"   
-      echo ""
-      echo "[17] 55 HZ Refresh Rate"
-      echo ""
-fi
-if [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "60" ]]; then
-    echo "[18] 60 HZ Refresh Rate"
-    echo ""
-elif [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]]; then
-    echo "[19] 90 HZ Refresh Rate"
-    echo ""
-elif [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]]; then
-    echo "[20] 120 HZ Refresh Rate"
-    echo ""
-fi
-echo "[21] Reset Refresh Rate config"
-echo ""
-echo "[22] Free RAM [ Balanced ] (Will only drop caches)."
-echo ""
-echo "[23] Free RAM [ Agressive ] (Will kill all background apps and drop caches)."
-echo ""
-echo "[24] Free RAM [ Extreme ] (Will kill all apps, and drop caches)."
-echo ""
-if [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]]; then
-    echo "[25] Switch to dynamic thermal profile (May improve charging speed)"
-    echo ""
-elif [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]]; then
-      echo "[26] Switch to default thermal profile"
-      echo ""
-fi
-echo "[27] Reset battery stats"
-echo ""
-echo "[28] Access our Wiki"
-echo ""
-echo "${R}[0] Exit${N}"
-echo ""
-echo -n "${Y}[*] Select the desired option:${N} "
-read -r option
-		case "${option}" in
-			"1")
-				echo "${B}Applying profile...${N}"
-				setprop persist.king.tweaks.prof "1" 2>/dev/null
-                echo "${G}Done!${N}"
-				sleep 2 
-                menu
-                ;;
-				
-						"2")
-						echo "${B}Applying profile...${N}"
-						setprop persist.king.tweaks.prof "2" 2>/dev/null
-						echo "${G}Done!"
-                        sleep 2 
-                        menu
-                        ;;
-						
-						 "3")
-						    echo "${B}Applying profile...${N}"
-						    setprop persist.king.tweaks.prof "3" 2>/dev/null
-                            echo "${G}Done!${N}"
-                            menu
-						    ;;
-						
-						     "4")
-						        echo "${B}Applying profile...${N}"
-						        setprop persist.king.tweaks.prof "4" 2>/dev/null
-						        echo "${G}Done!${N}"
-                                sleep 2 
-                                menu
-                                ;;
-						
-						         "5")
-						            echo "${B}Applying profile...${N}"
-						            setprop persist.king.tweaks.prof "5" 2>/dev/null
-						            echo "${G}Done!${N}"
-                                    sleep 2 
-                                    menu
-                                    ;;
-						
-						           "6")
-						              echo "${B}Applying profile...${N}"
-						              setprop persist.king.tweaks.prof "6" 2>/dev/null
-						              echo "${G}Done!${N}"
-                                      sleep 2 
-                                      menu
-                                      ;;
-						
-						              "7")
-						                 echo "${B}Optimizing packages...${N}"
-						                 cmd package bg-dexopt-job
-						                 sleep 5
-                                         menu
-                                         ;;
-						
-                                          "8")
-                                             settings put global low_power 1 2>/dev/null
-                                             settings put global low_power_sticky 1 2>/dev/null
-                                             settings put global app_standby_enabled 1 2>/dev/null
-                                             settings put global forced_app_standby_enabled 1 2>/dev/null
-                                             settings put global app_auto_restriction_enabled true 2>/dev/null
-                                             settings put global forced_app_standby_for_small_battery_enabled 1 2>/dev/null
-                                             echo "${G}Done!${N}"
-                                             sleep 2 
-                                             menu
-                                             ;;
-                        
-                                              "9")
-                                                 settings put global low_power 0 2>/dev/null
-                                                 settings reset global low_power 2>/dev/null
-                                                 settings put global low_power_sticky 0 2>/dev/null
-                                                 settings reset global low_power_sticky 2>/dev/null
-                                                 settings put global app_standby_enabled 1 2>/dev/null
-                                                 settings reset global app_standby_enabled 2>/dev/null
-                                                 settings put global forced_app_standby_enabled 0 2>/dev/null
-                                                 settings reset global forced_app_standby_enabled 2>/dev/null
-                                                 settings put global app_auto_restriction_enabled false 2>/dev/null
-                                                 settings reset global app_auto_restriction_enabled 2>/dev/null
-                                                 settings put global forced_app_standby_for_small_battery_enabled 0 2>/dev/null
-                                                 settings reset global forced_app_standby_for_small_battery_enabled 1 2>/dev/null
-                                                 echo "${G}Done!${N}"
-                                                 sleep 2 
-                                                 menu
-                                                 ;;
-                        
-                                                 "10")
-                                                     cmd netpolicy set restrict-background true 2>/dev/null
-                                                     echo "${G}Done!${N}"
-                                                     sleep 2 
-                                                     menu
-                                                     ;;
-                        
-                                                      "11")
-                                                          cmd netpolicy set restrict-background false 2>/dev/null
-                                                          echo "${G}Done!${N}"
-                                                          sleep 2 
-                                                          menu
-                                                          ;;
-                        
-                                                           "12")
-                                                               echo "${B}Applying settings...${N}"
-                                                               settings put secure location_mode "0" 2>/dev/null
-                                                               settings put global assisted_gps_enabled "0" 2>/dev/null
-                                                               echo "${G}Done!${N}"
-                                                               sleep 2 
-                                                               menu
-                                                               ;;
-                        
-                                                                "13")
-                                                                     settings put global assisted_gps_enabled "1" 2>/dev/null
-                                                                     echo "${G}Done!${N}"
-                                                                     sleep 2 
-                                                                     menu
-                                                                    ;;
-                        
-                                                                     "14")
-                                                                          echo "${B}Cleaning debug logs and system trash...${N}"
-                                                                          cleantrash 2>/dev/null
-                                                                          echo "${G}Done!${N}"
-                                                                          sleep 2 
-                                                                          menu
-                                                                          ;;
-                        
-                                                                          "15")
-                                                                              am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
-                                                                              menu
-                                                                              ;;
-						                            
-                                                 "16") 
-                                                      [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "50" > "/sys/module/mdss_mdp/parameters/custom_hz" || echo "Y" > "/sys/module/mdss_mdp/parameters/custom_hz"
-                                                      echo "${G}Done!${N}"
-                                                      sleep 2
-                                                      menu
-                                                      ;;
-                                                      
-                                                 "17")
-                                                      [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "55" > "/sys/module/mdss_mdp/parameters/custom_hz"
-                                                      echo "${G}Done!${N}"
-                                                      sleep 2
-                                                      menu
-                                                      ;;
-                                                      
-                                                 "18")
-                                                      [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "60" > "/sys/module/mdss_mdp/parameters/custom_hz" || echo "N" > "/sys/module/mdss_mdp/parameters/custom_hz"
-                                                      settings put system min_refresh_rate 60 2>/dev/null
-                                                      settings put system peak_refresh_rate 60 2>/dev/null
-                                                      settings put system user_refresh_rate 60 2>/dev/null
-                                                      settings put global oneplus_screen_refresh_rate 1 2>/dev/null
-                                                      echo "${G}Done!${N}"
-                                                      sleep 2
-                                                      menu
-                                                      ;;
-       
-                                                "19")
-                                                     settings put system min_refresh_rate 90 2>/dev/null
-                                                     settings put system peak_refresh_rate 90 2>/dev/null
-                                                     settings put system user_refresh_rate 90 2>/dev/null
-                                                     settings put global oneplus_screen_refresh_rate 0 2>/dev/null
-                                                     echo "${G}Done!${N}"
-                                                     sleep 2
-                                                     menu
-                                                     ;;
+menu() {
+	clear
+	echo ""
+	echo "${Y}************${N}"
+	echo "${Y}* KTSR CLI *${N}"
+	echo "${Y}************${N}"
+	echo ""
+	echo "${G}Ver: 1.6.0.1-beta-r9${N}"
+	echo ""
+	echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
+	echo ""
+	echo "[*] Available profiles: "
+	echo ""
+	echo "${C}[1] Automatic: Change between profiles automatically based on user activity for a better user-experience.${N}"
+	echo ""
+	echo "${B}[2] Battery: Reduce SOC power draw to less battery comsumption, ensuring a juicy battery life.${N}"
+	echo ""
+	echo "${G}[3] Balanced: Balanced between battery life and performance, perfect to be used on day-to-day activities.${N}"
+	echo ""
+	echo "${Y}[4] Extreme: Tweaks both CPU / GPU for a consistent experience while dealing with heavy apps. May drain more battery life compared to Balanced / Latency.${N}"
+	echo ""
+	echo "${R}[5] Gaming: Recommended to users who wants the best performance possible while playing, tweaking both CPU / GPU to it's max. May drain a lot of battery life.${N}"
+	echo ""
+	echo "[6] Latency: Recommended to users who want really silky / smooth UI"
+	echo ""
+	echo "[*] Other misc options: "
+	echo ""
+	echo "[7] Optimize apps package"
+	echo ""
+	[[ "${low_power_mode}" == "Disabled" ]] && {
+		echo "[8] Enable low power mode"
+		echo ""
+	} || {
+		echo "[9] Disable low power mode"
+		echo ""
+	}
+	[[ "${data_saver}" == "Disabled" ]] && {
+		echo "[10] Enable data saver"
+		echo ""
+	} || {
+		echo "[11] Disable data saver"
+		echo ""
+	}
+	[[ "${loc_mode_pwr_saving}" == "Disabled" ]] && {
+		echo "[12] Enable power-saving location mode"
+		echo ""
+	} || {
+		echo "[13] Disable power-saving location mode"
+		echo ""
+	}
+	echo "[14] Clean trash files, E.G: System logs, debug logs, etc."
+	echo ""
+	echo "[15] Access our telegram group"
+	echo ""
+	if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+		echo "[16] 50 HZ Refresh Rate"
+		echo ""
+	elif [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
+		echo "[16] 50 HZ Refresh Rate"
+		echo ""
+		echo "[17] 55 HZ Refresh Rate"
+		echo ""
+	fi
+	if [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "60" ]]; then
+		echo "[18] 60 HZ Refresh Rate"
+		echo ""
+	elif [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]]; then
+		echo "[19] 90 HZ Refresh Rate"
+		echo ""
+	elif [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]]; then
+		echo "[20] 120 HZ Refresh Rate"
+		echo ""
+	fi
+	echo "[21] Reset Refresh Rate config"
+	echo ""
+	echo "[22] Free RAM [ Balanced ] (Will only drop caches)."
+	echo ""
+	echo "[23] Free RAM [ Agressive ] (Will kill all background apps and drop caches)."
+	echo ""
+	echo "[24] Free RAM [ Extreme ] (Will kill all apps, and drop caches)."
+	echo ""
+	if [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]]; then
+		echo "[25] Switch to dynamic thermal profile (May improve charging speed)"
+		echo ""
+	elif [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]]; then
+		echo "[26] Switch to default thermal profile"
+		echo ""
+	fi
+	echo "[27] Reset battery stats"
+	echo ""
+	echo "[28] Access our Wiki"
+	echo ""
+	echo "${R}[0] Exit${N}"
+	echo ""
+	echo -n "${Y}[*] Select the desired option:${N} "
+	read -r option
+	case "${option}" in
+	"1")
+		echo "${B}Applying profile...${N}"
+		setprop persist.king.tweaks.prof "1" 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
 
-                                            "20")
-                                                 settings put system min_refresh_rate 120 2>/dev/null
-                                                 settings put system peak_refresh_rate 120 2>/dev/null
-                                                 settings put system user_refresh_rate 120 2>/dev/null
-                                                 settings put global oneplus_screen_refresh_rate 0 2>/dev/null
-                                                 echo "${G}Done!${N}"
-                                                 sleep 2
-                                                 menu
-                                                 ;;
-						                      
-                                          "21")
-                                               settings reset system min_refresh_rate >/dev/null 2>&1
-                                               settings reset system peak_refresh_rate >/dev/null 2>&1
-                                               settings reset system user_refresh_rate >/dev/null 2>&1
-                                               settings reset global oneplus_screen_refresh_rate >/dev/null 2>&1
-                                               echo "${G}Done!${N}"
-                                               sleep 2
-                                               menu
-                                               ;;
-                                               
-                                        "22")
-                                             sync
-                                             echo "3" > "/proc/sys/vm/drop_caches"
-                                             echo "${G}Done!${N}"
-                                             sleep 3
-                                             menu
-                                             ;;
-                                             
-                                      "23")
-                                           sync
-                                           echo "3" > "/proc/sys/vm/drop_caches"
-                                           am kill-all
-                                           echo "${G}Done!${N}"
-                                           sleep 3
-                                           menu
-                                           ;;
-                                           
-                                       "24")
-                                            sync
-                                            echo "3" > "/proc/sys/vm/drop_caches"
-                                            am kill-all
-                                            sleep 3
-                                            while IFS= read -r pkg_nm; do
-                                            [[ "${pkg_nm}" != "com.termux" ]] && [[ "${pkg_nm}" != "jackpal.androidterm" ]] && [[ "${pkg_nm}" != "yarolegovich.materialterminal" ]] && [[ "${pkg_nm}" != "com.google.android.inputmethod.latin" ]] && [[ "${pkg_nm}" != "com.termoneplus" ]] && am force-stop "${pkg_nm}"
-                                            done <<< "$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
-                                            echo "${G}Done!${N}"
-                                            sleep 2
-                                            menu
-                                            ;;
-                                               
-                                              "25")
-                                              echo "2" > "/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
-                                              echo "${G}Done!${N}"
-                                              sleep 2
-                                              menu
-                                              ;; 
-                                                 
-                                              "26")
-                                              echo "0" > "/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
-                                              echo "${G}Done!${N}"
-                                              sleep 2
-                                              menu
-                                              ;;
-                                              
-                                              "27")
-                                              rm -rf /data/system/batterystats* 2>/dev/null
-                                              dumpsys batterystats --reset >/dev/null 2>&1
-                                              echo "${G}Done!${N}"
-                                              sleep 2
-                                              menu
-                                              ;;
-                                              
-                                              "28")
-                                              am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
-                                              ;;
-                                              
-                                       "0")
-						                   echo "${G}Hope that see ya soon! ;)${N}"
-						                   ;;
-						
-						           *)
-						             abort "${R}[!] Unexpected response, aborting...${N}"
-						             ;;
-						        esac
+	"2")
+		echo "${B}Applying profile...${N}"
+		setprop persist.king.tweaks.prof "2" 2>/dev/null
+		echo "${G}Done!"
+		sleep 2
+		menu
+		;;
+
+	"3")
+		echo "${B}Applying profile...${N}"
+		setprop persist.king.tweaks.prof "3" 2>/dev/null
+		echo "${G}Done!${N}"
+		menu
+		;;
+
+	"4")
+		echo "${B}Applying profile...${N}"
+		setprop persist.king.tweaks.prof "4" 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"5")
+		echo "${B}Applying profile...${N}"
+		setprop persist.king.tweaks.prof "5" 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"6")
+		echo "${B}Applying profile...${N}"
+		setprop persist.king.tweaks.prof "6" 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"7")
+		echo "${B}Optimizing packages...${N}"
+		cmd package bg-dexopt-job
+		sleep 5
+		menu
+		;;
+
+	"8")
+		settings put global low_power 1 2>/dev/null
+		settings put global low_power_sticky 1 2>/dev/null
+		settings put global app_standby_enabled 1 2>/dev/null
+		settings put global forced_app_standby_enabled 1 2>/dev/null
+		settings put global app_auto_restriction_enabled true 2>/dev/null
+		settings put global forced_app_standby_for_small_battery_enabled 1 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"9")
+		settings put global low_power 0 2>/dev/null
+		settings reset global low_power 2>/dev/null
+		settings put global low_power_sticky 0 2>/dev/null
+		settings reset global low_power_sticky 2>/dev/null
+		settings put global app_standby_enabled 1 2>/dev/null
+		settings reset global app_standby_enabled 2>/dev/null
+		settings put global forced_app_standby_enabled 0 2>/dev/null
+		settings reset global forced_app_standby_enabled 2>/dev/null
+		settings put global app_auto_restriction_enabled false 2>/dev/null
+		settings reset global app_auto_restriction_enabled 2>/dev/null
+		settings put global forced_app_standby_for_small_battery_enabled 0 2>/dev/null
+		settings reset global forced_app_standby_for_small_battery_enabled 1 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"10")
+		cmd netpolicy set restrict-background true 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"11")
+		cmd netpolicy set restrict-background false 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"12")
+		echo "${B}Applying settings...${N}"
+		settings put secure location_mode "0" 2>/dev/null
+		settings put global assisted_gps_enabled "0" 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"13")
+		settings put global assisted_gps_enabled "1" 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"14")
+		echo "${B}Cleaning debug logs and system trash...${N}"
+		cleantrash 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"15")
+		am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
+		menu
+		;;
+
+	"16")
+		[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "50" >"/sys/module/mdss_mdp/parameters/custom_hz" || echo "Y" >"/sys/module/mdss_mdp/parameters/custom_hz"
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"17")
+		[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "55" >"/sys/module/mdss_mdp/parameters/custom_hz"
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"18")
+		[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "60" >"/sys/module/mdss_mdp/parameters/custom_hz" || echo "N" >"/sys/module/mdss_mdp/parameters/custom_hz"
+		settings put system min_refresh_rate 60 2>/dev/null
+		settings put system peak_refresh_rate 60 2>/dev/null
+		settings put system user_refresh_rate 60 2>/dev/null
+		settings put global oneplus_screen_refresh_rate 1 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"19")
+		settings put system min_refresh_rate 90 2>/dev/null
+		settings put system peak_refresh_rate 90 2>/dev/null
+		settings put system user_refresh_rate 90 2>/dev/null
+		settings put global oneplus_screen_refresh_rate 0 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"20")
+		settings put system min_refresh_rate 120 2>/dev/null
+		settings put system peak_refresh_rate 120 2>/dev/null
+		settings put system user_refresh_rate 120 2>/dev/null
+		settings put global oneplus_screen_refresh_rate 0 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"21")
+		settings reset system min_refresh_rate >/dev/null 2>&1
+		settings reset system peak_refresh_rate >/dev/null 2>&1
+		settings reset system user_refresh_rate >/dev/null 2>&1
+		settings reset global oneplus_screen_refresh_rate >/dev/null 2>&1
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"22")
+		sync
+		echo "3" >"/proc/sys/vm/drop_caches"
+		echo "${G}Done!${N}"
+		sleep 3
+		menu
+		;;
+
+	"23")
+		sync
+		echo "3" >"/proc/sys/vm/drop_caches"
+		am kill-all
+		echo "${G}Done!${N}"
+		sleep 3
+		menu
+		;;
+
+	"24")
+		sync
+		echo "3" >"/proc/sys/vm/drop_caches"
+		am kill-all
+		sleep 3
+		while IFS= read -r pkg_nm; do
+			[[ "${pkg_nm}" != "com.termux" ]] && [[ "${pkg_nm}" != "jackpal.androidterm" ]] && [[ "${pkg_nm}" != "yarolegovich.materialterminal" ]] && [[ "${pkg_nm}" != "com.google.android.inputmethod.latin" ]] && [[ "${pkg_nm}" != "com.termoneplus" ]] && am force-stop "${pkg_nm}"
+		done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"25")
+		echo "2" >"/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"26")
+		echo "0" >"/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"27")
+		rm -rf /data/system/batterystats* 2>/dev/null
+		dumpsys batterystats --reset >/dev/null 2>&1
+		echo "${G}Done!${N}"
+		sleep 2
+		menu
+		;;
+
+	"28")
+		am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
+		;;
+
+	"0")
+		echo "${G}Hope that see ya soon! ;)${N}"
+		;;
+
+	*)
+		abort "${R}[!] Unexpected response, aborting...${N}"
+		;;
+	esac
 }
 
-						[[ -z "$1" ]] && menu
+[[ $# -eq "0" ]] && menu
 
-						help_me(){
-                        echo "$MODTITLE $VER($REL)"
-                        echo "by $AUTHOR"
-                        echo "Usage: $_name"
-                        echo "or: $_name [options]..."
-                        echo "Supported options:"
-                        echo "-p [profile] [1-6] [change between profiles without opening the terminal GUI]"
-                        echo "-f [free ram] [1-3] [Higher value means more agressive]"
-                        echo "-h [help] [show this message]"
-                        am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
-                        exit
-                        }
-						
-						while getopts ":p:f:th:" opt; do
-						case "${opt}" in
-						p) 
-						echo "${B}Applying profile...${N}"
-						setprop persist.king.tweaks.prof "$2" 2>/dev/null
-						echo "${G}Done!${N}"
-                        ;;
-						
-						  f)
-						  if [[ "$2" == "1" ]]; then
-						      sync
-						      echo "3" > "/proc/sys/vm/drop_caches"
-						      echo "${G}Done!${N}"
-						      sleep 2
-						     
-                           elif [[ "$2" == "2" ]]; then
-                                 sync
-                                 echo "3" > "/proc/sys/vm/drop_caches"
-                                 am kill-all
-                                 echo "${G}Done!${N}"
-                                 sleep 3
-                             
-                           elif [[ "$2" == "3" ]]; then
-                                 sync
-                                 echo "3" > "/proc/sys/vm/drop_caches"
-                                 am kill-all
-                                 sleep 3
-                                 while IFS= read -r pkg_nm; do
-                                      [[ "${pkg_nm}" != "com.termux" ]] && [[ "${pkg_nm}" != "jackpal.androidterm" ]] && [[ "${pkg_nm}" != "yarolegovich.materialterminal" ]] && [[ "${pkg_nm}" != "com.google.android.inputmethod.latin" ]] && [[ "${pkg_nm}" != "com.termoneplus" ]] && am force-stop "${pkg_nm}"
-                                 done <<< "$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
-                                 echo "${G}Done!${N}"
-                                 sleep 2
-                            else
-                                 help_me
-                            fi
-                            ;;
+help_me() {
+	echo "$MODTITLE $VER($REL)"
+	echo "by $AUTHOR"
+	echo "Usage: $_name"
+	echo "or: $_name [options]..."
+	echo "Supported options:"
+	echo "-p [profile] [1-6] [change between profiles without opening the terminal GUI]"
+	echo "-f [free ram] [1-3] [Higher value means more agressive]"
+	echo "-h [help] [show this message]"
+	am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
+	exit
+}
 
-					      h | *) help_me
-						  ;;
-					 esac                             
-                done
+while getopts ":p:f:th:" opt; do
+	case "${opt}" in
+	p)
+		echo "${B}Applying profile...${N}"
+		setprop persist.king.tweaks.prof "$2" 2>/dev/null
+		echo "${G}Done!${N}"
+		;;
+
+	f)
+		if [[ "$2" == "1" ]]; then
+			sync
+			echo "3" >"/proc/sys/vm/drop_caches"
+			echo "${G}Done!${N}"
+			sleep 2
+
+		elif [[ "$2" == "2" ]]; then
+			sync
+			echo "3" >"/proc/sys/vm/drop_caches"
+			am kill-all
+			echo "${G}Done!${N}"
+			sleep 3
+
+		elif [[ "$2" == "3" ]]; then
+			sync
+			echo "3" >"/proc/sys/vm/drop_caches"
+			am kill-all
+			sleep 3
+			while IFS= read -r pkg_nm; do
+				[[ "${pkg_nm}" != "com.termux" ]] && [[ "${pkg_nm}" != "jackpal.androidterm" ]] && [[ "${pkg_nm}" != "yarolegovich.materialterminal" ]] && [[ "${pkg_nm}" != "com.google.android.inputmethod.latin" ]] && [[ "${pkg_nm}" != "com.termoneplus" ]] && am force-stop "${pkg_nm}"
+			done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
+			echo "${G}Done!${N}"
+			sleep 2
+		else
+			help_me
+		fi
+		;;
+
+	h | *)
+		help_me
+		;;
+	esac
+done
 shift $((OPTIND - 1))
