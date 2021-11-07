@@ -31,6 +31,7 @@ cgroup_bbn_opt
 # Save mode to be applied automatically after reboot
 save_panel
 
+ktsr_prof=$(getprop persist.king.tweaks.prof)
 while true; do
 	sleep 0.8
 	if "${boot_run_once}"; then

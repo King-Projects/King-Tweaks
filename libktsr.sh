@@ -223,23 +223,22 @@ get_gpu_dir() {
 get_gpu_max() {
 	gpu_max=${gpu_max_freq}
 
-	if [[ "${gpu_max}" -lt "$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')" ]]; then
+	if [[ "$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')" -gt "${gpu_max}" ]]; then
 		gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')
 
-	elif [[ "${gpu_max}" -lt "$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')" ]]; then
+	elif [[ "$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')" -gt "${gpu_max}" ]]; then
 		gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')
-	fi
 
-	if [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_max}" -lt "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" ]]; then
+	elif [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" -gt "${gpu_max}" ]]; then
 		gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
 
-	elif [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_max}" -lt "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" ]]; then
+	elif [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" -gt "${gpu_max}" ]]; then
 		gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
 
-	elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "${gpu_max}" -lt "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" ]]; then
+	elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" -gt "${gpu_max}" ]]; then
 		gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
 
-	elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "${gpu_max}" -lt "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" ]]; then
+	elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" -gt "${gpu_max}" ]]; then
 		gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
 	fi
 }
@@ -247,16 +246,16 @@ get_gpu_max() {
 get_gpu_min() {
 	gpu_min=${gpu_min_freq}
 
-	if [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_min}" -gt "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" ]]; then
+	if [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" -lt "${gpu_min}" ]]; then
 		gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
 
-	elif [[ -e "${gpu}available_frequencies" ]] && [[ "${gpu_min}" -gt "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" ]]; then
+	elif [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" -lt "${gpu_min}" ]]; then
 		gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
 
-	elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "${gpu_min}" -gt "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" ]]; then
+	elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" -lt "${gpu_min}" ]]; then
 		gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
 
-	elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "${gpu_min}" -gt "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" ]]; then
+	elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" -lt "${gpu_min}" ]]; then
 		gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
 	fi
 }
@@ -397,7 +396,8 @@ get_dvc_cdn() { dvc_cdn=$(getprop ro.product.device); }
 # Fetch root method
 get_root() { root=$(su -v); }
 
-is_qcom() { [[ "$(getprop ro.boot.hardware | grep qcom)" || [[ "$(getprop ro.soc.manufacturer | grep QTI)" ]] || [[ "$(getprop ro.hardware | grep qcom)" ]] || [[ "$(getprop ro.vendor.qti.soc_id)" ]] && qcom=true; }
+is_qcom() { [[ "$(getprop ro.boot.hardware | grep qcom)" ]] || [[ "$(getprop ro.soc.manufacturer | grep QTI)" ]] || [[ "$(getprop ro.hardware | grep qcom)" ]] || [[ "$(getprop ro.vendor.qti.soc_id)" ]] && qcom=true; }
+
 # Detect if we're running on a exynos powered device
 is_exynos() { [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]] && exynos=true; }
 
@@ -450,7 +450,13 @@ get_ktsr_info() {
 get_batt_tmp() {
 	# Fetch battery temperature
 	batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
-	[[ -e "/sys/class/power_supply/battery/temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/temp) || [[ -e "/sys/class/power_supply/battery/batt_temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
+
+	if [[ -e "/sys/class/power_supply/battery/temp" ]]; then
+		batt_tmp=$(cat /sys/class/power_supply/battery/temp)
+
+	elif [[ -e "/sys/class/power_supply/battery/batt_temp" ]]; then
+		batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
+	fi
 
 	# Ignore the battery temperature decimal
 	batt_tmp=$((batt_tmp / 10))
