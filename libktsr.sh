@@ -2879,7 +2879,7 @@ sched_ft_latency() {
 sched_ft_balanced() {
 	if [[ -e "/sys/kernel/debug/sched_features" ]]; then
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
-		write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
+		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
 	fi
@@ -2888,7 +2888,7 @@ sched_ft_balanced() {
 sched_ft_extreme() {
 	if [[ -e "/sys/kernel/debug/sched_features" ]]; then
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
-		write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
+		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
 	fi
@@ -2906,7 +2906,7 @@ sched_ft_battery() {
 sched_ft_gaming() {
 	if [[ -e "/sys/kernel/debug/sched_features" ]]; then
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
-		write "/sys/kernel/debug/sched_features" "TTWU_QUEUE"
+		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
 	fi
