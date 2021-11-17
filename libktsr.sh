@@ -2642,8 +2642,8 @@ schedtune_gaming() {
 
 uclamp_latency() {
 	if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-		write "${kernel}sched_util_clamp_min" "0"
-		write "${kernel}sched_util_clamp_max" "100"
+		write "${kernel}sched_util_clamp_min" "768"
+		write "${kernel}sched_util_clamp_max" "1024"
 
 		write "${cpuctl}top-app/cpu.uclamp.max" "max"
 		write "${cpuctl}top-app/cpu.uclamp.min" "20"
@@ -2671,8 +2671,8 @@ uclamp_latency() {
 
 uclamp_balanced() {
 	if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-		write "${kernel}sched_util_clamp_min" "0"
-		write "${kernel}sched_util_clamp_max" "100"
+		write "${kernel}sched_util_clamp_min" "512"
+		write "${kernel}sched_util_clamp_max" "1024"
 
 		write "${cpuctl}top-app/cpu.uclamp.max" "max"
 		write "${cpuctl}top-app/cpu.uclamp.min" "10"
@@ -2700,8 +2700,8 @@ uclamp_balanced() {
 
 uclamp_extreme() {
 	if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-		write "${kernel}sched_util_clamp_min" "0"
-		write "${kernel}sched_util_clamp_max" "100"
+		write "${kernel}sched_util_clamp_min" "768"
+		write "${kernel}sched_util_clamp_max" "1024"
 
 		write "${cpuctl}top-app/cpu.uclamp.max" "max"
 		write "${cpuctl}top-app/cpu.uclamp.min" "max"
@@ -2729,8 +2729,8 @@ uclamp_extreme() {
 
 uclamp_battery() {
 	if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-		write "${kernel}sched_util_clamp_min" "0"
-		write "${kernel}sched_util_clamp_max" "100"
+		write "${kernel}sched_util_clamp_min" "256"
+		write "${kernel}sched_util_clamp_max" "768"
 
 		write "${cpuctl}top-app/cpu.uclamp.max" "max"
 		write "${cpuctl}top-app/cpu.uclamp.min" "5"
@@ -2758,8 +2758,8 @@ uclamp_battery() {
 
 uclamp_gaming() {
 	if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-		sysctl -w kernel.sched_util_clamp_min_rt_default=96
-		sysctl -w kernel.sched_util_clamp_min=192
+		write "${kernel}sched_util_clamp_min" "768"
+		write "${kernel}sched_util_clamp_max" "1024"
 
 		write "${cpuctl}top-app/cpu.uclamp.max" "max"
 		write "${cpuctl}top-app/cpu.uclamp.min" "max"
@@ -4159,7 +4159,7 @@ cgroup_bbn_opt() {
 	change_thread_cgroup "\.hardware\.composer" "^Binder" "top-app" "cpuset"
 	change_thread_cgroup "\.hardware\.composer" "^HwBinder" "top-app" "cpuset"
 	# boost app boot process, zygote--com.xxxx.xxx
-	# usap nicing isn't necessary as it is already set to the max nice possible (-20) by default
+	# usap nicing isn't necessary as it is already set by default
 	unpin_proc "zygote|usap"
 	change_task_nice "zygote" "-20"
 }
