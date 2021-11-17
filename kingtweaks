@@ -6,7 +6,7 @@
 MODPATH="/data/adb/modules/KTSR"
 
 # Load libraries
-. "${MODPATH}/libs/libktsr.sh"
+source "${MODPATH}/libs/libktsr.sh"
 
 # Check for root permissions and bail if not granted
 [[ "$(id -u)" != "0" ]] && {

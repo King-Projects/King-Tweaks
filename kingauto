@@ -5,7 +5,7 @@
 MODPATH="/data/adb/modules/KTSR"
 
 # Load libraries
-. "${MODPATH}/libs/libktsr.sh"
+source "${MODPATH}/libs/libktsr.sh"
 
 full_ram=$((total_ram * 20 / 100))
 

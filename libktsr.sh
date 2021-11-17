@@ -1045,7 +1045,7 @@ boost_balanced() {
 	fi
 
 	if [[ -d "/sys/module/cpu_boost/" ]]; then
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "100"
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "120"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
@@ -1053,7 +1053,7 @@ boost_balanced() {
 		kmsg3 ""
 
 	elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "100"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "120"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	fi
@@ -1068,15 +1068,15 @@ boost_extreme() {
 	fi
 
 	if [[ -d "/sys/module/cpu_boost/" ]]; then
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
-		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "0"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "N"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "0"
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
+		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 
 	elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "0"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	fi
@@ -1115,15 +1115,15 @@ boost_gaming() {
 	fi
 
 	if [[ -d "/sys/module/cpu_boost/" ]]; then
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "0"
-		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "0"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "0"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "0"
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
+		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 
 	elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "0"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	fi
@@ -1355,7 +1355,7 @@ cpu_extreme() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
 		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-		for governor in performance sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
+		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
 				write "${cpu}scaling_governor" "${governor}"
 				break
@@ -1458,7 +1458,7 @@ cpu_gaming() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
 		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-		for governor in performance sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
+		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
 				write "${cpu}scaling_governor" "${governor}"
 				break
@@ -1641,7 +1641,7 @@ gpu_latency() {
 		write "${gpu}bus_split" "0"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
 		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-		write "${gpu}min_pwrlevel" "$((gpu_min_pl - 2))"
+		write "${gpu}default_pwrlevel" "$((gpu_min_pl - 2))"
 		write "${gpu}force_bus_on" "0"
 		write "${gpu}force_clk_on" "0"
 		write "${gpu}force_rail_on" "0"
@@ -1772,7 +1772,7 @@ gpu_balanced() {
 		write "${gpu}bus_split" "1"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
 		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-		write "${gpu}min_pwrlevel" "$((gpu_min_pl - 1))"
+		write "${gpu}default_pwrlevel" "$((gpu_min_pl - 1))"
 		write "${gpu}force_bus_on" "0"
 		write "${gpu}force_clk_on" "0"
 		write "${gpu}force_rail_on" "0"
@@ -2030,12 +2030,12 @@ gpu_battery() {
 	if [[ ${qcom} == "true" ]]; then
 		write "${gpu}throttling" "1"
 		write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
-		write "${gpu}devfreq/adrenoboost" "0"
+		write "${gpu}devfreq/adrenoboost" "1"
 		write "${gpu}force_no_nap" "0"
 		write "${gpu}bus_split" "1"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
 		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-		write "${gpu}min_pwrlevel" "${gpu_min_pl}"
+		write "${gpu}default_pwrlevel" "${gpu_min_pl}"
 		write "${gpu}force_bus_on" "0"
 		write "${gpu}force_clk_on" "0"
 		write "${gpu}force_rail_on" "0"
@@ -2133,7 +2133,7 @@ gpu_gaming() {
 	if [[ ${qcom} == "true" ]]; then
 		avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
-		for governor in performance msm-adreno-tz simple_ondemand ondemand; do
+		for governor in msm-adreno-tz simple_ondemand ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
 				write "${gpu}devfreq/governor" "${governor}"
 				break
@@ -2164,22 +2164,22 @@ gpu_gaming() {
 	if [[ ${qcom} == "true" ]]; then
 		write "${gpu}throttling" "0"
 		write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
-		write "${gpu}devfreq/adrenoboost" "0"
+		write "${gpu}devfreq/adrenoboost" "2"
 		write "${gpu}force_no_nap" "1"
 		write "${gpu}bus_split" "0"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
-		write "${gpu}devfreq/min_freq" "${gpu_max}"
-		write "${gpu}min_pwrlevel" "${gpu_max_pl}"
+		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
+		write "${gpu}default_pwrlevel" "${gpu_max_pl}"
 		write "${gpu}force_bus_on" "1"
 		write "${gpu}force_clk_on" "1"
 		write "${gpu}force_rail_on" "1"
 		write "${gpu}idle_timer" "1000000"
 		write "${gpu}pwrnap" "0"
-		write "${gpu}pwrscale" "0"
+		write "${gpu}pwrscale" "1"
 	elif [[ ${qcom} == "false" ]]; then
 		[[ ${one_ui} == "false" ]] && write "${gpu}dvfs" "0"
 		write "${gpui}gpu_max_clock" "${gpu_max_freq}"
-		write "${gpui}gpu_min_clock" "${gpu_max}"
+		write "${gpui}gpu_min_clock" "${gpu_min}"
 		write "${gpu}highspeed_clock" "${gpu_max_freq}"
 		write "${gpu}highspeed_load" "76"
 		write "${gpu}highspeed_delay" "0"
@@ -2188,10 +2188,10 @@ gpu_gaming() {
 		write "${gpu}cl_boost_disable" "0"
 		write "${gpug}mali_touch_boost_level" "0"
 		write "${gpu}max_freq" "${gpu_max_freq}"
-		write "${gpu}min_freq" "${gpu_max}"
+		write "${gpu}min_freq" "${gpu_min}"
 		write "${gpu}tmu" "0"
 		write "${gpu}devfreq/gpufreq/max_freq" "${gpu_max_freq}"
-		write "${gpu}devfreq/gpufreq/min_freq" "${gpu_max}"
+		write "${gpu}devfreq/gpufreq/min_freq" "${gpu_min}"
 		write "${gpu}devfreq/gpufreq/mali_ondemand/vsync" "0"
 		write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_upthreshold" "35"
 		write "${gpu}devfreq/gpufreq/mali_ondemand/vsync_downdifferential" "15"
@@ -3914,38 +3914,37 @@ Adjshield config file: ${adj_cfg}"
 }
 
 # $1:str
-adjshield_write_cfg() { echo "$1" >>"${adj_cfg}"; }
+adjshield_write_cfg() { echo "$1" >>${adj_cfg}; }
 
 adjshield_create_default_cfg() {
-	adjshield_write_cfg "# AdjShield Config File"
-	adjshield_write_cfg "# Prevent given packages from being killed by LMK by protecting oom_score_adj"
-	adjshield_write_cfg "# List all the package names of the apps which you want to keep alive."
-	adjshield_write_cfg "com.riotgames.league.wildrift"
-	adjshield_write_cfg "com.activision.callofduty.shooter"
-	adjshield_write_cfg "com.mobile.legends"
-	adjshield_write_cfg "com.tencent.ig"
+	adjshield_write_cfg "# AdjShield Config File
+# Prevent given packages from being killed by LMK by protecting oom_score_adj.
+# List all the package names of the apps which you want to keep alive.
+com.riotgames.league.wildrift
+com.activision.callofduty.shooter
+com.mobile.legends
+com.tencent.ig
+"
 }
 
 adjshield_start() {
 	# clear logs
-	rm -rf "${adj_log}"
-	rm -rf "${bbn_log}"
-	rm -rf "${bbn_banner}"
+	rm -rf ${adj_log}
+	rm -rf ${bbn_log}
+	rm -rf ${bbn_banner}
 	# check interval: 120 seconds - Deprecated, use event driven instead
-	${MODPATH}system/bin/adjshield -o "${adj_log}" -c "${adj_cfg}" &
+	${MODPATH}system/bin/adjshield -o ${adj_log} -c ${adj_cfg} &
 }
 
-adjshield_stop() { killall -9 "${adj_nm}" 2>/dev/null; }
+adjshield_stop() { killall -9 ${adj_nm} 2>/dev/null; }
 
 # return:status
 adjshield_status() {
-	if [[ "$(ps -A | grep "${adj_nm}")" != "" ]]; then
-		echo "Adjshield running. see ${adj_log} for details."
-	else
-		# "Error: Log file not found"
+	[[ "$(ps -A | grep "${adj_nm}")" != "" ]] && echo "Adjshield running. see ${adj_log} for details." || {
+		# Error: Log file not found
 		err="$(cat "${adj_log}" | grep Error | head -n 1 | cut -d: -f2)"
 		[[ ${err} != "" ]] && echo "Not running. ${err}." || echo "Not running. Unknown reason."
-	fi
+	}
 }
 
 # $1:task_name $2:cgroup_name $3:"cpuset"/"stune"
@@ -4146,8 +4145,8 @@ clear_logs() {
 	kdbg_max_size=1000000
 	# Do the same to sqlite opt log
 	sqlite_opt_max_size=1000000
-	[[ "$(stat -t "${KDBG}" 2>/dev/null | awk '{print $2}')" -ge ${kdbg_max_size} ]] && rm -rf "${KDBG}"
-	[[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -ge ${sqlite_opt_max_size} ]] && rm -rf "/data/media/0/KTSR/sqlite_opt.log"
+	[[ "$(stat -t ${KDBG} 2>/dev/null | awk '{print $2}')" -ge ${kdbg_max_size} ]] && rm -rf ${KDBG}
+	[[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -ge ${sqlite_opt_max_size} ]] && rm -rf /data/media/0/KTSR/sqlite_opt.log
 }
 
 # Get screen state (ON | OFF)
@@ -4175,17 +4174,15 @@ apply_all() {
 	[[ ${ktsr_prof_en} != "gaming" ]] && enable_ppm || disable_ppm
 	[[ ${ktsr_prof_en} == "latency" ]] || [[ ${ktsr_prof_en} == "balanced" ]] || [[ ${ktsr_prof_en} == "battery" ]] && ppm_policy_default
 	[[ ${ktsr_prof_en} == "extreme" ]] && ppm_policy_max
-	[[ ${ktsr_prof_en} != "extreme" ]] && [[ ${ktsr_prof_en} != "latency" ]] && [[ ${ktsr_prof_en} != "gaming" ]] && {
-		cpu_clk_min
-		cpu_clk_default
-	} || cpu_clk_max
+	cpu_clk_min
+	cpu_clk_default
 	hmp_${ktsr_prof_en}
 	gpu_${ktsr_prof_en}
 	schedtune_${ktsr_prof_en}
 	sched_ft_${ktsr_prof_en}
 	disable_crc
 	sched_${ktsr_prof_en}
-	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && disable_fp_boost || enable_fp_boost
+	enable_fp_boost
 	uclamp_${ktsr_prof_en}
 	config_blkio
 	config_fs
@@ -4230,17 +4227,15 @@ apply_all_auto() {
 	[[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_ppm || disable_ppm
 	[[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && ppm_policy_default
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] && ppm_policy_max
-	[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "latency" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && {
-		cpu_clk_min
-		cpu_clk_default
-	} || cpu_clk_max
+	cpu_clk_min
+	cpu_clk_default
 	hmp_$(getprop kingauto.prof)
 	gpu_$(getprop kingauto.prof)
 	schedtune_$(getprop kingauto.prof)
 	sched_ft_$(getprop kingauto.prof)
 	disable_crc
 	sched_$(getprop kingauto.prof)
-	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_fp_boost || enable_fp_boost
+	enable_fp_boost
 	uclamp_$(getprop kingauto.prof)
 	config_blkio
 	config_fs
