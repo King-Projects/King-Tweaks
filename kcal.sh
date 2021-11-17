@@ -3,7 +3,7 @@
 
 KXLOG=/data/media/0/KTSR/kxvision.log
 
-[[ -e "${KXLOG}" ]] && rm -rf "${KXLOG}"
+[[ -e ${KXLOG} ]] && rm -rf "${KXLOG}"
 
 # King Xvision
 echo "1" >"/sys/devices/platform/kcal_ctrl.0/kcal_enable"

@@ -29,8 +29,8 @@ if [[ ! "$(grep build_date $(pwd)/module.prop)" ]]; then
 	echo "build_date=$date" >>"$(pwd)/module.prop"
 fi
 
-if [[ "$br" == b* ]]; then
-	vcd=$(printf "%.3d" "$((${vcd} + 1))")
+if [[ $br == b* ]]; then
+	vcd=$(printf "%.3d" "$((vcd + 1))")
 	sed -i -e "/versionCode=/s/=.*/=$vcd/" "$(pwd)/module.prop"
 fi
 

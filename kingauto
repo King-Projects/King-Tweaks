@@ -19,7 +19,6 @@ full_ram=$((total_ram * 20 / 100))
 				setprop kingauto.prof "gaming"
 				pin_proc_on_perf "${gpid}"
 				change_task_nice "${gpid}" "-18"
-				get_all
 				apply_all_auto
 				sleep 45
 				for spid in $(pgrep -f com.whatsapp) $(pgrep -f com.zhiliaoapp) $(pgrep -f com.adobe) $(pgrep -f org.telegram) $(pgrep -f com.netflix) $(pgrep -f com.wemesh) $(pgrep -f com.discord) $(pgrep -f com.google.android.youtube) $(pgrep -f com.facebook) $(pgrep -f com.android.chrome) $(pgrep -f com.brave) $(pgrep -f com.UCMobile) $(pgrep -f org.mozilla) $(pgrep -f com.duckduckgo) $(pgrep -f com.opera) $(pgrep -f com.microsoft) $(pgrep -f org.torproject) $(pgrep -f com.instagram) $(pgrep -f com.twitch); do
@@ -27,7 +26,6 @@ full_ram=$((total_ram * 20 / 100))
 						kmsg "User is using social media, and etc apps. Applied balanced profile"
 						sync
 						setprop kingauto.prof "balanced"
-						get_all
 						apply_all_auto
 						sleep 45
 						for bpid in $(pgrep -f com.primatelabs) $(pgrep -f com.ludashi.benchmark) $(pgrep -f com.nexstreaming) $(pgrep -f com.andromeda) $(pgrep -f com.kinemaster) $(pgrep -f com.futuremark) $(pgrep -f skynet.cputhrottlingtest) $(pgrep -f com.android.camera) $(pgrep -f com.google.android.GoogleCamera) $(pgrep -f org.codeaurora.snapcam); do
@@ -37,7 +35,6 @@ full_ram=$((total_ram * 20 / 100))
 								setprop kingauto.prof "extreme"
 								pin_proc_on_perf "${bpid}"
 								change_task_nice "${bpid}" "-18"
-								get_all
 								apply_all_auto
 								sleep 45
 							fi
@@ -46,20 +43,15 @@ full_ram=$((total_ram * 20 / 100))
 				done
 			fi
 		done
-		get_scrn_state
-		get_batt_sts
-		get_batt_pctg
-		get_ram_info
 
-		if [[ "$(cat /sys/class/leds/lcd-backlight/brightness)" == "0" ]] || [[ "$(cat /sys/class/backlight/panel*-backlight/brightness)" == "0" ]] || [[ "${scrn_on}" == "0" ]]; then
+		if [[ "$(cat /sys/class/leds/lcd-backlight/brightness)" == "0" ]] || [[ "$(cat /sys/class/backlight/panel*-backlight/brightness)" == "0" ]] || [[ ${scrn_on} == "0" ]]; then
 			kmsg "Device screen is turned off. Applied battery profile, extended script check time"
 			sync
 			setprop kingauto.prof "battery"
-			get_all
 			apply_all_auto
 			sleep 60
 
-		elif [[ "${batt_sts}" == "Charging" ]]; then
+		elif [[ ${batt_sts} == "Charging" ]]; then
 			kmsg "Device is charging, trying to reduce battery cycles by applying battery profile and extending check time"
 			sync
 			setprop kingauto.prof "battery"
@@ -67,14 +59,14 @@ full_ram=$((total_ram * 20 / 100))
 			apply_all_auto
 			sleep 60
 
-		elif [[ "${batt_pctg}" -lt "20" ]]; then
+		elif [[ ${batt_pctg} -lt "20" ]]; then
 			kmsg "Device battery is lower than 20%, applying battery profile to prolong battery life"
 			sync
 			setprop kingauto.prof "battery"
 			get_all
 			apply_all_auto
 
-		elif [[ "${batt_pctg}" -ge "20" ]]; then
+		elif [[ ${batt_pctg} -ge "20" ]]; then
 			kmsg "No considerable usage found. Applied latency profile"
 			sync
 			setprop kingauto.prof "latency"
@@ -83,10 +75,10 @@ full_ram=$((total_ram * 20 / 100))
 			sleep 30
 		fi
 
-		if [[ "${avail_ram}" -le "${full_ram}" ]]; then
+		if [[ ${avail_ram} -le ${full_ram} ]]; then
 			kmsg "Device ram is almost fully in use, dropping caches to free some RAM"
 			sync
 			write "${vm}drop_caches" "3"
 		fi
 	done
-)
+) &
