@@ -1510,6 +1510,7 @@ misc_cpu_default() {
 	[[ -e "/proc/cpufreq/cpufreq_cci_mode" ]] && write "/proc/cpufreq/cpufreq_cci_mode" "0"
 	[[ -e "/proc/cpufreq/cpufreq_stress_test" ]] && write "/proc/cpufreq/cpufreq_stress_test" "0"
 	[[ -e "/proc/cpufreq/cpufreq_sched_disable" ]] && write "/proc/cpufreq/cpufreq_sched_disable" "0"
+	[[ -e "/sys/devices/system/cpu/perf/enable" ]] && write "/sys/devices/system/cpu/perf/enable" "0"
 }
 
 misc_cpu_max_pwr() {
@@ -1517,6 +1518,7 @@ misc_cpu_max_pwr() {
 	[[ -e "/proc/cpufreq/cpufreq_cci_mode" ]] && write "/proc/cpufreq/cpufreq_cci_mode" "1"
 	[[ -e "/proc/cpufreq/cpufreq_stress_test" ]] && write "/proc/cpufreq/cpufreq_stress_test" "1"
 	[[ -e "/proc/cpufreq/cpufreq_sched_disable" ]] && write "/proc/cpufreq/cpufreq_sched_disable" "0"
+	[[ -e "/sys/devices/system/cpu/perf/enable" ]] && write "/sys/devices/system/cpu/perf/enable" "1"
 }
 
 misc_cpu_pwr_saving() {
@@ -1524,6 +1526,7 @@ misc_cpu_pwr_saving() {
 	[[ -e "/proc/cpufreq/cpufreq_cci_mode" ]] && write "/proc/cpufreq/cpufreq_cci_mode" "0"
 	[[ -e "/proc/cpufreq/cpufreq_stress_test" ]] && write "/proc/cpufreq/cpufreq_stress_test" "0"
 	[[ -e "/proc/cpufreq/cpufreq_sched_disable" ]] && write "/proc/cpufreq/cpufreq_sched_disable" "0"
+	[[ -e "/sys/devices/system/cpu/perf/enable" ]] && write "/sys/devices/system/cpu/perf/enable" "0"
 }
 
 bring_all_cores() {
@@ -1684,7 +1687,7 @@ gpu_latency() {
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
-		write "/sys/module/ged/parameters/ged_smart_boost" "0"
+		write "/sys/module/ged/parameters/ged_smart_boost" "1"
 		write "/sys/module/ged/parameters/gpu_debug_enable" "0"
 		write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
 		write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
@@ -1695,6 +1698,7 @@ gpu_latency() {
 		write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
 		write "/sys/module/ged/parameters/boost_amp" "0"
 		write "/sys/module/ged/parameters/gx_boost_on" "0"
+		write "/sys/module/ged/parameters/gpu_idle" "100"
 	fi
 
 	if [[ -d "/proc/gpufreq/" ]]; then
@@ -1826,6 +1830,7 @@ gpu_balanced() {
 		write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
 		write "/sys/module/ged/parameters/boost_amp" "0"
 		write "/sys/module/ged/parameters/gx_boost_on" "0"
+		write "/sys/module/ged/parameters/gpu_idle" "100"
 	fi
 
 	if [[ -d "/proc/gpufreq/" ]]; then
@@ -1901,7 +1906,7 @@ gpu_extreme() {
 	if [[ ${qcom} == "true" ]]; then
 		write "${gpu}throttling" "0"
 		write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
-		write "${gpu}devfreq/adrenoboost" "2"
+		write "${gpu}devfreq/adrenoboost" "1"
 		write "${gpu}force_no_nap" "0"
 		write "${gpu}bus_split" "0"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
@@ -1960,6 +1965,7 @@ gpu_extreme() {
 		write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
 		write "/sys/module/ged/parameters/boost_amp" "1"
 		write "/sys/module/ged/parameters/gx_boost_on" "1"
+		write "/sys/module/ged/parameters/gpu_idle" "100"
 	fi
 
 	if [[ -d "/proc/gpufreq/" ]]; then
@@ -2030,7 +2036,7 @@ gpu_battery() {
 	if [[ ${qcom} == "true" ]]; then
 		write "${gpu}throttling" "1"
 		write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
-		write "${gpu}devfreq/adrenoboost" "1"
+		write "${gpu}devfreq/adrenoboost" "0"
 		write "${gpu}force_no_nap" "0"
 		write "${gpu}bus_split" "1"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
@@ -2089,6 +2095,7 @@ gpu_battery() {
 		write "/sys/module/ged/parameters/is_GED_KPI_enabled" "0"
 		write "/sys/module/ged/parameters/boost_amp" "0"
 		write "/sys/module/ged/parameters/gx_boost_on" "0"
+		write "/sys/module/ged/parameters/gpu_idle" "100"
 	fi
 
 	if [[ -d "/proc/gpufreq/" ]]; then
@@ -2184,9 +2191,9 @@ gpu_gaming() {
 		write "${gpu}highspeed_load" "76"
 		write "${gpu}highspeed_delay" "0"
 		write "${gpu}power_policy" "always_on"
-		write "${gpui}boost" "0"
+		write "${gpui}boost" "1"
 		write "${gpu}cl_boost_disable" "0"
-		write "${gpug}mali_touch_boost_level" "0"
+		write "${gpug}mali_touch_boost_level" "1"
 		write "${gpu}max_freq" "${gpu_max_freq}"
 		write "${gpu}min_freq" "${gpu_min}"
 		write "${gpu}tmu" "0"
@@ -2223,6 +2230,7 @@ gpu_gaming() {
 		write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
 		write "/sys/module/ged/parameters/boost_amp" "1"
 		write "/sys/module/ged/parameters/gx_boost_on" "1"
+		write "/sys/module/ged/parameters/gpu_idle" "0"
 	fi
 
 	if [[ -d "/proc/gpufreq/" ]]; then
@@ -2994,7 +3002,7 @@ sched_extreme() {
 	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "1"
-	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ ${mtk} == "true" ]] && write "/sys/devices/system/cpu/eas/enable" "2" || write "/sys/devices/system/cpu/eas/enable" "1"
+	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "0"
 	[[ -e "${kernel}sched_walt_rotate_big_tasks" ]] && write "${kernel}sched_walt_rotate_big_tasks" "1"
 	[[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 	[[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
@@ -3088,7 +3096,7 @@ sched_gaming() {
 	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "1"
-	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && [[ ${mtk} == "true" ]] && write "/sys/devices/system/cpu/eas/enable" "2" || write "/sys/devices/system/cpu/eas/enable" "1"
+	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "0"
 	[[ -e "${kernel}sched_walt_rotate_big_tasks" ]] && write "${kernel}sched_walt_rotate_big_tasks" "1"
 	[[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
 	[[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
@@ -3644,6 +3652,14 @@ enable_tb() {
 		kmsg "Enabled pnpmgr touch boost"
 		kmsg3 ""
 	fi
+
+	if [[ -e "/proc/touchpanel/oplus_tp_limit_enable" ]]; then
+		write "/proc/touchpanel/oplus_tp_limit_enable" "0"
+		write "/proc/touchpanel/oplus_tp_direction" "1"
+		write "/proc/touchpanel/game_switch_enable" "1"
+		kmsg "Enabled improved touch mode"
+		kmsg3 ""
+	fi
 }
 
 disable_tb() {
@@ -3656,6 +3672,14 @@ disable_tb() {
 		write "/sys/power/pnpmgr/touch_boost" "0"
 		write "/sys/power/pnpmgr/long_duration_touch_boost" "0"
 		kmsg "Disabled pnpmgr touch boost"
+		kmsg3 ""
+	fi
+
+	if [[ -e "/proc/touchpanel/oplus_tp_limit_enable" ]]; then
+		write "/proc/touchpanel/oplus_tp_limit_enable" "0"
+		write "/proc/touchpanel/oplus_tp_direction" "1"
+		write "/proc/touchpanel/game_switch_enable" "0"
+		kmsg "Disabled improved touch mode"
 		kmsg3 ""
 	fi
 }
@@ -4194,7 +4218,7 @@ apply_all() {
 	[[ ${ktsr_prof_en} == "balanced" ]] || [[ ${ktsr_prof_en} == "battery" ]] && enable_pewq || disable_pewq
 	[[ ${ktsr_prof_en} == "battery" ]] && enable_mcps || disable_mcps
 	fix_dt2w
-	disable_tb
+	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && enable_tb || disable_tb
 	config_tcp
 	[[ ${ktsr_prof_en} == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
 	[[ ${ktsr_prof_en} == "battery" ]] || [[ ${ktsr_prof_en} == "balanced" ]] || [[ ${ktsr_prof_en} == "latency" ]] && enable_lpm || disable_lpm
@@ -4247,7 +4271,7 @@ apply_all_auto() {
 	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_pewq || disable_pewq
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_mcps || disable_mcps
 	fix_dt2w
-	disable_tb
+	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_tb || disable_tb
 	config_tcp
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
 	[[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && enable_lpm || disable_lpm
