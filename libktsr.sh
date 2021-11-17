@@ -37,7 +37,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=0
-lib_ver="1.0.1"
+lib_ver="1.0.1-h1"
 
 # Log in white and continue (unnecessary)
 kmsg() { echo -e "[$(date +%T)]: [*] $@" >>"${KLOG}"; }
@@ -421,7 +421,7 @@ bd_cdn=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-"
 
 # Fetch battery temperature
 batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
-[[ -e "/sys/class/power_supply/battery/temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/temp) || [[ -e "/sys/class/power_supply/battery/batt_temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
+[[ ${batt_tmp} == "" ]] && [[ -e "/sys/class/power_supply/battery/temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/temp) || [[ ${batt_tmp} == "" ]] && [[ -e "/sys/class/power_supply/battery/batt_temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
 
 # Ignore the battery temperature decimal
 batt_tmp=$((batt_tmp / 10))
