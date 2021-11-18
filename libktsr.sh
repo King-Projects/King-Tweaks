@@ -774,6 +774,16 @@ config_cpuset() {
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
+        "SM7150")
+            write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-5,7"
+			write "${cpuset}background/cpus" "4-5"
+			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "2-5"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;; 
 		"mt6768")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-7"
