@@ -774,8 +774,8 @@ config_cpuset() {
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
-        "SM7150")
-            write "${cpuset}camera-daemon/cpus" "0-7"
+		"SM7150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-5,7"
 			write "${cpuset}background/cpus" "4-5"
 			write "${cpuset}system-background/cpus" "2-5"
@@ -784,8 +784,8 @@ config_cpuset() {
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
-        "SDM670")
-            write "${cpuset}camera-daemon/cpus" "0-7"
+		"SDM670")
+			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-5,7"
 			write "${cpuset}background/cpus" "4-5"
 			write "${cpuset}system-background/cpus" "2-5"
@@ -4384,7 +4384,7 @@ gaming() {
 	cmd power set-adaptive-power-saver-enabled false 2>/dev/null
 	cmd power set-fixed-performance-mode-enabled true 2>/dev/null
 	cmd thermalservice override-status 0 2>/dev/null
-    cmd notification set_dnd on
+	cmd notification set_dnd on
 
 	kmsg "Gaming profile applied. Enjoy!"
 	kmsg3 ""
