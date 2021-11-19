@@ -783,7 +783,17 @@ config_cpuset() {
 			write "${cpuset}restricted/cpus" "2-5"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
-			;; 
+			;;
+        "SDM670")
+            write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-5,7"
+			write "${cpuset}background/cpus" "4-5"
+			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "2-5"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
 		"mt6768")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-7"
@@ -920,7 +930,7 @@ config_cpuset() {
 			;;
 		"trinket")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-5,7"
 			write "${cpuset}background/cpus" "4-5"
 			write "${cpuset}system-background/cpus" "2-5"
 			write "${cpuset}top-app/cpus" "0-7"
@@ -930,7 +940,7 @@ config_cpuset() {
 			;;
 		"SM6250")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-5,7"
 			write "${cpuset}background/cpus" "4-5"
 			write "${cpuset}system-background/cpus" "2-5"
 			write "${cpuset}top-app/cpus" "0-7"
@@ -940,7 +950,7 @@ config_cpuset() {
 			;;
 		"bengal")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-5,7"
 			write "${cpuset}background/cpus" "4-5"
 			write "${cpuset}system-background/cpus" "2-5"
 			write "${cpuset}top-app/cpus" "0-7"
@@ -2800,7 +2810,7 @@ config_blkio() {
 	if [[ -d ${blkio} ]]; then
 		write "${blkio}blkio.weight" "1000"
 		write "${blkio}background/blkio.weight" "200"
-		write "${blkio}blkio.group_idle" "0"
+		write "${blkio}blkio.group_idle" "2000"
 		write "${blkio}background/blkio.group_idle" "0"
 		kmsg "Tweaked blkio"
 		kmsg3 ""
@@ -4374,6 +4384,7 @@ gaming() {
 	cmd power set-adaptive-power-saver-enabled false 2>/dev/null
 	cmd power set-fixed-performance-mode-enabled true 2>/dev/null
 	cmd thermalservice override-status 0 2>/dev/null
+    cmd notification set_dnd on
 
 	kmsg "Gaming profile applied. Enjoy!"
 	kmsg3 ""
