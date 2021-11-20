@@ -703,7 +703,7 @@ enable_core_ctl() {
 
 # Some of these are based from @helloklf (GitHub) vtools, credits to him.
 config_cpuset() {
-	case "${soc}" in
+	case ${soc} in
 		"msm8937")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,6-7"
@@ -854,16 +854,6 @@ config_cpuset() {
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
-		"sm6150")
-			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
-			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
-			kmsg "Tweaked cpusets"
-			kmsg3 ""
-			;;
 		"lito")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
@@ -929,6 +919,26 @@ config_cpuset() {
 			kmsg3 ""
 			;;
 		"trinket")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-5,7"
+			write "${cpuset}background/cpus" "4-5"
+			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "2-5"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6125")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-5,7"
+			write "${cpuset}background/cpus" "4-5"
+			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "2-5"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-5,7"
 			write "${cpuset}background/cpus" "4-5"
