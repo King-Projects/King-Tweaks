@@ -1,16 +1,18 @@
-# What is King Tweaks™?
+# What is King Tweaks Reborn™?
 
-**King Tweaks™** is a tweaker / optimizer magisk module which aim to improve user-experience.
+**King Tweaks Reborn™** is a tweaker / optimizer magisk module which aim to improve user-experience.
 
-It tweaks kernel settings, overall android settings, optimize databases, zipalign apks and much more.
+It tweaks kernel settings, android settings, and much more to bring a less bloated and intrusive user-experience.
 
-# Show us some ❤️
+# Show us some love:
 
 Join our group on [Telegram](https://t.me/kingprojectzdiscussion)
 
 [Download it on pling](https://www.pling.com/p/1433363/)
 
-# Credits
+Read our [Wiki](https://github.com/pedrozzz0/King-Tweaks/wiki) for more info
+
+# Credits:
 
 Thanks to [tytydraco](https://github.com/tytydraco) by his [KTweak](https://github.com/tytydraco/ktweak) project.
 
@@ -32,6 +34,5 @@ Thanks to [darkhz](https://github.com/darkhz)
 
 Thanks to [Kartik Verma](https://github.com/TheHitMan7)
 
-Thanks to [Val Mandares](https://github.com/veez21)
-
-And everyone that supports my projects.
+Thanks to [Val Mandares](https://github.com/veez21) 
+And everyone that support my projects.
