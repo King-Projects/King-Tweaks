@@ -4,7 +4,25 @@
 
 It tweaks kernel settings, android settings, and much more to bring a less bloated and intrusive user-experience.
 
-# Show us some love:
+# FAQ
+
+Q. Is it universal?
+
+A. Yes, it is, and should work on most of the devices / SOCs properly.
+
+Q. Can i see what the module is doing on my device?
+
+A. Yes, you can find the logs that KTSR creates on your internal storage/KTSR folder.
+
+Q. Does it conflict with **NFS Injector or MAGNETAR** like modules / apps?
+
+A. Yes, if you have any modules that touch kernel settings or android settings itself, please remove it to avoid each one overriding itself.
+
+Q. Which magisk version is compatible with the module?
+
+A. You need to have at least **Magisk 20.4 (20400)** version code to be able to install it.
+
+# Show us some love
 
 Join our group on [Telegram](https://t.me/kingprojectzdiscussion)
 
@@ -12,7 +30,7 @@ Join our group on [Telegram](https://t.me/kingprojectzdiscussion)
 
 Read our [Wiki](https://github.com/pedrozzz0/King-Tweaks/wiki) for more info
 
-# Credits:
+# Credits
 
 Thanks to [tytydraco](https://github.com/tytydraco) by his [KTweak](https://github.com/tytydraco/ktweak) project.
 
@@ -35,4 +53,4 @@ Thanks to [darkhz](https://github.com/darkhz)
 Thanks to [Kartik Verma](https://github.com/TheHitMan7)
 
 Thanks to [Val Mandares](https://github.com/veez21) 
-And everyone that support my projects.
+and everyone that support my projects.
