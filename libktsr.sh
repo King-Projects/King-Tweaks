@@ -26,8 +26,17 @@ adj_rel="${BIN_DIR}"
 adj_nm="adjshield"
 adj_cfg="/data/media/0/KTSR/adjshield.conf"
 adj_log="/data/media/0/KTSR/adjshield.log"
+fscc_nm="fscache-ctrl"
+sys_frm="/system/framework"
+sys_lib="/system/lib64"
+vdr_lib="/vendor/lib64"
+dvk="/data/dalvik-cache"
+apx1="/apex/com.android.art/javalib"
+apx2="/apex/com.android.runtime/javalib"
+fscc_file_list=""
 perfmgr="/proc/perfmgr/"
 one_ui=false
+MIUI=false
 samsung=false
 qcom=false
 exynos=false
@@ -37,7 +46,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=0
-lib_ver="1.0.1-h1"
+lib_ver="1.0.2"
 
 # Log in white and continue (unnecessary)
 kmsg() { echo -e "[$(date +%T)]: [*] $@" >>"${KLOG}"; }
@@ -78,7 +87,7 @@ toast_fr_1() { am start -a android.intent.action.MAIN -e toasttext "Profil ${kts
 # write:$1 $2
 write() {
 	# Bail out if file does not exist
-	if [[ ! -f $1 ]]; then
+	if [[ ! -f "$1" ]]; then
 		kmsg2 "$1 doesn't exist, skipping..."
 		return 1
 	fi
@@ -370,7 +379,7 @@ dvc_cdn=$(getprop ro.product.device)
 # Fetch root method
 root=$(su -v)
 
-[[ "$(getprop ro.boot.hardware | grep qcom)" ]] || [[ "$(getprop ro.soc.manufacturer | grep QTI)" ]] || [[ "$(getprop ro.hardware | grep qcom)" ]] || [[ "$(getprop ro.vendor.qti.soc_id)" ]] && qcom=true
+[[ "$(getprop ro.boot.hardware | grep qcom)" ]] || [[ "$(getprop ro.soc.manufacturer | grep QTI)" ]] || [[ "$(getprop ro.soc.manufacturer | grep Qualcomm)" ]] || [[ "$(getprop ro.hardware | grep qcom)" ]] || [[ "$(getprop ro.vendor.qti.soc_id)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Qualcomm)" ]] && qcom=true
 
 # Detect if we're running on a exynos powered device
 [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]] && exynos=true
@@ -544,6 +553,8 @@ cpu_load=$((100 * (cpu_active_cur - cpu_active_prev) / (cpu_total_cur - cpu_tota
 for i in 1 2 3 4 5 6 7; do
 	[[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
 done
+
+[[ "$(getprop ro.miui.ui.version.name)" ]] && MIUI=true
 
 enable_devfreq_boost() {
 	for dir in /sys/class/devfreq/*/; do
@@ -920,6 +931,19 @@ config_cpuset() {
 			;;
 		"trinket")
 			write "${cpuset}camera-daemon/cpus" "0-7"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}foreground/cpus" "0-7" || write "${cpuset}foreground/cpus" "0-5,7"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}background/cpus" "0-5" || write "${cpuset}background/cpus" "4-5"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}system-background/cpus" "0-5" || write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}top-app/cpus" "0-7"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}restricted/cpus" "0-5" || write "${cpuset}restricted/cpus" "2-5"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}game/cpus" "0-7"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}gamelite/cpus" "0-7"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}vr/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msmsteppe")
+			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-5,7"
 			write "${cpuset}background/cpus" "4-5"
 			write "${cpuset}system-background/cpus" "2-5"
@@ -1196,7 +1220,7 @@ io_balanced() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
-		write "${queue}read_ahead_kb" "64"
+		write "${queue}read_ahead_kb" "128"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "1"
 		write "${queue}nr_requests" "128"
@@ -1806,7 +1830,7 @@ gpu_balanced() {
 		write "${gpu}bus_split" "1"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
 		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-		write "${gpu}default_pwrlevel" "$((gpu_min_pl - 1))"
+		write "${gpu}default_pwrlevel" "${gpu_min_pl}"
 		write "${gpu}force_bus_on" "0"
 		write "${gpu}force_clk_on" "0"
 		write "${gpu}force_rail_on" "0"
@@ -2819,7 +2843,6 @@ config_blkio() {
 	# Block tweaks
 	if [[ -d ${blkio} ]]; then
 		write "${blkio}blkio.weight" "1000"
-		write "${blkio}background/blkio.weight" "200"
 		write "${blkio}blkio.group_idle" "2000"
 		write "${blkio}background/blkio.group_idle" "0"
 		kmsg "Tweaked blkio"
@@ -2930,7 +2953,7 @@ sched_latency() {
 	[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 	[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 	write "${kernel}sched_nr_migrate" "4"
-	write "${kernel}sched_schedstats" "0"
+	[[ -e "${kernel}sched_schedstats" ]] && write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
@@ -2979,7 +3002,7 @@ sched_balanced() {
 	[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 	[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 	write "${kernel}sched_nr_migrate" "32"
-	write "${kernel}sched_schedstats" "0"
+	[[ -e "${kernel}sched_schedstats" ]] && write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
@@ -3259,7 +3282,7 @@ ppm_policy_max() {
 cpu_clk_min() {
 	# Set min efficient CPU clock
 	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
-		for i in 576000 614400 633600 652800 748800 768000 787200 806400 825600 864000 902400 998400 1113600; do
+		for i in 748800 768000 787200 806400 825600 852600 864000 902400 940800 998400 1113600; do
 			[[ "$(grep ${i} ${pl}scaling_available_frequencies)" ]] && write ${pl}scaling_min_freq ${i}
 		done
 	done
@@ -3961,8 +3984,9 @@ write_panel() { echo "$1" >>"${bbn_banner}"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential process optimizer 
-Version: 1.2.6-r3
+Version: 1.2.7-r3
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
+FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
 Adjshield config file: ${adj_cfg}"
 }
@@ -3990,7 +4014,7 @@ adjshield_start() {
 	${MODPATH}system/bin/adjshield -o ${adj_log} -c ${adj_cfg} &
 }
 
-adjshield_stop() { killall -9 ${adj_nm} 2>/dev/null; }
+adjshield_stop() { killall ${adj_nm} 2>/dev/null; }
 
 # return:status
 adjshield_status() {
@@ -4148,6 +4172,95 @@ rebuild_process_scan_cache() {
 	ps_ret="$(ps -Ao pid,args)"
 }
 
+# $1:apk_path $return:oat_path
+fscc_path_apk_to_oat() {
+	# OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
+	echo "${1%/*}/oat"
+}
+
+# $1:file/dir
+fscc_list_append() {
+	fscc_file_list="${fscc_file_list} $1"
+}
+
+# $1:file/dir
+fscc_add_obj() {
+	# whether file or dir exists
+	[[ -e "$1" ]] && fscc_list_append "$1"
+}
+
+# $1:package_name
+fscc_add_apk() {
+	# pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
+	[[ "$1" != "" ]] && fscc_add_obj "$(pm path "$1" | head -n 1 | cut -d: -f2)"
+}
+
+# $1:package_name
+fscc_add_dex() {
+	[[ "$1" != "" ]] \
+		&& {
+			# pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
+			package_apk_path="$(pm path "$1" | head -n 1 | cut -d: -f2)"
+			# user app: OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
+			fscc_add_obj "${package_apk_path%/*}/oat"
+
+			# remove apk name suffix
+			apk_nm="${package_apk_path%/*}"
+			# remove path prefix
+			apk_nm="${apk_nm##*/}"
+			# system app: get dex & vdex
+			# /data/dalvik-cache/arm64/system@product@priv-app@OPSystemUI@OPSystemUI.apk@classes.dex
+		}
+	for dex in $(find ${dvk} | grep "@$apk_name@"); do
+		fscc_add_obj ${dex}
+	done
+}
+
+fscc_add_app_home() {
+	# well, not working on Android 7.1
+	intent_act="android.intent.action.MAIN"
+	intent_cat="android.intent.category.HOME"
+	# "  packageName=com.microsoft.launcher"
+	pkg_nm="$(pm resolve-activity -a "${intent_act}" -c "${intent_cat}" | grep packageName | head -n 1 | cut -d= -f2)"
+	# /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.dex 16M/31M  53.2%
+	# /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.vdex 120K/120K  100%
+	# /system/priv-app/OPLauncher2/OPLauncher2.apk 14M/30M  46.1%
+	fscc_add_apk ${pkg_nm}
+	fscc_add_dex ${pkg_nm}
+}
+
+fscc_add_app_ime() {
+	# "      packageName=com.baidu.input_yijia"
+	pkg_nm="$(ime list | grep packageName | head -n 1 | cut -d= -f2)"
+	# /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.dex 5M/17M  33.1%
+	# /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.vdex 2M/7M  28.1%
+	# /system/app/baidushurufa/baidushurufa.apk 1M/28M  5.71%
+	# pin apk file in memory is not valuable
+	fscc_add_dex ${pkg_nm}
+}
+
+# $1:package_name
+fscc_add_apex_lib() {
+	fscc_add_obj "$(find /apex -name "$1" | head -n 1)"
+}
+
+# after appending fscc_file_list
+fscc_start() {
+	# multiple parameters, cannot be warped by ""
+	${MODPATH}system/bin/${fscc_nm} -fdlb0 ${fscc_file_list}
+}
+
+fscc_stop() {
+	killall ${fscc_nm} 2>/dev/null
+}
+
+# return:status
+fscc_status() {
+	# get the correct value after waiting for fscc loading files
+	sleep 2
+	[[ "$(ps -A | grep "${fscc_nm}")" != "" ]] && echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache." || echo "Not running."
+}
+
 cgroup_bbn_opt() {
 	# Reduce perf cluster wakeup
 	# Daemons
@@ -4192,6 +4305,11 @@ cgroup_bbn_opt() {
 	# usap nicing isn't necessary as it is already set by default
 	unpin_proc "zygote|usap"
 	change_task_nice "zygote" "-20"
+	change_task_nice "binder" "-20"
+	[[ ${soc} == "lahaina" ]] || [[ ${soc} == "kona" ]] || [[ ${soc} == "msmnile" ]] && change_task_affinity "\.miui\.home" "0f" || {
+		change_task_affinity "\.miui\.home" "ff"
+		change_task_high_prio "miui.home"
+	}
 }
 
 clear_logs() {
@@ -4394,7 +4512,7 @@ gaming() {
 	cmd power set-adaptive-power-saver-enabled false 2>/dev/null
 	cmd power set-fixed-performance-mode-enabled true 2>/dev/null
 	cmd thermalservice override-status 0 2>/dev/null
-	cmd notification set_dnd on
+	cmd notification set_dnd priority 2>/dev/null
 
 	kmsg "Gaming profile applied. Enjoy!"
 	kmsg3 ""

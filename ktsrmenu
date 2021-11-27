@@ -73,6 +73,11 @@ esac
 [[ "$(settings get global low_power)" == "1" ]] && low_power_mode="Enabled" || low_power_mode="Disabled"
 [[ "$(cmd netpolicy get restrict-background | awk '{print $4}')" == "enabled" ]] && data_saver="Enabled" || data_saver="Disabled"
 [[ "$(settings get secure location_providers_allowed)" == "" ]] && loc_mode_pwr_saving="Enabled" || loc_mode_pwr_saving="Disabled"
+
+# Fetch the device SDK
+sdk=$(getprop ro.build.version.sdk)
+[[ ${sdk} == "" ]] && sdk=$(getprop ro.vendor.build.version.sdk)
+[[ ${sdk} == "" ]] && sdk=$(getprop ro.vndk.version)
 menu() {
 	clear
 	echo ""
@@ -80,7 +85,7 @@ menu() {
 	echo "${Y}* KTSR CLI *${N}"
 	echo "${Y}************${N}"
 	echo ""
-	echo "${G}Ver: 1.6.0.1-beta-r9${N}"
+	echo "${G}Ver: 1.6.1.0-beta-r10${N}"
 	echo ""
 	echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 	echo ""
@@ -165,6 +170,12 @@ menu() {
 	echo ""
 	echo "[28] Access our Wiki"
 	echo ""
+	[[ ${sdk} -ge "31" ]] && {
+		echo "[29] Apply downscale on a app"
+		echo ""
+		echo "[30] Reset downscale from a app"
+		echo ""
+	}
 	echo "${R}[0] Exit${N}"
 	echo ""
 	echo -n "${Y}[*] Select the desired option:${N} "
@@ -177,7 +188,6 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"2")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "2" 2>/dev/null
@@ -185,14 +195,12 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"3")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "3" 2>/dev/null
 			echo "${G}Done!${N}"
 			menu
 			;;
-
 		"4")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "4" 2>/dev/null
@@ -200,7 +208,6 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"5")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "5" 2>/dev/null
@@ -208,7 +215,6 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"6")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "6" 2>/dev/null
@@ -216,14 +222,12 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"7")
 			echo "${B}Optimizing packages...${N}"
 			cmd package bg-dexopt-job
 			sleep 5
 			menu
 			;;
-
 		"8")
 			settings put global low_power 1 2>/dev/null
 			settings put global low_power_sticky 1 2>/dev/null
@@ -235,7 +239,6 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"9")
 			settings put global low_power 0 2>/dev/null
 			settings reset global low_power 2>/dev/null
@@ -253,21 +256,18 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"10")
 			cmd netpolicy set restrict-background true 2>/dev/null
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
 			;;
-
 		"11")
 			cmd netpolicy set restrict-background false 2>/dev/null
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
 			;;
-
 		"12")
 			echo "${B}Applying settings...${N}"
 			settings put secure location_mode "0" 2>/dev/null
@@ -276,14 +276,12 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"13")
 			settings put global assisted_gps_enabled "1" 2>/dev/null
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
 			;;
-
 		"14")
 			echo "${B}Cleaning debug logs and system trash...${N}"
 			cleantrash 2>/dev/null
@@ -291,26 +289,22 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"15")
 			am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
 			menu
 			;;
-
 		"16")
 			[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "50" >"/sys/module/mdss_mdp/parameters/custom_hz" || echo "Y" >"/sys/module/mdss_mdp/parameters/custom_hz"
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
 			;;
-
 		"17")
 			[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "55" >"/sys/module/mdss_mdp/parameters/custom_hz"
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
 			;;
-
 		"18")
 			[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -o -e '[0-9\.]+' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "60" >"/sys/module/mdss_mdp/parameters/custom_hz" || echo "N" >"/sys/module/mdss_mdp/parameters/custom_hz"
 			settings put system min_refresh_rate 60 2>/dev/null
@@ -321,7 +315,6 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"19")
 			settings put system min_refresh_rate 90 2>/dev/null
 			settings put system peak_refresh_rate 90 2>/dev/null
@@ -331,7 +324,6 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"20")
 			settings put system min_refresh_rate 120 2>/dev/null
 			settings put system peak_refresh_rate 120 2>/dev/null
@@ -341,7 +333,6 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"21")
 			settings reset system min_refresh_rate >/dev/null 2>&1
 			settings reset system peak_refresh_rate >/dev/null 2>&1
@@ -351,7 +342,6 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"22")
 			sync
 			echo "3" >"/proc/sys/vm/drop_caches"
@@ -359,7 +349,6 @@ menu() {
 			sleep 3
 			menu
 			;;
-
 		"23")
 			sync
 			echo "3" >"/proc/sys/vm/drop_caches"
@@ -368,34 +357,30 @@ menu() {
 			sleep 3
 			menu
 			;;
-
 		"24")
 			sync
 			echo "3" >"/proc/sys/vm/drop_caches"
 			am kill-all
 			sleep 3
 			while IFS= read -r pkg_nm; do
-				[[ ${pkg_nm} != "com.termux" ]] && [[ ${pkg_nm} != "jackpal.androidterm" ]] && [[ ${pkg_nm} != "yarolegovich.materialterminal" ]] && [[ ${pkg_nm} != "com.google.android.inputmethod.latin" ]] && [[ ${pkg_nm} != "com.termoneplus" ]] && am force-stop "${pkg_nm}"
+				[[ ${pkg_nm} != "com.termux" ]] && [[ ${pkg_nm} != "jackpal.androidterm" ]] && [[ ${pkg_nm} != "yarolegovich.materialterminal" ]] && [[ ${pkg_nm} != "com.google.android.inputmethod.latin" ]] && [[ ${pkg_nm} != "com.termoneplus" ]] && [[ ${pkg_nm} != "com.pittvandewitt.viperfx" ]] && [[ ${pkg_nm} != "com.topjohnwu.magisk" ]] && [[ ${pkg_nm} != "ridmik.keyboard" ]] && [[ ${pkg_nm} != "com.maxmpz.equalizer" ]] && [[ ${pkg_nm} != "com.miui.screenrecorder" ]] && am force-stop ${pkg_nm}
 			done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
 			;;
-
 		"25")
 			echo "2" >"/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
 			;;
-
 		"26")
 			echo "0" >"/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
 			;;
-
 		"27")
 			rm -rf /data/system/batterystats* 2>/dev/null
 			dumpsys batterystats --reset >/dev/null 2>&1
@@ -403,15 +388,34 @@ menu() {
 			sleep 2
 			menu
 			;;
-
 		"28")
 			am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
 			;;
-
+		"29")
+			echo "Values supported: [0.5-0.9]"
+			echo "Higher means more downscaled / lower resolution"
+			echo "Enter a value from the supported range: "
+			read -r lvl
+			echo "E.G: [com.android.camera]"
+			echo "Enter a package name:"
+			read -r pkg
+			cmd game downscale ${lvl} ${pkg} 2>/dev/null
+			echo "${G}Done!${N}"
+			sleep 2
+			menu
+			;;
+		"30")
+			echo "E.G: [com.android.camera]"
+			echo "Enter a package name:"
+			read -r pkg
+			cmd game downscale disable ${pkg} 2>/dev/null
+			echo "${G}Done!${N}"
+			sleep 2
+			menu
+			;;
 		"0")
 			echo "${G}Hope that see ya soon! ;)${N}"
 			;;
-
 		*)
 			abort "${R}[!] Unexpected response, aborting...${N}"
 			;;
@@ -440,7 +444,6 @@ while getopts ":p:f:th:" opt; do
 			setprop persist.king.tweaks.prof "$2" 2>/dev/null
 			echo "${G}Done!${N}"
 			;;
-
 		f)
 			if [[ $2 == "1" ]]; then
 				sync
@@ -461,7 +464,7 @@ while getopts ":p:f:th:" opt; do
 				am kill-all
 				sleep 3
 				while IFS= read -r pkg_nm; do
-					[[ ${pkg_nm} != "com.termux" ]] && [[ ${pkg_nm} != "jackpal.androidterm" ]] && [[ ${pkg_nm} != "yarolegovich.materialterminal" ]] && [[ ${pkg_nm} != "com.google.android.inputmethod.latin" ]] && [[ ${pkg_nm} != "com.termoneplus" ]] && am force-stop "${pkg_nm}"
+					[[ ${pkg_nm} != "com.termux" ]] && [[ ${pkg_nm} != "jackpal.androidterm" ]] && [[ ${pkg_nm} != "yarolegovich.materialterminal" ]] && [[ ${pkg_nm} != "com.google.android.inputmethod.latin" ]] && [[ ${pkg_nm} != "com.termoneplus" ]] && [[ ${pkg_nm} != "com.pittvandewitt.viperfx" ]] && [[ ${pkg_nm} != "com.topjohnwu.magisk" ]] && [[ ${pkg_nm} != "ridmik.keyboard" ]] && [[ ${pkg_nm} != "com.maxmpz.equalizer" ]] && [[ ${pkg_nm} != "com.miui.screenrecorder" ]] && am force-stop ${pkg_nm}
 				done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
 				echo "${G}Done!${N}"
 				sleep 2
@@ -469,7 +472,6 @@ while getopts ":p:f:th:" opt; do
 				help_me
 			fi
 			;;
-
 		h | *)
 			help_me
 			;;

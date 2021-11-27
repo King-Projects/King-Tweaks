@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # KTSR™ by pedro (pedrozzz0 @ GitHub)
-# Credits: Uperf, by Matt Yang.
+# Credits: Uperf & QTI-mem-opt by Matt Yang.
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 MODPATH="/data/adb/modules/KTSR"
@@ -14,12 +14,43 @@ source "${MODPATH}/libs/libktsr.sh"
 	exit 1
 }
 
+# Clear logs & create dir first
 [[ -e ${KLOG} ]] && rm -rf "${KLOG}"
 [[ ! -d "/data/media/0/KTSR" ]] && mkdir -p "/data/media/0/KTSR"
 [[ -d "/data/media/0/KTSR" ]] && touch "${KLOG}"
 [[ -e ${KDBG} ]] && rm -rf "${KDBG}"
-
 clear_logs
+
+# Run FSCC (similiar to PinnerService, Mlock(Unevictable) 200~350MB)
+fscc_add_obj "${sys_frm}/telephony-common.jar"
+fscc_add_obj "${sys_frm}/qcnvitems.jar"
+fscc_add_obj "${sys_frm}/oat"
+fscc_add_obj "${sys_frm}/arm64"
+fscc_add_obj "/system/bin/surfaceflinger"
+fscc_add_obj "${sys_lib}/libandroid_servers.so"
+fscc_add_obj "${sys_lib}/libandroid_runtime.so"
+fscc_add_obj "${sys_lib}/libandroidfw.so"
+fscc_add_obj "${sys_lib}/libandroid.so"
+fscc_add_obj "${sys_lib}/libhwui.so"
+fscc_add_obj "${sys_lib}/libjpeg.so"
+fscc_add_obj "${vdr_lib}/libssc.so"
+fscc_add_obj "${vdr_lib}/libgsl.so"
+fscc_add_obj "${vdr_lib}/sensors.ssc.so"
+fscc_add_obj "${vdr_lib}/libCB.so"
+fscc_add_apex_lib "okhttp.jar"
+fscc_add_apex_lib "bouncycastle.jar"
+
+# Do not pin too many files on low memory devices
+[[ ${total_ram} -ge "2048" ]] && {
+	fscc_add_apk "com.android.systemui"
+	fscc_add_dex "com.android.systemui"
+}
+[[ ${total_ram} -ge "4096" ]] && {
+	fscc_add_app_home "com.android.systemui"
+	fscc_add_app_ime "com.android.systemui"
+}
+fscc_stop
+fscc_start
 
 # Run adjshield
 [[ ! -f ${adj_cfg} ]] && adjshield_create_default_cfg
@@ -33,9 +64,9 @@ save_panel
 
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 while true; do
-	sleep 0.8
-	if "${boot_run_once}"; then
-		[[ "$(getprop persist.king.tweaks.prof)" == "${ktsr_prof}" ]] && continue
+	sleep 3
+	if $boot_run_once; then
+		[[ "$(getprop persist.king.tweaks.prof)" == ${ktsr_prof} ]] && continue
 	else
 		boot_run_once=true
 	fi
