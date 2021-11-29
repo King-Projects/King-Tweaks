@@ -65,7 +65,7 @@ save_panel
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 while true; do
 	sleep 3
-	if $boot_run_once; then
+	if "${boot_run_once}"; then
 		[[ "$(getprop persist.king.tweaks.prof)" == "${ktsr_prof}" ]] && continue
 	else
 		boot_run_once=true
