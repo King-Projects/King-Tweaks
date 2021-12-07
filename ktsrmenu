@@ -85,7 +85,7 @@ menu() {
 	echo "${Y}* KTSR CLI *${N}"
 	echo "${Y}************${N}"
 	echo ""
-	echo "${G}Ver: 1.6.1.0-beta-r10${N}"
+	echo "${G}Ver: 1.6.2.0-beta-r10${N}"
 	echo ""
 	echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 	echo ""
@@ -174,6 +174,12 @@ menu() {
 		echo "[29] Apply downscale on a app"
 		echo ""
 		echo "[30] Reset downscale from a app"
+		echo ""
+	}
+	[[ "$(pm list package com.google.android.gms)" ]] && {
+		echo "[31] Enable Gapps"
+		echo ""
+		echo "[32] Disable Gapps"
 		echo ""
 	}
 	echo "${R}[0] Exit${N}"
@@ -392,8 +398,8 @@ menu() {
 			am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
 			;;
 		"29")
-			echo "Values supported: [0.5-0.9]"
-			echo "Higher means more downscaled / lower resolution"
+			echo "Values supported: [0.3-0.9]"
+			echo "Lower means more downscaled / lower resolution"
 			echo "Enter a value from the supported range: "
 			read -r lvl
 			echo "E.G: [com.android.camera]"
@@ -409,6 +415,34 @@ menu() {
 			echo "Enter a package name:"
 			read -r pkg
 			cmd game downscale disable ${pkg} 2>/dev/null
+			echo "${G}Done!${N}"
+			sleep 2
+			menu
+			;;
+		"31")
+			echo "Enabling Gapps..."
+			pm enable com.google.android.gsf 2>/dev/null
+			pm enable com.google.android.gsf.login 2>/dev/null
+			pm enable com.google.android.gms 2>/dev/null
+			pm enable com.google.android.ims 2>/dev/null
+			pm enable com.google.android.apps.carrier.log 2>/dev/null
+			pm enable com.android.vending 2>/dev/null
+			pm enable com.google.android.play.games 2>/dev/null
+			pm enable com.google.android.syncadapters.contacts 2>/dev/null
+			echo "${G}Done!${N}"
+			sleep 2
+			menu
+			;;
+		"32")
+			echo "Killing Gapps..."
+			pm disable com.google.android.gsf 2>/dev/null
+			pm disable com.google.android.gsf.login 2>/dev/null
+			pm disable com.google.android.gms 2>/dev/null
+			pm disable com.google.android.ims 2>/dev/null
+			pm disable com.google.android.apps.carrier.log 2>/dev/null
+			pm disable com.android.vending 2>/dev/null
+			pm disable com.google.android.play.games 2>/dev/null
+			pm disable com.google.android.syncadapters.contacts 2>/dev/null
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
@@ -445,20 +479,20 @@ while getopts ":p:f:th:" opt; do
 			echo "${G}Done!${N}"
 			;;
 		f)
-			if [[ $2 == "1" ]]; then
+			if [[ "$2" == "1" ]]; then
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
 				echo "${G}Done!${N}"
 				sleep 2
 
-			elif [[ $2 == "2" ]]; then
+			elif [[ "$2" == "2" ]]; then
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
 				am kill-all
 				echo "${G}Done!${N}"
 				sleep 3
 
-			elif [[ $2 == "3" ]]; then
+			elif [[ "$2" == "3" ]]; then
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
 				am kill-all

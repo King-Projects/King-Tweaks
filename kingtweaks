@@ -27,6 +27,7 @@ fscc_add_obj "${sys_frm}/qcnvitems.jar"
 fscc_add_obj "${sys_frm}/oat"
 fscc_add_obj "${sys_frm}/arm64"
 fscc_add_obj "/system/bin/surfaceflinger"
+fscc_add_obj "${sys_lib}/libsurfaceflinger.so"
 fscc_add_obj "${sys_lib}/libandroid_servers.so"
 fscc_add_obj "${sys_lib}/libandroid_runtime.so"
 fscc_add_obj "${sys_lib}/libandroidfw.so"
@@ -62,9 +63,19 @@ cgroup_bbn_opt
 # Save mode to be applied automatically after reboot
 save_panel
 
+[[ ! -f ${ktsr_cfg} ]] && ktsr_create_default_cfg
+
+#is_pkg_on_ta() {
+#while IFS= read -r pkg_nm; do
+#if [[ "$(cat /proc/$(pgrep -f "${pkg_nm}")/oom_score_adj)" == "0" ]]; then
+#pkg_on_ta=true
+#fi
+#done <<<"$(cat "${ktsr_cfg}" | awk '{print $1}' | sed -e '1,3d')"
+#}
+
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 while true; do
-	sleep 3
+	sleep 0.9
 	if "${boot_run_once}"; then
 		[[ "$(getprop persist.king.tweaks.prof)" == "${ktsr_prof}" ]] && continue
 	else
@@ -176,6 +187,8 @@ while true; do
 			ktsr_prof_fr=latence
 			;;
 	esac
+
+	is_pkg_on_ta
 
 	case "${ktsr_prof_en}" in
 		"automatic")
@@ -424,6 +437,31 @@ while true; do
 					toast_fr_1
 					;;
 			esac
+			#case "${pkg_on_ta}" in
+			#true)
+			#while IFS= read -r pkg_nm; do
+			#pkg_nm2="$(cat /proc/$(pgrep -f "${pkg_nm}")/status | awk -F ':' '{print $2}')"
+			#prof_nm="$(grep "${pkg_nm2}" "${ktsr_cfg}" | awk '{print $2}')"
+			#done <<<"$(cat "${ktsr_cfg}" | awk '{print $1}' | sed -e '1,3d')"
+			#case "${prof_nm}" in
+			#latency)
+			#latency
+			#;;
+			#gaming)
+			#gaming
+			#;;
+			#extreme)
+			#extreme
+			#;;
+			#balanced)
+			#balanced
+			#;;
+			#battery)
+			#battery
+			#;;
+			#esac
+			#;;
+			#esac
 			;;
 	esac
 done

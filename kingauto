@@ -13,28 +13,30 @@ full_ram=$((total_ram * 20 / 100))
 	while true; do
 		# This script basically check if packages PIDs is found on stune / cpuset top-app tasks
 		for gpid in $(pgrep -f com.pubg) $(pgrep -f com.tgc.sky.android) $(pgrep -f jp.garud.ssimulator) $(pgrep -f com.hypergryph.anknights) $(pgrep -f com.denachina.g13002012) $(pgrep -f com.bilibili.fatego) $(pgrep -f com.bilibili.azurlane) $(pgrep -f com.bilibili.priconne) $(pgrep -f com.aligames.kuang.kybc) $(pgrep -f com.hanjiasongshu.jianghu) $(pgrep -f com.sofunny.Sausage) $(pgrep -f com.kurogame.haru) $(pgrep -f com.digitalsky.girlsfrontline) $(pgrep -f com.superevilmegacorp.game) $(pgrep -f com.yingxiong.dfzj) $(pgrep -f com.netease) $(pgrep -f com.tipsworks) $(pgrep -f com.studiowildcard) $(pgrep -f com.wardrumstudios) $(pgrep -f com.ExiliumGames) $(pgrep -f com.com2us) $(pgrep -f com.zuuks) $(pgrep -f com.junegaming) $(pgrep -f com.pixelbite) $(pgrep -f com.junesoftware) $(pgrep -f com.sozap) $(pgrep -f com.dotemu) $(pgrep -f net.playables) $(pgrep -f com.playrisedigital) $(pgrep -f com.rockstargames) $(pgrep -f com.blackpanther) $(pgrep -f com.noodlecake) $(pgrep -f com.linegames) $(pgrep -f com.kleientertainment) $(pgrep -f com.agaming) $(pgrep -f com.generagames) $(pgrep -f com.astragon) $(pgrep -f com.chucklefish) $(pgrep -f com.t2kgames) $(pgrep -f com.t2ksports) $(pgrep -f com.tt2ksports) $(pgrep -f com.uplayonline) $(pgrep -f com.dreamotion) $(pgrep -f com.snailgameusa) $(pgrep -f com.duniagames) $(pgrep -f com.haegin) $(pgrep -f com.panzerdog) $(pgrep -f com.igg) $(pgrep -f com.gtarcade) $(pgrep -f com.gta) $(pgrep -f com.seleuco) $(pgrep -f com.kakaogames) $(pgrep -f com.telltalegames) $(pgrep -f com.innersloth) $(pgrep -f com.kiloo) $(pgrep -f com.imaginalis) $(pgrep -f com.refuelgames) $(pgrep -f com.scottgames) $(pgrep -f com.illumix) $(pgrep -f com.clickteam) $(pgrep -f com.sandboxol) $(pgrep -f com.headupgames) $(pgrep -f net.mobigame) $(pgrep -f com.masomo) $(pgrep -f com.generamobile) $(pgrep -f com.wb) $(pgrep -f com.ubisoft) $(pgrep -f org.ppsspp) $(pgrep -f com.feralinteractive) $(pgrep -f com.riotgames) $(pgrep -f com.playgendary) $(pgrep -f com.badflyinteractive) $(pgrep -f com.pearlabyss) $(pgrep -f com.firsttouchgames) $(pgrep -f com.axlebolt) $(pgrep -f com.criticalforceentertainment) $(pgrep -f com.wolvesinteractive) $(pgrep -f com.gamedevltd) $(pgrep -f com.mojang) $(pgrep -f com.miHoYo) $(pgrep -f com.miniclip) $(pgrep -f com.moonton) $(pgrep -f com.gameloft.android) $(pgrep -f com.netmarble) $(pgrep -f com.yoozoogames) $(pgrep -f com.eyougame) $(pgrep -f com.garena) $(pgrep -f dts.freefireth) $(pgrep -f com.activision) $(pgrep -f jp.konami) $(pgrep -f com.gamevil) $(pgrep -f com.pixonic) $(pgrep -f com.gameparadiso) $(pgrep -f net.wargaming) $(pgrep -f com.madfingergames) $(pgrep -f com.supercell) $(pgrep -f com.garena) $(pgrep -f com.ea.gp) $(pgrep -f com.ea.game) $(pgrep -f com.ea.games) $(pgrep -f com.pixel.gun3d) $(pgrep -f com.titan.cd) $(pgrep -f pvp.survival.rpg) $(pgrep -f com.edkongames) $(pgrep -f com.ohbibi) $(pgrep -f net.apex_designs) $(pgrep -f com.roblox) $(pgrep -f com.halfbrick) $(pgrep -f com.maxgames) $(pgrep -f com.wildlife.games) $(pgrep -f com.blizzard) $(pgrep -f com.doubleaxion) $(pgrep -f com.blayzegames) $(pgrep -f com.bhvr) $(pgrep -f com.lnrgame) $(pgrep -f com.pandagames); do
-			if [[ "$(grep -Eo "${gpid}" "${toptsdir}")" ]] || [[ "$(grep -Eo "${gpid}" "${toptcdir}")" ]]; then
+			if [[ "$(grep -Eo "${gpid}" "${toptsdir}")" ]] || [[ "$(grep -Eo "${gpid}" "${toptcdir}")" ]] && [[ "$(cat /proc/${gpid}/oom_score_adj)" == "0" ]]; then
 				kmsg "User is playing, applied gaming profile"
 				sync
 				setprop kingauto.prof "gaming"
 				pin_proc_on_perf "${gpid}"
 				change_task_nice "${gpid}" "-18"
+				write "/proc/${gpid}/sched_boost" "1"
 				apply_all_auto
 				sleep 45
 				for spid in $(pgrep -f com.whatsapp) $(pgrep -f com.zhiliaoapp) $(pgrep -f com.adobe) $(pgrep -f org.telegram) $(pgrep -f com.netflix) $(pgrep -f com.wemesh) $(pgrep -f com.discord) $(pgrep -f com.google.android.youtube) $(pgrep -f com.facebook) $(pgrep -f com.android.chrome) $(pgrep -f com.brave) $(pgrep -f com.UCMobile) $(pgrep -f org.mozilla) $(pgrep -f com.duckduckgo) $(pgrep -f com.opera) $(pgrep -f com.microsoft) $(pgrep -f org.torproject) $(pgrep -f com.instagram) $(pgrep -f com.twitch); do
-					if [[ "$(grep -Eo "${spid}" "${toptsdir}")" ]] || [[ "$(grep -Eo "${spid}" "${toptcdir}")" ]]; then
+					if [[ "$(grep -Eo "${spid}" "${toptsdir}")" ]] || [[ "$(grep -Eo "${spid}" "${toptcdir}")" ]] && [[ "$(cat /proc/${spid}/oom_score_adj)" == "0" ]]; then
 						kmsg "User is using social media, and etc apps. Applied balanced profile"
 						sync
 						setprop kingauto.prof "balanced"
 						apply_all_auto
 						sleep 45
 						for bpid in $(pgrep -f com.primatelabs) $(pgrep -f com.ludashi.benchmark) $(pgrep -f com.nexstreaming) $(pgrep -f com.andromeda) $(pgrep -f com.kinemaster) $(pgrep -f com.futuremark) $(pgrep -f skynet.cputhrottlingtest) $(pgrep -f com.android.camera) $(pgrep -f com.google.android.GoogleCamera) $(pgrep -f org.codeaurora.snapcam); do
-							if [[ "$(grep -Eo "${bpid}" "${toptsdir}")" ]] || [[ "$(grep -Eo "${bpid}" "${toptcdir}")" ]]; then
+							if [[ "$(grep -Eo "${bpid}" "${toptsdir}")" ]] || [[ "$(grep -Eo "${bpid}" "${toptcdir}")" ]] && [[ "$(cat /proc/${bpid}/oom_score_adj)" == "0" ]]; then
 								kmsg "User is running benchmark / heavy apps. Applied extreme profile"
 								sync
 								setprop kingauto.prof "extreme"
 								pin_proc_on_perf "${bpid}"
 								change_task_nice "${bpid}" "-18"
+								write "/proc/${bpid}/sched_boost" "1"
 								apply_all_auto
 								sleep 45
 							fi

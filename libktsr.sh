@@ -47,6 +47,10 @@ toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=0
 lib_ver="1.0.2"
+#ktsr_cfg="/data/media/0/KTSR/KTSR.conf"
+#pkg_on_ta=false
+migt="/sys/module/migt/parameters"
+board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 
 # Log in white and continue (unnecessary)
 kmsg() { echo -e "[$(date +%T)]: [*] $@" >>"${KLOG}"; }
@@ -117,7 +121,7 @@ write() {
 # Duration in nanoseconds of one scheduling period
 sched_period_latency="$((1 * 1000 * 1000))"
 sched_period_balance="$((4 * 1000 * 1000))"
-sched_period_battery="$((5 * 1000 * 1000))"
+sched_period_battery="$((6 * 1000 * 1000))"
 sched_period_throughput="$((10 * 1000 * 1000))"
 
 # How many tasks should we have at a maximum in one scheduling period
@@ -549,7 +553,7 @@ cpu_load=$((100 * (cpu_active_cur - cpu_active_prev) / (cpu_total_cur - cpu_tota
 
 [[ -d "/proc/ppm/" ]] && [[ ${mtk} == "true" ]] && ppm=true
 
-# Check if CPUs uses BIG.little arch
+# Check if CPU uses BIG.little technology
 for i in 1 2 3 4 5 6 7; do
 	[[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
 done
@@ -634,13 +638,19 @@ print_info() {
 }
 
 stop_services() {
-	# Enable / disable mpdecision, and disable few debug services
+	# Enable / disable mpdecision according to the actual profile, and disable few debug services
 	#for v in 0 1 2 3 4; do
 	#stop vendor.qti.hardware.perf@${v}.${v}-service 2>/dev/null
 	#stop perf-hal-${v}-${v} 2>/dev/null
 	#done
 	#stop perfd 2>/dev/null
-	[[ ${ktsr_prof_en} == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && start mpdecision 2>/dev/null || stop mpdecision 2>/dev/null
+	[[ ${ktsr_prof_en} == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && {
+		start mpdecision 2>/dev/null
+		stop miuibooster 2>/dev/null
+	} || {
+		stop mpdecision 2>/dev/null
+		start miuibooster 2>/dev/null
+	}
 	# stop vendor.perfservice 2>/dev/null
 	stop vendor.cnss_diag 2>/dev/null
 	stop vendor.tcpdump 2>/dev/null
@@ -714,7 +724,7 @@ enable_core_ctl() {
 
 # Some of these are based from @helloklf (GitHub) vtools, credits to him.
 config_cpuset() {
-	case ${soc} in
+	case "${soc}" in
 		"msm8937")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,6-7"
@@ -757,8 +767,8 @@ config_cpuset() {
 			;;
 		"msm8998")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,6-7"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -768,48 +778,48 @@ config_cpuset() {
 		"msmnile")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SM8150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SM7150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SDM670")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"mt6768")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "0-1"
-			write "${cpuset}system-background/cpus" "0-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
@@ -818,8 +828,8 @@ config_cpuset() {
 		"mt6785")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "0-1"
-			write "${cpuset}system-background/cpus" "0-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
@@ -828,7 +838,7 @@ config_cpuset() {
 		"mt6873")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -838,7 +848,7 @@ config_cpuset() {
 		"mt6885")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -848,17 +858,17 @@ config_cpuset() {
 		"sdm710")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"sdm845")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,6-7"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -868,40 +878,40 @@ config_cpuset() {
 		"lito")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SM7250")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SM6350")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"lahaina")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -910,8 +920,8 @@ config_cpuset() {
 			;;
 		"SM8350")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -920,22 +930,22 @@ config_cpuset() {
 			;;
 		"exynos5")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "0-1"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}dex2oat/cpus" "0-6"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"trinket")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}foreground/cpus" "0-7" || write "${cpuset}foreground/cpus" "0-5,7"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}background/cpus" "0-5" || write "${cpuset}background/cpus" "4-5"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}system-background/cpus" "0-5" || write "${cpuset}system-background/cpus" "2-5"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}foreground/cpus" "0-3,4-5" || write "${cpuset}foreground/cpus" "0-3,4-5"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}background/cpus" "0-3" || write "${cpuset}background/cpus" "4-5"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}system-background/cpus" "0-5" || write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}restricted/cpus" "0-5" || write "${cpuset}restricted/cpus" "2-5"
+			[[ ${MIUI} == "true" ]] && write "${cpuset}restricted/cpus" "0-3" || write "${cpuset}restricted/cpus" "0-3"
 			[[ ${MIUI} == "true" ]] && write "${cpuset}game/cpus" "0-7"
 			[[ ${MIUI} == "true" ]] && write "${cpuset}gamelite/cpus" "0-7"
 			[[ ${MIUI} == "true" ]] && write "${cpuset}vr/cpus" "0-7"
@@ -944,123 +954,123 @@ config_cpuset() {
 			;;
 		"msmsteppe")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SM6125")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SM6150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SM6250")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"bengal")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SM6115")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"kona")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SM8250")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"universal9811")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}dexopt/cpus" "0-6"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"universal9820")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}dexopt/cpus" "0-6"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"atoll")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"SM7125")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "4-5"
-			write "${cpuset}system-background/cpus" "2-5"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-4"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "2-5"
+			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
@@ -1201,7 +1211,7 @@ io_latency() {
 		write "${queue}read_ahead_kb" "32"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "2"
-		write "${queue}nr_requests" "32"
+		write "${queue}nr_requests" "16"
 	done
 
 	kmsg "Tweaked I/O scheduler"
@@ -1223,7 +1233,7 @@ io_balanced() {
 		write "${queue}read_ahead_kb" "128"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "1"
-		write "${queue}nr_requests" "128"
+		write "${queue}nr_requests" "64"
 	done
 
 	kmsg "Tweaked I/O scheduler"
@@ -1317,7 +1327,7 @@ cpu_latency() {
 		write "${governor}/up_rate_limit_us" "0"
 		write "${governor}/down_rate_limit_us" "0"
 		write "${governor}/pl" "1"
-		write "${governor}/iowait_boost_enable" "1"
+		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "0"
 		write "${governor}/hispeed_load" "85"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1327,7 +1337,7 @@ cpu_latency() {
 		write "${governor}/up_rate_limit_us" "0"
 		write "${governor}/down_rate_limit_us" "0"
 		write "${governor}/pl" "1"
-		write "${governor}/iowait_boost_enable" "1"
+		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "0"
 		write "${governor}/hispeed_load" "85"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1337,7 +1347,7 @@ cpu_latency() {
 	for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d); do
 		write "${governor}/timer_rate" "0"
 		write "${governor}/boost" "0"
-		write "${governor}/io_is_busy" "1"
+		write "${governor}/io_is_busy" "0"
 		write "${governor}/timer_slack" "0"
 		write "${governor}/input_boost" "0"
 		write "${governor}/use_migration_notif" "0"
@@ -1347,6 +1357,7 @@ cpu_latency() {
 		write "${governor}/fast_ramp_down" "0"
 		write "${governor}/sampling_rate" "0"
 		write "${governor}/sampling_rate_min" "0"
+		write "${governor}/max_freq_hysteresis" "0"
 		write "${governor}/min_sample_time" "0"
 		write "${governor}/go_hispeed_load" "85"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1388,7 +1399,7 @@ cpu_balanced() {
 	for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d); do
 		write "${governor}/timer_rate" "20000"
 		write "${governor}/boost" "0"
-		write "${governor}/io_is_busy" "1"
+		write "${governor}/io_is_busy" "0"
 		write "${governor}/timer_slack" "2000"
 		write "${governor}/input_boost" "0"
 		write "${governor}/use_migration_notif" "0"
@@ -1399,6 +1410,7 @@ cpu_balanced() {
 		write "${governor}/fast_ramp_down" "0"
 		write "${governor}/sampling_rate" "20000"
 		write "${governor}/sampling_rate_min" "20000"
+		write "${governor}/max_freq_hysteresis" "0"
 		write "${governor}/min_sample_time" "20000"
 		write "${governor}/go_hispeed_load" "80"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1421,7 +1433,7 @@ cpu_extreme() {
 		write "${governor}/up_rate_limit_us" "0"
 		write "${governor}/down_rate_limit_us" "0"
 		write "${governor}/pl" "1"
-		write "${governor}/iowait_boost_enable" "1"
+		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "0"
 		write "${governor}/hispeed_load" "99"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1431,7 +1443,7 @@ cpu_extreme() {
 		write "${governor}/up_rate_limit_us" "0"
 		write "${governor}/down_rate_limit_us" "0"
 		write "${governor}/pl" "1"
-		write "${governor}/iowait_boost_enable" "1"
+		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "0"
 		write "${governor}/hispeed_load" "99"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1450,6 +1462,7 @@ cpu_extreme() {
 		write "${governor}/fast_ramp_down" "0"
 		write "${governor}/sampling_rate" "0"
 		write "${governor}/sampling_rate_min" "0"
+		write "${governor}/max_freq_hysteresis" "79000"
 		write "${governor}/min_sample_time" "0"
 		write "${governor}/go_hispeed_load" "99"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1491,7 +1504,7 @@ cpu_battery() {
 	for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d); do
 		write "${governor}/timer_rate" "16000"
 		write "${governor}/boost" "0"
-		write "${governor}/io_is_busy" "1"
+		write "${governor}/io_is_busy" "0"
 		write "${governor}/timer_slack" "4000"
 		write "${governor}/input_boost" "0"
 		write "${governor}/use_migration_notif" "0"
@@ -1502,6 +1515,7 @@ cpu_battery() {
 		write "${governor}/fast_ramp_down" "1"
 		write "${governor}/sampling_rate" "16000"
 		write "${governor}/sampling_rate_min" "20000"
+		write "${governor}/max_freq_hysteresis" "0"
 		write "${governor}/min_sample_time" "20000"
 		write "${governor}/go_hispeed_load" "99"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1524,7 +1538,7 @@ cpu_gaming() {
 		write "${governor}/up_rate_limit_us" "0"
 		write "${governor}/down_rate_limit_us" "0"
 		write "${governor}/pl" "1"
-		write "${governor}/iowait_boost_enable" "1"
+		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "0"
 		write "${governor}/hispeed_load" "99"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1534,7 +1548,7 @@ cpu_gaming() {
 		write "${governor}/up_rate_limit_us" "0"
 		write "${governor}/down_rate_limit_us" "0"
 		write "${governor}/pl" "1"
-		write "${governor}/iowait_boost_enable" "1"
+		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "0"
 		write "${governor}/hispeed_load" "99"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1553,6 +1567,7 @@ cpu_gaming() {
 		write "${governor}/fast_ramp_down" "0"
 		write "${governor}/sampling_rate" "0"
 		write "${governor}/sampling_rate_min" "0"
+		write "${governor}/max_freq_hysteresis" "79000"
 		write "${governor}/min_sample_time" "0"
 		write "${governor}/go_hispeed_load" "99"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
@@ -1691,7 +1706,7 @@ gpu_latency() {
 	fi
 
 	if [[ ${qcom} == "true" ]]; then
-		write "${gpu}throttling" "1"
+		write "${gpu}throttling" "0"
 		write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
 		write "${gpu}devfreq/adrenoboost" "0"
 		write "${gpu}force_no_nap" "0"
@@ -1823,7 +1838,7 @@ gpu_balanced() {
 	fi
 
 	if [[ ${qcom} == "true" ]]; then
-		write "${gpu}throttling" "1"
+		write "${gpu}throttling" "0"
 		write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
 		write "${gpu}devfreq/adrenoboost" "0"
 		write "${gpu}force_no_nap" "0"
@@ -2839,17 +2854,6 @@ uclamp_gaming() {
 	fi
 }
 
-config_blkio() {
-	# Block tweaks
-	if [[ -d ${blkio} ]]; then
-		write "${blkio}blkio.weight" "1000"
-		write "${blkio}blkio.group_idle" "2000"
-		write "${blkio}background/blkio.group_idle" "0"
-		kmsg "Tweaked blkio"
-		kmsg3 ""
-	fi
-}
-
 config_fs() {
 	# Raise inotify limit, disable the notification of files / directories changes
 	if [[ -d ${fs} ]]; then
@@ -3105,7 +3109,7 @@ sched_battery() {
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "1"
 	[[ -e "${kernel}sched_walt_rotate_big_tasks" ]] && write "${kernel}sched_walt_rotate_big_tasks" "1"
 	[[ -e "${kernel}sched_prefer_sync_wakee_to_waker" ]] && write "${kernel}sched_prefer_sync_wakee_to_waker" "1"
-	[[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "1"
+	[[ -e "${kernel}sched_boost_top_app" ]] && write "${kernel}sched_boost_top_app" "0"
 	[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "15"
 	[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
@@ -3282,7 +3286,7 @@ ppm_policy_max() {
 cpu_clk_min() {
 	# Set min efficient CPU clock
 	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
-		for i in 748800 768000 787200 806400 825600 852600 864000 902400 940800 998400 1113600; do
+		for i in 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 998400; do
 			[[ "$(grep ${i} ${pl}scaling_available_frequencies)" ]] && write ${pl}scaling_min_freq ${i}
 		done
 	done
@@ -3383,6 +3387,7 @@ vm_lmk_latency() {
 	write "${vm}dirty_writeback_centisecs" "5000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
+	write "${vm}overcommit_ratio" "50"
 	# Use SSWAP on samsung devices if it do not have more than 4 GB RAM
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
@@ -3395,7 +3400,7 @@ vm_lmk_latency() {
 	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
 	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
-	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
+	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
 
@@ -3440,6 +3445,7 @@ vm_lmk_balanced() {
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
+	write "${vm}overcommit_ratio" "50"
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
@@ -3496,6 +3502,7 @@ vm_lmk_extreme() {
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
+	write "${vm}overcommit_ratio" "50"
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "75"
@@ -3507,7 +3514,7 @@ vm_lmk_extreme() {
 	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
 	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
-	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
+	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
 
@@ -3552,10 +3559,10 @@ vm_lmk_battery() {
 	write "${vm}dirty_writeback_centisecs" "500"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
+	write "${vm}overcommit_ratio" "50"
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
-	write "${vm}watermark_scale_factor" "1"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
@@ -3563,7 +3570,7 @@ vm_lmk_battery() {
 	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
 	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
-	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
+	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
 
@@ -3608,10 +3615,10 @@ vm_lmk_gaming() {
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
+	write "${vm}overcommit_ratio" "50"
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "75"
-	write "${vm}watermark_scale_factor" "1"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
@@ -3619,7 +3626,7 @@ vm_lmk_gaming() {
 	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
 	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
-	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
+	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
 
@@ -3765,9 +3772,6 @@ config_tcp() {
 	write "${tcp}tcp_keepalive_intvl" "30"
 	write "${tcp}tcp_fin_timeout" "30"
 	write "${tcp}tcp_low_latency" "1"
-	# Increase rmem_max and wmem_max values to 4M
-	write "/proc/sys/net/core/wmem_max" "16777216"
-	write "/proc/sys/net/core/rmem_max" "16777216"
 	# Distribute load between CPUs, at cost of some delay on timestamps
 	write "/proc/sys/net/core/netdev_tstamp_prequeue" "0"
 
@@ -3979,6 +3983,27 @@ perfmgr_pwr_saving() {
 	fi
 }
 
+disable_migt() {
+	[[ -d "${migt}" ]] && {
+		write "${migt}/migt_freq" "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
+		write "${migt}/glk_freq_limit_start" "0"
+		write "${migt}/glk_freq_limit_walt" "0"
+		write "${migt}/glk_maxfreq" "0 0 0"
+		write "${migt}/migt_ceiling_freq" "0 0 0"
+	}
+}
+
+enable_thermal_disguise() {
+	chmod 000 "${board_sensor_temp}"
+	nohup pm clear com.xiaomi.gamecenter.sdk.service >/dev/null 2>&1 &
+	nohup pm disable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
+}
+
+disable_thermal_disguise() {
+	chmod 644 "${board_sensor_temp}"
+	nohup pm enable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
+}
+
 # $1:content
 write_panel() { echo "$1" >>"${bbn_banner}"; }
 
@@ -4004,6 +4029,19 @@ com.mobile.legends
 com.tencent.ig
 "
 }
+
+#ktsr_write_cfg() { echo "$1" >>${ktsr_cfg}; }
+
+#ktsr_create_default_cfg() {
+#ktsr_write_cfg "# KTSR Config File
+# While gven packages is detected running, it will switch to the chosen profile automatically.
+# List all the package names of the apps which you want to be on a specific profile while running.
+#com.riotgames.league.wildrift gaming
+#com.activision.callofduty.shooter gaming
+#com.mobile.legends gaming
+#com.tencent.ig gaming
+#"
+#}
 
 adjshield_start() {
 	# clear logs
@@ -4306,7 +4344,7 @@ cgroup_bbn_opt() {
 	unpin_proc "zygote|usap"
 	change_task_nice "zygote" "-20"
 	change_task_nice "binder" "-20"
-	[[ ${soc} == "lahaina" ]] || [[ ${soc} == "kona" ]] || [[ ${soc} == "msmnile" ]] && change_task_affinity "\.miui\.home" "0f" || {
+	[[ ${MIUI} == "true" ]] && [[ ${soc} == "lahaina" ]] || [[ ${soc} == "kona" ]] || [[ ${soc} == "msmnile" ]] && change_task_affinity "\.miui\.home" "0f" || {
 		change_task_affinity "\.miui\.home" "ff"
 		change_task_high_prio "miui.home"
 	}
@@ -4356,7 +4394,6 @@ apply_all() {
 	sched_${ktsr_prof_en}
 	enable_fp_boost
 	uclamp_${ktsr_prof_en}
-	config_blkio
 	config_fs
 	config_dyn_fsync
 	[[ ${ktsr_prof_en} == "balanced" ]] || [[ ${ktsr_prof_en} == "latency" ]] && ufs_default
@@ -4381,6 +4418,8 @@ apply_all() {
 	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && disable_emmc_clk_sclg
 	disable_debug
 	[[ ${ktsr_prof_en} != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
+	disable_migt
+	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 }
 
 apply_all_auto() {
@@ -4409,7 +4448,6 @@ apply_all_auto() {
 	sched_$(getprop kingauto.prof)
 	enable_fp_boost
 	uclamp_$(getprop kingauto.prof)
-	config_blkio
 	config_fs
 	config_dyn_fsync
 	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && ufs_default
@@ -4434,15 +4472,17 @@ apply_all_auto() {
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_emmc_clk_sclg
 	disable_debug
 	[[ "$(getprop kingauto.prof)" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
+	disable_migt
+	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 }
 
 latency() {
 	init=$(date +%s)
 	sync
 	apply_all
-	cmd power set-adaptive-power-saver-enabled true 2>/dev/null
-	cmd power set-fixed-performance-mode-enabled false 2>/dev/null
-	cmd thermalservice reset 2>/dev/null
+	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
+	cmd power set-fixed-performance-mode-enabled false >/dev/null 2>&1
+	cmd thermalservice reset >/dev/null 2>&1
 
 	kmsg "Latency profile applied. Enjoy!"
 	kmsg3 ""
@@ -4464,9 +4504,9 @@ balanced() {
 	init=$(date +%s)
 	sync
 	apply_all
-	cmd power set-adaptive-power-saver-enabled true 2>/dev/null
-	cmd power set-fixed-performance-mode-enabled false 2>/dev/null
-	cmd thermalservice reset 2>/dev/null
+	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
+	cmd power set-fixed-performance-mode-enabled false >/dev/null 2>&1
+	cmd thermalservice reset >/dev/null 2>&1
 
 	kmsg "Balanced profile applied. Enjoy!"
 	kmsg3 ""
@@ -4479,9 +4519,9 @@ extreme() {
 	init=$(date +%s)
 	sync
 	apply_all
-	cmd power set-adaptive-power-saver-enabled false 2>/dev/null
-	cmd power set-fixed-performance-mode-enabled true 2>/dev/null
-	cmd thermalservice override-status 0 2>/dev/null
+	cmd power set-adaptive-power-saver-enabled false >/dev/null 2>&1
+	cmd power set-fixed-performance-mode-enabled true >/dev/null 2>&1
+	cmd thermalservice override-status 0 >/dev/null 2>&1l
 
 	kmsg "Extreme profile applied. Enjoy!"
 	kmsg3 ""
@@ -4494,9 +4534,9 @@ battery() {
 	init=$(date +%s)
 	sync
 	apply_all
-	cmd power set-adaptive-power-saver-enabled true 2>/dev/null
-	cmd power set-fixed-performance-mode-enabled false 2>/dev/null
-	cmd thermalservice reset 2>/dev/null
+	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
+	cmd power set-fixed-performance-mode-enabled false >/dev/null 2>&1
+	cmd thermalservice reset >/dev/null 2>&1
 
 	kmsg "Battery profile applied. Enjoy!"
 	kmsg3 ""
@@ -4509,10 +4549,10 @@ gaming() {
 	init=$(date +%s)
 	sync
 	apply_all
-	cmd power set-adaptive-power-saver-enabled false 2>/dev/null
-	cmd power set-fixed-performance-mode-enabled true 2>/dev/null
-	cmd thermalservice override-status 0 2>/dev/null
-	cmd notification set_dnd priority 2>/dev/null
+	cmd power set-adaptive-power-saver-enabled false >/dev/null 2>&1
+	cmd power set-fixed-performance-mode-enabled true >/dev/null 2>&1
+	cmd thermalservice override-status 0 >/dev/null 2>&1
+	cmd notification set_dnd priority >/dev/null 2>&1
 
 	kmsg "Gaming profile applied. Enjoy!"
 	kmsg3 ""
