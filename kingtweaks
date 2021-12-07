@@ -63,7 +63,7 @@ cgroup_bbn_opt
 # Save mode to be applied automatically after reboot
 save_panel
 
-[[ ! -f ${ktsr_cfg} ]] && ktsr_create_default_cfg
+#[[ ! -f ${ktsr_cfg} ]] && ktsr_create_default_cfg
 
 #is_pkg_on_ta() {
 #while IFS= read -r pkg_nm; do
@@ -188,7 +188,7 @@ while true; do
 			;;
 	esac
 
-	is_pkg_on_ta
+	#is_pkg_on_ta
 
 	case "${ktsr_prof_en}" in
 		"automatic")
@@ -252,7 +252,7 @@ while true; do
 					;;
 			esac
 
-			killall -9 kingauto >/dev/null 2>&1
+			killall kingauto >/dev/null 2>&1
 			setprop kingauto.prof null
 			balanced
 
@@ -293,7 +293,7 @@ while true; do
 					;;
 			esac
 
-			killall -9 kingauto >/dev/null 2>&1
+			killall kingauto >/dev/null 2>&1
 			setprop kingauto.prof null
 			extreme
 
@@ -334,7 +334,7 @@ while true; do
 					;;
 			esac
 
-			killall -9 kingauto >/dev/null 2>&1
+			killall kingauto >/dev/null 2>&1
 			setprop kingauto.prof null
 			battery
 
@@ -375,7 +375,7 @@ while true; do
 					;;
 			esac
 
-			killall -9 kingauto >/dev/null 2>&1
+			killall kingauto >/dev/null 2>&1
 			setprop kingauto.prof null
 			gaming
 
@@ -416,7 +416,7 @@ while true; do
 					;;
 			esac
 
-			killall -9 kingauto >/dev/null 2>&1
+			killall kingauto >/dev/null 2>&1
 			setprop kingauto.prof null
 			latency
 
