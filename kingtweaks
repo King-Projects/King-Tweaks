@@ -73,6 +73,35 @@ save_panel
 #done <<<"$(cat "${ktsr_cfg}" | awk '{print $1}' | sed -e '1,3d')"
 #}
 
+config_cpuset
+
+cpu_clk_min
+cpu_clk_default
+
+disable_crc
+
+enable_fp_boost
+
+config_fs
+
+config_dyn_fsync
+
+disable_msm_thermal
+
+fix_dt2w
+
+config_tcp
+
+enable_usb_fast_chrg
+enable_sam_fast_chrg
+
+disable_spd_freqs
+
+config_pwr_spd
+
+disable_debug
+
+disable_migt
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 while true; do
 	sleep 0.9

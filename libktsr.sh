@@ -46,7 +46,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=0
-lib_ver="1.0.2"
+lib_ver="1.0.3"
 #ktsr_cfg="/data/media/0/KTSR/KTSR.conf"
 #pkg_on_ta=false
 migt="/sys/module/migt/parameters"
@@ -91,10 +91,10 @@ toast_fr_1() { am start -a android.intent.action.MAIN -e toasttext "Profil ${kts
 # write:$1 $2
 write() {
 	# Bail out if file does not exist
-	if [[ ! -f "$1" ]]; then
+	[[ ! -f "$1" ]] && {
 		kmsg2 "$1 doesn't exist, skipping..."
 		return 1
-	fi
+	}
 
 	# Make file writable in case it is not already
 	chmod +rw "$1" 2>/dev/null
@@ -103,16 +103,16 @@ write() {
 	curval=$(cat "$1" 2>/dev/null)
 
 	# Bail out if value is already set
-	if [[ ${curval} == "$2" ]]; then
+	[[ ${curval} == "$2" ]] && {
 		kmsg1 "$1 is already set to $2, skipping..."
 		return 0
-	fi
+	}
 
 	# Write the new value and bail if there's an error
-	if ! echo -n "$2" >"$1" 2>/dev/null; then
+	! echo -n "$2" >"$1" 2>/dev/null && {
 		kmsg2 "Failed: $1 -> $2"
 		return 1
-	fi
+	}
 
 	# Log the success
 	kmsg1 "$1 $curval -> $2"
@@ -208,78 +208,31 @@ for gpul10 in /sys/devices/platform/*.mali/devfreq/*.mali/subsystem/*.mali; do
 	}
 done
 
-if [[ -d "/sys/class/kgsl/kgsl-3d0/" ]]; then
+[[ -d "/sys/class/kgsl/kgsl-3d0/" ]] && {
 	gpu="/sys/class/kgsl/kgsl-3d0/"
 	qcom=true
-
-elif [[ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/" ]]; then
+} || [[ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/" ]] && {
 	gpu="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/"
 	qcom=true
+} || [[ -d "/sys/devices/platform/gpusysfs/" ]] && gpu="/sys/devices/platform/gpusysfs/" || [[ -d "/sys/class/misc/mali0/device" ]] && gpu="/sys/class/misc/mali0/device/"
 
-elif [[ -d "/sys/devices/platform/gpusysfs/" ]]; then
-	gpu="/sys/devices/platform/gpusysfs/"
-	qcom=false
+[[ -d "/sys/module/mali/parameters" ]] && gpug="/sys/module/mali/parameters/"
 
-elif [[ -d "/sys/class/misc/mali0/device" ]]; then
-	gpu="/sys/class/misc/mali0/device/"
-	qcom=false
-fi
-
-[[ -d "/sys/module/mali/parameters" ]] && {
-	gpug="/sys/module/mali/parameters/"
-	qcom=false
-}
 [[ -d "/sys/kernel/gpu" ]] && gpui="/sys/kernel/gpu/"
 
 gpu_max=${gpu_max_freq}
 
-if [[ "$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]]; then
-	gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')
-
-elif [[ "$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')" -gt ${gpu_max} ]]; then
-	gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')
-
-elif [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]]; then
-	gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
-
-elif [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" -gt ${gpu_max} ]]; then
-	gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
-
-elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]]; then
-	gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
-
-elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" -gt ${gpu_max} ]]; then
-	gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
-fi
+[[ "$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}') || [[ "$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}') || [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}') || [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}') || [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}') || [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
 
 gpu_min=${gpu_min_freq}
 
-if [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" -lt ${gpu_min} ]]; then
-	gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
-
-elif [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" -lt ${gpu_min} ]]; then
-	gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
-
-elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" -lt ${gpu_min} ]]; then
-	gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
-
-elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" -lt ${gpu_min} ]]; then
-	gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
-fi
+[[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" -lt ${gpu_min} ]] && gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}') || [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" -lt ${gpu_min} ]] && gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}') || [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" -lt ${gpu_min} ]] && gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}') || [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" -lt ${gpu_min} ]] && gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
 
 # Fetch the CPU governor
 cpu_gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
 
 # Fetch the GPU governor
-if [[ -e "${gpui}gpu_governor" ]]; then
-	gpu_gov=$(cat "${gpui}gpu_governor")
-
-elif [[ -e "${gpu}governor" ]]; then
-	gpu_gov=$(cat "${gpu}governor")
-
-elif [[ -e "${gpu}devfreq/governor" ]]; then
-	gpu_gov=$(cat "${gpu}devfreq/governor")
-fi
+[[ -e "${gpui}gpu_governor" ]] && gpu_gov=$(cat "${gpui}gpu_governor") || [[ -e "${gpu}governor" ]] && gpu_gov=$(cat "${gpu}governor") || [[ -e "${gpu}devfreq/governor" ]] && gpu_gov=$(cat "${gpu}devfreq/governor")
 
 define_gpu_pl() {
 	# Fetch the amount of power levels from the GPU
@@ -323,28 +276,16 @@ cpu_min_clk_mhz=$((cpu_min_freq / 1000))
 cpu_max_clk_mhz=$((cpu_max_freq / 1000))
 
 # Fetch maximum GPU frequency (gpu_max & gpu_max2 does almost the same thing)
-if [[ -e "${gpu}max_gpuclk" ]]; then
-	gpu_max_freq=$(cat "${gpu}max_gpuclk")
-
-elif [[ -e "${gpu}max_clock" ]]; then
-	gpu_max_freq=$(cat "${gpu}max_clock")
-
-elif [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]]; then
+[[ -e "${gpu}max_gpuclk" ]] && gpu_max_freq=$(cat "${gpu}max_gpuclk") || [[ -e "${gpu}max_clock" ]] && gpu_max_freq=$(cat "${gpu}max_clock") || [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]] && {
 	gpu_max_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | awk '{print $4}' | cut -f1 -d "," | head -n 1)
 	mtk=true
-fi
+}
 
 # Fetch minimum GPU frequency (gpumin also does almost the same thing)
-if [[ -e "${gpu}min_clock_mhz" ]]; then
+[[ -e "${gpu}min_clock_mhz" ]] && {
 	gpu_min_freq=$(cat "${gpu}min_clock_mhz")
 	gpu_min_freq=$((gpu_min_freq * 1000000))
-
-elif [[ -e "${gpu}min_clock" ]]; then
-	gpu_min_freq=$(cat "${gpu}min_clock")
-
-elif [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]]; then
-	gpu_min_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | tail -1 | awk '{print $4}' | cut -f1 -d ",")
-fi
+} || [[ -e "${gpu}min_clock" ]] && gpu_min_freq=$(cat "${gpu}min_clock") || [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]] && gpu_min_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | tail -1 | awk '{print $4}' | cut -f1 -d ",")
 
 # Fetch maximum & minimum GPU clock in MHz
 [[ ${gpu_max_freq} -ge "100000" ]] && {
@@ -499,21 +440,7 @@ disable_adreno_gpu_thrtl() {
 }
 
 # Fetch GPU load
-if [[ -e "${gpui}gpu_busy_percentage" ]]; then
-	gpu_load=$(cat "${gpui}gpu_busy_percentage" | tr -d %)
-
-elif [[ -e "${gpu}utilization" ]]; then
-	gpu_load=$(cat "${gpu}utilization")
-
-elif [[ -e "/proc/mali/utilization" ]]; then
-	gpu_load=$(cat /proc/mali/utilization)
-
-elif [[ -e "${gpu}load" ]]; then
-	gpu_load=$(cat "${gpu}load" | tr -d %)
-
-elif [[ -e "${gpui}gpu_busy" ]]; then
-	gpu_load=$(cat "${gpui}gpu_busy" | tr -d %)
-fi
+[[ -e "${gpui}gpu_busy_percentage" ]] && gpu_load=$(cat "${gpui}gpu_busy_percentage" | tr -d %) || [[ -e "${gpu}utilization" ]] && gpu_load=$(cat "${gpu}utilization") || [[ -e "/proc/mali/utilization" ]] && gpu_load=$(cat /proc/mali/utilization) || [[ -e "${gpu}load" ]] && gpu_load=$(cat "${gpu}load" | tr -d %) || [[ -e "${gpui}gpu_busy" ]] && gpu_load=$(cat "${gpui}gpu_busy" | tr -d %)
 
 # Fetch the number of CPU cores
 nr_cores=$(cat /sys/devices/system/cpu/possible | awk -F "-" '{print $2}')
@@ -865,6 +792,16 @@ config_cpuset() {
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
+		"sdm660")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
 		"sdm845")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
@@ -1078,119 +1015,113 @@ config_cpuset() {
 }
 
 boost_latency() {
-	if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
+	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -d "/sys/module/cpu_boost/" ]]; then
+	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
-
-	elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
+	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
 		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "156"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
-	fi
+	}
 }
 
 boost_balanced() {
-	if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
+	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -d "/sys/module/cpu_boost/" ]]; then
+	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "120"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
-
-	elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
+	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
 		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "120"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
-	fi
+	}
 }
 
 boost_extreme() {
-	if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
+	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -d "/sys/module/cpu_boost/" ]]; then
+	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
-
-	elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
+	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
 		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
-	fi
+	}
 }
 
 boost_battery() {
-	if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
+	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -e "/sys/module/cpu_boost/parameters/" ]]; then
+	[[ -e "/sys/module/cpu_boost/parameters/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
-	fi
-
-	if [[ -e "/sys/module/cpu_input_boost/parameters/" ]]; then
+	} || [[ -e "/sys/module/cpu_input_boost/parameters/" ]] && {
 		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "64"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
-	fi
+	}
 }
 
 boost_gaming() {
-	if [[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]]; then
+	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -d "/sys/module/cpu_boost/" ]]; then
+	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
-
-	elif [[ -d "/sys/module/cpu_input_boost/" ]]; then
+	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
 		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
-	fi
+	}
 }
 
 io_latency() {
@@ -1617,7 +1548,7 @@ disable_ppm() {
 }
 
 hmp_balanced() {
-	if [[ -d "/sys/kernel/hmp/" ]]; then
+	[[ -d "/sys/kernel/hmp/" ]] && {
 		write "/sys/kernel/hmp/boost" "0"
 		write "/sys/kernel/hmp/down_compensation_enabled" "1"
 		write "/sys/kernel/hmp/family_boost" "0"
@@ -1626,11 +1557,11 @@ hmp_balanced() {
 		write "/sys/kernel/hmp/down_threshold" "256"
 		kmsg "Tweaked HMP parameters"
 		kmsg3 ""
-	fi
+	}
 }
 
 hmp_extreme() {
-	if [[ -d "/sys/kernel/hmp/" ]]; then
+	[[ -d "/sys/kernel/hmp/" ]] && {
 		write "/sys/kernel/hmp/boost" "1"
 		write "/sys/kernel/hmp/down_compensation_enabled" "1"
 		write "/sys/kernel/hmp/family_boost" "1"
@@ -1639,11 +1570,11 @@ hmp_extreme() {
 		write "/sys/kernel/hmp/down_threshold" "150"
 		kmsg "Tweaked HMP parameters"
 		kmsg3 ""
-	fi
+	}
 }
 
 hmp_battery() {
-	if [[ -d "/sys/kernel/hmp/" ]]; then
+	[[ -d "/sys/kernel/hmp/" ]] && {
 		write "/sys/kernel/hmp/boost" "0"
 		write "/sys/kernel/hmp/down_compensation_enabled" "1"
 		write "/sys/kernel/hmp/family_boost" "0"
@@ -1652,11 +1583,11 @@ hmp_battery() {
 		write "/sys/kernel/hmp/down_threshold" "303"
 		kmsg "Tweaked HMP parameters"
 		kmsg3 ""
-	fi
+	}
 }
 
 hmp_gaming() {
-	if [[ -d "/sys/kernel/hmp/" ]]; then
+	[[ -d "/sys/kernel/hmp/" ]] && {
 		write "/sys/kernel/hmp/boost" "1"
 		write "/sys/kernel/hmp/down_compensation_enabled" "1"
 		write "/sys/kernel/hmp/family_boost" "1"
@@ -1665,7 +1596,7 @@ hmp_gaming() {
 		write "/sys/kernel/hmp/down_threshold" "125"
 		kmsg "Tweaked HMP parameters"
 		kmsg3 ""
-	fi
+	}
 }
 
 gpu_latency() {
@@ -1743,7 +1674,7 @@ gpu_latency() {
 		write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "30"
 	fi
 
-	if [[ -d "/sys/module/ged/" ]]; then
+	[[ -d "/sys/module/ged/" ]] && {
 		write "/sys/module/ged/parameters/ged_boost_enable" "0"
 		write "/sys/module/ged/parameters/boost_gpu_enable" "0"
 		write "/sys/module/ged/parameters/boost_extra" "0"
@@ -1768,38 +1699,38 @@ gpu_latency() {
 		write "/sys/module/ged/parameters/boost_amp" "0"
 		write "/sys/module/ged/parameters/gx_boost_on" "0"
 		write "/sys/module/ged/parameters/gpu_idle" "100"
-	fi
+	}
 
-	if [[ -d "/proc/gpufreq/" ]]; then
+	[[ -d "/proc/gpufreq/" ]] && {
 		write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
 		write "/proc/gpufreq/gpufreq_input_boost" "0"
 		write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
-	fi
+	}
 
 	# Tweak some other mali parameters
-	if [[ -d "/proc/mali/" ]]; then
+	[[ -d "/proc/mali/" ]] && {
 		[[ ${one_ui} == "false" ]] && write "/proc/mali/dvfs_enable" "1"
 		write "/proc/mali/always_on" "1"
-	fi
+	}
 
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
-	if [[ -d "/sys/module/simple_gpu_algorithm/parameters/" ]]; then
+	[[ -d "/sys/module/simple_gpu_algorithm/parameters/" ]] && {
 		write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 		write "/sys/module/simple_gpu_algorithm/parameters/default_laziness" "2"
 		write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "2500"
 		kmsg "Enabled and tweaked SGPU algorithm"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -d "/sys/module/adreno_idler/" ]]; then
+	[[ -d "/sys/module/adreno_idler/" ]] && {
 		write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
 		kmsg "Disabled adreno idler"
 		kmsg3 ""
-	fi
+	}
 
 	kmsg "Tweaked GPU parameters"
 	kmsg3 ""
@@ -1875,7 +1806,7 @@ gpu_balanced() {
 		write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "40"
 	fi
 
-	if [[ -d "/sys/module/ged/" ]]; then
+	[[ -d "/sys/module/ged/" ]] && {
 		write "/sys/module/ged/parameters/ged_boost_enable" "0"
 		write "/sys/module/ged/parameters/boost_gpu_enable" "0"
 		write "/sys/module/ged/parameters/boost_extra" "0"
@@ -1900,9 +1831,9 @@ gpu_balanced() {
 		write "/sys/module/ged/parameters/boost_amp" "0"
 		write "/sys/module/ged/parameters/gx_boost_on" "0"
 		write "/sys/module/ged/parameters/gpu_idle" "100"
-	fi
+	}
 
-	if [[ -d "/proc/gpufreq/" ]]; then
+	[[ -d "/proc/gpufreq/" ]] && {
 		write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
 		write "/proc/gpufreq/gpufreq_opp_freq" "0"
 		write "/proc/gpufreq/gpufreq_input_boost" "0"
@@ -1910,7 +1841,7 @@ gpu_balanced() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
-	fi
+	}
 
 	if [[ -d "/proc/mali/" ]]; then
 		[[ ${one_ui} == "false" ]] && write "/proc/mali/dvfs_enable" "1"
@@ -1919,22 +1850,22 @@ gpu_balanced() {
 
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
-	if [[ -d "/sys/module/simple_gpu_algorithm/parameters/" ]]; then
+	[[ -d "/sys/module/simple_gpu_algorithm/" ]] && {
 		write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 		write "/sys/module/simple_gpu_algorithm/parameters/default_laziness" "3"
 		write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "3500"
 		kmsg "Enabled and tweaked SGPU algorithm"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -d "/sys/module/adreno_idler" ]]; then
+	[[ -d "/sys/module/adreno_idler" ]] && {
 		write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
 		write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "5000"
 		write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "35"
 		write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "25"
 		kmsg "Enabled and tweaked adreno idler"
 		kmsg3 ""
-	fi
+	}
 
 	kmsg "Tweaked GPU parameters"
 	kmsg3 ""
@@ -2010,7 +1941,7 @@ gpu_extreme() {
 		write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "10"
 	fi
 
-	if [[ -d "/sys/module/ged/" ]]; then
+	[[ -d "/sys/module/ged/" ]] && {
 		write "/sys/module/ged/parameters/ged_boost_enable" "1"
 		write "/sys/module/ged/parameters/boost_gpu_enable" "0"
 		write "/sys/module/ged/parameters/boost_extra" "1"
@@ -2035,9 +1966,9 @@ gpu_extreme() {
 		write "/sys/module/ged/parameters/boost_amp" "1"
 		write "/sys/module/ged/parameters/gx_boost_on" "1"
 		write "/sys/module/ged/parameters/gpu_idle" "100"
-	fi
+	}
 
-	if [[ -d "/proc/gpufreq/" ]]; then
+	[[ -d "/proc/gpufreq/" ]] && {
 		write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
 		write "/proc/gpufreq/gpufreq_opp_freq" "0"
 		write "/proc/gpufreq/gpufreq_input_boost" "0"
@@ -2045,26 +1976,26 @@ gpu_extreme() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
-	fi
+	}
 
-	if [[ -d "/proc/mali/" ]]; then
+	[[ -d "/proc/mali/" ]] && {
 		[[ ${one_ui} == "false" ]] && write "/proc/mali/dvfs_enable" "1"
 		write "/proc/mali/always_on" "1"
-	fi
+	}
 
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
-	if [[ -d "/sys/module/simple_gpu_algorithm/" ]]; then
+	[[ -d "/sys/module/simple_gpu_algorithm/" ]] && {
 		write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "0"
 		kmsg "Disabled SGPU algorithm"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -d "/sys/module/adreno_idler/" ]]; then
+	[[ -d "/sys/module/adreno_idler/" ]] && {
 		write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
 		kmsg "Disabled adreno idler"
 		kmsg3 ""
-	fi
+	}
 
 	kmsg "Tweaked GPU parameters"
 	kmsg3 ""
@@ -2140,7 +2071,7 @@ gpu_battery() {
 		write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "55"
 	fi
 
-	if [[ -d "/sys/module/ged/" ]]; then
+	[[ -d "/sys/module/ged/" ]] && {
 		write "/sys/module/ged/parameters/ged_boost_enable" "0"
 		write "/sys/module/ged/parameters/boost_gpu_enable" "0"
 		write "/sys/module/ged/parameters/boost_extra" "0"
@@ -2165,9 +2096,9 @@ gpu_battery() {
 		write "/sys/module/ged/parameters/boost_amp" "0"
 		write "/sys/module/ged/parameters/gx_boost_on" "0"
 		write "/sys/module/ged/parameters/gpu_idle" "100"
-	fi
+	}
 
-	if [[ -d "/proc/gpufreq/" ]]; then
+	[[ -d "/proc/gpufreq/" ]] && {
 		write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
 		write "/proc/gpufreq/gpufreq_opp_freq" "0"
 		write "/proc/gpufreq/gpufreq_input_boost" "0"
@@ -2175,31 +2106,31 @@ gpu_battery() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
-	fi
+	}
 
-	if [[ -d "/proc/mali/" ]]; then
+	[[ -d "/proc/mali/" ]] && {
 		[[ ${one_ui} == "false" ]] && write "/proc/mali/dvfs_enable" "1"
 		write "/proc/mali/always_on" "0"
-	fi
+	}
 
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
-	if [[ -d "/sys/module/simple_gpu_algorithm/" ]]; then
+	[[ -d "/sys/module/simple_gpu_algorithm/" ]] && {
 		write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "1"
 		write "/sys/module/simple_gpu_algorithm/parameters/default_laziness" "4"
 		write "/sys/module/simple_gpu_algorithm/parameters/ramp_up_threshold" "5000"
 		kmsg "Enabled and tweaked SGPU algorithm"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -d "/sys/module/adreno_idler/" ]]; then
+	[[ -d "/sys/module/adreno_idler/" ]] && {
 		write "/sys/module/adreno_idler/parameters/adreno_idler_active" "Y"
 		write "/sys/module/adreno_idler/parameters/adreno_idler_idleworkload" "10000"
 		write "/sys/module/adreno_idler/parameters/adreno_idler_downdifferential" "45"
 		write "/sys/module/adreno_idler/parameters/adreno_idler_idlewait" "15"
 		kmsg "Enabled and tweaked adreno idler algorithm"
 		kmsg3 ""
-	fi
+	}
 
 	kmsg "Tweaked GPU parameters"
 	kmsg3 ""
@@ -2275,7 +2206,7 @@ gpu_gaming() {
 		write "${gpu}devfreq/gpufreq/mali_ondemand/no_vsync_downdifferential" "10"
 	fi
 
-	if [[ -d "/sys/module/ged/" ]]; then
+	[[ -d "/sys/module/ged/" ]] && {
 		write "/sys/module/ged/parameters/ged_boost_enable" "1"
 		write "/sys/module/ged/parameters/boost_gpu_enable" "0"
 		write "/sys/module/ged/parameters/boost_extra" "1"
@@ -2300,9 +2231,9 @@ gpu_gaming() {
 		write "/sys/module/ged/parameters/boost_amp" "1"
 		write "/sys/module/ged/parameters/gx_boost_on" "1"
 		write "/sys/module/ged/parameters/gpu_idle" "0"
-	fi
+	}
 
-	if [[ -d "/proc/gpufreq/" ]]; then
+	[[ -d "/proc/gpufreq/" ]] && {
 		write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
 		write "/proc/gpufreq/gpufreq_opp_freq" "${gpu_max}"
 		write "/proc/gpufreq/gpufreq_input_boost" "0"
@@ -2310,57 +2241,57 @@ gpu_gaming() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
-	fi
+	}
 
-	if [[ -d "/proc/mali/" ]]; then
+	[[ -d "/proc/mali/" ]] && {
 		[[ ${one_ui} == "false" ]] && write "/proc/mali/dvfs_enable" "0"
 		write "/proc/mali/always_on" "1"
-	fi
+	}
 
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
-	if [[ -e "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" ]]; then
+	[[ -d "/sys/module/simple_gpu_algorithm/" ]] && {
 		write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "0"
 		kmsg "Disabled SGPU algorithm"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -d "/sys/module/adreno_idler/" ]]; then
+	[[ -d "/sys/module/adreno_idler/" ]] && {
 		write "/sys/module/adreno_idler/parameters/adreno_idler_active" "N"
 		kmsg "Disabled adreno idler"
 		kmsg3 ""
-	fi
+	}
 
 	kmsg "Tweaked GPU parameters"
 	kmsg3 ""
 }
 
 disable_crypto_tests() {
-	if [[ -e "/sys/module/cryptomgr/parameters/notests" ]]; then
+	[[ -e "/sys/module/cryptomgr/parameters/notests" ]] && {
 		write "/sys/module/cryptomgr/parameters/notests" "Y"
 		kmsg "Disabled cryptography tests"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_spd_freqs() {
-	if [[ -e "/sys/module/exynos_acme/parameters/enable_suspend_freqs" ]]; then
+	[[ -e "/sys/module/exynos_acme/parameters/enable_suspend_freqs" ]] && {
 		write "/sys/module/exynos_acme/parameters/enable_suspend_freqs" "N"
 		kmsg "Disabled suspend frequencies"
 		kmsg3 ""
-	fi
+	}
 }
 
 config_pwr_spd() {
-	if [[ -e "/sys/kernel/power_suspend/power_suspend_mode" ]]; then
+	[[ -e "/sys/kernel/power_suspend/power_suspend_mode" ]] && {
 		write "/sys/kernel/power_suspend/power_suspend_mode" "3"
 		kmsg "Tweaked power suspend mode"
 		kmsg3 ""
-	fi
+	}
 }
 
 schedtune_latency() {
-	if [[ -d ${stune} ]]; then
+	[[ -d ${stune} ]] && {
 		write "${stune}background/schedtune.boost" "0"
 		write "${stune}background/schedtune.prefer_idle" "0"
 		write "${stune}background/schedtune.sched_boost" "0"
@@ -2426,11 +2357,11 @@ schedtune_latency() {
 
 		kmsg "Tweaked schedtune settings"
 		kmsg3 ""
-	fi
+	}
 }
 
 schedtune_balanced() {
-	if [[ -d ${stune} ]]; then
+	[[ -d ${stune} ]] && {
 		write "${stune}background/schedtune.boost" "0"
 		write "${stune}background/schedtune.prefer_idle" "0"
 		write "${stune}background/schedtune.sched_boost" "0"
@@ -2496,11 +2427,11 @@ schedtune_balanced() {
 
 		kmsg "Tweaked schedtune settings"
 		kmsg3 ""
-	fi
+	}
 }
 
 schedtune_extreme() {
-	if [[ -d ${stune} ]]; then
+	[[ -d ${stune} ]] && {
 		write "${stune}background/schedtune.boost" "0"
 		write "${stune}background/schedtune.prefer_idle" "0"
 		write "${stune}background/schedtune.sched_boost" "0"
@@ -2566,11 +2497,11 @@ schedtune_extreme() {
 
 		kmsg "Tweaked schedtune settings"
 		kmsg3 ""
-	fi
+	}
 }
 
 schedtune_battery() {
-	if [[ -d ${stune} ]]; then
+	[[ -d ${stune} ]] && {
 		write "${stune}background/schedtune.boost" "0"
 		write "${stune}background/schedtune.prefer_idle" "0"
 		write "${stune}background/schedtune.sched_boost" "0"
@@ -2636,11 +2567,11 @@ schedtune_battery() {
 
 		kmsg "Tweaked schedtune settings"
 		kmsg3 ""
-	fi
+	}
 }
 
 schedtune_gaming() {
-	if [[ -d ${stune} ]]; then
+	[[ -d ${stune} ]] && {
 		write "${stune}background/schedtune.boost" "0"
 		write "${stune}background/schedtune.prefer_idle" "0"
 		write "${stune}background/schedtune.sched_boost" "0"
@@ -2706,12 +2637,12 @@ schedtune_gaming() {
 
 		kmsg "Tweaked schedtune settings"
 		kmsg3 ""
-	fi
+	}
 }
 
 uclamp_latency() {
-	if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-		write "${kernel}sched_util_clamp_min" "768"
+	[[ -e "${cpuctl}top-app/cpu.uclamp.max" ]] && {
+		write "${kernel}sched_util_clamp_min" "392"
 		write "${kernel}sched_util_clamp_max" "1024"
 
 		write "${cpuctl}top-app/cpu.uclamp.max" "max"
@@ -2735,12 +2666,12 @@ uclamp_latency() {
 		write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
 		kmsg "Tweaked Uclamp parameters"
 		kmsg3 ""
-	fi
+	}
 }
 
 uclamp_balanced() {
-	if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-		write "${kernel}sched_util_clamp_min" "512"
+	[[ -e "${cpuctl}top-app/cpu.uclamp.max" ]] && {
+		write "${kernel}sched_util_clamp_min" "256"
 		write "${kernel}sched_util_clamp_max" "1024"
 
 		write "${cpuctl}top-app/cpu.uclamp.max" "max"
@@ -2764,12 +2695,12 @@ uclamp_balanced() {
 		write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
 		kmsg "Tweaked Uclamp parameters"
 		kmsg3 ""
-	fi
+	}
 }
 
 uclamp_extreme() {
-	if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-		write "${kernel}sched_util_clamp_min" "768"
+	[[ -e "${cpuctl}top-app/cpu.uclamp.max" ]] && {
+		write "${kernel}sched_util_clamp_min" "1024"
 		write "${kernel}sched_util_clamp_max" "1024"
 
 		write "${cpuctl}top-app/cpu.uclamp.max" "max"
@@ -2793,11 +2724,11 @@ uclamp_extreme() {
 		write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
 		kmsg "Tweaked Uclamp parameters"
 		kmsg3 ""
-	fi
+	}
 }
 
 uclamp_battery() {
-	if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
+	[[ -e "${cpuctl}top-app/cpu.uclamp.max" ]] && {
 		write "${kernel}sched_util_clamp_min" "256"
 		write "${kernel}sched_util_clamp_max" "768"
 
@@ -2822,12 +2753,12 @@ uclamp_battery() {
 		write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
 		kmsg "Tweaked Uclamp parameters"
 		kmsg3 ""
-	fi
+	}
 }
 
 uclamp_gaming() {
-	if [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]]; then
-		write "${kernel}sched_util_clamp_min" "768"
+	[[ -e "${cpuctl}top-app/cpu.uclamp.max" ]] && {
+		write "${kernel}sched_util_clamp_min" "1024"
 		write "${kernel}sched_util_clamp_max" "1024"
 
 		write "${cpuctl}top-app/cpu.uclamp.max" "max"
@@ -2851,12 +2782,12 @@ uclamp_gaming() {
 		write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
 		kmsg "Tweaked Uclamp parameters"
 		kmsg3 ""
-	fi
+	}
 }
 
 config_fs() {
 	# Raise inotify limit, disable the notification of files / directories changes
-	if [[ -d ${fs} ]]; then
+	[[ -d ${fs} ]] && {
 		write "${fs}dir-notify-enable" "0"
 		write "${fs}lease-break-time" "15"
 		write "${fs}leases-enable" "1"
@@ -2866,79 +2797,77 @@ config_fs() {
 		write "${fs}inotify/max_user_instances" "1024"
 		kmsg "Tweaked FS"
 		kmsg3 ""
-	fi
+	}
 }
 
 config_dyn_fsync() {
-	if [[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]]; then
+	[[ -e "/sys/kernel/dyn_fsync/Dyn_fsync_active" ]] && {
 		write "/sys/kernel/dyn_fsync/Dyn_fsync_active" "1"
 		kmsg "Enabled dynamic fsync"
 		kmsg3 ""
-	fi
+	}
 }
 
 sched_ft_latency() {
 	# Scheduler features
-	if [[ -e "/sys/kernel/debug/sched_features" ]]; then
+	[[ -e "/sys/kernel/debug/sched_features" ]] && {
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
-	fi
+	}
 }
 
 sched_ft_balanced() {
-	if [[ -e "/sys/kernel/debug/sched_features" ]]; then
+	[[ -e "/sys/kernel/debug/sched_features" ]] && {
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
-	fi
+	}
 }
 
 sched_ft_extreme() {
-	if [[ -e "/sys/kernel/debug/sched_features" ]]; then
+	[[ -e "/sys/kernel/debug/sched_features" ]] && {
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
-	fi
+	}
 }
 
 sched_ft_battery() {
-	if [[ -e "/sys/kernel/debug/sched_features" ]]; then
+	[[ -e "/sys/kernel/debug/sched_features" ]] && {
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
-	fi
+	}
 }
 
 sched_ft_gaming() {
-	if [[ -e "/sys/kernel/debug/sched_features" ]]; then
+	[[ -e "/sys/kernel/debug/sched_features" ]] && {
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_crc() {
-	if [[ -e "/sys/module/mmc_core/parameters/use_spi_crc" ]]; then
+	[[ -e "/sys/module/mmc_core/parameters/use_spi_crc" ]] && {
 		write "/sys/module/mmc_core/parameters/use_spi_crc" "N"
 		kmsg "Disabled MMC CRC"
 		kmsg3 ""
-
-	elif [[ -e "/sys/module/mmc_core/parameters/removable" ]]; then
+	} || [[ -e "/sys/module/mmc_core/parameters/removable" ]] && {
 		write "/sys/module/mmc_core/parameters/removable" "N"
 		kmsg "Disabled MMC CRC"
 		kmsg3 ""
-
-	elif [[ -e "/sys/module/mmc_core/parameters/crc" ]]; then
+	} || [[ -e "/sys/module/mmc_core/parameters/crc" ]] && {
 		write "/sys/module/mmc_core/parameters/crc" "N"
 		kmsg "Disabled MMC CRC"
 		kmsg3 ""
-	fi
+	}
 }
 
 sched_latency() {
@@ -2986,6 +2915,8 @@ sched_latency() {
 		[[ -e ${bcl_md} ]] && write "${bcl_md}" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
+	# Setup cpu.shares to throttle background group at 5% (1024)
+	write "${cpuctl}background/cpu.shares" "51"
 
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
@@ -3034,6 +2965,7 @@ sched_balanced() {
 		[[ -e ${bcl_md} ]] && write "${bcl_md}" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
+	write "${cpuctl}background/cpu.shares" "51"
 
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
@@ -3081,6 +3013,7 @@ sched_extreme() {
 		[[ -e ${bcl_md} ]] && write "${bcl_md}" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
+	write "${cpuctl}background/cpu.shares" "51"
 
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
@@ -3128,6 +3061,7 @@ sched_battery() {
 		[[ -e ${bcl_md} ]] && write "${bcl_md}" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
+	write "${cpuctl}background/cpu.shares" "51"
 
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
@@ -3175,76 +3109,77 @@ sched_gaming() {
 		[[ -e ${bcl_md} ]] && write "${bcl_md}" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
+	write "${cpuctl}background/cpu.shares" "51"
 
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
 
 enable_kvb() {
-	if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]]; then
+	[[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] && {
 		write "/sys/module/acpuclock_krait/parameters/boost" "Y"
 		kmsg "Enabled krait voltage boost"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_kvb() {
-	if [[ -e "/sys/module/acpuclock_krait/parameters/boost" ]]; then
+	[[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] && {
 		write "/sys/module/acpuclock_krait/parameters/boost" "N"
 		kmsg "Disabled krait voltage boost"
 		kmsg3 ""
-	fi
+	}
 }
 
 enable_fp_boost() {
-	if [[ -e "/sys/kernel/fp_boost/enabled" ]]; then
+	[[ -e "/sys/kernel/fp_boost/enabled" ]] && {
 		write "/sys/kernel/fp_boost/enabled" "1"
 		kmsg "Enabled fingerprint boost"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_fp_boost() {
-	if [[ -e "/sys/kernel/fp_boost/enabled" ]]; then
+	[[ -e "/sys/kernel/fp_boost/enabled" ]] && {
 		write "/sys/kernel/fp_boost/enabled" "0"
 		kmsg "Disabled fingerprint boost"
 		kmsg3 ""
-	fi
+	}
 }
 
 # Credits to helloklf again
 ufs_default() {
-	if [[ -d "/sys/class/devfreq/1d84000.ufshc/" ]]; then
+	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
 		write "/sys/class/devfreq/1d84000.ufshc/max_freq" "300000000"
 		write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "1"
 		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "1"
 		kmsg "Tweaked UFS"
 		kmsg3 ""
-	fi
+	}
 }
 
 ufs_max() {
-	if [[ -d "/sys/class/devfreq/1d84000.ufshc/" ]]; then
+	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
 		write "/sys/class/devfreq/1d84000.ufshc/max_freq" "300000000"
 		write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "0"
 		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
 		kmsg "Tweaked UFS"
 		kmsg3 ""
-	fi
+	}
 }
 
 ufs_pwr_saving() {
-	if [[ -d "/sys/class/devfreq/1d84000.ufshc/" ]]; then
+	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
 		write "/sys/class/devfreq/1d84000.ufshc/max_freq" "75000000"
 		write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "1"
 		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "1"
 		kmsg "Tweaked UFS"
 		kmsg3 ""
-	fi
+	}
 }
 
 ppm_policy_default() {
-	if [[ ${ppm} == "true" ]]; then
+	[[ ${ppm} == "true" ]] && {
 		write "/proc/ppm/policy_status" "1 0"
 		write "/proc/ppm/policy_status" "2 0"
 		write "/proc/ppm/policy_status" "3 0"
@@ -3260,11 +3195,11 @@ ppm_policy_default() {
 		write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "1 $cpu_max_freq"
 		kmsg "Tweaked PPM CPU clocks"
 		kmsg3 ""
-	fi
+	}
 }
 
 ppm_policy_max() {
-	if [[ ${ppm} == "true" ]]; then
+	[[ ${ppm} == "true" ]] && {
 		write "/proc/ppm/policy_status" "1 0"
 		write "/proc/ppm/policy_status" "2 1"
 		write "/proc/ppm/policy_status" "3 0"
@@ -3280,7 +3215,7 @@ ppm_policy_max() {
 		write "/proc/ppm/policy/hard_userlimit_max_cpu_freq" "1 $cpu_max_freq"
 		kmsg "Tweaked PPM CPU clocks"
 		kmsg3 ""
-	fi
+	}
 }
 
 cpu_clk_min() {
@@ -3295,47 +3230,47 @@ cpu_clk_min() {
 cpu_clk_default() {
 	# Set max CPU clock
 	for cpus in /sys/devices/system/cpu/cpufreq/policy*/; do
-		if [[ -e "${cpus}scaling_max_freq" ]]; then
+		[[ -e "${cpus}scaling_max_freq" ]] && {
 			write "${cpus}scaling_max_freq" "${cpu_max_freq}"
 			write "${cpus}user_scaling_max_freq" "${cpu_max_freq}"
-		fi
+		}
 	done
 
 	for cpus in /sys/devices/system/cpu/cpu*/cpufreq/; do
-		if [[ -e "${cpus}scaling_max_freq" ]]; then
+		[[ -e "${cpus}scaling_max_freq" ]] && {
 			write "${cpus}scaling_max_freq" "${cpu_max_freq}"
 			write "${cpus}user_scaling_max_freq" "${cpu_max_freq}"
-		fi
+		}
 	done
 
 	kmsg "Tweaked CPU clocks"
 	kmsg3 ""
 
-	if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]]; then
+	[[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] && {
 		write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
 		kmsg "Allow CPUs to use it's deepest sleep state"
 		kmsg3 ""
-	fi
+	}
 }
 
 cpu_clk_max() {
 	# Set min & max CPU clock
 	for cpus in /sys/devices/system/cpu/cpufreq/policy*/; do
-		if [[ -e "${cpus}scaling_min_freq" ]]; then
+		[[ -e "${cpus}scaling_min_freq" ]] && {
 			write "${cpus}scaling_min_freq" "${cpu_max_freq}"
 			write "${cpus}scaling_max_freq" "${cpu_max_freq}"
 			write "${cpus}user_scaling_min_freq" "${cpu_max_freq}"
 			write "${cpus}user_scaling_max_freq" "${cpu_max_freq}"
-		fi
+		}
 	done
 
 	for cpus in /sys/devices/system/cpu/cpu*/cpufreq/; do
-		if [[ -e "${cpus}scaling_min_freq" ]]; then
+		[[ -e "${cpus}scaling_min_freq" ]] && {
 			write "${cpus}scaling_min_freq" "${cpu_max_freq}"
 			write "${cpus}scaling_max_freq" "${cpu_max_freq}"
 			write "${cpus}user_scaling_min_freq" "${cpu_max_freq}"
 			write "${cpus}user_scaling_max_freq" "${cpu_max_freq}"
-		fi
+		}
 	done
 
 	kmsg "Tweaked CPU clocks"
@@ -3387,12 +3322,11 @@ vm_lmk_latency() {
 	write "${vm}dirty_writeback_centisecs" "5000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
-	write "${vm}overcommit_ratio" "50"
+	write "${vm}overcommit_ratio" "100"
 	# Use SSWAP on samsung devices if it do not have more than 4 GB RAM
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "200"
-	write "${vm}watermark_scale_factor" "1"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
@@ -3445,11 +3379,10 @@ vm_lmk_balanced() {
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
-	write "${vm}overcommit_ratio" "50"
+	write "${vm}overcommit_ratio" "100"
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
-	write "${vm}watermark_scale_factor" "1"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
@@ -3502,11 +3435,10 @@ vm_lmk_extreme() {
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
-	write "${vm}overcommit_ratio" "50"
+	write "${vm}overcommit_ratio" "100"
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "75"
-	write "${vm}watermark_scale_factor" "1"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
@@ -3559,7 +3491,7 @@ vm_lmk_battery() {
 	write "${vm}dirty_writeback_centisecs" "500"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
-	write "${vm}overcommit_ratio" "50"
+	write "${vm}overcommit_ratio" "100"
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
@@ -3615,7 +3547,7 @@ vm_lmk_gaming() {
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
-	write "${vm}overcommit_ratio" "50"
+	write "${vm}overcommit_ratio" "100"
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "75"
@@ -3635,113 +3567,108 @@ vm_lmk_gaming() {
 }
 
 disable_msm_thermal() {
-	if [[ -d "/sys/module/msm_thermal/" ]]; then
+	[[ -d "/sys/module/msm_thermal/" ]] && {
 		write "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
 		write "/sys/module/msm_thermal/core_control/enabled" "0"
 		write "/sys/module/msm_thermal/parameters/enabled" "N"
 		kmsg "Disabled msm_thermal"
 		kmsg3 ""
-	fi
+	}
 }
 
 enable_pewq() {
-	if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]; then
+	[[ -e "/sys/module/workqueue/parameters/power_efficient" ]] && {
 		write "/sys/module/workqueue/parameters/power_efficient" "Y"
 		kmsg "Enabled power efficient workqueue"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_pewq() {
-	if [[ -e "/sys/module/workqueue/parameters/power_efficient" ]]; then
+	[[ -e "/sys/module/workqueue/parameters/power_efficient" ]] && {
 		write "/sys/module/workqueue/parameters/power_efficient" "N"
 		kmsg "Disabled power efficient workqueue"
 		kmsg3 ""
-	fi
+	}
 }
 
 enable_mcps() {
-	if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]; then
+	[[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]] && {
 		write "/sys/devices/system/cpu/sched_mc_power_savings" "2"
 		kmsg "Enabled scheduler multi-core power-saving"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_mcps() {
-	if [[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]]; then
+	[[ -e "/sys/devices/system/cpu/sched_mc_power_savings" ]] && {
 		write "/sys/devices/system/cpu/sched_mc_power_savings" "0"
 		kmsg "Disabled scheduler multi-core power-saving"
 		kmsg3 ""
-	fi
+	}
 }
 
 fix_dt2w() {
-	if [[ -e "/sys/touchpanel/double_tap" ]] && [[ -e "/proc/tp_gesture" ]]; then
+	[[ -e "/sys/touchpanel/double_tap" ]] && [[ -e "/proc/tp_gesture" ]] && {
 		write "/sys/touchpanel/double_tap" "1"
 		write "/proc/tp_gesture" "1"
 		kmsg "Fixed DT2W if broken"
 		kmsg3 ""
-
-	elif [[ -e "/sys/class/sec/tsp/dt2w_enable" ]]; then
+	} || [[ -e "/sys/class/sec/tsp/dt2w_enable" ]] && {
 		write "/sys/class/sec/tsp/dt2w_enable" "1"
 		kmsg "Fixed DT2W if broken"
 		kmsg3 ""
-
-	elif [[ -e "/proc/tp_gesture" ]]; then
+	} || [[ -e "/proc/tp_gesture" ]] && {
 		write "/proc/tp_gesture" "1"
 		kmsg "Fixed DT2W if broken"
 		kmsg3 ""
-
-	elif [[ -e "/sys/touchpanel/double_tap" ]]; then
+	} || [[ -e "/sys/touchpanel/double_tap" ]] && {
 		write "/sys/touchpanel/double_tap" "1"
 		kmsg "Fixed DT2W if broken"
 		kmsg3 ""
-	fi
+	}
 }
 
 enable_tb() {
-	if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]; then
+	[[ -e "/sys/module/msm_performance/parameters/touchboost" ]] && {
 		write "/sys/module/msm_performance/parameters/touchboost" "1"
 		kmsg "Enabled msm_performance touch boost"
 		kmsg3 ""
-
-	elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]; then
+	} || [[ -e "/sys/power/pnpmgr/touch_boost" ]] && {
 		write "/sys/power/pnpmgr/touch_boost" "1"
 		write "/sys/power/pnpmgr/long_duration_touch_boost" "1"
 		kmsg "Enabled pnpmgr touch boost"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -e "/proc/touchpanel/oplus_tp_limit_enable" ]]; then
+	[[ -e "/proc/touchpanel/oplus_tp_limit_enable" ]] && {
 		write "/proc/touchpanel/oplus_tp_limit_enable" "0"
 		write "/proc/touchpanel/oplus_tp_direction" "1"
 		write "/proc/touchpanel/game_switch_enable" "1"
 		kmsg "Enabled improved touch mode"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_tb() {
-	if [[ -e "/sys/module/msm_performance/parameters/touchboost" ]]; then
+	[[ -e "/sys/module/msm_performance/parameters/touchboost" ]] && {
 		write "/sys/module/msm_performance/parameters/touchboost" "0"
 		kmsg "Disabled msm_performance touch boost"
 		kmsg3 ""
-
-	elif [[ -e "/sys/power/pnpmgr/touch_boost" ]]; then
+	} || [[ -e "/sys/power/pnpmgr/touch_boost" ]] && {
 		write "/sys/power/pnpmgr/touch_boost" "0"
 		write "/sys/power/pnpmgr/long_duration_touch_boost" "0"
 		kmsg "Disabled pnpmgr touch boost"
 		kmsg3 ""
-	fi
+	}
 
-	if [[ -e "/proc/touchpanel/oplus_tp_limit_enable" ]]; then
+	[[ -e "/proc/touchpanel/oplus_tp_limit_enable" ]] && {
 		write "/proc/touchpanel/oplus_tp_limit_enable" "0"
 		write "/proc/touchpanel/oplus_tp_direction" "1"
 		write "/proc/touchpanel/game_switch_enable" "0"
 		kmsg "Disabled improved touch mode"
 		kmsg3 ""
-	fi
+	}
 }
 
 config_tcp() {
@@ -3780,52 +3707,52 @@ config_tcp() {
 }
 
 enable_kern_batt_saver() {
-	if [[ -d "/sys/module/battery_saver/" ]]; then
+	[[ -d "/sys/module/battery_saver/" ]] && {
 		write "/sys/module/battery_saver/parameters/enabled" "Y"
 		kmsg "Enabled kernel battery saver"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_kern_batt_saver() {
-	if [[ -d "/sys/module/battery_saver/" ]]; then
+	[[ -d "/sys/module/battery_saver/" ]] && {
 		write "/sys/module/battery_saver/parameters/enabled" "N"
 		kmsg "Disabled kernel battery saver"
 		kmsg3 ""
-	fi
+	}
 }
 
 enable_hp_snd() {
 	for hpm in /sys/module/snd_soc_wcd*/; do
-		if [[ -d ${hpm} ]]; then
+		[[ -d ${hpm} ]] && {
 			write "${hpm}parameters/high_perf_mode" "1"
 			kmsg "Enabled high performance audio"
 			kmsg3 ""
-			break
-		fi
+		}
+		break
 	done
 }
 
 disable_hp_snd() {
 	for hpm in /sys/module/snd_soc_wcd*/; do
-		if [[ -d ${hpm} ]]; then
+		[[ -d ${hpm} ]] && {
 			write "${hpm}parameters/high_perf_mode" "0"
 			kmsg "Disabled high performance audio"
 			kmsg3 ""
-			break
-		fi
+		}
+		break
 	done
 }
 
 enable_lpm() {
 	for lpm in /sys/module/lpm_levels/system/*/*/*/; do
-		if [[ -d "/sys/module/lpm_levels/" ]]; then
+		[[ -d "/sys/module/lpm_levels/" ]] && {
 			write "/sys/module/lpm_levels/parameters/lpm_prediction" "Y"
 			write "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "Y"
 			write "/sys/module/lpm_levels/parameters/sleep_disabled" "N"
 			write "${lpm}idle_enabled" "Y"
 			write "${lpm}suspend_enabled" "Y"
-		fi
+		}
 	done
 
 	kmsg "Enabled LPM"
@@ -3834,13 +3761,13 @@ enable_lpm() {
 
 disable_lpm() {
 	for lpm in /sys/module/lpm_levels/system/*/*/*/; do
-		if [[ -d "/sys/module/lpm_levels/" ]]; then
+		[[ -d "/sys/module/lpm_levels/" ]] && {
 			write "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
 			write "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "N"
 			write "/sys/module/lpm_levels/parameters/sleep_disabled" "Y"
 			write "${lpm}idle_enabled" "N"
 			write "${lpm}suspend_enabled" "N"
-		fi
+		}
 	done
 
 	kmsg "Disabled LPM"
@@ -3848,91 +3775,88 @@ disable_lpm() {
 }
 
 enable_pm2_idle_mode() {
-	if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]]; then
+	[[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] && {
 		write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
 		kmsg "Enabled pm2 idle sleep mode"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_pm2_idle_mode() {
-	if [[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]]; then
+	[[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] && {
 		write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
 		kmsg "Disabled pm2 idle sleep mode"
 		kmsg3 ""
-	fi
+	}
 }
 
 enable_lcd_prdc() {
-	if [[ -e "/sys/class/lcd/panel/power_reduce" ]]; then
+	[[ -e "/sys/class/lcd/panel/power_reduce" ]] && {
 		write "/sys/class/lcd/panel/power_reduce" "1"
 		kmsg "Enabled LCD power reduce"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_lcd_prdc() {
-	if [[ -e "/sys/class/lcd/panel/power_reduce" ]]; then
+	[[ -e "/sys/class/lcd/panel/power_reduce" ]] && {
 		write "/sys/class/lcd/panel/power_reduce" "0"
 		kmsg "Disabled LCD power reduce"
 		kmsg3 ""
-	fi
+	}
 }
 
 enable_usb_fast_chrg() {
-	if [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]]; then
+	[[ -e "/sys/kernel/fast_charge/force_fast_charge" ]] && {
 		write "/sys/kernel/fast_charge/force_fast_charge" "1"
 		kmsg "Enabled USB 3.0 fast charging"
 		kmsg3 ""
-	fi
+	}
 }
 
 enable_sam_fast_chrg() {
-	if [[ -e "/sys/class/sec/switch/afc_disable" ]]; then
+	[[ -e "/sys/class/sec/switch/afc_disable" ]] && {
 		write "/sys/class/sec/switch/afc_disable" "0"
 		kmsg "Enabled fast charging on Samsung devices"
 		kmsg3 ""
-	fi
+	}
 }
 
 emmc_clk_sclg_balanced() {
-	if [[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]]; then
+	[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && {
 		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
 		write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "25"
 		write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "5"
 		write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "1"
 		write "/sys/class/mmc_host/mmc1/clk_scaling/up_threshold" "25"
 		write "/sys/class/mmc_host/mmc1/clk_scaling/down_threshold" "5"
-
-	elif [[ -d "/sys/class/mmc_host/mmc0/" ]]; then
+	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && {
 		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
 		write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "25"
 		write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "5"
-	fi
+	}
 }
 
 emmc_clk_sclg_pwr_saving() {
-	if [[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]]; then
+	[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && {
 		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
 		write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "40"
 		write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "10"
 		write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "1"
 		write "/sys/class/mmc_host/mmc1/clk_scaling/up_threshold" "40"
 		write "/sys/class/mmc_host/mmc1/clk_scaling/down_threshold" "10"
-
-	elif [[ -d "/sys/class/mmc_host/mmc0/" ]]; then
+	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && {
 		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
 		write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "40"
 		write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "10"
-	fi
+	}
 }
 
 disable_emmc_clk_sclg() {
 	[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && {
 		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
 		write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"
-	}
-	[[ -d "/sys/class/mmc_host/mmc0/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
+	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
 }
 
 disable_debug() {
@@ -3948,7 +3872,7 @@ disable_debug() {
 }
 
 perfmgr_default() {
-	if [[ -d "${perfmgr}boost_ctrl/eas_ctrl/" ]]; then
+	[[ -d "${perfmgr}boost_ctrl/eas_ctrl/" ]] && {
 		write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_prefer_idle" "0"
 		write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_fg_boost" "0"
 		write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_ta_boost" "0"
@@ -3962,11 +3886,11 @@ perfmgr_default() {
 		write "${perfmgr}boost_ctrl/cpu_ctrl/cfp_down_loading" "80"
 		kmsg "Tweaked perfmgr settings"
 		kmsg3 ""
-	fi
+	}
 }
 
 perfmgr_pwr_saving() {
-	if [[ -d "${perfmgr}boost_ctrl/eas_ctrl/" ]]; then
+	[[ -d "${perfmgr}boost_ctrl/eas_ctrl/" ]] && {
 		write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_prefer_idle" "0"
 		write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_fg_boost" "0"
 		write "${perfmgr}boost_ctrl/eas_ctrl/perfserv_ta_boost" "0"
@@ -3980,7 +3904,7 @@ perfmgr_pwr_saving() {
 		write "${perfmgr}boost_ctrl/cpu_ctrl/cfp_down_loading" "60"
 		kmsg "Tweaked perfmgr settings"
 		kmsg3 ""
-	fi
+	}
 }
 
 disable_migt() {
@@ -3994,13 +3918,13 @@ disable_migt() {
 }
 
 enable_thermal_disguise() {
-	chmod 000 "${board_sensor_temp}"
+	[[ -e "${board_sensor_temp}" ]] && chmod 000 "${board_sensor_temp}"
 	nohup pm clear com.xiaomi.gamecenter.sdk.service >/dev/null 2>&1 &
 	nohup pm disable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
 }
 
 disable_thermal_disguise() {
-	chmod 644 "${board_sensor_temp}"
+	[[ -e "${board_sensor_temp}" ]] && chmod 644 "${board_sensor_temp}"
 	nohup pm enable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
 }
 
@@ -4009,7 +3933,7 @@ write_panel() { echo "$1" >>"${bbn_banner}"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential process optimizer 
-Version: 1.2.7-r3
+Version: 1.2.8-r3
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -4347,6 +4271,7 @@ cgroup_bbn_opt() {
 	[[ ${MIUI} == "true" ]] && [[ ${soc} == "lahaina" ]] || [[ ${soc} == "kona" ]] || [[ ${soc} == "msmnile" ]] && change_task_affinity "\.miui\.home" "0f" || {
 		change_task_affinity "\.miui\.home" "ff"
 		change_task_high_prio "miui.home"
+		unpin_proc "\.miui\.home"
 	}
 }
 
@@ -4365,15 +4290,16 @@ get_scrn_state() {
 	[[ ${scrn_state} == "ON" ]] && scrn_on=1
 }
 
-[[ ${qcom} == "true" ]] && define_gpu_pl
-[[ ${qcom} == "true" ]] && disable_adreno_gpu_thrtl
+[[ ${qcom} == "true" ]] && {
+	define_gpu_pl
+	disable_adreno_gpu_thrtl
+}
 
 apply_all() {
 	print_info
 	stop_services
 	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && enable_devfreq_boost || disable_devfreq_boost
 	[[ ${ktsr_prof_en} == "balanced" ]] || [[ ${ktsr_prof_en} == "battery" ]] && enable_core_ctl || disable_core_ctl
-	config_cpuset
 	boost_${ktsr_prof_en}
 	io_${ktsr_prof_en}
 	cpu_${ktsr_prof_en}
@@ -4384,41 +4310,25 @@ apply_all() {
 	[[ ${ktsr_prof_en} != "gaming" ]] && enable_ppm || disable_ppm
 	[[ ${ktsr_prof_en} == "latency" ]] || [[ ${ktsr_prof_en} == "balanced" ]] || [[ ${ktsr_prof_en} == "battery" ]] && ppm_policy_default
 	[[ ${ktsr_prof_en} == "extreme" ]] && ppm_policy_max
-	cpu_clk_min
-	cpu_clk_default
 	hmp_${ktsr_prof_en}
 	gpu_${ktsr_prof_en}
 	schedtune_${ktsr_prof_en}
 	sched_ft_${ktsr_prof_en}
-	disable_crc
 	sched_${ktsr_prof_en}
-	enable_fp_boost
 	uclamp_${ktsr_prof_en}
-	config_fs
-	config_dyn_fsync
 	[[ ${ktsr_prof_en} == "balanced" ]] || [[ ${ktsr_prof_en} == "latency" ]] && ufs_default
 	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && ufs_max || ufs_pwr_saving
 	vm_lmk_${ktsr_prof_en}
-	disable_msm_thermal
 	[[ ${ktsr_prof_en} == "balanced" ]] || [[ ${ktsr_prof_en} == "battery" ]] && enable_pewq || disable_pewq
 	[[ ${ktsr_prof_en} == "battery" ]] && enable_mcps || disable_mcps
-	fix_dt2w
 	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && enable_tb || disable_tb
-	config_tcp
 	[[ ${ktsr_prof_en} == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
 	[[ ${ktsr_prof_en} == "battery" ]] || [[ ${ktsr_prof_en} == "balanced" ]] || [[ ${ktsr_prof_en} == "latency" ]] && enable_lpm || disable_lpm
 	[[ ${ktsr_prof_en} != "extreme" ]] && [[ ${ktsr_prof_en} != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
 	[[ ${ktsr_prof_en} == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
-	enable_usb_fast_chrg
-	enable_sam_fast_chrg
-	disable_spd_freqs
-	config_pwr_spd
-	[[ ${ktsr_prof_en} == "balanced" ]] && emmc_clk_sclg_balanced
-	[[ ${ktsr_prof_en} == "battery" ]] && emmc_clk_sclg_pwr_saving
+	[[ ${ktsr_prof_en} == "balanced" ]] && emmc_clk_sclg_balanced || [[ ${ktsr_prof_en} == "battery" ]] && emmc_clk_sclg_pwr_saving
 	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && disable_emmc_clk_sclg
-	disable_debug
 	[[ ${ktsr_prof_en} != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
-	disable_migt
 	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 }
 
@@ -4427,7 +4337,6 @@ apply_all_auto() {
 	stop_services
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_devfreq_boost || disable_devfreq_boost
 	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_core_ctl || disable_core_ctl
-	config_cpuset
 	boost_$(getprop kingauto.prof)
 	io_$(getprop kingauto.prof)
 	cpu_$(getprop kingauto.prof)
@@ -4438,41 +4347,25 @@ apply_all_auto() {
 	[[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_ppm || disable_ppm
 	[[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && ppm_policy_default
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] && ppm_policy_max
-	cpu_clk_min
-	cpu_clk_default
 	hmp_$(getprop kingauto.prof)
 	gpu_$(getprop kingauto.prof)
 	schedtune_$(getprop kingauto.prof)
 	sched_ft_$(getprop kingauto.prof)
-	disable_crc
 	sched_$(getprop kingauto.prof)
-	enable_fp_boost
 	uclamp_$(getprop kingauto.prof)
-	config_fs
-	config_dyn_fsync
 	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && ufs_default
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && ufs_max || ufs_pwr_saving
 	vm_lmk_$(getprop kingauto.prof)
-	disable_msm_thermal
 	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_pewq || disable_pewq
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_mcps || disable_mcps
-	fix_dt2w
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_tb || disable_tb
-	config_tcp
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
 	[[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && enable_lpm || disable_lpm
 	[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
-	enable_usb_fast_chrg
-	enable_sam_fast_chrg
-	disable_spd_freqs
-	config_pwr_spd
-	[[ "$(getprop kingauto.prof)" == "balanced" ]] && emmc_clk_sclg_balanced
-	[[ "$(getprop kingauto.prof)" == "battery" ]] && emmc_clk_sclg_pwr_saving
+	[[ "$(getprop kingauto.prof)" == "balanced" ]] && emmc_clk_sclg_balanced || [[ "$(getprop kingauto.prof)" == "battery" ]] && emmc_clk_sclg_pwr_saving
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_emmc_clk_sclg
-	disable_debug
 	[[ "$(getprop kingauto.prof)" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
-	disable_migt
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 }
 
