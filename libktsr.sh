@@ -208,13 +208,20 @@ for gpul10 in /sys/devices/platform/*.mali/devfreq/*.mali/subsystem/*.mali; do
 	}
 done
 
-[[ -d "/sys/class/kgsl/kgsl-3d0/" ]] && {
+if [[ -d "/sys/class/kgsl/kgsl-3d0/" ]]; then
 	gpu="/sys/class/kgsl/kgsl-3d0/"
 	qcom=true
-} || [[ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/" ]] && {
+
+elif [[ -d "/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/" ]]; then
 	gpu="/sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/"
 	qcom=true
-} || [[ -d "/sys/devices/platform/gpusysfs/" ]] && gpu="/sys/devices/platform/gpusysfs/" || [[ -d "/sys/class/misc/mali0/device" ]] && gpu="/sys/class/misc/mali0/device/"
+
+elif [[ -d "/sys/devices/platform/gpusysfs/" ]]; then
+	gpu="/sys/devices/platform/gpusysfs/"
+
+elif [[ -d "/sys/class/misc/mali0/device" ]]; then
+	gpu="/sys/class/misc/mali0/device/"
+fi
 
 [[ -d "/sys/module/mali/parameters" ]] && gpug="/sys/module/mali/parameters/"
 
@@ -222,17 +229,53 @@ done
 
 gpu_max=${gpu_max_freq}
 
-[[ "$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}') || [[ "$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}') || [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}') || [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}') || [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}') || [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" -gt ${gpu_max} ]] && gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
+if [[ -e "${gpu}devfreq/available_frequencies" ]] && [[ "$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]]; then
+	gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk -F ' ' '{print $NF}')
+
+elif [[ -e "${gpu}devfreq/available_frequencies" ]] && [[ "$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')" -gt ${gpu_max} ]]; then
+	gpu_max=$(cat "${gpu}devfreq/available_frequencies" | awk '{print $1}')
+
+elif [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]]; then
+	gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
+
+elif [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" -gt ${gpu_max} ]]; then
+	gpu_max=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
+
+elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" -gt ${gpu_max} ]]; then
+	gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
+
+elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" -gt ${gpu_max} ]]; then
+	gpu_max=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
+fi
 
 gpu_min=${gpu_min_freq}
 
-[[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" -lt ${gpu_min} ]] && gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}') || [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" -lt ${gpu_min} ]] && gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}') || [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" -lt ${gpu_min} ]] && gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}') || [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" -lt ${gpu_min} ]] && gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
+if [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')" -lt ${gpu_min} ]]; then
+	gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $1}')
+
+elif [[ -e "${gpu}available_frequencies" ]] && [[ "$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')" -lt ${gpu_min} ]]; then
+	gpu_min=$(cat "${gpu}available_frequencies" | awk -F ' ' '{print $NF}')
+
+elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')" -lt ${gpu_min} ]]; then
+	gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $1}')
+
+elif [[ -e "${gpui}gpu_freq_table" ]] && [[ "$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')" -lt ${gpu_min} ]]; then
+	gpu_min=$(cat "${gpui}gpu_freq_table" | awk -F ' ' '{print $NF}')
+fi
 
 # Fetch the CPU governor
 cpu_gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)
 
 # Fetch the GPU governor
-[[ -e "${gpui}gpu_governor" ]] && gpu_gov=$(cat "${gpui}gpu_governor") || [[ -e "${gpu}governor" ]] && gpu_gov=$(cat "${gpu}governor") || [[ -e "${gpu}devfreq/governor" ]] && gpu_gov=$(cat "${gpu}devfreq/governor")
+if [[ -e "${gpui}gpu_governor" ]]; then
+	gpu_gov=$(cat "${gpui}gpu_governor")
+
+elif [[ -e "${gpu}governor" ]]; then
+	gpu_gov=$(cat "${gpu}governor")
+
+elif [[ -e "${gpu}devfreq/governor" ]]; then
+	gpu_gov=$(cat "${gpu}devfreq/governor")
+fi
 
 define_gpu_pl() {
 	# Fetch the amount of power levels from the GPU
@@ -276,23 +319,34 @@ cpu_min_clk_mhz=$((cpu_min_freq / 1000))
 cpu_max_clk_mhz=$((cpu_max_freq / 1000))
 
 # Fetch maximum GPU frequency (gpu_max & gpu_max2 does almost the same thing)
-[[ -e "${gpu}max_gpuclk" ]] && gpu_max_freq=$(cat "${gpu}max_gpuclk") || [[ -e "${gpu}max_clock" ]] && gpu_max_freq=$(cat "${gpu}max_clock") || [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]] && {
+if [[ -e "${gpu}max_gpuclk" ]]; then
+	gpu_max_freq=$(cat "${gpu}max_gpuclk")
+
+elif [[ -e "${gpu}max_clock" ]]; then
+	gpu_max_freq=$(cat "${gpu}max_clock")
+
+elif [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]]; then
 	gpu_max_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | awk '{print $4}' | cut -f1 -d "," | head -n 1)
 	mtk=true
-}
+fi
 
 # Fetch minimum GPU frequency (gpumin also does almost the same thing)
-[[ -e "${gpu}min_clock_mhz" ]] && {
+if [[ -e "${gpu}min_clock_mhz" ]]; then
 	gpu_min_freq=$(cat "${gpu}min_clock_mhz")
 	gpu_min_freq=$((gpu_min_freq * 1000000))
-} || [[ -e "${gpu}min_clock" ]] && gpu_min_freq=$(cat "${gpu}min_clock") || [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]] && gpu_min_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | tail -1 | awk '{print $4}' | cut -f1 -d ",")
+
+elif [[ -e "${gpu}min_clock" ]]; then
+	gpu_min_freq=$(cat "${gpu}min_clock")
+
+elif [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]]; then
+	gpu_min_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | tail -1 | awk '{print $4}' | cut -f1 -d ",")
+fi
 
 # Fetch maximum & minimum GPU clock in MHz
 [[ ${gpu_max_freq} -ge "100000" ]] && {
 	gpu_max_clk_mhz=$((gpu_max_freq / 1000))
 	gpu_min_clk_mhz=$((gpu_min_freq / 1000))
-}
-[[ ${gpu_max_freq} -ge "100000000" ]] && {
+} || [[ ${gpu_max_freq} -ge "100000000" ]] && {
 	gpu_max_clk_mhz=$((gpu_max_freq / 1000000))
 	gpu_min_clk_mhz=$((gpu_min_freq / 1000000))
 }
@@ -390,7 +444,13 @@ batt_tmp=$((batt_tmp / 10))
 
 # Fetch max refresh rate
 rr=$(dumpsys display 2>/dev/null | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
-[[ -z ${rr} ]] && rr=$(dumpsys display 2>/dev/null | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .) || [[ -z ${rr} ]] && rr=$(dumpsys display 2>/dev/null | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
+
+if [[ -z ${rr} ]]; then
+	rr=$(dumpsys display 2>/dev/null | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
+
+elif [[ -z ${rr} ]]; then
+	rr=$(dumpsys display 2>/dev/null | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
+fi
 
 # Fetch battery health
 batt_hth=$(dumpsys battery 2>/dev/null | awk '/health/{print $2}')
@@ -3868,7 +3928,6 @@ disable_debug() {
 	done
 
 	kmsg "Disabled misc debugging"
-	kmsg3 ""
 }
 
 perfmgr_default() {
