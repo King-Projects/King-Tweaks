@@ -127,7 +127,7 @@ sched_period_throughput="$((10 * 1000 * 1000))"
 # How many tasks should we have at a maximum in one scheduling period
 sched_tasks_latency="10"
 sched_tasks_balanced="8"
-sched_tasks_battery="5"
+sched_tasks_battery="4"
 sched_tasks_throughput="6"
 
 # Fetch GPU directories
@@ -1152,7 +1152,7 @@ boost_battery() {
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -e "/sys/module/cpu_input_boost/parameters/" ]] && {
@@ -1243,7 +1243,7 @@ io_extreme() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
-		write "${queue}read_ahead_kb" "512"
+		write "${queue}read_ahead_kb" "256"
 		write "${queue}nomerges" "2"
 		write "${queue}rq_affinity" "2"
 		write "${queue}nr_requests" "256"
@@ -1287,7 +1287,7 @@ io_gaming() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
-		write "${queue}read_ahead_kb" "512"
+		write "${queue}read_ahead_kb" "256"
 		write "${queue}nomerges" "2"
 		write "${queue}rq_affinity" "2"
 		write "${queue}nr_requests" "256"
@@ -1373,7 +1373,7 @@ cpu_balanced() {
 		write "${governor}/pl" "1"
 		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "20000"
-		write "${governor}/hispeed_load" "89"
+		write "${governor}/hispeed_load" "85"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
 	done
 
@@ -1383,7 +1383,7 @@ cpu_balanced() {
 		write "${governor}/pl" "1"
 		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "20000"
-		write "${governor}/hispeed_load" "89"
+		write "${governor}/hispeed_load" "85"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
 	done
 
@@ -1403,7 +1403,7 @@ cpu_balanced() {
 		write "${governor}/sampling_rate_min" "20000"
 		write "${governor}/max_freq_hysteresis" "0"
 		write "${governor}/min_sample_time" "20000"
-		write "${governor}/go_hispeed_load" "80"
+		write "${governor}/go_hispeed_load" "85"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
 	done
 }
@@ -1426,7 +1426,7 @@ cpu_extreme() {
 		write "${governor}/pl" "1"
 		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "0"
-		write "${governor}/hispeed_load" "99"
+		write "${governor}/hispeed_load" "65"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
 	done
 
@@ -1436,7 +1436,7 @@ cpu_extreme() {
 		write "${governor}/pl" "1"
 		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "0"
-		write "${governor}/hispeed_load" "99"
+		write "${governor}/hispeed_load" "65"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
 	done
 
@@ -1455,7 +1455,7 @@ cpu_extreme() {
 		write "${governor}/sampling_rate_min" "0"
 		write "${governor}/max_freq_hysteresis" "79000"
 		write "${governor}/min_sample_time" "0"
-		write "${governor}/go_hispeed_load" "99"
+		write "${governor}/go_hispeed_load" "65"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
 	done
 }
@@ -1531,7 +1531,7 @@ cpu_gaming() {
 		write "${governor}/pl" "1"
 		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "0"
-		write "${governor}/hispeed_load" "99"
+		write "${governor}/hispeed_load" "65"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
 	done
 
@@ -1541,7 +1541,7 @@ cpu_gaming() {
 		write "${governor}/pl" "1"
 		write "${governor}/iowait_boost_enable" "0"
 		write "${governor}/rate_limit_us" "0"
-		write "${governor}/hispeed_load" "99"
+		write "${governor}/hispeed_load" "65"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
 	done
 
@@ -1560,7 +1560,7 @@ cpu_gaming() {
 		write "${governor}/sampling_rate_min" "0"
 		write "${governor}/max_freq_hysteresis" "79000"
 		write "${governor}/min_sample_time" "0"
-		write "${governor}/go_hispeed_load" "99"
+		write "${governor}/go_hispeed_load" "65"
 		write "${governor}/hispeed_freq" "${cpu_max_freq}"
 	done
 }
@@ -1903,10 +1903,10 @@ gpu_balanced() {
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
 	}
 
-	if [[ -d "/proc/mali/" ]]; then
+	[[ -d "/proc/mali/" ]] && {
 		[[ ${one_ui} == "false" ]] && write "/proc/mali/dvfs_enable" "1"
 		write "/proc/mali/always_on" "1"
-	fi
+	}
 
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
@@ -2231,7 +2231,7 @@ gpu_gaming() {
 	if [[ ${qcom} == "true" ]]; then
 		write "${gpu}throttling" "0"
 		write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
-		write "${gpu}devfreq/adrenoboost" "2"
+		write "${gpu}devfreq/adrenoboost" "1"
 		write "${gpu}force_no_nap" "1"
 		write "${gpu}bus_split" "0"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
@@ -2397,7 +2397,7 @@ schedtune_latency() {
 		write "${stune}camera-daemon/schedtune.ontime_en" "0"
 		write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
 
-		write "${stune}top-app/schedtune.boost" "15"
+		write "${stune}top-app/schedtune.boost" "10"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "0"
 		write "${stune}top-app/schedtune.sched_boost_no_override" "1"
@@ -2505,10 +2505,10 @@ schedtune_extreme() {
 		write "${stune}foreground/schedtune.prefer_idle" "1"
 		write "${stune}foreground/schedtune.sched_boost" "15"
 		write "${stune}foreground/schedtune.sched_boost_no_override" "1"
-		write "${stune}foreground/schedtune.prefer_perf" "1"
+		write "${stune}foreground/schedtune.prefer_perf" "0"
 		write "${stune}foreground/schedtune.util_est_en" "1"
 		write "${stune}foreground/schedtune.ontime_en" "1"
-		write "${stune}foreground/schedtune.prefer_high_cap" "1"
+		write "${stune}foreground/schedtune.prefer_high_cap" "0"
 
 		write "${stune}nnapi-hal/schedtune.boost" "0"
 		write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
@@ -2605,7 +2605,7 @@ schedtune_battery() {
 		write "${stune}camera-daemon/schedtune.prefer_perf" "0"
 		write "${stune}camera-daemon/schedtune.util_est_en" "0"
 		write "${stune}camera-daemon/schedtune.ontime_en" "0"
-		write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
+		write "${stune}camera-daemon/schedtune.prefer_high_cap" "1"
 
 		write "${stune}top-app/schedtune.boost" "0"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
@@ -2614,7 +2614,7 @@ schedtune_battery() {
 		write "${stune}top-app/schedtune.prefer_perf" "1"
 		write "${stune}top-app/schedtune.util_est_en" "1"
 		write "${stune}top-app/schedtune.ontime_en" "1"
-		write "${stune}top-app/schedtune.prefer_high_cap" "0"
+		write "${stune}top-app/schedtune.prefer_high_cap" "1"
 
 		write "${stune}schedtune.boost" "0"
 		write "${stune}schedtune.prefer_idle" "0"
@@ -2680,10 +2680,10 @@ schedtune_gaming() {
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "15"
 		write "${stune}top-app/schedtune.sched_boost_no_override" "1"
-		write "${stune}top-app/schedtune.prefer_perf" "1"
+		write "${stune}top-app/schedtune.prefer_perf" "0"
 		write "${stune}top-app/schedtune.util_est_en" "1"
 		write "${stune}top-app/schedtune.ontime_en" "1"
-		write "${stune}top-app/schedtune.prefer_high_cap" "1"
+		write "${stune}top-app/schedtune.prefer_high_cap" "0"
 
 		write "${stune}schedtune.boost" "0"
 		write "${stune}schedtune.prefer_high_cap" "0"
@@ -2984,7 +2984,7 @@ sched_latency() {
 
 sched_balanced() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
-	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "15"
+	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "5"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 	[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 	[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && .write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
@@ -3033,7 +3033,7 @@ sched_balanced() {
 
 sched_extreme() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
-	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "25"
+	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "20"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
 	[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
@@ -3081,7 +3081,7 @@ sched_extreme() {
 
 sched_battery() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
-	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "0"
+	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "2"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
 	[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
 	[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
@@ -3129,7 +3129,7 @@ sched_battery() {
 
 sched_gaming() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
-	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "25"
+	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "20"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
 	[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
@@ -3498,7 +3498,7 @@ vm_lmk_extreme() {
 	write "${vm}overcommit_ratio" "100"
 	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
-	write "${vm}vfs_cache_pressure" "75"
+	write "${vm}vfs_cache_pressure" "80"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
@@ -3544,7 +3544,7 @@ vm_lmk_battery() {
 		efk="19200"
 	}
 	sync
-	write "${vm}drop_caches" "1"
+	write "${vm}drop_caches" "0"
 	write "${vm}dirty_background_ratio" "2"
 	write "${vm}dirty_ratio" "5"
 	write "${vm}dirty_expire_centisecs" "500"
@@ -4327,7 +4327,8 @@ cgroup_bbn_opt() {
 	unpin_proc "zygote|usap"
 	change_task_nice "zygote" "-20"
 	change_task_nice "binder" "-20"
-	[[ ${MIUI} == "true" ]] && [[ ${soc} == "lahaina" ]] || [[ ${soc} == "kona" ]] || [[ ${soc} == "msmnile" ]] && change_task_affinity "\.miui\.home" "0f" || {
+	[[ ${MIUI} == "true" ]] && [[ ${soc} == "lahaina" ]] || [[ ${soc} == "kona" ]] || [[ ${soc} == "msmnile" ]] && {
+	 change_task_affinity "\.miui\.home" "0f" || {
 		change_task_affinity "\.miui\.home" "ff"
 		change_task_high_prio "miui.home"
 		unpin_proc "\.miui\.home"
