@@ -121,13 +121,13 @@ write() {
 # Duration in nanoseconds of one scheduling period
 sched_period_latency="$((1 * 1000 * 1000))"
 sched_period_balance="$((4 * 1000 * 1000))"
-sched_period_battery="$((6 * 1000 * 1000))"
+sched_period_battery="$((5 * 1000 * 1000))"
 sched_period_throughput="$((10 * 1000 * 1000))"
 
 # How many tasks should we have at a maximum in one scheduling period
 sched_tasks_latency="10"
 sched_tasks_balanced="8"
-sched_tasks_battery="4"
+sched_tasks_battery="5"
 sched_tasks_throughput="6"
 
 # Fetch GPU directories
@@ -714,7 +714,7 @@ config_cpuset() {
 	case "${soc}" in
 		"msm8937")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,6-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
 			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
@@ -724,7 +724,7 @@ config_cpuset() {
 			;;
 		"msm8952")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,6-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
 			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
@@ -734,7 +734,7 @@ config_cpuset() {
 			;;
 		"msm8953")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,6-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
 			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
@@ -755,7 +755,7 @@ config_cpuset() {
 		"msm8998")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -764,8 +764,8 @@ config_cpuset() {
 			;;
 		"msmnile")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -775,7 +775,7 @@ config_cpuset() {
 		"SM8150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -784,8 +784,8 @@ config_cpuset() {
 			;;
 		"SM7150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -795,7 +795,7 @@ config_cpuset() {
 		"SDM670")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -804,8 +804,8 @@ config_cpuset() {
 			;;
 		"mt6768")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -814,8 +814,8 @@ config_cpuset() {
 			;;
 		"mt6785")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -824,8 +824,8 @@ config_cpuset() {
 			;;
 		"mt6873")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -834,8 +834,8 @@ config_cpuset() {
 			;;
 		"mt6885")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-7"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -844,8 +844,8 @@ config_cpuset() {
 			;;
 		"sdm710")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -855,7 +855,7 @@ config_cpuset() {
 		"sdm660")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -865,7 +865,7 @@ config_cpuset() {
 		"sdm845")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -876,7 +876,7 @@ config_cpuset() {
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -887,7 +887,7 @@ config_cpuset() {
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -898,7 +898,7 @@ config_cpuset() {
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -908,7 +908,7 @@ config_cpuset() {
 		"lahaina")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -918,7 +918,7 @@ config_cpuset() {
 		"SM8350")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -938,21 +938,21 @@ config_cpuset() {
 			;;
 		"trinket")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}foreground/cpus" "0-3,4-5" || write "${cpuset}foreground/cpus" "0-3,4-5"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}background/cpus" "0-3" || write "${cpuset}background/cpus" "4-5"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}system-background/cpus" "0-5" || write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}restricted/cpus" "0-3" || write "${cpuset}restricted/cpus" "0-3"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}game/cpus" "0-7"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}gamelite/cpus" "0-7"
-			[[ ${MIUI} == "true" ]] && write "${cpuset}vr/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			write "${cpuset}game/cpus" "0-7"
+			write "${cpuset}gamelite/cpus" "0-7"
+			write "${cpuset}vr/cpus" "0-7"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"msmsteppe")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -962,7 +962,7 @@ config_cpuset() {
 		"SM6125")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -971,8 +971,8 @@ config_cpuset() {
 			;;
 		"SM6150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-5,7"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -982,7 +982,7 @@ config_cpuset() {
 		"SM6250")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -992,7 +992,7 @@ config_cpuset() {
 		"bengal")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1002,7 +1002,7 @@ config_cpuset() {
 		"SM6115")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1012,7 +1012,7 @@ config_cpuset() {
 		"kona")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1022,7 +1022,7 @@ config_cpuset() {
 		"SM8250")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1032,7 +1032,7 @@ config_cpuset() {
 		"universal9811")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}dexopt/cpus" "0-6"
@@ -1043,10 +1043,10 @@ config_cpuset() {
 		"universal9820")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}dexopt/cpus" "0-6"
+			write "${cpuset}dexopt/cpus" "0-3,4-5"
 			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
@@ -1054,7 +1054,7 @@ config_cpuset() {
 		"atoll")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1064,7 +1064,7 @@ config_cpuset() {
 		"SM7125")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-4"
+			write "${cpuset}background/cpus" "0-1"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1184,8 +1184,8 @@ boost_gaming() {
 	}
 }
 
+# I/O Scheduler tweaks
 io_latency() {
-	# I/O Scheduler tweaks
 	for queue in /sys/block/*/queue/; do
 		# Fetch the available schedulers from the block
 		avail_scheds="$(cat "${queue}scheduler")"
@@ -1199,6 +1199,30 @@ io_latency() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
+	done
+
+	for queue in /sys/block/sd*/queue/; do
+		avail_scheds="$(cat "${queue}scheduler")"
+
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
+			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
+			break
+		done
+
+		write "${queue}read_ahead_kb" "32"
+		write "${queue}nomerges" "0"
+		write "${queue}rq_affinity" "2"
+		write "${queue}nr_requests" "16"
+	done
+
+	for queue in /sys/block/mmcblk*/queue/; do
+		avail_scheds="$(cat "${queue}scheduler")"
+
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
+			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
+			break
+		done
+
 		write "${queue}read_ahead_kb" "32"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "2"
@@ -1221,6 +1245,30 @@ io_balanced() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
+	done
+
+	for queue in /sys/block/sd*/queue/; do
+		avail_scheds="$(cat "${queue}scheduler")"
+
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
+			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
+			break
+		done
+
+		write "${queue}read_ahead_kb" "128"
+		write "${queue}nomerges" "0"
+		write "${queue}rq_affinity" "1"
+		write "${queue}nr_requests" "64"
+	done
+
+	for queue in /sys/block/mmcblk*/queue/; do
+		avail_scheds="$(cat "${queue}scheduler")"
+
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
+			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
+			break
+		done
+
 		write "${queue}read_ahead_kb" "128"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "1"
@@ -1243,6 +1291,30 @@ io_extreme() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
+	done
+
+	for queue in /sys/block/sd*/queue/; do
+		avail_scheds="$(cat "${queue}scheduler")"
+
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid anxiety mq-deadline deadline cfq noop none; do
+			[[ ${avail_scheds} == *"$sched"* ]] && "${queue}scheduler" "${sched}"
+			break
+		done
+
+		write "${queue}read_ahead_kb" "256"
+		write "${queue}nomerges" "2"
+		write "${queue}rq_affinity" "2"
+		write "${queue}nr_requests" "256"
+	done
+
+	for queue in /sys/block/mmcblk*/queue/; do
+		avail_scheds="$(cat "${queue}scheduler")"
+
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid anxiety mq-deadline deadline cfq noop none; do
+			[[ ${avail_scheds} == *"$sched"* ]] && "${queue}scheduler" "${sched}"
+			break
+		done
+
 		write "${queue}read_ahead_kb" "256"
 		write "${queue}nomerges" "2"
 		write "${queue}rq_affinity" "2"
@@ -1265,6 +1337,30 @@ io_battery() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
+	done
+
+	for queue in /sys/block/sd*/queue/; do
+		avail_scheds="$(cat "${queue}scheduler")"
+
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
+			[[ ${avail_scheds} == *"$sched"* ]] && "${queue}scheduler" "${sched}"
+			break
+		done
+
+		write "${queue}read_ahead_kb" "64"
+		write "${queue}nomerges" "0"
+		write "${queue}rq_affinity" "0"
+		write "${queue}nr_requests" "512"
+	done
+
+	for queue in /sys/block/mmcblk*/queue/; do
+		avail_scheds="$(cat "${queue}scheduler")"
+
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
+			[[ ${avail_scheds} == *"$sched"* ]] && "${queue}scheduler" "${sched}"
+			break
+		done
+
 		write "${queue}read_ahead_kb" "64"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "0"
@@ -1287,6 +1383,30 @@ io_gaming() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
+	done
+
+	for queue in /sys/block/sd*/queue/; do
+		avail_scheds="$(cat "${queue}scheduler")"
+
+		for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none; do
+			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
+			break
+		done
+
+		write "${queue}read_ahead_kb" "256"
+		write "${queue}nomerges" "2"
+		write "${queue}rq_affinity" "2"
+		write "${queue}nr_requests" "256"
+	done
+
+	for queue in /sys/block/mmcblk*/queue/; do
+		avail_scheds="$(cat "${queue}scheduler")"
+
+		for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none; do
+			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
+			break
+		done
+
 		write "${queue}read_ahead_kb" "256"
 		write "${queue}nomerges" "2"
 		write "${queue}rq_affinity" "2"
@@ -3835,7 +3955,7 @@ disable_lpm() {
 }
 
 enable_pm2_idle_mode() {
-	[[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] && {
+	[[ -d "/sys/module/pm2/parameters/" ]] && {
 		write "/sys/module/pm2/parameters/idle_sleep_mode" "Y"
 		kmsg "Enabled pm2 idle sleep mode"
 		kmsg3 ""
@@ -3843,7 +3963,7 @@ enable_pm2_idle_mode() {
 }
 
 disable_pm2_idle_mode() {
-	[[ -e "/sys/module/pm2/parameters/idle_sleep_mode" ]] && {
+	[[ -d "/sys/module/pm2/parameters/" ]] && {
 		write "/sys/module/pm2/parameters/idle_sleep_mode" "N"
 		kmsg "Disabled pm2 idle sleep mode"
 		kmsg3 ""
@@ -3977,13 +4097,13 @@ disable_migt() {
 }
 
 enable_thermal_disguise() {
-	[[ -e "${board_sensor_temp}" ]] && chmod 000 "${board_sensor_temp}"
+	[[ -e "${board_sensor_temp}" ]] && chmod 000 "${board_sensor_temp}" 2>/dev/null
 	nohup pm clear com.xiaomi.gamecenter.sdk.service >/dev/null 2>&1 &
 	nohup pm disable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
 }
 
 disable_thermal_disguise() {
-	[[ -e "${board_sensor_temp}" ]] && chmod 644 "${board_sensor_temp}"
+	[[ -e "${board_sensor_temp}" ]] && chmod 644 "${board_sensor_temp}" 2>/dev/null
 	nohup pm enable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
 }
 
@@ -4328,9 +4448,12 @@ cgroup_bbn_opt() {
 	change_task_nice "zygote" "-20"
 	change_task_nice "binder" "-20"
 	[[ ${MIUI} == "true" ]] && [[ ${soc} == "lahaina" ]] || [[ ${soc} == "kona" ]] || [[ ${soc} == "msmnile" ]] && {
-	 change_task_affinity "\.miui\.home" "0f" || {
+		change_task_affinity "\.miui\.home" "0f"
+		change_task_nice "miui.home" "-18"
+		unpin_proc "\.miui\.home"
+	} || {
 		change_task_affinity "\.miui\.home" "ff"
-		change_task_high_prio "miui.home"
+		change_task_nice "miui.home" "-18"
 		unpin_proc "\.miui\.home"
 	}
 }
