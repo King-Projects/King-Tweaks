@@ -65,14 +65,6 @@ save_panel
 
 #[[ ! -f ${ktsr_cfg} ]] && ktsr_create_default_cfg
 
-#is_pkg_on_ta() {
-#while IFS= read -r pkg_nm; do
-#if [[ "$(cat /proc/$(pgrep -f "${pkg_nm}")/oom_score_adj)" == "0" ]]; then
-#pkg_on_ta=true
-#fi
-#done <<<"$(cat "${ktsr_cfg}" | awk '{print $1}' | sed -e '1,3d')"
-#}
-
 config_cpuset
 
 cpu_clk_min
@@ -104,7 +96,7 @@ disable_debug
 disable_migt
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 while true; do
-	sleep 0.9
+	sleep 2
 	if "${boot_run_once}"; then
 		[[ "$(getprop persist.king.tweaks.prof)" == "${ktsr_prof}" ]] && continue
 	else
@@ -467,30 +459,31 @@ while true; do
 					;;
 			esac
 			#case "${pkg_on_ta}" in
-			#true)
-			#while IFS= read -r pkg_nm; do
-			#pkg_nm2="$(cat /proc/$(pgrep -f "${pkg_nm}")/status | awk -F ':' '{print $2}')"
-			#prof_nm="$(grep "${pkg_nm2}" "${ktsr_cfg}" | awk '{print $2}')"
-			#done <<<"$(cat "${ktsr_cfg}" | awk '{print $1}' | sed -e '1,3d')"
+			#"true")
+			#for pkg_nm in "$(cat "${ktsr_cfg}" | awk '{print $1}' | sed -e '1,3d')"; do
+			#pkg_nm2="$(cat /proc/$(pgrep -f "${pkg_nm}")/cmdline)"
+			#prof_nm="$(grep -Eo "${pkg_nm2}" "${ktsr_cfg}" | awk '{print $2}')"
+			#done
 			#case "${prof_nm}" in
-			#latency)
-			#latency
+			#"latency")
+			#setprop persist.king.tweaks.prof 6
 			#;;
-			#gaming)
-			#gaming
+			#"gaming")
+			#setprop persist.king.tweaks.prof 5
 			#;;
-			#extreme)
-			#extreme
+			#"extreme")
+			#setprop persist.king.tweaks.prof 4
 			#;;
-			#balanced)
-			#balanced
+			#"balanced")
+			#setprop persist.king.tweaks.prof 3
 			#;;
-			#battery)
-			#battery
+			#"battery")
+			#setprop persist.king.tweaks.prof 2
+			#;;
+			#esac
 			#;;
 			#esac
 			#;;
-			#esac
 			;;
 	esac
 done

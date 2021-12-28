@@ -11,7 +11,6 @@ blue=$(tput setaf 4)
 bold=$(tput bold)
 blink=$(tput blink)
 default=$(tput sgr0)
-date=$(date)
 v="2.0.3"
 vcd=$(grep versionCode= module.prop | sed "s/versionCode=//")
 
@@ -21,36 +20,30 @@ read -r -p 'Codename: ' cdn
 
 init=$(date +%s)
 
-if [[ "$(grep build_date $(pwd)/module.prop)" ]]; then
-	sed -i -e "/build_date=/s/=.*/=$date/" "$(pwd)/module.prop"
-fi
+[ "$(grep build_date $(pwd)/module.prop)" ] && sed -i -e "/build_date=/s/=.*/=$(date)/" "$(pwd)/module.prop"
 
-if [[ ! "$(grep build_date $(pwd)/module.prop)" ]]; then
-	echo "build_date=$date" >>"$(pwd)/module.prop"
-fi
+[ ! "$(grep build_date $(pwd)/module.prop)" ] && echo "build_date=$(date)" >>"$(pwd)/module.prop"
 
-if [[ $br == b* ]]; then
-	vcd=$(printf "%.3d" "$((vcd + 1))")
-	sed -i -e "/versionCode=/s/=.*/=$vcd/" "$(pwd)/module.prop"
-fi
+vcd=$(printf "%.3d" "$((vcd + 1))")
+sed -i -e "/versionCode=/s/=.*/=${vcd}/" "$(pwd)/module.prop"
 
-sed -i -e "/version=/s/=.*/=$v-$br-$cdn/" "$(pwd)/module.prop"
+sed -i -e "/version=/s/=.*/=${v}-${br}-${cdn}/" "$(pwd)/module.prop"
 
 echo ""
 echo "Build starting at $(date)"
 echo ""
 
-echo "Zipping ${blink}KTSR-$v-$br-$cdn${default}..."
+echo "Zipping ${blink}KTSR-${v}-${br}-${cdn}${default}..."
 
-zip -r9 "KTSR-$v-$br-$cdn.zip" . -x *.git* -x cleantrash -x mod-util.sh -x *.zip -x adjshield -x fscache-ctrl -x *.yml -x C1.sh -x kingauto -x ktsrmenu -x update.json -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
+zip -0 -r9 -ll "KTSR-${v}-${br}-${cdn}.zip" . -x *.git* -x cleantrash -x mod-util.sh -x adjshield -x fscache-ctrl -x *.yml -x kingauto -x ktsrmenu -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
 
-mv -f "KTSR-$v-$br-$cdn.zip" ../out
+mv -f "KTSR-${v}-${br}-${cdn}.zip" ../out
 
 exit=$(date +%s)
 
 exec_time=$((exit - init))
 
-[[ $? -ne 1 ]] && {
+[ $? -ne "1" ] && {
 	echo "${boldgreen}Build done in $((exec_time / 60)) minutes and $exec_time seconds!${blue} Check the folder to the finished build."
 	exit 0
 } || {

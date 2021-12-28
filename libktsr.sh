@@ -715,7 +715,7 @@ config_cpuset() {
 		"msm8937")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -725,7 +725,7 @@ config_cpuset() {
 		"msm8952")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -735,7 +735,7 @@ config_cpuset() {
 		"msm8953")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -755,7 +755,7 @@ config_cpuset() {
 		"msm8998")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -765,7 +765,7 @@ config_cpuset() {
 		"msmnile")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -775,7 +775,7 @@ config_cpuset() {
 		"SM8150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -785,7 +785,7 @@ config_cpuset() {
 		"SM7150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -795,7 +795,7 @@ config_cpuset() {
 		"SDM670")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -805,7 +805,7 @@ config_cpuset() {
 		"mt6768")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -815,7 +815,7 @@ config_cpuset() {
 		"mt6785")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -825,7 +825,7 @@ config_cpuset() {
 		"mt6873")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -835,7 +835,7 @@ config_cpuset() {
 		"mt6885")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -845,7 +845,7 @@ config_cpuset() {
 		"sdm710")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -855,7 +855,7 @@ config_cpuset() {
 		"sdm660")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -865,7 +865,7 @@ config_cpuset() {
 		"sdm845")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -887,7 +887,7 @@ config_cpuset() {
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -898,7 +898,7 @@ config_cpuset() {
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -908,7 +908,7 @@ config_cpuset() {
 		"lahaina")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -918,7 +918,7 @@ config_cpuset() {
 		"SM8350")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -939,7 +939,7 @@ config_cpuset() {
 		"trinket")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -952,7 +952,7 @@ config_cpuset() {
 		"msmsteppe")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -962,7 +962,7 @@ config_cpuset() {
 		"SM6125")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -972,7 +972,7 @@ config_cpuset() {
 		"SM6150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -982,7 +982,7 @@ config_cpuset() {
 		"SM6250")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -992,7 +992,7 @@ config_cpuset() {
 		"bengal")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1002,7 +1002,7 @@ config_cpuset() {
 		"SM6115")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1012,7 +1012,7 @@ config_cpuset() {
 		"kona")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1022,7 +1022,7 @@ config_cpuset() {
 		"SM8250")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1032,7 +1032,7 @@ config_cpuset() {
 		"universal9811")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}dexopt/cpus" "0-6"
@@ -1043,7 +1043,7 @@ config_cpuset() {
 		"universal9820")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}dexopt/cpus" "0-3,4-5"
@@ -1054,7 +1054,7 @@ config_cpuset() {
 		"atoll")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1064,7 +1064,7 @@ config_cpuset() {
 		"SM7125")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1112,7 +1112,7 @@ boost_balanced() {
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "120"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -1134,7 +1134,7 @@ boost_extreme() {
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "192"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -1178,7 +1178,7 @@ boost_gaming() {
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "250"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "192"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -1199,30 +1199,7 @@ io_latency() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
-	done
-
-	for queue in /sys/block/sd*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
-
-		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
-			break
-		done
-
-		write "${queue}read_ahead_kb" "32"
-		write "${queue}nomerges" "0"
-		write "${queue}rq_affinity" "2"
-		write "${queue}nr_requests" "16"
-	done
-
-	for queue in /sys/block/mmcblk*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
-
-		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
-			break
-		done
-
+		write "${queue}iosched/group_idle" "1"
 		write "${queue}read_ahead_kb" "32"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "2"
@@ -1245,30 +1222,7 @@ io_balanced() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
-	done
-
-	for queue in /sys/block/sd*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
-
-		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
-			break
-		done
-
-		write "${queue}read_ahead_kb" "128"
-		write "${queue}nomerges" "0"
-		write "${queue}rq_affinity" "1"
-		write "${queue}nr_requests" "64"
-	done
-
-	for queue in /sys/block/mmcblk*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
-
-		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
-			break
-		done
-
+		write "${queue}iosched/group_idle" "1"
 		write "${queue}read_ahead_kb" "128"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "1"
@@ -1291,30 +1245,7 @@ io_extreme() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
-	done
-
-	for queue in /sys/block/sd*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
-
-		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && "${queue}scheduler" "${sched}"
-			break
-		done
-
-		write "${queue}read_ahead_kb" "256"
-		write "${queue}nomerges" "2"
-		write "${queue}rq_affinity" "2"
-		write "${queue}nr_requests" "256"
-	done
-
-	for queue in /sys/block/mmcblk*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
-
-		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && "${queue}scheduler" "${sched}"
-			break
-		done
-
+		write "${queue}iosched/group_idle" "1"
 		write "${queue}read_ahead_kb" "256"
 		write "${queue}nomerges" "2"
 		write "${queue}rq_affinity" "2"
@@ -1337,30 +1268,7 @@ io_battery() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
-	done
-
-	for queue in /sys/block/sd*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
-
-		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && "${queue}scheduler" "${sched}"
-			break
-		done
-
-		write "${queue}read_ahead_kb" "64"
-		write "${queue}nomerges" "0"
-		write "${queue}rq_affinity" "0"
-		write "${queue}nr_requests" "512"
-	done
-
-	for queue in /sys/block/mmcblk*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
-
-		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && "${queue}scheduler" "${sched}"
-			break
-		done
-
+		write "${queue}iosched/group_idle" "1"
 		write "${queue}read_ahead_kb" "64"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "0"
@@ -1383,30 +1291,7 @@ io_gaming() {
 		write "${queue}add_random" "0"
 		write "${queue}iostats" "0"
 		write "${queue}rotational" "0"
-	done
-
-	for queue in /sys/block/sd*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
-
-		for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
-			break
-		done
-
-		write "${queue}read_ahead_kb" "256"
-		write "${queue}nomerges" "2"
-		write "${queue}rq_affinity" "2"
-		write "${queue}nr_requests" "256"
-	done
-
-	for queue in /sys/block/mmcblk*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
-
-		for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
-			break
-		done
-
+		write "${queue}iosched/group_idle" "1"
 		write "${queue}read_ahead_kb" "256"
 		write "${queue}nomerges" "2"
 		write "${queue}rq_affinity" "2"
@@ -1824,13 +1709,12 @@ gpu_latency() {
 		write "${gpu}bus_split" "0"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
 		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-		write "${gpu}default_pwrlevel" "$((gpu_min_pl - 2))"
+		write "${gpu}min_pwrlevel" "$((gpu_min_pl - 2))"
 		write "${gpu}force_bus_on" "0"
 		write "${gpu}force_clk_on" "0"
 		write "${gpu}force_rail_on" "0"
-		write "${gpu}idle_timer" "100"
+		write "${gpu}idle_timer" "58"
 		write "${gpu}pwrnap" "1"
-		write "${gpu}pwrscale" "1"
 	elif [[ ${qcom} == "false" ]]; then
 		[[ ${one_ui} == "false" ]] && write "${gpu}dvfs" "1"
 		write "${gpui}gpu_max_clock" "${gpu_max_freq}"
@@ -1956,13 +1840,12 @@ gpu_balanced() {
 		write "${gpu}bus_split" "1"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
 		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-		write "${gpu}default_pwrlevel" "${gpu_min_pl}"
+		write "${gpu}min_pwrlevel" "${gpu_min_pl}"
 		write "${gpu}force_bus_on" "0"
 		write "${gpu}force_clk_on" "0"
 		write "${gpu}force_rail_on" "0"
-		write "${gpu}idle_timer" "80"
+		write "${gpu}idle_timer" "58"
 		write "${gpu}pwrnap" "1"
-		write "${gpu}pwrscale" "1"
 	elif [[ ${qcom} == "false" ]]; then
 		[[ ${one_ui} == "false" ]] && write "${gpu}dvfs" "1"
 		write "${gpui}gpu_max_clock" "${gpu_max_freq}"
@@ -2091,13 +1974,12 @@ gpu_extreme() {
 		write "${gpu}bus_split" "0"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
 		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-		write "${gpu}default_pwrlevel" "${gpu_max_pl}"
+		write "${gpu}min_pwrlevel" "${gpu_max_pl}"
 		write "${gpu}force_bus_on" "1"
 		write "${gpu}force_clk_on" "1"
 		write "${gpu}force_rail_on" "1"
-		write "${gpu}idle_timer" "10000"
+		write "${gpu}idle_timer" "7500"
 		write "${gpu}pwrnap" "1"
-		write "${gpu}pwrscale" "1"
 	elif [[ ${qcom} == "false" ]]; then
 		[[ ${one_ui} == "false" ]] && write "${gpu}dvfs" "1"
 		write "${gpui}gpu_max_clock" "${gpu_max_freq}"
@@ -2221,13 +2103,12 @@ gpu_battery() {
 		write "${gpu}bus_split" "1"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
 		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-		write "${gpu}default_pwrlevel" "${gpu_min_pl}"
+		write "${gpu}min_pwrlevel" "${gpu_min_pl}"
 		write "${gpu}force_bus_on" "0"
 		write "${gpu}force_clk_on" "0"
 		write "${gpu}force_rail_on" "0"
-		write "${gpu}idle_timer" "39"
+		write "${gpu}idle_timer" "58"
 		write "${gpu}pwrnap" "1"
-		write "${gpu}pwrscale" "1"
 	elif [[ ${qcom} == "false" ]]; then
 		[[ ${one_ui} == "false" ]] && write "${gpu}dvfs" "1"
 		write "${gpui}gpu_max_clock" "${gpu_max_freq}"
@@ -2356,13 +2237,12 @@ gpu_gaming() {
 		write "${gpu}bus_split" "0"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
 		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-		write "${gpu}default_pwrlevel" "${gpu_max_pl}"
+		write "${gpu}min_pwrlevel" "${gpu_max_pl}"
 		write "${gpu}force_bus_on" "1"
 		write "${gpu}force_clk_on" "1"
 		write "${gpu}force_rail_on" "1"
-		write "${gpu}idle_timer" "1000000"
+		write "${gpu}idle_timer" "10000"
 		write "${gpu}pwrnap" "0"
-		write "${gpu}pwrscale" "1"
 	elif [[ ${qcom} == "false" ]]; then
 		[[ ${one_ui} == "false" ]] && write "${gpu}dvfs" "0"
 		write "${gpui}gpu_max_clock" "${gpu_max_freq}"
@@ -3401,7 +3281,7 @@ ppm_policy_max() {
 cpu_clk_min() {
 	# Set min efficient CPU clock
 	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
-		for i in 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 998400; do
+		for i in 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1152000 1459200; do
 			[[ "$(grep ${i} ${pl}scaling_available_frequencies)" ]] && write ${pl}scaling_min_freq ${i}
 		done
 	done
@@ -3496,15 +3376,15 @@ vm_lmk_latency() {
 	sync
 	# VM settings to improve overall user experience and performance
 	write "${vm}drop_caches" "3"
-	write "${vm}dirty_background_ratio" "3"
-	write "${vm}dirty_ratio" "30"
+	write "${vm}dirty_background_ratio" "15"
+	write "${vm}dirty_ratio" "40"
 	write "${vm}dirty_expire_centisecs" "5000"
 	write "${vm}dirty_writeback_centisecs" "5000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	# Use SSWAP on samsung devices if it do not have more than 4 GB RAM
-	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
+	# Use SSWAP on samsung devices if it do not have more than 6 GB RAM
+	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "200"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3513,7 +3393,7 @@ vm_lmk_latency() {
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
 	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
-	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
+	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
 	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
@@ -3560,7 +3440,7 @@ vm_lmk_balanced() {
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
+	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3569,7 +3449,7 @@ vm_lmk_balanced() {
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
 	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
-	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
+	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
 	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "1"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
@@ -3609,14 +3489,14 @@ vm_lmk_extreme() {
 	}
 	sync
 	write "${vm}drop_caches" "3"
-	write "${vm}dirty_background_ratio" "15"
-	write "${vm}dirty_ratio" "30"
+	write "${vm}dirty_background_ratio" "10"
+	write "${vm}dirty_ratio" "40"
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
+	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "80"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3625,7 +3505,7 @@ vm_lmk_extreme() {
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
 	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
-	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
+	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
 	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
@@ -3665,14 +3545,14 @@ vm_lmk_battery() {
 	}
 	sync
 	write "${vm}drop_caches" "0"
-	write "${vm}dirty_background_ratio" "2"
-	write "${vm}dirty_ratio" "5"
+	write "${vm}dirty_background_ratio" "3"
+	write "${vm}dirty_ratio" "20"
 	write "${vm}dirty_expire_centisecs" "500"
 	write "${vm}dirty_writeback_centisecs" "500"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
+	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3681,7 +3561,7 @@ vm_lmk_battery() {
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
 	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
-	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
+	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
 	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
@@ -3721,14 +3601,14 @@ vm_lmk_gaming() {
 	}
 	sync
 	write "${vm}drop_caches" "3"
-	write "${vm}dirty_background_ratio" "15"
-	write "${vm}dirty_ratio" "30"
+	write "${vm}dirty_background_ratio" "10"
+	write "${vm}dirty_ratio" "40"
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "4000" ]] && write "${vm}swappiness" "150" || write "${vm}swappiness" "100"
+	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "75"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3737,7 +3617,7 @@ vm_lmk_gaming() {
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
 	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
-	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "1"
+	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
 	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
@@ -4041,7 +3921,7 @@ disable_emmc_clk_sclg() {
 
 disable_debug() {
 	# Disable debugging / logging
-	for i in edac_mc_log* enable_event_log log_level* *log_ue* *log_ce* log_ecn_error snapshot_crashdumper seclog*; do
+	for i in edac_mc_log* enable_event_log *log_level* *log_ue* *log_ce* log_ecn_error snapshot_crashdumper seclog* compat-log *log_enabled tracing_on mballoc_debug; do
 		for o in $(find /sys/ -type f -name "${i}"); do
 			write "${o}" "0"
 		done
@@ -4137,13 +4017,21 @@ com.tencent.ig
 
 #ktsr_create_default_cfg() {
 #ktsr_write_cfg "# KTSR Config File
-# While gven packages is detected running, it will switch to the chosen profile automatically.
+# When given packages is detected running, it will switch to the chosen profile to the specific package automatically.
 # List all the package names of the apps which you want to be on a specific profile while running.
 #com.riotgames.league.wildrift gaming
 #com.activision.callofduty.shooter gaming
 #com.mobile.legends gaming
 #com.tencent.ig gaming
 #"
+#}
+
+#is_pkg_on_ta() {
+#for pkg_nm in "$(cat "${ktsr_cfg}" | awk '{print $1}' | sed -e '1,3d')"; do
+#if [[ "$(grep -Eo "$(pgrep -f ${pkg_nm})" ${toptcdir})" ]] && [[ "$(cat /proc/"$(pgrep -f ${pkg_nm})"/oom_score_adj)" == "0" ]] || [[ "$(cat /proc/"$(pgrep -f ${pkg_nm})"/oom_score_adj)" == "1" ]]; then
+#pkg_on_ta=true
+#fi
+#done
 #}
 
 adjshield_start() {
@@ -4326,7 +4214,7 @@ fscc_list_append() {
 
 # $1:file/dir
 fscc_add_obj() {
-	# whether file or dir exists
+	# Whether file or dir exists
 	[[ -e "$1" ]] && fscc_list_append "$1"
 }
 
@@ -4342,14 +4230,14 @@ fscc_add_dex() {
 		&& {
 			# pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
 			package_apk_path="$(pm path "$1" | head -n 1 | cut -d: -f2)"
-			# user app: OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
+			# User app: OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
 			fscc_add_obj "${package_apk_path%/*}/oat"
 
-			# remove apk name suffix
+			# Remove apk name suffix
 			apk_nm="${package_apk_path%/*}"
-			# remove path prefix
+			# Remove path prefix
 			apk_nm="${apk_nm##*/}"
-			# system app: get dex & vdex
+			# System app: get dex & vdex
 			# /data/dalvik-cache/arm64/system@product@priv-app@OPSystemUI@OPSystemUI.apk@classes.dex
 		}
 	for dex in $(find ${dvk} | grep "@$apk_name@"); do
@@ -4358,7 +4246,7 @@ fscc_add_dex() {
 }
 
 fscc_add_app_home() {
-	# well, not working on Android 7.1
+	# Well, not working on Android 7.1
 	intent_act="android.intent.action.MAIN"
 	intent_cat="android.intent.category.HOME"
 	# "  packageName=com.microsoft.launcher"
@@ -4385,7 +4273,7 @@ fscc_add_apex_lib() {
 	fscc_add_obj "$(find /apex -name "$1" | head -n 1)"
 }
 
-# after appending fscc_file_list
+# After appending fscc_file_list
 fscc_start() {
 	# multiple parameters, cannot be warped by ""
 	${MODPATH}system/bin/${fscc_nm} -fdlb0 ${fscc_file_list}
@@ -4395,9 +4283,9 @@ fscc_stop() {
 	killall ${fscc_nm} 2>/dev/null
 }
 
-# return:status
+# Return:status
 fscc_status() {
-	# get the correct value after waiting for fscc loading files
+	# Get the correct value after waiting for fscc loading files
 	sleep 2
 	[[ "$(ps -A | grep "${fscc_nm}")" != "" ]] && echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache." || echo "Not running."
 }
@@ -4429,13 +4317,13 @@ cgroup_bbn_opt() {
 	pin_thread_on_pwr "system_server" "Miui|Connect|Network|Wifi|backup|Sync|Observer|Power|Sensor|batterystats"
 	pin_thread_on_pwr "system_server" "Thread-|pool-|Jit|CachedAppOpt|Greezer|TaskSnapshot|Oom"
 	change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "4"
-	# speed up searching service binder
+	# Speed up searching service binder
 	change_task_cgroup "servicemanag" "top-app" "cpuset"
-	# Pevent display service from being preempted by normal tasks
+	# Prevent display service from being preempted by normal tasks
 	unpin_proc "\.hardware\.display"
 	change_task_affinity "\.hardware\.display" "7f"
 	change_task_rt "\.hardware\.display" "2"
-	# let UX related Binders run with top-app
+	# Let UX related Binders run with top-app
 	change_thread_cgroup "\.hardware\.display" "^Binder" "top-app" "cpuset"
 	change_thread_cgroup "\.hardware\.display" "^HwBinder" "top-app" "cpuset"
 	change_thread_cgroup "\.hwcomposer" "^Binder" "top-app" "cpuset"
@@ -4448,13 +4336,13 @@ cgroup_bbn_opt() {
 	change_task_nice "zygote" "-20"
 	change_task_nice "binder" "-20"
 	[[ ${MIUI} == "true" ]] && [[ ${soc} == "lahaina" ]] || [[ ${soc} == "kona" ]] || [[ ${soc} == "msmnile" ]] && {
+		unpin_proc "\.miui\.home"
 		change_task_affinity "\.miui\.home" "0f"
 		change_task_nice "miui.home" "-18"
-		unpin_proc "\.miui\.home"
 	} || {
+		unpin_proc "\.miui\.home"
 		change_task_affinity "\.miui\.home" "ff"
 		change_task_nice "miui.home" "-18"
-		unpin_proc "\.miui\.home"
 	}
 }
 
@@ -4470,7 +4358,8 @@ clear_logs() {
 # Get screen state (ON | OFF)
 get_scrn_state() {
 	scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
-	[[ ${scrn_state} == "ON" ]] && scrn_on=1
+	[[ ${scrn_state} == "ON" ]] && scrn_on=1 || [[ ${scrn_state} == "" ]] && scrn_state=$(dumpsys window policy | grep screenState | awk -F '=' '{print $2}')
+	[[ ${scrn_state} == "SCREEN_STATE_ON" ]] && scrn_on=1
 }
 
 [[ ${qcom} == "true" ]] && {
