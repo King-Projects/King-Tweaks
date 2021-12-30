@@ -1969,7 +1969,7 @@ gpu_extreme() {
 	if [[ ${qcom} == "true" ]]; then
 		write "${gpu}throttling" "0"
 		write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
-		write "${gpu}devfreq/adrenoboost" "1"
+		write "${gpu}devfreq/adrenoboost" "0"
 		write "${gpu}force_no_nap" "0"
 		write "${gpu}bus_split" "0"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
@@ -2232,7 +2232,7 @@ gpu_gaming() {
 	if [[ ${qcom} == "true" ]]; then
 		write "${gpu}throttling" "0"
 		write "${gpu}thermal_pwrlevel" "${gpu_calc_thrtl}"
-		write "${gpu}devfreq/adrenoboost" "1"
+		write "${gpu}devfreq/adrenoboost" "0"
 		write "${gpu}force_no_nap" "1"
 		write "${gpu}bus_split" "0"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
@@ -3545,9 +3545,9 @@ vm_lmk_battery() {
 	}
 	sync
 	write "${vm}drop_caches" "0"
-	write "${vm}dirty_background_ratio" "3"
+	write "${vm}dirty_background_ratio" "5"
 	write "${vm}dirty_ratio" "20"
-	write "${vm}dirty_expire_centisecs" "500"
+	write "${vm}dirty_expire_centisecs" "200"
 	write "${vm}dirty_writeback_centisecs" "500"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
