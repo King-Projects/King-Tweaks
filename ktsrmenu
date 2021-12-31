@@ -85,7 +85,7 @@ menu() {
 	echo "${Y}* KTSR CLI *${N}"
 	echo "${Y}************${N}"
 	echo ""
-	echo "${G}Ver: 1.6.2.0-beta-r10${N}"
+	echo "${G}Ver: 1.6.3.0-beta-r10${N}"
 	echo ""
 	echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 	echo ""
@@ -182,6 +182,12 @@ menu() {
 		echo "[32] Disable Gapps"
 		echo ""
 	}
+	echo "[33] Set renderer to OpenGL"
+	echo ""
+	echo "[34] Set renderer to Skia OpenGL"
+	echo ""
+	echo "[35] Set renderer to Skia Vulkan"
+	echo ""
 	echo "${R}[0] Exit${N}"
 	echo ""
 	echo -n "${Y}[*] Select the desired option:${N} "
@@ -317,6 +323,8 @@ menu() {
 			settings put system peak_refresh_rate 60 2>/dev/null
 			settings put system user_refresh_rate 60 2>/dev/null
 			settings put global oneplus_screen_refresh_rate 1 2>/dev/null
+			settings put secure coloros_screen_refresh_rate 2 2>/dev/null
+			service call SurfaceFlinger 1035 i32 1 >/dev/null 2>&1
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
@@ -326,6 +334,8 @@ menu() {
 			settings put system peak_refresh_rate 90 2>/dev/null
 			settings put system user_refresh_rate 90 2>/dev/null
 			settings put global oneplus_screen_refresh_rate 0 2>/dev/null
+			settings put secure coloros_screen_refresh_rate 1 2>/dev/null
+			service call SurfaceFlinger 1035 i32 0 >/dev/null 2>&1
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
@@ -335,6 +345,7 @@ menu() {
 			settings put system peak_refresh_rate 120 2>/dev/null
 			settings put system user_refresh_rate 120 2>/dev/null
 			settings put global oneplus_screen_refresh_rate 0 2>/dev/null
+			settings put secure coloros_screen_refresh_rate 3 2>/dev/null
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
@@ -344,6 +355,8 @@ menu() {
 			settings reset system peak_refresh_rate >/dev/null 2>&1
 			settings reset system user_refresh_rate >/dev/null 2>&1
 			settings reset global oneplus_screen_refresh_rate >/dev/null 2>&1
+			settings reset secure coloros_screen_refresh_rate >/dev/null 2>&1
+			service call SurfaceFlinger 1035 i32 1 >/dev/null 2>&1
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
@@ -448,6 +461,30 @@ menu() {
 			pm disable com.android.vending 2>/dev/null
 			pm disable com.google.android.play.games 2>/dev/null
 			pm disable com.google.android.syncadapters.contacts 2>/dev/null
+			echo "${G}Done!${N}"
+			sleep 2
+			menu
+			;;
+		"33")
+			echo "You may need to reboot to apply the changes"
+			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=opengl/' ${MODDIR}/system.prop
+			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=false/' ${MODDIR}/system.prop
+			echo "${G}Done!${N}"
+			sleep 2
+			menu
+			;;
+		"34")
+			echo "You may need to reboot to apply the changes"
+			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' ${MODDIR}/system.prop
+			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=false/' ${MODDIR}/system.prop
+			echo "${G}Done!${N}"
+			sleep 2
+			menu
+			;;
+		"35")
+			echo "You may need to reboot to apply the changes"
+			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiavk/' ${MODDIR}/system.prop
+			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=true/' ${MODDIR}/system.prop
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
