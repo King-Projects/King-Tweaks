@@ -100,7 +100,7 @@ write() {
 	chmod +rw "$1" 2>/dev/null
 
 	# Fetch the current key value
-	curval=$(cat "$1" 2>/dev/null)
+	local curval=$(cat "$1" 2>/dev/null)
 
 	# Bail out if value is already set
 	[[ ${curval} == "$2" ]] && {
@@ -549,8 +549,8 @@ done
 
 enable_devfreq_boost() {
 	for dir in /sys/class/devfreq/*/; do
-		max_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
-		max_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
+		local max_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
+		local max_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
 		[[ ${max_devfreq2} -gt ${max_devfreq} ]] && max_devfreq=${max_devfreq2}
 		write "${dir}min_freq" "${max_devfreq}"
 	done
@@ -561,8 +561,8 @@ enable_devfreq_boost() {
 
 disable_devfreq_boost() {
 	for dir in /sys/class/devfreq/*/; do
-		min_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
-		min_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
+		local min_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
+		local min_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
 		[[ ${min_devfreq2} -lt ${min_devfreq} ]] && min_devfreq=${min_devfreq2}
 		write "${dir}min_freq" "${min_devfreq}"
 	done
@@ -1149,6 +1149,8 @@ boost_extreme() {
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
 		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "192"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "${cpu_max_freq}"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "${cpu_max_freq}"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -1196,6 +1198,8 @@ boost_gaming() {
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
 		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "192"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "${cpu_max_freq}"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "${cpu_max_freq}"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -1205,7 +1209,7 @@ boost_gaming() {
 io_latency() {
 	for queue in /sys/block/*/queue/; do
 		# Fetch the available schedulers from the block
-		avail_scheds="$(cat "${queue}scheduler")"
+		local avail_scheds="$(cat "${queue}scheduler")"
 
 		# Select the first scheduler available
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
@@ -1229,7 +1233,7 @@ io_latency() {
 
 io_balanced() {
 	for queue in /sys/block/*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
+		local avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
 			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
@@ -1252,10 +1256,10 @@ io_balanced() {
 
 io_extreme() {
 	for queue in /sys/block/*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
+		local avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && "${queue}scheduler" "${sched}"
+			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
 			break
 		done
 
@@ -1275,10 +1279,10 @@ io_extreme() {
 
 io_battery() {
 	for queue in /sys/block/*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
+		local avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ ${avail_scheds} == *"$sched"* ]] && "${queue}scheduler" "${sched}"
+			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
 			break
 		done
 
@@ -1298,7 +1302,7 @@ io_battery() {
 
 io_gaming() {
 	for queue in /sys/block/*/queue/; do
-		avail_scheds="$(cat "${queue}scheduler")"
+		local avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none; do
 			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
@@ -1323,7 +1327,7 @@ cpu_latency() {
 	# CPU tweaks
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq; do
 		# Fetch the available governors from the CPU
-		avail_govs="$(cat "${cpu}/scaling_available_governors")"
+		local avail_govs="$(cat "${cpu}/scaling_available_governors")"
 
 		# Attempt to set the governor in this order
 		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
@@ -1379,7 +1383,7 @@ cpu_latency() {
 
 cpu_balanced() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
-		avail_govs="$(cat "${cpu}scaling_available_governors")"
+		local avail_govs="$(cat "${cpu}scaling_available_governors")"
 
 		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1432,7 +1436,7 @@ cpu_balanced() {
 
 cpu_extreme() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
-		avail_govs="$(cat "${cpu}scaling_available_governors")"
+		local avail_govs="$(cat "${cpu}scaling_available_governors")"
 
 		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1484,7 +1488,7 @@ cpu_extreme() {
 
 cpu_battery() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
-		avail_govs="$(cat "${cpu}scaling_available_governors")"
+		local avail_govs="$(cat "${cpu}scaling_available_governors")"
 
 		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1537,7 +1541,7 @@ cpu_battery() {
 
 cpu_gaming() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
-		avail_govs="$(cat "${cpu}scaling_available_governors")"
+		local avail_govs="$(cat "${cpu}scaling_available_governors")"
 
 		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1686,7 +1690,7 @@ gpu_latency() {
 
 	if [[ ${qcom} == "true" ]]; then
 		# Fetch the available governors from the GPU
-		avail_govs="$(cat "${gpu}devfreq/available_governors")"
+		local avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 		# Attempt to set the governor in this order
 		for governor in msm-adreno-tz simple_ondemand ondemand; do
@@ -1698,7 +1702,7 @@ gpu_latency() {
 		done
 
 	elif [[ ${exynos} == "true" ]]; then
-		avail_govs="$(cat "${gpui}gpu_available_governor")"
+		local avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 		for governor in Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1708,7 +1712,7 @@ gpu_latency() {
 		done
 
 	elif [[ ${mtk} == "true" ]]; then
-		avail_govs="$(cat "${gpu}available_governors")"
+		local avail_govs="$(cat "${gpu}available_governors")"
 
 		for governor in Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1819,7 +1823,7 @@ gpu_latency() {
 
 gpu_balanced() {
 	if [[ ${qcom} == "true" ]]; then
-		avail_govs="$(cat "${gpu}devfreq/available_governors")"
+		local avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 		for governor in msm-adreno-tz simple_ondemand ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1829,7 +1833,7 @@ gpu_balanced() {
 		done
 
 	elif [[ ${exynos} == "true" ]]; then
-		avail_govs="$(cat "${gpui}gpu_available_governor")"
+		local avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 		for governor in Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1839,7 +1843,7 @@ gpu_balanced() {
 		done
 
 	elif [[ ${mtk} == "true" ]]; then
-		avail_govs="$(cat "${gpu}available_governors")"
+		local avail_govs="$(cat "${gpu}available_governors")"
 
 		for governor in Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1953,7 +1957,7 @@ gpu_balanced() {
 
 gpu_extreme() {
 	if [[ ${qcom} == "true" ]]; then
-		avail_govs="$(cat "${gpu}devfreq/available_governors")"
+		local avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 		for governor in msm-adreno-tz simple_ondemand ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1963,7 +1967,7 @@ gpu_extreme() {
 		done
 
 	elif [[ ${exynos} == "true" ]]; then
-		avail_govs="$(cat "${gpui}gpu_available_governor")"
+		local avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 		for governor in Booster Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1973,7 +1977,7 @@ gpu_extreme() {
 		done
 
 	elif [[ ${mtk} == "true" ]]; then
-		avail_govs="$(cat "${gpu}available_governors")"
+		local avail_govs="$(cat "${gpu}available_governors")"
 
 		for governor in Booster Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -2082,7 +2086,7 @@ gpu_extreme() {
 
 gpu_battery() {
 	if [[ ${qcom} == "true" ]]; then
-		avail_govs="$(cat "${gpu}devfreq/available_governors")"
+		local avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 		for governor in msm-adreno-tz simple_ondemand ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -2092,7 +2096,7 @@ gpu_battery() {
 		done
 
 	elif [[ ${exynos} == "true" ]]; then
-		avail_govs="$(cat "${gpui}gpu_available_governor")"
+		local avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 		for governor in Interactive mali_ondemand ondemand Dynamic Static; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -2102,7 +2106,7 @@ gpu_battery() {
 		done
 
 	elif [[ ${mtk} == "true" ]]; then
-		avail_govs="$(cat "${gpu}available_governors")"
+		local avail_govs="$(cat "${gpu}available_governors")"
 
 		for governor in Interactive mali_ondemand ondemand Dynamic Static; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -2216,7 +2220,7 @@ gpu_battery() {
 
 gpu_gaming() {
 	if [[ ${qcom} == "true" ]]; then
-		avail_govs="$(cat "${gpu}devfreq/available_governors")"
+		local avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 		for governor in msm-adreno-tz simple_ondemand ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -2226,7 +2230,7 @@ gpu_gaming() {
 		done
 
 	elif [[ ${exynos} == "true" ]]; then
-		avail_govs="$(cat "${gpui}gpu_available_governor")"
+		local avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 		for governor in Booster Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -3353,41 +3357,41 @@ cpu_clk_max() {
 	kmsg "Tweaked CPU clocks"
 	kmsg3 ""
 
-	if [[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]]; then
+	[[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] && {
 		write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
 		kmsg "Don't allow CPUs to use it's deepest sleep state"
 		kmsg3 ""
-	fi
+	}
 }
 
 vm_lmk_latency() {
 	[[ ${total_ram_kb} -gt "8388608" ]] && {
-		minfree="25600,38400,51200,64000,256000,307200"
-		efk="204800"
+		local minfree="25600,38400,51200,64000,256000,307200"
+		local efk="204800"
 	}
 	[[ ${total_ram_kb} -le "8388608" ]] && {
-		minfree="25600,38400,51200,64000,153600,179200"
-		efk="128000"
+		local minfree="25600,38400,51200,64000,153600,179200"
+		local efk="128000"
 	}
 	[[ ${total_ram_kb} -le "6291456" ]] && {
-		minfree="25600,38400,51200,64000,102400,128000"
-		efk="102400"
+		local minfree="25600,38400,51200,64000,102400,128000"
+		local efk="102400"
 	}
 	[[ ${total_ram_kb} -le "4197304" ]] && {
-		minfree="12800,19200,25600,32000,76800,102400"
-		efk="76800"
+		local minfree="12800,19200,25600,32000,76800,102400"
+		local efk="76800"
 	}
 	[[ ${total_ram_kb} -le "3145728" ]] && {
-		minfree="12800,19200,25600,32000,51200,76800"
-		efk="51200"
+		local minfree="12800,19200,25600,32000,51200,76800"
+		local efk="51200"
 	}
 	[[ ${total_ram_kb} -le "2098652" ]] && {
-		minfree="12800,19200,25600,32000,38400,51200"
-		efk="25600"
+		local minfree="12800,19200,25600,32000,38400,51200"
+		local efk="25600"
 	}
 	[[ ${total_ram_kb} -le "1049326" ]] && {
-		minfree="5120,10240,12800,15360,25600,38400"
-		efk="19200"
+		local minfree="5120,10240,12800,15360,25600,38400"
+		local efk="19200"
 	}
 	# Always sync before dropping caches
 	sync
@@ -3400,8 +3404,8 @@ vm_lmk_latency() {
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	# Use SSWAP on samsung devices if it do not have more than 6 GB RAM
-	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
+	# Use SSWAP on devices if it do not have more than 6 GB RAM
+	[[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "200"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3421,32 +3425,32 @@ vm_lmk_latency() {
 
 vm_lmk_balanced() {
 	[[ ${total_ram_kb} -gt "8388608" ]] && {
-		minfree="25600,38400,51200,64000,256000,307200"
-		efk="204800"
+		local minfree="25600,38400,51200,64000,256000,307200"
+		local efk="204800"
 	}
 	[[ ${total_ram_kb} -le "8388608" ]] && {
-		minfree="25600,38400,51200,64000,153600,179200"
-		efk="128000"
+		local minfree="25600,38400,51200,64000,153600,179200"
+		local efk="128000"
 	}
 	[[ ${total_ram_kb} -le "6291456" ]] && {
-		minfree="25600,38400,51200,64000,102400,128000"
-		efk="102400"
+		local minfree="25600,38400,51200,64000,102400,128000"
+		local efk="102400"
 	}
 	[[ ${total_ram_kb} -le "4197304" ]] && {
-		minfree="12800,19200,25600,32000,76800,102400"
-		efk="76800"
+		local minfree="12800,19200,25600,32000,76800,102400"
+		local efk="76800"
 	}
 	[[ ${total_ram_kb} -le "3145728" ]] && {
-		minfree="12800,19200,25600,32000,51200,76800"
-		efk="51200"
+		local minfree="12800,19200,25600,32000,51200,76800"
+		local efk="51200"
 	}
 	[[ ${total_ram_kb} -le "2098652" ]] && {
-		minfree="12800,19200,25600,32000,38400,51200"
-		efk="25600"
+		local minfree="12800,19200,25600,32000,38400,51200"
+		local efk="25600"
 	}
 	[[ ${total_ram_kb} -le "1049326" ]] && {
-		minfree="5120,10240,12800,15360,25600,38400"
-		efk="19200"
+		local minfree="5120,10240,12800,15360,25600,38400"
+		local efk="19200"
 	}
 	sync
 	write "${vm}drop_caches" "2"
@@ -3457,7 +3461,7 @@ vm_lmk_balanced() {
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
+	[[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3477,32 +3481,32 @@ vm_lmk_balanced() {
 
 vm_lmk_extreme() {
 	[[ ${total_ram_kb} -gt "8388608" ]] && {
-		minfree="25600,38400,51200,64000,256000,307200"
-		efk="204800"
+		local minfree="25600,38400,51200,64000,256000,307200"
+		local efk="204800"
 	}
 	[[ ${total_ram_kb} -le "8388608" ]] && {
-		minfree="25600,38400,51200,64000,153600,179200"
-		efk="128000"
+		local minfree="25600,38400,51200,64000,153600,179200"
+		local efk="128000"
 	}
 	[[ ${total_ram_kb} -le "6291456" ]] && {
-		minfree="25600,38400,51200,64000,102400,128000"
-		efk="102400"
+		local minfree="25600,38400,51200,64000,102400,128000"
+		local efk="102400"
 	}
 	[[ ${total_ram_kb} -le "4197304" ]] && {
-		minfree="12800,19200,25600,32000,76800,102400"
-		efk="76800"
+		local minfree="12800,19200,25600,32000,76800,102400"
+		local efk="76800"
 	}
 	[[ ${total_ram_kb} -le "3145728" ]] && {
-		minfree="12800,19200,25600,32000,51200,76800"
-		efk="51200"
+		local minfree="12800,19200,25600,32000,51200,76800"
+		local efk="51200"
 	}
 	[[ ${total_ram_kb} -le "2098652" ]] && {
-		minfree="12800,19200,25600,32000,38400,51200"
-		efk="25600"
+		local minfree="12800,19200,25600,32000,38400,51200"
+		local efk="25600"
 	}
 	[[ ${total_ram_kb} -le "1049326" ]] && {
-		minfree="5120,10240,12800,15360,25600,38400"
-		efk="19200"
+		local minfree="5120,10240,12800,15360,25600,38400"
+		local efk="19200"
 	}
 	sync
 	write "${vm}drop_caches" "3"
@@ -3513,7 +3517,7 @@ vm_lmk_extreme() {
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
+	[[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "80"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3533,32 +3537,32 @@ vm_lmk_extreme() {
 
 vm_lmk_battery() {
 	[[ ${total_ram_kb} -gt "8388608" ]] && {
-		minfree="25600,38400,51200,64000,256000,307200"
-		efk="204800"
+		local minfree="25600,38400,51200,64000,256000,307200"
+		local efk="204800"
 	}
 	[[ ${total_ram_kb} -le "8388608" ]] && {
-		minfree="25600,38400,51200,64000,153600,179200"
-		efk="128000"
+		local minfree="25600,38400,51200,64000,153600,179200"
+		local efk="128000"
 	}
 	[[ ${total_ram_kb} -le "6291456" ]] && {
-		minfree="25600,38400,51200,64000,102400,128000"
-		efk="102400"
+		local minfree="25600,38400,51200,64000,102400,128000"
+		local efk="102400"
 	}
 	[[ ${total_ram_kb} -le "4197304" ]] && {
-		minfree="12800,19200,25600,32000,76800,102400"
-		efk="76800"
+		local minfree="12800,19200,25600,32000,76800,102400"
+		local efk="76800"
 	}
 	[[ ${total_ram_kb} -le "3145728" ]] && {
-		minfree="12800,19200,25600,32000,51200,76800"
-		efk="51200"
+		local minfree="12800,19200,25600,32000,51200,76800"
+		local efk="51200"
 	}
 	[[ ${total_ram_kb} -le "2098652" ]] && {
-		minfree="12800,19200,25600,32000,38400,51200"
-		efk="25600"
+		local minfree="12800,19200,25600,32000,38400,51200"
+		local efk="25600"
 	}
 	[[ ${total_ram_kb} -le "1049326" ]] && {
-		minfree="5120,10240,12800,15360,25600,38400"
-		efk="19200"
+		local minfree="5120,10240,12800,15360,25600,38400"
+		local efk="19200"
 	}
 	sync
 	write "${vm}drop_caches" "0"
@@ -3569,7 +3573,7 @@ vm_lmk_battery() {
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
+	[[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3589,32 +3593,32 @@ vm_lmk_battery() {
 
 vm_lmk_gaming() {
 	[[ ${total_ram_kb} -gt "8388608" ]] && {
-		minfree="25600,38400,51200,64000,256000,307200"
-		efk="204800"
+		local minfree="25600,38400,51200,64000,256000,307200"
+		local efk="204800"
 	}
 	[[ ${total_ram_kb} -le "8388608" ]] && {
-		minfree="25600,38400,51200,64000,153600,179200"
-		efk="128000"
+		local minfree="25600,38400,51200,64000,153600,179200"
+		local efk="128000"
 	}
 	[[ ${total_ram_kb} -le "6291456" ]] && {
-		minfree="25600,38400,51200,64000,102400,128000"
-		efk="102400"
+		local minfree="25600,38400,51200,64000,102400,128000"
+		local efk="102400"
 	}
 	[[ ${total_ram_kb} -le "4197304" ]] && {
-		minfree="12800,19200,25600,32000,76800,102400"
-		efk="76800"
+		local minfree="12800,19200,25600,32000,76800,102400"
+		local efk="76800"
 	}
 	[[ ${total_ram_kb} -le "3145728" ]] && {
-		minfree="12800,19200,25600,32000,51200,76800"
-		efk="51200"
+		local minfree="12800,19200,25600,32000,51200,76800"
+		local efk="51200"
 	}
 	[[ ${total_ram_kb} -le "2098652" ]] && {
-		minfree="12800,19200,25600,32000,38400,51200"
-		efk="25600"
+		local minfree="12800,19200,25600,32000,38400,51200"
+		local efk="25600"
 	}
 	[[ ${total_ram_kb} -le "1049326" ]] && {
-		minfree="5120,10240,12800,15360,25600,38400"
-		efk="19200"
+		local minfree="5120,10240,12800,15360,25600,38400"
+		local efk="19200"
 	}
 	sync
 	write "${vm}drop_caches" "3"
@@ -3625,7 +3629,7 @@ vm_lmk_gaming() {
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ ${samsung} == "true" ]] && [[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
+	[[ ${total_ram} -lt "6144" ]] && write "${vm}swappiness" "190" || write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "75"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -3750,7 +3754,7 @@ disable_tb() {
 
 config_tcp() {
 	# Fetch the available TCP congestion control
-	avail_con="$(cat "${tcp}tcp_available_congestion_control")"
+	local avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 
 	# Attempt to set the TCP congestion control in this order
 	for tcpcc in bbr2 bbr westwood cubic bic; do
@@ -4066,7 +4070,7 @@ adjshield_stop() { killall ${adj_nm} 2>/dev/null; }
 adjshield_status() {
 	[[ "$(ps -A | grep "${adj_nm}")" != "" ]] && echo "Adjshield running. see ${adj_log} for details." || {
 		# Error: Log file not found
-		err="$(cat "${adj_log}" | grep Error | head -n 1 | cut -d: -f2)"
+		local err="$(cat "${adj_log}" | grep Error | head -n 1 | cut -d: -f2)"
 		[[ ${err} != "" ]] && echo "Not running. ${err}." || echo "Not running. Unknown reason."
 	}
 }
@@ -4075,7 +4079,7 @@ adjshield_status() {
 change_task_cgroup() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			echo "${temp_tid}" >"/dev/$3/$2/tasks"
 		done
 	done
@@ -4084,7 +4088,7 @@ change_task_cgroup() {
 # $1:process_name $2:cgroup_name $3:"cpuset"/"stune"
 change_proc_cgroup() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
-		comm="$(cat /proc/${temp_pid}/comm)"
+		local comm="$(cat /proc/${temp_pid}/comm)"
 		echo "${temp_pid}" >"/dev/$3/$2/cgroup.procs"
 	done
 }
@@ -4093,7 +4097,7 @@ change_proc_cgroup() {
 change_thread_cgroup() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			[[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && echo "${temp_tid}" >"/dev/$4/$3/tasks"
 		done
 	done
@@ -4102,7 +4106,7 @@ change_thread_cgroup() {
 # $1:task_name $2:cgroup_name $3:"cpuset"/"stune"
 change_main_thread_cgroup() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
-		comm="$(cat /proc/${temp_pid}/comm)"
+		local comm="$(cat /proc/${temp_pid}/comm)"
 		echo "${temp_pid}" >"/dev/$3/$2/tasks"
 	done
 }
@@ -4111,7 +4115,7 @@ change_main_thread_cgroup() {
 change_task_affinity() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			taskset -p "$2" "${temp_tid}" >>"${bbn_log}"
 		done
 	done
@@ -4121,7 +4125,7 @@ change_task_affinity() {
 change_thread_affinity() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			[[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && taskset -p "$3" "${temp_tid}" >>"${bbn_log}"
 		done
 	done
@@ -4142,7 +4146,7 @@ change_task_nice() {
 change_thread_nice() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			[[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && renice -n +40 -p "${temp_tid}" && renice -n -19 -p "${temp_tid}" && renice -n "$3" -p "${temp_tid}"
 		done
 	done
@@ -4152,7 +4156,7 @@ change_thread_nice() {
 change_task_rt() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			chrt -f -p "$2" "${temp_tid}" >>"${bbn_log}"
 		done
 	done
@@ -4162,14 +4166,15 @@ change_task_rt() {
 change_thread_rt() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			[[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && chrt -f -p "$3" "${temp_tid}" >>"${bbn_log}"
 		done
 	done
 }
 
 # $1:task_name
-change_task_high_prio() { change_task_nice "$1" "-19"; } # audio thread nice => -19
+# audio thread nice => -19
+change_task_high_prio() { change_task_nice "$1" "-19"; }
 
 # $1:task_name $2:thread_name
 change_thread_high_prio() { change_thread_nice "$1" "$2" "-19"; }
@@ -4215,7 +4220,7 @@ rebuild_process_scan_cache() {
 	# ps -Ao pid,args | grep kswapd
 	# 150 [kswapd0]
 	# 16490 grep kswapd
-	ps_ret="$(ps -Ao pid,args)"
+	local ps_ret="$(ps -Ao pid,args)"
 }
 
 # $1:apk_path $return:oat_path
@@ -4246,14 +4251,14 @@ fscc_add_dex() {
 	[[ "$1" != "" ]] \
 		&& {
 			# pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
-			package_apk_path="$(pm path "$1" | head -n 1 | cut -d: -f2)"
+			local package_apk_path="$(pm path "$1" | head -n 1 | cut -d: -f2)"
 			# User app: OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
 			fscc_add_obj "${package_apk_path%/*}/oat"
 
 			# Remove apk name suffix
-			apk_nm="${package_apk_path%/*}"
+			local apk_nm="${package_apk_path%/*}"
 			# Remove path prefix
-			apk_nm="${apk_nm##*/}"
+			local apk_nm="${apk_nm##*/}"
 			# System app: get dex & vdex
 			# /data/dalvik-cache/arm64/system@product@priv-app@OPSystemUI@OPSystemUI.apk@classes.dex
 		}
@@ -4264,10 +4269,10 @@ fscc_add_dex() {
 
 fscc_add_app_home() {
 	# Well, not working on Android 7.1
-	intent_act="android.intent.action.MAIN"
-	intent_cat="android.intent.category.HOME"
+	local intent_act="android.intent.action.MAIN"
+	local intent_cat="android.intent.category.HOME"
 	# "  packageName=com.microsoft.launcher"
-	pkg_nm="$(pm resolve-activity -a "${intent_act}" -c "${intent_cat}" | grep packageName | head -n 1 | cut -d= -f2)"
+	local pkg_nm="$(pm resolve-activity -a "${intent_act}" -c "${intent_cat}" | grep packageName | head -n 1 | cut -d= -f2)"
 	# /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.dex 16M/31M  53.2%
 	# /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.vdex 120K/120K  100%
 	# /system/priv-app/OPLauncher2/OPLauncher2.apk 14M/30M  46.1%
@@ -4277,7 +4282,7 @@ fscc_add_app_home() {
 
 fscc_add_app_ime() {
 	# "      packageName=com.baidu.input_yijia"
-	pkg_nm="$(ime list | grep packageName | head -n 1 | cut -d= -f2)"
+	local pkg_nm="$(ime list | grep packageName | head -n 1 | cut -d= -f2)"
 	# /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.dex 5M/17M  33.1%
 	# /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.vdex 2M/7M  28.1%
 	# /system/app/baidushurufa/baidushurufa.apk 1M/28M  5.71%
@@ -4365,17 +4370,17 @@ cgroup_bbn_opt() {
 
 clear_logs() {
 	# Remove debug log if size is >= 1 MB
-	kdbg_max_size=1000000
+	local kdbg_max_size=1000000
 	# Do the same to sqlite opt log
-	sqlite_opt_max_size=1000000
+	local sqlite_opt_max_size=1000000
 	[[ "$(stat -t ${KDBG} 2>/dev/null | awk '{print $2}')" -ge ${kdbg_max_size} ]] && rm -rf ${KDBG}
 	[[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -ge ${sqlite_opt_max_size} ]] && rm -rf /data/media/0/KTSR/sqlite_opt.log
 }
 
 # Get screen state (ON | OFF)
 get_scrn_state() {
-	scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
-	[[ ${scrn_state} == "ON" ]] && scrn_on=1 || [[ ${scrn_state} == "" ]] && scrn_state=$(dumpsys window policy | grep screenState | awk -F '=' '{print $2}')
+	local scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
+	[[ ${scrn_state} == "ON" ]] && scrn_on=1 || [[ ${scrn_state} == "" ]] && local scrn_state=$(dumpsys window policy | grep screenState | awk -F '=' '{print $2}')
 	[[ ${scrn_state} == "SCREEN_STATE_ON" ]] && scrn_on=1
 }
 
@@ -4461,7 +4466,7 @@ apply_all_auto() {
 }
 
 latency() {
-	init=$(date +%s)
+	local init=$(date +%s)
 	sync
 	apply_all
 	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
@@ -4470,9 +4475,9 @@ latency() {
 
 	kmsg "Latency profile applied. Enjoy!"
 	kmsg3 ""
-	exit=$(date +%s)
+	local exit=$(date +%s)
 
-	exec_time=$((exit - init))
+	local exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
 automatic() {
@@ -4485,7 +4490,7 @@ automatic() {
 	kmsg3 ""
 }
 balanced() {
-	init=$(date +%s)
+	local init=$(date +%s)
 	sync
 	apply_all
 	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
@@ -4494,13 +4499,13 @@ balanced() {
 
 	kmsg "Balanced profile applied. Enjoy!"
 	kmsg3 ""
-	exit=$(date +%s)
+	local exit=$(date +%s)
 
-	exec_time=$((exit - init))
+	local exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
 extreme() {
-	init=$(date +%s)
+	local init=$(date +%s)
 	sync
 	apply_all
 	cmd power set-adaptive-power-saver-enabled false >/dev/null 2>&1
@@ -4511,11 +4516,11 @@ extreme() {
 	kmsg3 ""
 	exit=$(date +%s)
 
-	exec_time=$((exit - init))
+	local exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
 battery() {
-	init=$(date +%s)
+	local init=$(date +%s)
 	sync
 	apply_all
 	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
@@ -4524,13 +4529,13 @@ battery() {
 
 	kmsg "Battery profile applied. Enjoy!"
 	kmsg3 ""
-	exit=$(date +%s)
+	local exit=$(date +%s)
 
-	exec_time=$((exit - init))
+	local exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
 gaming() {
-	init=$(date +%s)
+	local init=$(date +%s)
 	sync
 	apply_all
 	cmd power set-adaptive-power-saver-enabled false >/dev/null 2>&1
@@ -4540,8 +4545,8 @@ gaming() {
 
 	kmsg "Gaming profile applied. Enjoy!"
 	kmsg3 ""
-	exit=$(date +%s)
+	local exit=$(date +%s)
 
-	exec_time=$((exit - init))
+	local exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
