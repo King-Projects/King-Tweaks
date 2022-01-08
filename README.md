@@ -6,21 +6,21 @@ It tweaks kernel settings, android settings, and much more to bring a less bloat
 
 # FAQ
 
-Q. Is it universal?
+Is it universal?
 
-A. Yes, it is, and should work on most of the devices / SOCs properly.
+  - Yes, it is, and should work on most of the devices / SOCs properly.
 
-Q. Can i see what the module is doing on my device?
+Can i see what the module is doing on my device?
 
-A. Yes, you can find the logs that KTSR creates on your internal storage/KTSR folder.
+  - You can find the logs that KTSR creates on your internal storage/KTSR folder.
 
-Q. Does it conflict with **NFS Injector or MAGNETAR** like modules / apps?
+Does it conflict with modules like **NFS Injector** or **MAGNETAR** and/or similar apps?
 
-A. Yes, if you have any modules that touch kernel settings or android settings itself, please remove it to avoid each one overriding itself.
+  - If you have any modules that touch kernel settings or Android settings itself, please remove them to avoid each other overriding themselfs.
 
-Q. Which magisk version is compatible with the module?
+Which magisk version the module is compatible with?
 
-A. You need to have at least **Magisk 20.4 (20400)** version code to be able to install it.
+  - You need to have at least Magisk **20.4 (20400)** to be able to install it.
 
 # Show us some love
 
