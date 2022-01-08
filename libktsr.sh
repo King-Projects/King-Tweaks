@@ -571,6 +571,14 @@ disable_devfreq_boost() {
 	kmsg3 ""
 }
 
+get_ka_pid() {
+	if [[ "$(pgrep -f kingauto)" != "" ]]; then
+		echo "$(pgrep -f kingauto)"
+	else
+		echo "[Not Running]"
+	fi
+}
+
 print_info() {
 	kmsg3 ""
 	kmsg "General Info"
@@ -616,6 +624,8 @@ print_info() {
 	kmsg3 "** System Uptime: ${sys_uptime}"
 	kmsg3 "** SELinux: ${slnx_stt}"
 	kmsg3 "** Busybox: ${bb_ver}"
+	kmsg3 "** Current KTSR PID: $$"
+	kmsg3 "** Current KTSR Auto PID: $(get_ka_pid)"
 	kmsg3 ""
 	kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 	kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
@@ -1085,7 +1095,8 @@ boost_latency() {
 	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
@@ -1107,7 +1118,8 @@ boost_balanced() {
 	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "120"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
@@ -1129,8 +1141,10 @@ boost_extreme() {
 	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
+		write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:${cpu_max_freq} 1:0 2:0 3:0 4:${cpu_max_freq} 5:0 6:0 7:0"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
@@ -1151,7 +1165,8 @@ boost_battery() {
 	[[ -e "/sys/module/cpu_boost/parameters/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
@@ -1173,8 +1188,10 @@ boost_gaming() {
 	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "Y"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
 		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
+		write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:${cpu_max_freq} 1:0 2:0 3:0 4:${cpu_max_freq} 5:0 6:0 7:0"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
@@ -1974,7 +1991,7 @@ gpu_extreme() {
 		write "${gpu}bus_split" "0"
 		write "${gpu}devfreq/max_freq" "${gpu_max_freq}"
 		write "${gpu}devfreq/min_freq" "${gpu_min_freq}"
-		write "${gpu}min_pwrlevel" "${gpu_max_pl}"
+		write "${gpu}min_pwrlevel" "1"
 		write "${gpu}force_bus_on" "1"
 		write "${gpu}force_clk_on" "1"
 		write "${gpu}force_rail_on" "1"
@@ -4337,7 +4354,7 @@ cgroup_bbn_opt() {
 	change_task_nice "binder" "-20"
 	[[ ${MIUI} == "true" ]] && [[ ${soc} == "lahaina" ]] || [[ ${soc} == "kona" ]] || [[ ${soc} == "msmnile" ]] && {
 		unpin_proc "\.miui\.home"
-		change_task_affinity "\.miui\.home" "0f"
+		change_task_affinity "\.miui\.home" "7f"
 		change_task_nice "miui.home" "-18"
 	} || {
 		unpin_proc "\.miui\.home"
@@ -4398,7 +4415,8 @@ apply_all() {
 	[[ ${ktsr_prof_en} == "battery" ]] || [[ ${ktsr_prof_en} == "balanced" ]] || [[ ${ktsr_prof_en} == "latency" ]] && enable_lpm || disable_lpm
 	[[ ${ktsr_prof_en} != "extreme" ]] && [[ ${ktsr_prof_en} != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
 	[[ ${ktsr_prof_en} == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
-	[[ ${ktsr_prof_en} == "balanced" ]] && emmc_clk_sclg_balanced || [[ ${ktsr_prof_en} == "battery" ]] && emmc_clk_sclg_pwr_saving
+	[[ ${ktsr_prof_en} == "balanced" ]] && emmc_clk_sclg_balanced
+	[[ ${ktsr_prof_en} == "battery" ]] && emmc_clk_sclg_pwr_saving
 	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && disable_emmc_clk_sclg
 	[[ ${ktsr_prof_en} != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
@@ -4435,7 +4453,8 @@ apply_all_auto() {
 	[[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && enable_lpm || disable_lpm
 	[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
-	[[ "$(getprop kingauto.prof)" == "balanced" ]] && emmc_clk_sclg_balanced || [[ "$(getprop kingauto.prof)" == "battery" ]] && emmc_clk_sclg_pwr_saving
+	[[ "$(getprop kingauto.prof)" == "balanced" ]] && emmc_clk_sclg_balanced
+	[[ "$(getprop kingauto.prof)" == "battery" ]] && emmc_clk_sclg_pwr_saving
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_emmc_clk_sclg
 	[[ "$(getprop kingauto.prof)" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
