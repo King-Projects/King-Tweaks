@@ -8,9 +8,9 @@
 ###############################
 # Variables
 ###############################
-MODPATH="/data/adb/modules/KTSR/"
-KLOG="/data/media/0/KTSR/KTSR.log"
-KDBG="/data/media/0/KTSR/KTSR_DBG.log"
+modpath="/data/adb/modules/KTSR/"
+klog="/data/media/0/KTSR/KTSR.log"
+kdbg="/data/media/0/KTSR/KTSR_DBG.log"
 tcp="/proc/sys/net/ipv4/"
 kernel="/proc/sys/kernel/"
 vm="/proc/sys/vm/"
@@ -36,7 +36,7 @@ apx2="/apex/com.android.runtime/javalib"
 fscc_file_list=""
 perfmgr="/proc/perfmgr/"
 one_ui=false
-MIUI=false
+miui=false
 samsung=false
 qcom=false
 exynos=false
@@ -46,26 +46,26 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=0
-lib_ver="1.0.3"
+lib_ver="1.0.4"
 #ktsr_cfg="/data/media/0/KTSR/KTSR.conf"
 #pkg_on_ta=false
 migt="/sys/module/migt/parameters"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 
 # Log in white and continue (unnecessary)
-kmsg() { echo -e "[$(date +%T)]: [*] $@" >>"${KLOG}"; }
+kmsg() { echo -e "[$(date +%T)]: [*] $@" >>"${klog}"; }
 
 kmsg1() { {
-	echo -e "$@" >>"${KDBG}"
+	echo -e "$@" >>"${kdbg}"
 	echo -e "$@"
 }; }
 
 kmsg2() { {
-	echo -e "[!] $@" >>"${KDBG}"
+	echo -e "[!] $@" >>"${kdbg}"
 	echo -e "[!] $@"
 }; }
 
-kmsg3() { echo -e "$@" >>"${KLOG}"; }
+kmsg3() { echo -e "$@" >>"${klog}"; }
 
 # toasttext: <text content>
 toast() { am start -a android.intent.action.MAIN -e toasttext "Applying ${ktsr_prof_en} profile..." -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
@@ -88,7 +88,7 @@ toast_fr() { am start -a android.intent.action.MAIN -e toasttext "Chargement du 
 
 toast_fr_1() { am start -a android.intent.action.MAIN -e toasttext "Profil ${ktsr_prof_fr} chargé" -n bellavita.toast/.MainActivity >/dev/null 2>&1; }
 
-# write:$1 $2
+# write $1 <path> $2 <value>
 write() {
 	# Bail out if file does not exist
 	[[ ! -f "$1" ]] && {
@@ -100,7 +100,7 @@ write() {
 	chmod +rw "$1" 2>/dev/null
 
 	# Fetch the current key value
-	local curval=$(cat "$1" 2>/dev/null)
+	curval=$(cat "$1" 2>/dev/null)
 
 	# Bail out if value is already set
 	[[ ${curval} == "$2" ]] && {
@@ -416,16 +416,16 @@ kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 [[ -e "/sys/class/power_supply/battery/capacity" ]] && batt_pctg=$(cat /sys/class/power_supply/battery/capacity) || batt_pctg=$(dumpsys battery 2>/dev/null | awk '/level/{print $2}')
 
 # Fetch build version
-bd_ver=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-" '{print $1}')
+bd_ver=$(grep version= "${modpath}module.prop" | sed "s/version=//" | awk -F "-" '{print $1}')
 
 # Fetch build type
-bd_rel=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-" '{print $2}')
+bd_rel=$(grep version= "${modpath}module.prop" | sed "s/version=//" | awk -F "-" '{print $2}')
 
 # Fetch build date
-bd_dt=$(grep build_date= "${MODPATH}module.prop" | sed "s/build_date=//")
+bd_dt=$(grep build_date= "${modpath}module.prop" | sed "s/build_date=//")
 
 # Fetch build codename
-bd_cdn=$(grep version= "${MODPATH}module.prop" | sed "s/version=//" | awk -F "-" '{print $3}')
+bd_cdn=$(grep version= "${modpath}module.prop" | sed "s/version=//" | awk -F "-" '{print $3}')
 
 # Fetch battery temperature
 batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
@@ -545,12 +545,12 @@ for i in 1 2 3 4 5 6 7; do
 	[[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
 done
 
-[[ "$(getprop ro.miui.ui.version.name)" ]] && MIUI=true
+[[ "$(getprop ro.miui.ui.version.name)" ]] && miui=true
 
 enable_devfreq_boost() {
 	for dir in /sys/class/devfreq/*/; do
-		local max_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
-		local max_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
+		max_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
+		max_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
 		[[ ${max_devfreq2} -gt ${max_devfreq} ]] && max_devfreq=${max_devfreq2}
 		write "${dir}min_freq" "${max_devfreq}"
 	done
@@ -561,8 +561,8 @@ enable_devfreq_boost() {
 
 disable_devfreq_boost() {
 	for dir in /sys/class/devfreq/*/; do
-		local min_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
-		local min_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
+		min_devfreq=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
+		min_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
 		[[ ${min_devfreq2} -lt ${min_devfreq} ]] && min_devfreq=${min_devfreq2}
 		write "${dir}min_freq" "${min_devfreq}"
 	done
@@ -720,11 +720,11 @@ enable_core_ctl() {
 }
 
 # Some of these are based from @helloklf (GitHub) vtools, credits to him.
-config_cpuset() {
+config_cpuset_latency() {
 	case "${soc}" in
 		"msm8937")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}foreground/cpus" "0-7"
 			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
@@ -734,37 +734,37 @@ config_cpuset() {
 			;;
 		"msm8952")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}foreground/cpus" "0-7"
 			write "${cpuset}background/cpus" "0-3"
-			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-7"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "0-3"
+			write "${cpuset}restricted/cpus" "0-7"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"msm8953")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}foreground/cpus" "0-7"
 			write "${cpuset}background/cpus" "0-3"
-			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-7"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}restricted/cpus" "0-3"
+			write "${cpuset}restricted/cpus" "0-7"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"msm8996")
 			write "${cpuset}camera-daemon/cpus" "0-3"
 			write "${cpuset}foreground/cpus" "0-3"
-			write "${cpuset}foreground/boost/cpus" "0-3"
-			write "${cpuset}background/cpus" "0-3"
-			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}foreground/boost/cpus" "2-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-2"
 			write "${cpuset}top-app/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
 			;;
 		"msm8998")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}foreground/cpus" "0-5"
 			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
@@ -774,8 +774,8 @@ config_cpuset() {
 			;;
 		"msmnile")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-5"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -785,7 +785,7 @@ config_cpuset() {
 		"SM8150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -795,7 +795,7 @@ config_cpuset() {
 		"SM7150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -805,7 +805,7 @@ config_cpuset() {
 		"SDM670")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -814,8 +814,8 @@ config_cpuset() {
 			;;
 		"mt6768")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -824,8 +824,8 @@ config_cpuset() {
 			;;
 		"mt6785")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -834,8 +834,8 @@ config_cpuset() {
 			;;
 		"mt6873")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -844,8 +844,8 @@ config_cpuset() {
 			;;
 		"mt6885")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -855,7 +855,7 @@ config_cpuset() {
 		"sdm710")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -865,7 +865,7 @@ config_cpuset() {
 		"sdm660")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -875,7 +875,7 @@ config_cpuset() {
 		"sdm845")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -885,8 +885,8 @@ config_cpuset() {
 		"lito")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}foreground/cpus" "0-6"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -897,7 +897,7 @@ config_cpuset() {
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -908,7 +908,7 @@ config_cpuset() {
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -917,8 +917,9 @@ config_cpuset() {
 			;;
 		"lahaina")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-6"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -927,8 +928,9 @@ config_cpuset() {
 			;;
 		"SM8350")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-6"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -938,10 +940,10 @@ config_cpuset() {
 		"exynos5")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}dex2oat/cpus" "0-6"
+			write "${cpuset}dex2oat/cpus" "0-5"
 			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
@@ -949,7 +951,7 @@ config_cpuset() {
 		"trinket")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -962,7 +964,7 @@ config_cpuset() {
 		"msmsteppe")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -972,7 +974,7 @@ config_cpuset() {
 		"SM6125")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -982,7 +984,7 @@ config_cpuset() {
 		"SM6150")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -992,7 +994,7 @@ config_cpuset() {
 		"SM6250")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1002,7 +1004,7 @@ config_cpuset() {
 		"bengal")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1012,7 +1014,7 @@ config_cpuset() {
 		"SM6115")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1021,8 +1023,9 @@ config_cpuset() {
 			;;
 		"kona")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-6"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1031,8 +1034,9 @@ config_cpuset() {
 			;;
 		"SM8250")
 			write "${cpuset}camera-daemon/cpus" "0-7"
-			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-6"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1042,7 +1046,7 @@ config_cpuset() {
 		"universal9811")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}dexopt/cpus" "0-6"
@@ -1056,7 +1060,7 @@ config_cpuset() {
 			write "${cpuset}background/cpus" "0-3"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
-			write "${cpuset}dexopt/cpus" "0-3,4-5"
+			write "${cpuset}dexopt/cpus" "0-6"
 			write "${cpuset}restricted/cpus" "0-3"
 			kmsg "Tweaked cpusets"
 			kmsg3 ""
@@ -1064,7 +1068,7 @@ config_cpuset() {
 		"atoll")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
-			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-2"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1074,7 +1078,1479 @@ config_cpuset() {
 		"SM7125")
 			write "${cpuset}camera-daemon/cpus" "0-7"
 			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-2"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+	esac
+}
+
+config_cpuset_balanced() {
+	case "${soc}" in
+		"msm8937")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
 			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8952")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-7"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8953")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-3"
+			write "${cpuset}system-background/cpus" "0-7"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8996")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}foreground/boost/cpus" "2-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-2"
+			write "${cpuset}top-app/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8998")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msmnile")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SDM670")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6768")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6785")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6873")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6885")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm710")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm660")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm845")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"lito")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-6"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7250")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6350")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"lahaina")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-6"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8350")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-6"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"exynos5")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dex2oat/cpus" "0-5"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"trinket")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			write "${cpuset}game/cpus" "0-7"
+			write "${cpuset}gamelite/cpus" "0-7"
+			write "${cpuset}vr/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msmsteppe")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6125")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6250")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"bengal")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6115")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"kona")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-6"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8250")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-6"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"universal9811")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dexopt/cpus" "0-6"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"universal9820")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dexopt/cpus" "0-6"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"atoll")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7125")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3,4-5"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+	esac
+}
+
+config_cpuset_extreme() {
+	case "${soc}" in
+		"msm8937")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8952")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-7"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8953")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-7"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8996")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}foreground/boost/cpus" "2-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-2"
+			write "${cpuset}top-app/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8998")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msmnile")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SDM670")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6768")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6785")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6873")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6885")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm710")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm660")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm845")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"lito")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7250")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6350")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"lahaina")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8350")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"exynos5")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dex2oat/cpus" "0-5"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"trinket")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			write "${cpuset}game/cpus" "0-7"
+			write "${cpuset}gamelite/cpus" "0-7"
+			write "${cpuset}vr/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msmsteppe")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6125")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6250")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"bengal")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6115")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"kona")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8250")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"universal9811")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dexopt/cpus" "0-6"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"universal9820")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dexopt/cpus" "0-6"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"atoll")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7125")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+	esac
+}
+
+config_cpuset_battery() {
+	case "${soc}" in
+		"msm8937")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8952")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-7"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8953")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-7"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8996")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}foreground/boost/cpus" "2-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-2"
+			write "${cpuset}top-app/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8998")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msmnile")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8150")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7150")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SDM670")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6768")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6785")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6873")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6885")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm710")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm660")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm845")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"lito")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7250")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6350")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"lahaina")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8350")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"exynos5")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dex2oat/cpus" "0-5"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"trinket")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			write "${cpuset}game/cpus" "0-7"
+			write "${cpuset}gamelite/cpus" "0-7"
+			write "${cpuset}vr/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msmsteppe")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6125")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6250")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"bengal")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6115")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"kona")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8250")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"universal9811")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dexopt/cpus" "0-6"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"universal9820")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dexopt/cpus" "0-6"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"atoll")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7125")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+	esac
+}
+
+config_cpuset_gaming() {
+	case "${soc}" in
+		"msm8937")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8952")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-7"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8953")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-7"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8996")
+			write "${cpuset}camera-daemon/cpus" "0-3"
+			write "${cpuset}foreground/cpus" "0-3"
+			write "${cpuset}foreground/boost/cpus" "2-3"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-2"
+			write "${cpuset}top-app/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msm8998")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0-1"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msmnile")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SDM670")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6768")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6785")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6873")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"mt6885")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm710")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm660")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"sdm845")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"lito")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7250")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6350")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"lahaina")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8350")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"exynos5")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dex2oat/cpus" "0-5"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"trinket")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			write "${cpuset}game/cpus" "0-7"
+			write "${cpuset}gamelite/cpus" "0-7"
+			write "${cpuset}vr/cpus" "0-7"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"msmsteppe")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6125")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6150")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6250")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"bengal")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM6115")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"kona")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM8250")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}camera-daemon-dedicated/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"universal9811")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dexopt/cpus" "0-6"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"universal9820")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}dexopt/cpus" "0-6"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"atoll")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
+			write "${cpuset}system-background/cpus" "0-3"
+			write "${cpuset}top-app/cpus" "0-7"
+			write "${cpuset}restricted/cpus" "0-3"
+			kmsg "Tweaked cpusets"
+			kmsg3 ""
+			;;
+		"SM7125")
+			write "${cpuset}camera-daemon/cpus" "0-7"
+			write "${cpuset}foreground/cpus" "0-7"
+			write "${cpuset}background/cpus" "0"
 			write "${cpuset}system-background/cpus" "0-3"
 			write "${cpuset}top-app/cpus" "0-7"
 			write "${cpuset}restricted/cpus" "0-3"
@@ -1209,7 +2685,7 @@ boost_gaming() {
 io_latency() {
 	for queue in /sys/block/*/queue/; do
 		# Fetch the available schedulers from the block
-		local avail_scheds="$(cat "${queue}scheduler")"
+		avail_scheds="$(cat "${queue}scheduler")"
 
 		# Select the first scheduler available
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
@@ -1233,7 +2709,7 @@ io_latency() {
 
 io_balanced() {
 	for queue in /sys/block/*/queue/; do
-		local avail_scheds="$(cat "${queue}scheduler")"
+		avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
 			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
@@ -1279,7 +2755,7 @@ io_extreme() {
 
 io_battery() {
 	for queue in /sys/block/*/queue/; do
-		local avail_scheds="$(cat "${queue}scheduler")"
+		avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
 			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
@@ -1302,7 +2778,7 @@ io_battery() {
 
 io_gaming() {
 	for queue in /sys/block/*/queue/; do
-		local avail_scheds="$(cat "${queue}scheduler")"
+		avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none; do
 			[[ ${avail_scheds} == *"$sched"* ]] && write "${queue}scheduler" "${sched}"
@@ -1327,7 +2803,7 @@ cpu_latency() {
 	# CPU tweaks
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq; do
 		# Fetch the available governors from the CPU
-		local avail_govs="$(cat "${cpu}/scaling_available_governors")"
+		avail_govs="$(cat "${cpu}/scaling_available_governors")"
 
 		# Attempt to set the governor in this order
 		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
@@ -1436,7 +2912,7 @@ cpu_balanced() {
 
 cpu_extreme() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
-		local avail_govs="$(cat "${cpu}scaling_available_governors")"
+		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
 		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1488,7 +2964,7 @@ cpu_extreme() {
 
 cpu_battery() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
-		local avail_govs="$(cat "${cpu}scaling_available_governors")"
+		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
 		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1541,7 +3017,7 @@ cpu_battery() {
 
 cpu_gaming() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
-		local avail_govs="$(cat "${cpu}scaling_available_governors")"
+		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
 		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1690,7 +3166,7 @@ gpu_latency() {
 
 	if [[ ${qcom} == "true" ]]; then
 		# Fetch the available governors from the GPU
-		local avail_govs="$(cat "${gpu}devfreq/available_governors")"
+		avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 		# Attempt to set the governor in this order
 		for governor in msm-adreno-tz simple_ondemand ondemand; do
@@ -1702,7 +3178,7 @@ gpu_latency() {
 		done
 
 	elif [[ ${exynos} == "true" ]]; then
-		local avail_govs="$(cat "${gpui}gpu_available_governor")"
+		avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 		for governor in Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1712,7 +3188,7 @@ gpu_latency() {
 		done
 
 	elif [[ ${mtk} == "true" ]]; then
-		local avail_govs="$(cat "${gpu}available_governors")"
+		avail_govs="$(cat "${gpu}available_governors")"
 
 		for governor in Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1823,7 +3299,7 @@ gpu_latency() {
 
 gpu_balanced() {
 	if [[ ${qcom} == "true" ]]; then
-		local avail_govs="$(cat "${gpu}devfreq/available_governors")"
+		avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 		for governor in msm-adreno-tz simple_ondemand ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1833,7 +3309,7 @@ gpu_balanced() {
 		done
 
 	elif [[ ${exynos} == "true" ]]; then
-		local avail_govs="$(cat "${gpui}gpu_available_governor")"
+		avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 		for governor in Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1843,7 +3319,7 @@ gpu_balanced() {
 		done
 
 	elif [[ ${mtk} == "true" ]]; then
-		local avail_govs="$(cat "${gpu}available_governors")"
+		avail_govs="$(cat "${gpu}available_governors")"
 
 		for governor in Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1957,7 +3433,7 @@ gpu_balanced() {
 
 gpu_extreme() {
 	if [[ ${qcom} == "true" ]]; then
-		local avail_govs="$(cat "${gpu}devfreq/available_governors")"
+		avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 		for governor in msm-adreno-tz simple_ondemand ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1967,7 +3443,7 @@ gpu_extreme() {
 		done
 
 	elif [[ ${exynos} == "true" ]]; then
-		local avail_govs="$(cat "${gpui}gpu_available_governor")"
+		avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 		for governor in Booster Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -1977,7 +3453,7 @@ gpu_extreme() {
 		done
 
 	elif [[ ${mtk} == "true" ]]; then
-		local avail_govs="$(cat "${gpu}available_governors")"
+		avail_govs="$(cat "${gpu}available_governors")"
 
 		for governor in Booster Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -2086,7 +3562,7 @@ gpu_extreme() {
 
 gpu_battery() {
 	if [[ ${qcom} == "true" ]]; then
-		local avail_govs="$(cat "${gpu}devfreq/available_governors")"
+		avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 		for governor in msm-adreno-tz simple_ondemand ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -2096,7 +3572,7 @@ gpu_battery() {
 		done
 
 	elif [[ ${exynos} == "true" ]]; then
-		local avail_govs="$(cat "${gpui}gpu_available_governor")"
+		avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 		for governor in Interactive mali_ondemand ondemand Dynamic Static; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -2106,7 +3582,7 @@ gpu_battery() {
 		done
 
 	elif [[ ${mtk} == "true" ]]; then
-		local avail_govs="$(cat "${gpu}available_governors")"
+		avail_govs="$(cat "${gpu}available_governors")"
 
 		for governor in Interactive mali_ondemand ondemand Dynamic Static; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -2220,7 +3696,7 @@ gpu_battery() {
 
 gpu_gaming() {
 	if [[ ${qcom} == "true" ]]; then
-		local avail_govs="$(cat "${gpu}devfreq/available_governors")"
+		avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
 		for governor in msm-adreno-tz simple_ondemand ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -2230,7 +3706,7 @@ gpu_gaming() {
 		done
 
 	elif [[ ${exynos} == "true" ]]; then
-		local avail_govs="$(cat "${gpui}gpu_available_governor")"
+		 avail_govs="$(cat "${gpui}gpu_available_governor")"
 
 		for governor in Booster Interactive Dynamic Static ondemand; do
 			if [[ ${avail_govs} == *"$governor"* ]]; then
@@ -3366,32 +4842,32 @@ cpu_clk_max() {
 
 vm_lmk_latency() {
 	[[ ${total_ram_kb} -gt "8388608" ]] && {
-		local minfree="25600,38400,51200,64000,256000,307200"
-		local efk="204800"
+		minfree="25600,38400,51200,64000,256000,307200"
+		efk="204800"
 	}
 	[[ ${total_ram_kb} -le "8388608" ]] && {
-		local minfree="25600,38400,51200,64000,153600,179200"
-		local efk="128000"
+		minfree="25600,38400,51200,64000,153600,179200"
+		efk="128000"
 	}
 	[[ ${total_ram_kb} -le "6291456" ]] && {
-		local minfree="25600,38400,51200,64000,102400,128000"
-		local efk="102400"
+		minfree="25600,38400,51200,64000,102400,128000"
+		efk="102400"
 	}
 	[[ ${total_ram_kb} -le "4197304" ]] && {
-		local minfree="12800,19200,25600,32000,76800,102400"
-		local efk="76800"
+		minfree="12800,19200,25600,32000,76800,102400"
+		efk="76800"
 	}
 	[[ ${total_ram_kb} -le "3145728" ]] && {
-		local minfree="12800,19200,25600,32000,51200,76800"
-		local efk="51200"
+		minfree="12800,19200,25600,32000,51200,76800"
+		efk="51200"
 	}
 	[[ ${total_ram_kb} -le "2098652" ]] && {
-		local minfree="12800,19200,25600,32000,38400,51200"
-		local efk="25600"
+		minfree="12800,19200,25600,32000,38400,51200"
+		efk="25600"
 	}
 	[[ ${total_ram_kb} -le "1049326" ]] && {
-		local minfree="5120,10240,12800,15360,25600,38400"
-		local efk="19200"
+		minfree="5120,10240,12800,15360,25600,38400"
+		efk="19200"
 	}
 	# Always sync before dropping caches
 	sync
@@ -3426,32 +4902,32 @@ vm_lmk_latency() {
 
 vm_lmk_balanced() {
 	[[ ${total_ram_kb} -gt "8388608" ]] && {
-		local minfree="25600,38400,51200,64000,256000,307200"
-		local efk="204800"
+		minfree="25600,38400,51200,64000,256000,307200"
+		efk="204800"
 	}
 	[[ ${total_ram_kb} -le "8388608" ]] && {
-		local minfree="25600,38400,51200,64000,153600,179200"
-		local efk="128000"
+		minfree="25600,38400,51200,64000,153600,179200"
+		efk="128000"
 	}
 	[[ ${total_ram_kb} -le "6291456" ]] && {
-		local minfree="25600,38400,51200,64000,102400,128000"
-		local efk="102400"
+		minfree="25600,38400,51200,64000,102400,128000"
+		efk="102400"
 	}
 	[[ ${total_ram_kb} -le "4197304" ]] && {
-		local minfree="12800,19200,25600,32000,76800,102400"
-		local efk="76800"
+		minfree="12800,19200,25600,32000,76800,102400"
+		efk="76800"
 	}
 	[[ ${total_ram_kb} -le "3145728" ]] && {
-		local minfree="12800,19200,25600,32000,51200,76800"
-		local efk="51200"
+		minfree="12800,19200,25600,32000,51200,76800"
+		efk="51200"
 	}
 	[[ ${total_ram_kb} -le "2098652" ]] && {
-		local minfree="12800,19200,25600,32000,38400,51200"
-		local efk="25600"
+		minfree="12800,19200,25600,32000,38400,51200"
+		efk="25600"
 	}
 	[[ ${total_ram_kb} -le "1049326" ]] && {
-		local minfree="5120,10240,12800,15360,25600,38400"
-		local efk="19200"
+		minfree="5120,10240,12800,15360,25600,38400"
+		efk="19200"
 	}
 	sync
 	write "${vm}drop_caches" "2"
@@ -3483,32 +4959,32 @@ vm_lmk_balanced() {
 
 vm_lmk_extreme() {
 	[[ ${total_ram_kb} -gt "8388608" ]] && {
-		local minfree="25600,38400,51200,64000,256000,307200"
-		local efk="204800"
+		minfree="25600,38400,51200,64000,256000,307200"
+		efk="204800"
 	}
 	[[ ${total_ram_kb} -le "8388608" ]] && {
-		local minfree="25600,38400,51200,64000,153600,179200"
-		local efk="128000"
+		minfree="25600,38400,51200,64000,153600,179200"
+		efk="128000"
 	}
 	[[ ${total_ram_kb} -le "6291456" ]] && {
-		local minfree="25600,38400,51200,64000,102400,128000"
-		local efk="102400"
+		minfree="25600,38400,51200,64000,102400,128000"
+		efk="102400"
 	}
 	[[ ${total_ram_kb} -le "4197304" ]] && {
-		local minfree="12800,19200,25600,32000,76800,102400"
-		local efk="76800"
+		minfree="12800,19200,25600,32000,76800,102400"
+		efk="76800"
 	}
 	[[ ${total_ram_kb} -le "3145728" ]] && {
-		local minfree="12800,19200,25600,32000,51200,76800"
-		local efk="51200"
+		minfree="12800,19200,25600,32000,51200,76800"
+		efk="51200"
 	}
 	[[ ${total_ram_kb} -le "2098652" ]] && {
-		local minfree="12800,19200,25600,32000,38400,51200"
-		local efk="25600"
+		minfree="12800,19200,25600,32000,38400,51200"
+		efk="25600"
 	}
 	[[ ${total_ram_kb} -le "1049326" ]] && {
-		local minfree="5120,10240,12800,15360,25600,38400"
-		local efk="19200"
+		minfree="5120,10240,12800,15360,25600,38400"
+		efk="19200"
 	}
 	sync
 	write "${vm}drop_caches" "3"
@@ -3540,32 +5016,32 @@ vm_lmk_extreme() {
 
 vm_lmk_battery() {
 	[[ ${total_ram_kb} -gt "8388608" ]] && {
-		local minfree="25600,38400,51200,64000,256000,307200"
-		local efk="204800"
+		minfree="25600,38400,51200,64000,256000,307200"
+		efk="204800"
 	}
 	[[ ${total_ram_kb} -le "8388608" ]] && {
-		local minfree="25600,38400,51200,64000,153600,179200"
-		local efk="128000"
+		minfree="25600,38400,51200,64000,153600,179200"
+		efk="128000"
 	}
 	[[ ${total_ram_kb} -le "6291456" ]] && {
-		local minfree="25600,38400,51200,64000,102400,128000"
-		local efk="102400"
+		minfree="25600,38400,51200,64000,102400,128000"
+		efk="102400"
 	}
 	[[ ${total_ram_kb} -le "4197304" ]] && {
-		local minfree="12800,19200,25600,32000,76800,102400"
-		local efk="76800"
+		minfree="12800,19200,25600,32000,76800,102400"
+		efk="76800"
 	}
 	[[ ${total_ram_kb} -le "3145728" ]] && {
-		local minfree="12800,19200,25600,32000,51200,76800"
-		local efk="51200"
+		minfree="12800,19200,25600,32000,51200,76800"
+		efk="51200"
 	}
 	[[ ${total_ram_kb} -le "2098652" ]] && {
-		local minfree="12800,19200,25600,32000,38400,51200"
-		local efk="25600"
+		minfree="12800,19200,25600,32000,38400,51200"
+		efk="25600"
 	}
 	[[ ${total_ram_kb} -le "1049326" ]] && {
-		local minfree="5120,10240,12800,15360,25600,38400"
-		local efk="19200"
+		minfree="5120,10240,12800,15360,25600,38400"
+		efk="19200"
 	}
 	sync
 	write "${vm}drop_caches" "0"
@@ -3597,32 +5073,32 @@ vm_lmk_battery() {
 
 vm_lmk_gaming() {
 	[[ ${total_ram_kb} -gt "8388608" ]] && {
-		local minfree="25600,38400,51200,64000,256000,307200"
-		local efk="204800"
+		minfree="25600,38400,51200,64000,256000,307200"
+		efk="204800"
 	}
 	[[ ${total_ram_kb} -le "8388608" ]] && {
-		local minfree="25600,38400,51200,64000,153600,179200"
-		local efk="128000"
+		minfree="25600,38400,51200,64000,153600,179200"
+		efk="128000"
 	}
 	[[ ${total_ram_kb} -le "6291456" ]] && {
-		local minfree="25600,38400,51200,64000,102400,128000"
-		local efk="102400"
+		minfree="25600,38400,51200,64000,102400,128000"
+		efk="102400"
 	}
 	[[ ${total_ram_kb} -le "4197304" ]] && {
-		local minfree="12800,19200,25600,32000,76800,102400"
-		local efk="76800"
+		minfree="12800,19200,25600,32000,76800,102400"
+		efk="76800"
 	}
 	[[ ${total_ram_kb} -le "3145728" ]] && {
-		local minfree="12800,19200,25600,32000,51200,76800"
-		local efk="51200"
+		minfree="12800,19200,25600,32000,51200,76800"
+		efk="51200"
 	}
 	[[ ${total_ram_kb} -le "2098652" ]] && {
-		local minfree="12800,19200,25600,32000,38400,51200"
-		local efk="25600"
+		minfree="12800,19200,25600,32000,38400,51200"
+		efk="25600"
 	}
 	[[ ${total_ram_kb} -le "1049326" ]] && {
-		local minfree="5120,10240,12800,15360,25600,38400"
-		local efk="19200"
+		minfree="5120,10240,12800,15360,25600,38400"
+		efk="19200"
 	}
 	sync
 	write "${vm}drop_caches" "3"
@@ -3759,7 +5235,7 @@ disable_tb() {
 
 config_tcp() {
 	# Fetch the available TCP congestion control
-	local avail_con="$(cat "${tcp}tcp_available_congestion_control")"
+	avail_con="$(cat "${tcp}tcp_available_congestion_control")"
 
 	# Attempt to set the TCP congestion control in this order
 	for tcpcc in bbr2 bbr westwood cubic bic; do
@@ -4066,7 +5542,7 @@ adjshield_start() {
 	rm -rf ${bbn_log}
 	rm -rf ${bbn_banner}
 	# check interval: 120 seconds - Deprecated, use event driven instead
-	${MODPATH}system/bin/adjshield -o ${adj_log} -c ${adj_cfg} &
+	${modpath}system/bin/adjshield -o ${adj_log} -c ${adj_cfg} &
 }
 
 adjshield_stop() { killall ${adj_nm} 2>/dev/null; }
@@ -4075,7 +5551,7 @@ adjshield_stop() { killall ${adj_nm} 2>/dev/null; }
 adjshield_status() {
 	[[ "$(ps -A | grep "${adj_nm}")" != "" ]] && echo "Adjshield running. see ${adj_log} for details." || {
 		# Error: Log file not found
-		local err="$(cat "${adj_log}" | grep Error | head -n 1 | cut -d: -f2)"
+		err="$(cat "${adj_log}" | grep Error | head -n 1 | cut -d: -f2)"
 		[[ ${err} != "" ]] && echo "Not running. ${err}." || echo "Not running. Unknown reason."
 	}
 }
@@ -4084,7 +5560,7 @@ adjshield_status() {
 change_task_cgroup() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			echo "${temp_tid}" >"/dev/$3/$2/tasks"
 		done
 	done
@@ -4093,7 +5569,7 @@ change_task_cgroup() {
 # $1:process_name $2:cgroup_name $3:"cpuset"/"stune"
 change_proc_cgroup() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
-		local comm="$(cat /proc/${temp_pid}/comm)"
+		comm="$(cat /proc/${temp_pid}/comm)"
 		echo "${temp_pid}" >"/dev/$3/$2/cgroup.procs"
 	done
 }
@@ -4102,7 +5578,7 @@ change_proc_cgroup() {
 change_thread_cgroup() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			[[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && echo "${temp_tid}" >"/dev/$4/$3/tasks"
 		done
 	done
@@ -4111,7 +5587,7 @@ change_thread_cgroup() {
 # $1:task_name $2:cgroup_name $3:"cpuset"/"stune"
 change_main_thread_cgroup() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
-		local comm="$(cat /proc/${temp_pid}/comm)"
+		comm="$(cat /proc/${temp_pid}/comm)"
 		echo "${temp_pid}" >"/dev/$3/$2/tasks"
 	done
 }
@@ -4120,7 +5596,7 @@ change_main_thread_cgroup() {
 change_task_affinity() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			taskset -p "$2" "${temp_tid}" >>"${bbn_log}"
 		done
 	done
@@ -4130,7 +5606,7 @@ change_task_affinity() {
 change_thread_affinity() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			[[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && taskset -p "$3" "${temp_tid}" >>"${bbn_log}"
 		done
 	done
@@ -4151,7 +5627,7 @@ change_task_nice() {
 change_thread_nice() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			[[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && renice -n +40 -p "${temp_tid}" && renice -n -19 -p "${temp_tid}" && renice -n "$3" -p "${temp_tid}"
 		done
 	done
@@ -4161,7 +5637,7 @@ change_thread_nice() {
 change_task_rt() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			chrt -f -p "$2" "${temp_tid}" >>"${bbn_log}"
 		done
 	done
@@ -4171,7 +5647,7 @@ change_task_rt() {
 change_thread_rt() {
 	for temp_pid in $(echo "${ps_ret}" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/${temp_pid}/task/"); do
-			local comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
+			comm="$(cat /proc/${temp_pid}/task/${temp_tid}/comm)"
 			[[ "$(echo ${comm} | grep -i -E "$2")" != "" ]] && chrt -f -p "$3" "${temp_tid}" >>"${bbn_log}"
 		done
 	done
@@ -4225,7 +5701,7 @@ rebuild_process_scan_cache() {
 	# ps -Ao pid,args | grep kswapd
 	# 150 [kswapd0]
 	# 16490 grep kswapd
-	local ps_ret="$(ps -Ao pid,args)"
+	ps_ret="$(ps -Ao pid,args)"
 }
 
 # $1:apk_path $return:oat_path
@@ -4256,14 +5732,14 @@ fscc_add_dex() {
 	[[ "$1" != "" ]] \
 		&& {
 			# pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
-			local package_apk_path="$(pm path "$1" | head -n 1 | cut -d: -f2)"
+			package_apk_path="$(pm path "$1" | head -n 1 | cut -d: -f2)"
 			# User app: OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
 			fscc_add_obj "${package_apk_path%/*}/oat"
 
 			# Remove apk name suffix
-			local apk_nm="${package_apk_path%/*}"
+			apk_nm="${package_apk_path%/*}"
 			# Remove path prefix
-			local apk_nm="${apk_nm##*/}"
+			apk_nm="${apk_nm##*/}"
 			# System app: get dex & vdex
 			# /data/dalvik-cache/arm64/system@product@priv-app@OPSystemUI@OPSystemUI.apk@classes.dex
 		}
@@ -4274,10 +5750,10 @@ fscc_add_dex() {
 
 fscc_add_app_home() {
 	# Well, not working on Android 7.1
-	local intent_act="android.intent.action.MAIN"
-	local intent_cat="android.intent.category.HOME"
+	intent_act="android.intent.action.MAIN"
+	intent_cat="android.intent.category.HOME"
 	# "  packageName=com.microsoft.launcher"
-	local pkg_nm="$(pm resolve-activity -a "${intent_act}" -c "${intent_cat}" | grep packageName | head -n 1 | cut -d= -f2)"
+	pkg_nm="$(pm resolve-activity -a "${intent_act}" -c "${intent_cat}" | grep packageName | head -n 1 | cut -d= -f2)"
 	# /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.dex 16M/31M  53.2%
 	# /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.vdex 120K/120K  100%
 	# /system/priv-app/OPLauncher2/OPLauncher2.apk 14M/30M  46.1%
@@ -4287,7 +5763,7 @@ fscc_add_app_home() {
 
 fscc_add_app_ime() {
 	# "      packageName=com.baidu.input_yijia"
-	local pkg_nm="$(ime list | grep packageName | head -n 1 | cut -d= -f2)"
+	pkg_nm="$(ime list | grep packageName | head -n 1 | cut -d= -f2)"
 	# /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.dex 5M/17M  33.1%
 	# /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.vdex 2M/7M  28.1%
 	# /system/app/baidushurufa/baidushurufa.apk 1M/28M  5.71%
@@ -4303,7 +5779,7 @@ fscc_add_apex_lib() {
 # After appending fscc_file_list
 fscc_start() {
 	# multiple parameters, cannot be warped by ""
-	${MODPATH}system/bin/${fscc_nm} -fdlb0 ${fscc_file_list}
+	${modpath}system/bin/${fscc_nm} -fdlb0 ${fscc_file_list}
 }
 
 fscc_stop() {
@@ -4320,29 +5796,29 @@ fscc_status() {
 cgroup_bbn_opt() {
 	# Reduce perf cluster wakeup
 	# Daemons
-	pin_proc_on_pwr "crtc_commit|crtc_event|pp_event|msm_irqbalance|netd|mdnsd|analytics"
-	pin_proc_on_pwr "imsdaemon|cnss-daemon|qadaemon|qseecomd|time_daemon|ATFWD-daemon|ims_rtp_daemon|qcrilNrd"
+	pin_proc_on_mid "crtc_commit|crtc_event|pp_event|msm_irqbalance|netd|mdnsd|analytics"
+	pin_proc_on_mid "imsdaemon|cnss-daemon|qadaemon|qseecomd|time_daemon|ATFWD-daemon|ims_rtp_daemon|qcrilNrd"
 	# Hardware services, eg. android.hardware.sensors
-	pin_proc_on_pwr "android.hardware.bluetooth"
-	pin_proc_on_pwr "android.hardware.gnss"
-	pin_proc_on_pwr "android.hardware.health"
-	pin_proc_on_pwr "android.hardware.thermal"
-	pin_proc_on_pwr "android.hardware.wifi"
-	pin_proc_on_pwr "android.hardware.keymaster"
-	pin_proc_on_pwr "vendor.qti.hardware.qseecom"
-	pin_proc_on_pwr "android.hardware.sensors"
-	pin_proc_on_pwr "sensorservice"
+	pin_proc_on_mid "android.hardware.bluetooth"
+	pin_proc_on_mid "android.hardware.gnss"
+	pin_proc_on_mid "android.hardware.health"
+	pin_proc_on_mid "android.hardware.thermal"
+	pin_proc_on_mid "android.hardware.wifi"
+	pin_proc_on_mid "android.hardware.keymaster"
+	pin_proc_on_mid "vendor.qti.hardware.qseecom"
+	pin_proc_on_mid "android.hardware.sensors"
+	pin_proc_on_mid "sensorservice"
 	# com.android.providers.media.module controlled by bourbon
-	pin_proc_on_pwr "android.process.media"
+	pin_proc_on_mid "android.process.media"
 	# com.miui.securitycenter & com.miui.securityadd
-	pin_proc_on_pwr "miui\.security"
+	pin_proc_on_mid "miui\.security"
 	# system_server controlled by bourbon
 	change_proc_cgroup "system_server" "" "cpuset"
 	# Input dispatcher
 	change_thread_high_prio "system_server" "input"
 	# Not important
-	pin_thread_on_pwr "system_server" "Miui|Connect|Network|Wifi|backup|Sync|Observer|Power|Sensor|batterystats"
-	pin_thread_on_pwr "system_server" "Thread-|pool-|Jit|CachedAppOpt|Greezer|TaskSnapshot|Oom"
+	pin_thread_on_mid "system_server" "Miui|Connect|Network|Wifi|backup|Sync|Observer|Power|Sensor|batterystats"
+	pin_thread_on_mid "system_server" "Thread-|pool-|Jit|CachedAppOpt|Greezer|TaskSnapshot|Oom"
 	change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "4"
 	# Speed up searching service binder
 	change_task_cgroup "servicemanag" "top-app" "cpuset"
@@ -4375,16 +5851,16 @@ cgroup_bbn_opt() {
 
 clear_logs() {
 	# Remove debug log if size is >= 1 MB
-	local kdbg_max_size=1000000
+	kdbg_max_size=1000000
 	# Do the same to sqlite opt log
-	local sqlite_opt_max_size=1000000
+	sqlite_opt_max_size=1000000
 	[[ "$(stat -t ${KDBG} 2>/dev/null | awk '{print $2}')" -ge ${kdbg_max_size} ]] && rm -rf ${KDBG}
 	[[ "$(stat -t /data/media/0/KTSR/sqlite_opt.log 2>/dev/null | awk '{print $2}')" -ge ${sqlite_opt_max_size} ]] && rm -rf /data/media/0/KTSR/sqlite_opt.log
 }
 
 # Get screen state (ON | OFF)
 get_scrn_state() {
-	local scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
+	scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
 	[[ ${scrn_state} == "ON" ]] && scrn_on=1 || [[ ${scrn_state} == "" ]] && local scrn_state=$(dumpsys window policy | grep screenState | awk -F '=' '{print $2}')
 	[[ ${scrn_state} == "SCREEN_STATE_ON" ]] && scrn_on=1
 }
@@ -4404,6 +5880,7 @@ apply_all() {
 	cpu_${ktsr_prof_en}
 	[[ ${ktsr_prof_en} == "extreme" ]] || [[ ${ktsr_prof_en} == "gaming" ]] && enable_kvb || disable_kvb
 	bring_all_cores
+	config_cpuset_${ktsr_prof_en}
 	[[ ${ktsr_prof_en} == "latency" ]] || [[ ${ktsr_prof_en} == "balanced" ]] && misc_cpu_default
 	[[ ${ktsr_prof_en} == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
 	[[ ${ktsr_prof_en} != "gaming" ]] && enable_ppm || disable_ppm
@@ -4442,6 +5919,7 @@ apply_all_auto() {
 	cpu_$(getprop kingauto.prof)
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_kvb || disable_kvb
 	bring_all_cores
+	config_cpuset_$(getprop kingauto.prof)
 	[[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] && misc_cpu_default
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
 	[[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_ppm || disable_ppm
@@ -4471,7 +5949,7 @@ apply_all_auto() {
 }
 
 latency() {
-	local init=$(date +%s)
+	init=$(date +%s)
 	sync
 	apply_all
 	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
@@ -4480,9 +5958,9 @@ latency() {
 
 	kmsg "Latency profile applied. Enjoy!"
 	kmsg3 ""
-	local exit=$(date +%s)
+	exit=$(date +%s)
 
-	local exec_time=$((exit - init))
+	exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
 automatic() {
@@ -4495,7 +5973,7 @@ automatic() {
 	kmsg3 ""
 }
 balanced() {
-	local init=$(date +%s)
+	init=$(date +%s)
 	sync
 	apply_all
 	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
@@ -4504,13 +5982,13 @@ balanced() {
 
 	kmsg "Balanced profile applied. Enjoy!"
 	kmsg3 ""
-	local exit=$(date +%s)
+	exit=$(date +%s)
 
-	local exec_time=$((exit - init))
+	exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
 extreme() {
-	local init=$(date +%s)
+	init=$(date +%s)
 	sync
 	apply_all
 	cmd power set-adaptive-power-saver-enabled false >/dev/null 2>&1
@@ -4521,11 +5999,11 @@ extreme() {
 	kmsg3 ""
 	exit=$(date +%s)
 
-	local exec_time=$((exit - init))
+	exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
 battery() {
-	local init=$(date +%s)
+	init=$(date +%s)
 	sync
 	apply_all
 	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
@@ -4534,13 +6012,13 @@ battery() {
 
 	kmsg "Battery profile applied. Enjoy!"
 	kmsg3 ""
-	local exit=$(date +%s)
+	exit=$(date +%s)
 
-	local exec_time=$((exit - init))
+	exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
 gaming() {
-	local init=$(date +%s)
+	init=$(date +%s)
 	sync
 	apply_all
 	cmd power set-adaptive-power-saver-enabled false >/dev/null 2>&1
@@ -4550,8 +6028,8 @@ gaming() {
 
 	kmsg "Gaming profile applied. Enjoy!"
 	kmsg3 ""
-	local exit=$(date +%s)
+	exit=$(date +%s)
 
-	local exec_time=$((exit - init))
+	exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }

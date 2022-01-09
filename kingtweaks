@@ -3,10 +3,10 @@
 # Credits: Uperf & QTI-mem-opt by Matt Yang.
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
-MODPATH="/data/adb/modules/KTSR"
+modpath="/data/adb/modules/KTSR"
 
 # Load libraries
-source "${MODPATH}/libs/libktsr.sh"
+source "${modpath}/libs/libktsr.sh"
 
 # Check for root permissions and bail if not granted
 [[ "$(id -u)" != "0" ]] && {
@@ -64,8 +64,6 @@ cgroup_bbn_opt
 save_panel
 
 #[[ ! -f ${ktsr_cfg} ]] && ktsr_create_default_cfg
-
-config_cpuset
 
 cpu_clk_min
 cpu_clk_default
