@@ -5,3 +5,4 @@ service.sh
 common
 META-INF
 module.prop
+.config.yml
