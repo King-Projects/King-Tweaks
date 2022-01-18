@@ -701,9 +701,11 @@ disable_core_ctl() {
 }
 
 enable_core_ctl() {
-	for core_ctl in /sys/devices/system/cpu/cpu*/core_ctl/; do
+	for i in 4 7; do
+	for core_ctl in /sys/devices/system/cpu/cpu$i/core_ctl/; do
 		[[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
 		[[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "0"
+	done
 	done
 
 	[[ -e "/sys/power/cpuhotplug/enable" ]] && write "/sys/power/cpuhotplug/enable" "1"
@@ -4718,7 +4720,7 @@ sched_battery() {
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
-	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "deep"
+	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "1"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
@@ -5663,8 +5665,8 @@ config_memcg() {
 		write "$file" "1"
 	done
 
-	kmsg ""
-	kmsg3 "Tweaked memory cgroups"
+	kmsg "Tweaked memory cgroups"
+	kmsg3 ""
 }
 
 config_blkio() {
@@ -5674,8 +5676,8 @@ config_blkio() {
 	write "${blkio}background/blkio.weight" "100"
 	write "${blkio}background/blkio.leaf_weight" "100"
 
-	kmsg ""
-	kmsg3 "Tweaked IO blocks"
+	kmsg "Tweaked IO blocks"
+	kmsg3 ""
 }
 
 adjshield_start() {
@@ -5701,8 +5703,8 @@ adjshield_status() {
 # $1:task_name $2:cgroup_name $3:"cpuset"/"stune"
 change_task_cgroup() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/"$temp_pid"/task/"); do
-			comm="$(cat /proc/"$temp_pid"/task/"$temp_tid"/comm)"
+		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
+			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
 			echo "$temp_tid" >"/dev/$3/$2/tasks"
 		done
 	done
@@ -5711,7 +5713,7 @@ change_task_cgroup() {
 # $1:process_name $2:cgroup_name $3:"cpuset"/"stune"
 change_proc_cgroup() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		comm="$(cat /proc/"$temp_pid"/comm)"
+		comm="$(cat "/proc/$temp_pid/comm")"
 		echo "$temp_pid" >"/dev/$3/$2/cgroup.procs"
 	done
 }
@@ -5719,8 +5721,8 @@ change_proc_cgroup() {
 # $1:task_name $2:thread_name $3:cgroup_name $4:"cpuset"/"stune"
 change_thread_cgroup() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/"$temp_pid"/task/"); do
-			comm="$(cat /proc/"$temp_pid"/task/"$temp_tid"/comm)"
+		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
+			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
 			[[ "$(echo "$comm" | grep -i -E "$2")" != "" ]] && echo "$temp_tid" >"/dev/$4/$3/tasks"
 		done
 	done
@@ -5729,7 +5731,7 @@ change_thread_cgroup() {
 # $1:task_name $2:cgroup_name $3:"cpuset"/"stune"
 change_main_thread_cgroup() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		comm="$(cat /proc/"$temp_pid"/comm)"
+		comm="$(cat "/proc/$temp_pid/comm")"
 		echo "$temp_pid" >"/dev/$3/$2/tasks"
 	done
 }
@@ -5737,8 +5739,8 @@ change_main_thread_cgroup() {
 # $1:task_name $2:hex_mask(0x00000003 is CPU0 and CPU1)
 change_task_affinity() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/"$temp_pid"/task/"); do
-			comm="$(cat /proc/"$temp_pid"/task/"$temp_tid"/comm)"
+		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
+			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
 			taskset -p "$2" "$temp_tid" >>"$bbn_log"
 		done
 	done
@@ -5747,8 +5749,8 @@ change_task_affinity() {
 # $1:task_name $2:thread_name $3:hex_mask(0x00000003 is CPU0 and CPU1)
 change_thread_affinity() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/"$temp_pid"/task/"); do
-			comm="$(cat /proc/"$temp_pid"/task/"$temp_tid"/comm)"
+		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
+			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
 			[[ "$(echo "$comm" | grep -i -E "$2")" != "" ]] && taskset -p "$3" "$temp_tid" >>"$bbn_log"
 		done
 	done
@@ -5757,7 +5759,7 @@ change_thread_affinity() {
 # $1:task_name $2:nice(relative to 120)
 change_task_nice() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/"$temp_pid"/task/"); do
+		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
 			renice -n +40 -p "$temp_tid"
 			renice -n -19 -p "$temp_tid"
 			renice -n "$2" -p "$temp_tid"
@@ -5768,8 +5770,8 @@ change_task_nice() {
 # $1:task_name $2:thread_name $3:nice(relative to 120)
 change_thread_nice() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/"$temp_pid"/task/"); do
-			comm="$(cat /proc/"$temp_pid"/task/"$temp_tid"/comm)"
+		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
+			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
 			[[ "$(echo "$comm" | grep -i -E "$2")" != "" ]] && {
 				renice -n +40 -p "$temp_tid"
 				renice -n -19 -p "$temp_tid"
@@ -5782,8 +5784,8 @@ change_thread_nice() {
 # $1:task_name $2:priority(99-x, 1<=x<=99)
 change_task_rt() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/"$temp_pid"/task/"); do
-			comm="$(cat /proc/"$temp_pid"/task/"$temp_tid"/comm)"
+		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
+			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
 			chrt -f -p "$2" "$temp_tid" >>"$bbn_log"
 		done
 	done
@@ -5792,8 +5794,8 @@ change_task_rt() {
 # $1:task_name $2:thread_name $3:priority(99-x, 1<=x<=99)
 change_thread_rt() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/"$temp_pid"/task/"); do
-			comm="$(cat /proc/"$temp_pid"/task/"$temp_tid"/comm)"
+		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
+			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
 			[[ "$(echo "$comm" | grep -i -E "$2")" != "" ]] && chrt -f -p "$3" "$temp_tid" >>"$bbn_log"
 		done
 	done
@@ -5985,7 +5987,7 @@ apply_all() {
 	[[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "balanced" ]] && misc_cpu_default
 	[[ "$ktsr_prof_en" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
 	[[ "$ktsr_prof_en" != "gaming" ]] && enable_ppm || disable_ppm
-	[[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ ${ktsr_prof_en} == "battery" ]] && ppm_policy_default
+	[[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] && ppm_policy_default
 	[[ "$ktsr_prof_en" == "extreme" ]] && ppm_policy_max
 	hmp_"$ktsr_prof_en"
 	gpu_"$ktsr_prof_en"
@@ -6000,7 +6002,7 @@ apply_all() {
 	[[ "$ktsr_prof_en" == "battery" ]] && enable_mcps || disable_mcps
 	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_tb || disable_tb
 	[[ "$ktsr_prof_en" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
-	[[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ ${ktsr_prof_en} == "latency" ]] && enable_lpm || disable_lpm
+	[[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] && enable_lpm || disable_lpm
 	[[ "$ktsr_prof_en" != "extreme" ]] && [[ "$ktsr_prof_en" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
 	[[ "$ktsr_prof_en" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
 	[[ "$ktsr_prof_en" == "balanced" ]] && emmc_clk_sclg_balanced

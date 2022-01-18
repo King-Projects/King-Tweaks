@@ -18,7 +18,6 @@ full_ram=$((total_ram * 20 / 100))
 				sync
 				setprop kingauto.prof "gaming"
 				change_task_nice "$gpid" "-18"
-				pin_proc_on_perf "$gpid"
 				apply_all_auto
 				sleep 30
 				for spid in $(pgrep -f com.whatsapp) $(pgrep -f com.zhiliaoapp) $(pgrep -f com.adobe) $(pgrep -f org.telegram) $(pgrep -f com.netflix) $(pgrep -f com.wemesh) $(pgrep -f com.discord) $(pgrep -f com.google.android.youtube) $(pgrep -f com.facebook) $(pgrep -f com.android.chrome) $(pgrep -f com.brave) $(pgrep -f com.UCMobile) $(pgrep -f org.mozilla) $(pgrep -f com.duckduckgo) $(pgrep -f com.opera) $(pgrep -f com.microsoft) $(pgrep -f org.torproject) $(pgrep -f com.instagram) $(pgrep -f com.twitch); do
@@ -34,7 +33,6 @@ full_ram=$((total_ram * 20 / 100))
 								sync
 								setprop kingauto.prof "extreme"
 								change_task_nice "$bpid" "-18"
-								pin_proc_on_perf "$bpid"
 								apply_all_auto
 								sleep 30
 							fi
@@ -47,8 +45,7 @@ full_ram=$((total_ram * 20 / 100))
 		if [[ "$(cat /sys/class/leds/lcd-backlight/brightness)" == "0" ]] || [[ "$(cat /sys/class/backlight/panel*-backlight/brightness)" == "0" ]] || [[ "$scrn_on" == "0" ]]; then
 			kmsg "Device screen is turned off. Applied battery profile, extended script check time"
 			sync
-			change_task_nice "erprint.service" "-20"
-			pin_proc_on_perf "erprint.service"
+			change_task_nice "erprint" "-20"
 			setprop kingauto.prof "battery"
 			apply_all_auto
 			sleep 60

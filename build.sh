@@ -25,19 +25,19 @@ init=$(date +%s)
 [ ! "$(grep build_date $(pwd)/module.prop)" ] && echo "build_date=$(date)" >>"$(pwd)/module.prop"
 
 vcd=$(printf "%.3d" "$((vcd + 1))")
-sed -i -e "/versionCode=/s/=.*/=${vcd}/" "$(pwd)/module.prop"
+sed -i -e "/versionCode=/s/=.*/=$vcd/" "$(pwd)/module.prop"
 
-sed -i -e "/version=/s/=.*/=${v}-${br}-${cdn}/" "$(pwd)/module.prop"
+sed -i -e "/version=/s/=.*/=$v-$br-$cdn/" "$(pwd)/module.prop"
 
 echo ""
 echo "Build starting at $(date)"
 echo ""
 
-echo "Zipping ${blink}KTSR-${v}-${br}-${cdn}${default}..."
+echo "Zipping ${blink}KTSR-$v-$br-${cdn}${default}..."
 
-zip -0 -r9 -ll "KTSR-${v}-${br}-${cdn}.zip" . -x *.git* -x cleantrash -x mod-util.sh -x adjshield -x fscache-ctrl -x *.yml -x kingauto -x ktsrmenu -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
+zip -0 -r9 -ll "KTSR-$v-$br-$cdn.zip" . -x *.git* -x cleantrash -x mod-util.sh -x adjshield -x fscache-ctrl -x *.yml -x kingauto -x ktsrmenu -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
 
-mv -f "KTSR-${v}-${br}-${cdn}.zip" ../out
+mv -f "KTSR-$v-$br-$cdn.zip" ../out
 
 exit=$(date +%s)
 

@@ -1,15 +1,13 @@
 #!/system/bin/sh
 ##########################################################################################
-#
 # Terminal Utility Functions
 # by veez21
 # modified by Pedro (pedrozzz0 @ GitHub)
-#
 ##########################################################################################
 
-# Versions
-MODUTILVER="v2.6.5"
-MODUTILVCODE="265"
+# Modutil Version
+MODUTILVER="v2.6.6-KTSR"
+MODUTILVCODE="266"
 
 isABDevice=false
 
@@ -24,7 +22,7 @@ else
 	SYSTEM2="/system"
 	CACHELOC="/cache"
 fi
-[[ -z ${SYSTEM} ]] && {
+[[ -z "$SYSTEM" ]] && {
 	echo "[!] Something went wrong"
 	exit 1
 }
@@ -38,18 +36,18 @@ fi
 # set_busybox <busybox binary>
 # alias busybox applets
 set_busybox() {
-	if [[ -x $1 ]]; then
+	if [[ -x "$1" ]]; then
 		for i in $(${1} --list); do
-			if [[ ${i} != 'echo' ]]; then
-				alias "$i"="${1} $i" >/dev/null 2>&1
+			if [[ "$i" != 'echo' ]]; then
+				alias "$i"="$1 $i" >/dev/null 2>&1
 			fi
 		done
 		_busybox=true
-		_bb=$1
+		_bb="$1"
 	fi
 }
 _busybox=false
-if [[ -n ${_bb} ]]; then
+if [[ -n "$_bb" ]]; then
 	true
 elif [[ -x "$SYSTEM2/xbin/busybox" ]]; then
 	_bb="$SYSTEM2/xbin/busybox"
@@ -60,15 +58,15 @@ else
 	echo "Please install it (@osm0sis busybox recommended)"
 	false
 fi
-set_busybox ${_bb}
-[[ $? -ne 0 ]] && {
+set_busybox "$_bb"
+[[ $? -ne "0" ]] && {
 	echo "[!] Something went wrong"
 	exit $?
 }
-[[ -n $ANDROID_SOCKET_adbd ]] && alias clear='echo'
+[[ -n "$ANDROID_SOCKET_adbd" ]] && alias clear='echo'
 _bbname="$($_bb | head -n 1 | awk '{print $1,$2}')"
 BBok=true
-if [[ ${_bbname} == "" ]]; then
+if [[ "$_bbname" == "" ]]; then
 	_bbname="[!] Busybox not found"
 	BBok=false
 fi
@@ -79,8 +77,8 @@ fi
 set_perm() {
 	chown "$2":"$3" "$1" || return 1
 	chmod "$4" "$1" || return 1
-	(if [[ -z $5 ]]; then
-		case $1 in
+	(if [[ -z "$5" ]]; then
+		case "$1" in
 			*"system/vendor/app/"*) chcon 'u:object_r:vendor_app_file:s0' "$1" ;;
 			*"system/vendor/etc/"*) chcon 'u:object_r:vendor_configs_file:s0' "$1" ;;
 			*"system/vendor/overlay/"*) chcon 'u:object_r:vendor_overlay_file:s0' "$1" ;;
@@ -95,17 +93,17 @@ set_perm() {
 # Set perm recursive
 set_perm_recursive() {
 	find "$1" -type d 2>/dev/null | while read -r dir; do
-		set_perm "${dir}" "$2" "$3" "$4" "$6"
+		set_perm "$dir" "$2" "$3" "$4" "$6"
 	done
 	find "$1" -type f -o -type l 2>/dev/null | while read -r file; do
-		set_perm "${file}" "$2" "$3" "$5" "$6"
+		set_perm "$file" "$2" "$3" "$5" "$6"
 	done
 }
 
 # Mktouch
 mktouch() {
 	mkdir -p "${1%/*}" 2>/dev/null
-	[[ -z $2 ]] && touch "$1" || echo "$2" >"$1"
+	[[ -z "$2" ]] && touch "$1" || echo "$2" >"$1"
 	chmod 644 "$1"
 }
 
@@ -113,9 +111,9 @@ mktouch() {
 grep_prop() {
 	REGEX="s/^$1=//p"
 	shift
-	FILES=$@
-	[[ -z ${FILES} ]] && FILES="/system/build.prop"
-	sed -n "${REGEX}" "${FILES}" 2>/dev/null | head -n 1
+	FILES="$@"
+	[[ -z "$FILES" ]] && FILES="/system/build.prop"
+	sed -n "$REGEX" "$FILES" 2>/dev/null | head -n 1
 }
 
 # Is mounted
@@ -143,20 +141,20 @@ ABILONG=$(grep_prop ro.product.cpu.abi)
 ARCH=arm
 ARCH32=arm
 IS64BIT=false
-if [[ ${ABI} == "x86" ]]; then
+if [[ "$ABI" == "x86" ]]; then
 	ARCH=x86
 	ARCH32=x86
 fi
-if [[ ${ABI2} == "x86" ]]; then
+if [[ "$ABI2" == "x86" ]]; then
 	ARCH=x86
 	ARCH32=x86
 fi
-if [[ ${ABILONG} == "arm64-v8a" ]]; then
+if [[ "$ABILONG" == "arm64-v8a" ]]; then
 	ARCH=arm64
 	ARCH32=arm
 	IS64BIT=true
 fi
-if [[ ${ABILONG} == "x86_64" ]]; then
+if [[ "$ABILONG" == "x86_64" ]]; then
 	ARCH=x64
 	ARCH32=x86
 	IS64BIT=true
@@ -184,8 +182,8 @@ BGBL='\e[1;30;47m' # Background W Text Bl
 N='\e[0m'          # How to use (example): echo "${G}example${N}"
 loadBar=' '        # Load UI
 # Remove color codes if -nc or in ADB Shell
-[[ -n $1 ]] && [[ $1 == "-nc" ]] && shift && NC=true
-[[ "${NC}" ]] || [[ -n ${ANDROID_SOCKET_adbd} ]] && {
+[[ -n "$1" ]] && [[ "$1" == "-nc" ]] && shift && NC=true
+[[ "$NC" ]] || [[ -n "$ANDROID_SOCKET_adbd" ]] && {
 	G=''
 	R=''
 	Y=''
@@ -203,20 +201,20 @@ loadBar=' '        # Load UI
 character_no=$(echo "$MODTITLE $VER $REL" | wc -c)
 
 # Divider
-div="${Bl}$(printf '%*s' "${character_no}" '' | tr " " "=")${N}"
+div="${Bl}$(printf '%*s' "$character_no" '' | tr " " "=")${N}"
 
 # title_div [-c] <title>
 # based on $div with <title>
 title_div() {
-	[[ $1 == "-c" ]] && character_no=$2 && shift 2
-	[[ -z $1 ]] && {
+	[[ "$1" == "-c" ]] && character_no=$2 && shift 2
+	[[ -z "$1" ]] && {
 		message=
 		no=0
 	} || {
 		message="$@ "
 		no=$(echo "$@" | wc -c)
 	}
-	[[ ${character_no} -gt ${no} ]] && local extdiv=$((character_no - no)) || {
+	[[ "$character_no" -gt "$no" ]] && local extdiv=$((character_no - no)) || {
 		echo "Invalid!"
 		return 1
 	}
@@ -225,7 +223,7 @@ title_div() {
 
 # set_file_prop <property> <value> <prop.file>
 set_file_prop() {
-	if [[ -f $3 ]]; then
+	if [[ -f "$3" ]]; then
 		if grep -q "$1=" "$3"; then
 			sed -i "s/${1}=.*/${1}=${2}/g" "$3"
 		else
@@ -241,7 +239,7 @@ set_file_prop() {
 # ProgressBar <progress> <total>
 ProgressBar() {
 	# Determine Screen Size
-	if [[ ${COLUMNS} -le "57" ]]; then
+	if [[ "$COLUMNS" -le "57" ]]; then
 		var1=2
 		var2=20
 	else
@@ -264,7 +262,7 @@ ProgressBar() {
 # Spinner <message>
 Spinner() {
 	# Choose which character to show.
-	case ${_indicator} in
+	case "$_indicator" in
 		"|") _indicator="/" ;;
 		"/") _indicator="-" ;;
 		"-") _indicator='\' ;;
@@ -309,15 +307,15 @@ test_connection() {
 # Log files will be uploaded to termbin.com
 # Logs included: VERLOG LOG oldVERLOG oldLOG
 upload_logs() {
-	"${BBok}" && {
+	"$BBok" && {
 		test_connection || exit
 		echo "Uploading logs..."
-		[[ -s ${VERLOG} ]] && verUp=$(cat "${VERLOG}" | nc termbin.com 9999) || verUp=none
-		[[ -s ${oldVERLOG} ]] && oldverUp=$(cat "${oldVERLOG}" | nc termbin.com 9999) || oldverUp=none
-		[[ -s ${LOG} ]] && logUp=$(cat "${LOG}" | nc termbin.com 9999) || logUp=none
-		[[ -s ${oldLOG} ]] && oldlogUp=$(cat "${oldLOG}" | nc termbin.com 9999) || oldlogUp=none
-		[[ -s ${stdoutLOG} ]] && stdoutUp=$(cat "${stdoutLOG}" | nc termbin.com 9999) || stdoutUp=none
-		[[ -s ${oldstdoutLOG} ]] && oldstdoutUp=$(cat "${oldstdoutLOG}" | nc termbin.com 9999) || oldstdoutUp=none
+		[[ -s "$VERLOG" ]] && verUp=$(cat "$VERLOG" | nc termbin.com 9999) || verUp=none
+		[[ -s "$oldVERLOG" ]] && oldverUp=$(cat "$oldVERLOG" | nc termbin.com 9999) || oldverUp=none
+		[[ -s "$LOG" ]] && logUp=$(cat "$LOG" | nc termbin.com 9999) || logUp=none
+		[[ -s "$oldLOG" ]] && oldlogUp=$(cat "$oldLOG" | nc termbin.com 9999) || oldlogUp=none
+		[[ -s "$stdoutLOG" ]] && stdoutUp=$(cat "$stdoutLOG" | nc termbin.com 9999) || stdoutUp=none
+		[[ -s "$oldstdoutLOG" ]] && oldstdoutUp=$(cat "$oldstdoutLOG" | nc termbin.com 9999) || oldstdoutUp=none
 		echo -n "Link: "
 		echo "$MODEL ($DEVICE) API $API\n$ROM\n$ID\n
     O_Verbose: $oldverUp
@@ -339,12 +337,12 @@ upload_logs() {
 prandom() {
 	CHANCES=2
 	TARGET=2
-	[[ $1 == "-c" ]] && {
+	[[ "$1" == "-c" ]] && {
 		CHANCES="$2"
 		TARGET="$3"
 		shift 3
 	}
-	[[ "$((RANDOM % CHANCES + 1))" -eq ${TARGET} ]] && echo "$@"
+	[[ "$((RANDOM % CHANCES + 1))" -eq "$TARGET" ]] && echo "$@"
 }
 
 # Print Center
@@ -354,5 +352,5 @@ pcenter() {
 	hfCOLUMN=$((COLUMNS / 2))
 	hfCHAR=$((CHAR / 2))
 	indent=$((hfCOLUMN - hfCHAR))
-	echo "$(printf '%*s' "${indent}" '') $@"
+	echo "$(printf '%*s' "$indent" '') $@"
 }
