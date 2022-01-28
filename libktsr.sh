@@ -56,15 +56,15 @@ memcg="/dev/memcg/"
 # Log in white and continue (unnecessary)
 kmsg() { echo -e "[$(date +%T)]: [*] $@" >>"$klog"; }
 
-kmsg1() { {
+kmsg1() {
 	echo -e "$@" >>"$kdbg"
 	echo -e "$@"
-}; }
+}
 
-kmsg2() { {
+kmsg2() {
 	echo -e "[!] $@" >>"$kdbg"
 	echo -e "[!] $@"
-}; }
+}
 
 kmsg3() { echo -e "$@" >>"$klog"; }
 
@@ -403,7 +403,7 @@ kern_ver_name=$(uname -r)
 # Fetch kernel build date
 kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 
-[[ "$(which busybox)" ]] && {
+[[ "$(command -v busybox)" ]] && {
 	total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
 	total_ram_kb=$(cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -n 1)
 	avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')
@@ -485,7 +485,7 @@ batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
 [[ "$batt_cpct" -ge "1000000" ]] && batt_cpct=$((batt_cpct / 1000))
 
 # Fetch busybox version
-[[ "$(which busybox)" ]] && bb_ver=$(busybox | awk 'NR==1{print $2}') || bb_ver="Please install busybox first"
+[[ "$(command -v busybox)" ]] && bb_ver=$(busybox | awk 'NR==1{print $2}') || bb_ver="Please install busybox first"
 
 # Fetch ROM info
 rom_info=$(getprop ro.build.description | awk '{print $1,$3,$4,$5}')
@@ -521,7 +521,7 @@ bt_dvc=$(getprop ro.boot.bootdevice)
 # Fetch the amount of time since the system is running
 sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
-[[ "$(which sqlite3)" ]] && {
+[[ "$(command -v sqlite3)" ]] && {
 	sql_ver=$(sqlite3 -version | awk '{print $1}')
 	sql_bd_dt=$(sqlite3 -version | awk '{print $2,$3}')
 } || {
@@ -636,20 +636,19 @@ print_info() {
 }
 
 stop_services() {
+	# Stop perf and other userspace processes from tinkering with kernel parameters
+	for v in 0 1 2 3 4; do
+	stop vendor.qti.hardware.perf@${v}.${v}-service 2>/dev/null
+	done
+	stop perfd 2>/dev/null
 	# Enable / disable mpdecision according to the actual profile, and disable few debug services
-	#for v in 0 1 2 3 4; do
-	#stop vendor.qti.hardware.perf@${v}.${v}-service 2>/dev/null
-	#stop perf-hal-${v}-${v} 2>/dev/null
-	#done
-	#stop perfd 2>/dev/null
 	[[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && {
 		start mpdecision 2>/dev/null
-		stop miuibooster 2>/dev/null
 	} || {
 		stop mpdecision 2>/dev/null
-		start miuibooster 2>/dev/null
 	}
-	# stop vendor.perfservice 2>/dev/null
+	stop miuibooster 2>/dev/null
+	stop vendor.perfservice 2>/dev/null
 	stop vendor.cnss_diag 2>/dev/null
 	stop vendor.tcpdump 2>/dev/null
 	stop charge_logger 2>/dev/null
@@ -2563,16 +2562,16 @@ config_cpuset_gaming() {
 	esac
 }
 
-boost_latency() {
+boost_balanced() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
 	}
 
 	[[ -d "/sys/module/cpu_boost/" ]] && {
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
@@ -2580,7 +2579,7 @@ boost_latency() {
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "156"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "64"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -2589,13 +2588,13 @@ boost_latency() {
 boost_balanced() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
 	}
 
 	[[ -d "/sys/module/cpu_boost/" ]] && {
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "120"
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "50"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
@@ -2603,7 +2602,7 @@ boost_balanced() {
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "50"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -2612,24 +2611,21 @@ boost_balanced() {
 boost_extreme() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
 	}
 
 	[[ -d "/sys/module/cpu_boost/" ]] && {
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "100"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
-		write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpu_max_freq 1:0 2:0 3:0 4:$cpu_max_freq 5:0 6:0 7:0"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "192"
-		write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpu_max_freq"
-		write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpu_max_freq"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "100"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -2638,21 +2634,21 @@ boost_extreme() {
 boost_battery() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
 	}
 
-	[[ -e "/sys/module/cpu_boost/parameters/" ]] && {
+	[[ -d "/sys/module/cpu_boost/" ]] && {
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "48"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
-	} || [[ -e "/sys/module/cpu_input_boost/parameters/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "64"
+	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "48"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -2661,24 +2657,21 @@ boost_battery() {
 boost_gaming() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "1000"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
 	}
 
 	[[ -d "/sys/module/cpu_boost/" ]] && {
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "250"
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "96"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "1000"
-		write "/sys/module/cpu_boost/parameters/input_boost_freq" "0:$cpu_max_freq 1:0 2:0 3:0 4:$cpu_max_freq 5:0 6:0 7:0"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "192"
-		write "/sys/module/cpu_input_boost/parameters/input_boost_freq_lp" "$cpu_max_freq"
-		write "/sys/module/cpu_input_boost/parameters/input_boost_freq_hp" "$cpu_max_freq"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "96"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -2692,8 +2685,10 @@ io_latency() {
 
 		# Select the first scheduler available
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ "$avail_scheds" == *"$sched"* ]] && write "${queue}scheduler" "$sched"
-			break
+			if [[ "$avail_scheds" == *"$sched"* ]]; then
+				write "${queue}scheduler" "$sched"
+				break
+			fi
 		done
 
 		write "${queue}add_random" "0"
@@ -2714,8 +2709,10 @@ io_latency() {
 
 		# Select the first scheduler available
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ "$avail_scheds" == *"$sched"* ]] && write "${queue}scheduler" "$sched"
-			break
+			if [[ "$avail_scheds" == *"$sched"* ]]; then
+				write "${queue}scheduler" "$sched"
+				break
+			fi
 		done
 
 		write "${queue}add_random" "0"
@@ -2736,8 +2733,10 @@ io_balanced() {
 		avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ "$avail_scheds" == *"$sched"* ]] && write "${queue}scheduler" "$sched"
-			break
+			if [[ "$avail_scheds" == *"$sched"* ]]; then
+				write "${queue}scheduler" "$sched"
+				break
+			fi
 		done
 
 		write "${queue}add_random" "0"
@@ -2756,8 +2755,10 @@ io_balanced() {
 		avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ "$avail_scheds" == *"$sched"* ]] && write "${queue}scheduler" "$sched"
-			break
+			if [[ "$avail_scheds" == *"$sched"* ]]; then
+				write "${queue}scheduler" "$sched"
+				break
+			fi
 		done
 
 		write "${queue}add_random" "0"
@@ -2777,9 +2778,11 @@ io_extreme() {
 	for queue in /sys/block/*/queue/; do
 		avail_scheds="$(cat "${queue}scheduler")"
 
-		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid anxiety mq-deadline deadline cfq noop none; do
-			[[ "$avail_scheds" == *"$sched"* ]] && write "${queue}scheduler" "$sched"
-			break
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
+			if [[ "$avail_scheds" == *"$sched"* ]]; then
+				write "${queue}scheduler" "$sched"
+				break
+			fi
 		done
 
 		write "${queue}add_random" "0"
@@ -2798,8 +2801,10 @@ io_extreme() {
 		avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ "$avail_scheds" == *"$sched"* ]] && write "${queue}scheduler" "$sched"
-			break
+			if [[ "$avail_scheds" == *"$sched"* ]]; then
+				write "${queue}scheduler" "$sched"
+				break
+			fi
 		done
 
 		write "${queue}add_random" "0"
@@ -2820,8 +2825,10 @@ io_battery() {
 		avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ "$avail_scheds" == *"$sched"* ]] && write "${queue}scheduler" "$sched"
-			break
+			if [[ "$avail_scheds" == *"$sched"* ]]; then
+				write "${queue}scheduler" "$sched"
+				break
+			fi
 		done
 
 		write "${queue}add_random" "0"
@@ -2840,8 +2847,10 @@ io_battery() {
 		avail_scheds="$(cat "${queue}scheduler")"
 
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
-			[[ "$avail_scheds" == *"$sched"* ]] && write "${queue}scheduler" "$sched"
-			break
+			if [[ "$avail_scheds" == *"$sched"* ]]; then
+				write "${queue}scheduler" "$sched"
+				break
+			fi
 		done
 
 		write "${queue}add_random" "0"
@@ -2861,9 +2870,11 @@ io_gaming() {
 	for queue in /sys/block/*/queue/; do
 		avail_scheds="$(cat "${queue}scheduler")"
 
-		for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none; do
-			[[ "$avail_scheds" == *"$sched"* ]] && write "${queue}scheduler" "$sched"
-			break
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
+			if [[ "$avail_scheds" == *"$sched"* ]]; then
+				write "${queue}scheduler" "$sched"
+				break
+			fi
 		done
 
 		write "${queue}add_random" "0"
@@ -2881,9 +2892,11 @@ io_gaming() {
 	for queue in /sys/block/zram*/queue/; do
 		avail_scheds="$(cat "${queue}scheduler")"
 
-		for sched in sio fiops bfq-sq bfq-mq bfq tripndroid maple zen anxiety mq-deadline deadline cfq noop none; do
-			[[ "$avail_scheds" == *"$sched"* ]] && write "${queue}scheduler" "$sched"
-			break
+		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
+			if [[ "$avail_scheds" == *"$sched"* ]]; then
+				write "${queue}scheduler" "$sched"
+				break
+			fi
 		done
 
 		write "${queue}add_random" "0"
@@ -3278,7 +3291,6 @@ hmp_gaming() {
 
 gpu_latency() {
 	# GPU tweaks
-
 	if [[ "$qcom" == "true" ]]; then
 		# Fetch the available governors from the GPU
 		avail_govs="$(cat "${gpu}devfreq/available_governors")"
@@ -3325,7 +3337,7 @@ gpu_latency() {
 		write "${gpu}force_bus_on" "0"
 		write "${gpu}force_clk_on" "0"
 		write "${gpu}force_rail_on" "0"
-		write "${gpu}idle_timer" "58"
+		write "${gpu}idle_timer" "64"
 		write "${gpu}pwrnap" "1"
 	elif [[ "$qcom" == "false" ]]; then
 		[[ "$one_ui" == "false" ]] && write "${gpu}dvfs" "1"
@@ -3456,7 +3468,7 @@ gpu_balanced() {
 		write "${gpu}force_bus_on" "0"
 		write "${gpu}force_clk_on" "0"
 		write "${gpu}force_rail_on" "0"
-		write "${gpu}idle_timer" "58"
+		write "${gpu}idle_timer" "64"
 		write "${gpu}pwrnap" "1"
 	elif [[ "$qcom" == "false" ]]; then
 		[[ "$one_ui" == "false" ]] && write "${gpu}dvfs" "1"
@@ -3719,7 +3731,7 @@ gpu_battery() {
 		write "${gpu}force_bus_on" "0"
 		write "${gpu}force_clk_on" "0"
 		write "${gpu}force_rail_on" "0"
-		write "${gpu}idle_timer" "58"
+		write "${gpu}idle_timer" "64"
 		write "${gpu}pwrnap" "1"
 	elif [[ "$qcom" == "false" ]]; then
 		[[ "$one_ui" == "false" ]] && write "${gpu}dvfs" "1"
@@ -4546,18 +4558,16 @@ sched_latency() {
 	# Tweak kernel settings to improve overall performance
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
 	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "3"
-	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
-	[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
-	[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
+	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	write "${kernel}sched_tunable_scaling" "0"
-	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${sched_period_latency}"
+	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_latency"
 	[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((sched_period_latency / sched_tasks_latency))"
 	[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((sched_period_latency / sched_tasks_latency))"
 	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
 	[[ -e "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" ]] && write "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" "200000"
 	[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 	[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
-	write "${kernel}sched_nr_migrate" "4"
+	write "${kernel}sched_nr_migrate" "8"
 	[[ -e "${kernel}sched_schedstats" ]] && write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 	write "${kernel}printk_devkmsg" "off"
@@ -4583,13 +4593,14 @@ sched_latency() {
 	[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 	# Disable ram-boost relying memplus prefetcher, use traditional swapping
 	[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
+	[[ -e "${kernel}sched_rt_runtime_us" ]] && write "${kernel}sched_rt_runtime_us" "980000"
+	# Use normal grace periods to reduce power usage
+	write "/sys/kernel/rcu_expedited" "0"
 	for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	# Setup cpu.shares to throttle background group at 5% (1024)
-	write "${cpuctl}background/cpu.shares" "51"
-
+	
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4597,11 +4608,9 @@ sched_latency() {
 sched_balanced() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
 	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "5"
-	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
-	[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
-	[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && .write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
+	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	write "${kernel}sched_tunable_scaling" "0"
-	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${sched_period_balance}"
+	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_balance"
 	[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((sched_period_balance / sched_tasks_balance))"
 	[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((sched_period_balance / 2))"
 	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
@@ -4623,7 +4632,6 @@ sched_balanced() {
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
-	# Set memory sleep mode to deep
 	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
@@ -4633,12 +4641,13 @@ sched_balanced() {
 	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 	[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 	[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
+	[[ -e "${kernel}sched_rt_runtime_us" ]] && write "${kernel}sched_rt_runtime_us" "980000"
+	write "/sys/kernel/rcu_expedited" "0"
 	for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	write "${cpuctl}background/cpu.shares" "51"
-
+	
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4647,10 +4656,8 @@ sched_extreme() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
 	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "20"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
-	[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
-	[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
 	write "${kernel}sched_tunable_scaling" "0"
-	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${sched_period_throughput}"
+	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_throughput"
 	[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((sched_period_throughput / sched_tasks_throughput))"
 	[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((sched_period_throughput / 2))"
 	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "0"
@@ -4681,12 +4688,13 @@ sched_extreme() {
 	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 	[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 	[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
+	[[ -e "${kernel}sched_rt_runtime_us" ]] && write "${kernel}sched_rt_runtime_us" "980000"
+	write "/sys/kernel/rcu_expedited" "0"
 	for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	write "${cpuctl}background/cpu.shares" "51"
-
+	
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4694,11 +4702,9 @@ sched_extreme() {
 sched_battery() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
 	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "2"
-	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "1"
-	[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "1"
-	[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "1"
+	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	write "${kernel}sched_tunable_scaling" "0"
-	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${sched_period_battery}"
+	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_battery"
 	[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((sched_period_battery / sched_tasks_battery))"
 	[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((sched_period_battery / 2))"
 	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
@@ -4729,12 +4735,13 @@ sched_battery() {
 	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 	[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 	[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
+	[[ -e "${kernel}sched_rt_runtime_us" ]] && write "${kernel}sched_rt_runtime_us" "980000"
+	write "/sys/kernel/rcu_expedited" "0"
 	for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	write "${cpuctl}background/cpu.shares" "51"
-
+	
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4743,10 +4750,8 @@ sched_gaming() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
 	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "20"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
-	[[ -e "/sys/devices/soc/${bt_dvc}/clkscale_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkscale_enable" "0"
-	[[ -e "/sys/devices/soc/${bt_dvc}/clkgate_enable" ]] && write "/sys/devices/soc/${bt_dvc}/clkgate_enable" "0"
 	write "${kernel}sched_tunable_scaling" "0"
-	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "${sched_period_throughput}"
+	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_throughput"
 	[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((sched_period_throughput / sched_tasks_throughput))"
 	[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((sched_period_throughput / 2))"
 	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "0"
@@ -4777,12 +4782,13 @@ sched_gaming() {
 	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 	[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 	[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
+	[[ -e "${kernel}sched_rt_runtime_us" ]] && write "${kernel}sched_rt_runtime_us" "980000"
+	write "/sys/kernel/rcu_expedited" "0"
 	for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	write "${cpuctl}background/cpu.shares" "51"
-
+	
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4820,34 +4826,11 @@ disable_fp_boost() {
 }
 
 # Credits to helloklf again
-ufs_default() {
-	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
-		write "/sys/class/devfreq/1d84000.ufshc/max_freq" "300000000"
-		write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "1"
-		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "1"
-		kmsg "Tweaked UFS"
-		kmsg3 ""
-	}
-}
-
-ufs_max() {
-	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
-		write "/sys/class/devfreq/1d84000.ufshc/max_freq" "300000000"
+disable_ufs_clk_sclg() {
 		write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "0"
 		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
-		kmsg "Tweaked UFS"
+		kmsg "Disabled UFS clock scaling"
 		kmsg3 ""
-	}
-}
-
-ufs_pwr_saving() {
-	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
-		write "/sys/class/devfreq/1d84000.ufshc/max_freq" "75000000"
-		write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "1"
-		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "1"
-		kmsg "Tweaked UFS"
-		kmsg3 ""
-	}
 }
 
 ppm_policy_default() {
@@ -4893,8 +4876,8 @@ ppm_policy_max() {
 cpu_clk_min() {
 	# Set min efficient CPU clock
 	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
-		for i in 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1152000 1459200; do
-			[[ "$(grep ${i} ${pl}scaling_available_frequencies)" ]] && write ${pl}scaling_min_freq ${i}
+		for i in 576000 652800 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1113600 1152000 1209600 1459200 1689600 1708800; do
+			[[ "$(grep $i ${pl}scaling_available_frequencies)" ]] && write "${pl}scaling_min_freq" "$i"
 		done
 	done
 }
@@ -4903,15 +4886,15 @@ cpu_clk_default() {
 	# Set max CPU clock
 	for cpus in /sys/devices/system/cpu/cpufreq/policy*/; do
 		[[ -e "${cpus}scaling_max_freq" ]] && {
-			write "${cpus}scaling_max_freq" "${cpu_max_freq}"
-			write "${cpus}user_scaling_max_freq" "${cpu_max_freq}"
+			write "${cpus}scaling_max_freq" "$cpu_max_freq"
+			write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
 		}
 	done
 
 	for cpus in /sys/devices/system/cpu/cpu*/cpufreq/; do
 		[[ -e "${cpus}scaling_max_freq" ]] && {
-			write "${cpus}scaling_max_freq" "${cpu_max_freq}"
-			write "${cpus}user_scaling_max_freq" "${cpu_max_freq}"
+			write "${cpus}scaling_max_freq" "$cpu_max_freq"
+			write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
 		}
 	done
 
@@ -4993,7 +4976,7 @@ vm_lmk_latency() {
 	write "${vm}dirty_expire_centisecs" "5000"
 	write "${vm}dirty_writeback_centisecs" "5000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "3600"
 	write "${vm}overcommit_ratio" "100"
 	# Use SSWAP on devices if it do not have more than 6 GB RAM
 	[[ "$total_ram" -lt "6144" ]] && write "${vm}swappiness" "190"
@@ -5004,13 +4987,13 @@ vm_lmk_latency() {
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
-	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
+	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "$minfree"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
 	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
 	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
-	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
+	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "$efk"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
-	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "30"
+	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "100"
 
 	kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 	kmsg3 ""
@@ -5052,7 +5035,7 @@ vm_lmk_balanced() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "3600"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -lt "6144" ]] && write "${vm}swappiness" "190"
 	[[ "$(cat "${vm}swappiness")" != "190" ]] && write "${vm}swappiness" "100"
@@ -5062,13 +5045,13 @@ vm_lmk_balanced() {
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
-	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
+	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "$minfree"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
 	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
 	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
-	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
+	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "$efk"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
-	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "30"
+	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "100"
 
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
@@ -5110,7 +5093,7 @@ vm_lmk_extreme() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "3600"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -lt "6144" ]] && write "${vm}swappiness" "190"
 	[[ "$(cat "${vm}swappiness")" != "190" ]] && write "${vm}swappiness" "100"
@@ -5120,13 +5103,13 @@ vm_lmk_extreme() {
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
-	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
+	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "$minfree"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
 	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
 	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
-	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
+	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "$efk"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
-	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "30"
+	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "100"
 
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
@@ -5168,7 +5151,7 @@ vm_lmk_battery() {
 	write "${vm}dirty_expire_centisecs" "200"
 	write "${vm}dirty_writeback_centisecs" "500"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "3600"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -lt "6144" ]] && write "${vm}swappiness" "190"
 	[[ "$(cat "${vm}swappiness")" != "190" ]] && write "${vm}swappiness" "100"
@@ -5178,13 +5161,13 @@ vm_lmk_battery() {
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
-	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
+	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "$minfree"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
 	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
 	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
-	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
+	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "$efk"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
-	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "30"
+	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "100"
 
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
@@ -5226,7 +5209,7 @@ vm_lmk_gaming() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "3600"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -lt "6144" ]] && write "${vm}swappiness" "190"
 	[[ "$(cat "${vm}swappiness")" != "190" ]] && write "${vm}swappiness" "100"
@@ -5236,13 +5219,13 @@ vm_lmk_gaming() {
 	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
-	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "${minfree}"
+	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "$minfree"
 	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
 	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
 	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
-	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "${efk}"
+	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "$efk"
 	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
-	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "30"
+	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "100"
 
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
@@ -5364,8 +5347,10 @@ config_tcp() {
 	# Attempt to set the TCP congestion control in this order
 	for tcpcc in bbr2 bbr westwood cubic bic; do
 		# Once a matching TCP congestion control is found, set it and break
-		[[ "$avail_con" == *"$tcpcc"* ]] && write "${tcp}tcp_congestion_control" "$tcpcc"
-		break
+		if [[ "$avail_con" == *"$tcpcc"* ]]; then
+			write "${tcp}tcp_congestion_control" "$tcpcc"
+			break
+		fi
 	done
 
 	write "${tcp}ip_no_pmtu_disc" "0"
@@ -5506,41 +5491,14 @@ enable_sam_fast_chrg() {
 	}
 }
 
-emmc_clk_sclg_balanced() {
-	[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && {
-		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
-		write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "25"
-		write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "5"
-		write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "1"
-		write "/sys/class/mmc_host/mmc1/clk_scaling/up_threshold" "25"
-		write "/sys/class/mmc_host/mmc1/clk_scaling/down_threshold" "5"
-	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && {
-		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
-		write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "25"
-		write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "5"
-	}
-}
-
-emmc_clk_sclg_pwr_saving() {
-	[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && {
-		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
-		write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "40"
-		write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "10"
-		write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "1"
-		write "/sys/class/mmc_host/mmc1/clk_scaling/up_threshold" "40"
-		write "/sys/class/mmc_host/mmc1/clk_scaling/down_threshold" "10"
-	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && {
-		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
-		write "/sys/class/mmc_host/mmc0/clk_scaling/up_threshold" "40"
-		write "/sys/class/mmc_host/mmc0/clk_scaling/down_threshold" "10"
-	}
-}
-
 disable_emmc_clk_sclg() {
 	[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && {
 		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
 		write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"
 	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
+
+	kmsg "Disabled EMMC clock scaling"
+	kmsg2 ""
 }
 
 disable_debug() {
@@ -5786,7 +5744,7 @@ change_task_rt() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
 			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			chrt -f -p "$2" "$temp_tid" >>"$bbn_log"
+			chrt -p "$2" "$temp_tid" >>"$bbn_log"
 		done
 	done
 }
@@ -5796,7 +5754,7 @@ change_thread_rt() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
 			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			[[ "$(echo "$comm" | grep -i -E "$2")" != "" ]] && chrt -f -p "$3" "$temp_tid" >>"$bbn_log"
+			[[ "$(echo "$comm" | grep -i -E "$2")" != "" ]] && chrt -p "$3" "$temp_tid" >>"$bbn_log"
 		done
 	done
 }
@@ -5923,20 +5881,52 @@ fscc_status() {
 	[[ "$(ps -A | grep "$fscc_nm")" != "" ]] && echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache." || echo "Not running."
 }
 
-cgroup_bbn_opt() {
+# Userspace bourbon optimization
+usr_bbn_opt() {
 	# Input Dispatcher / Reader
 	change_thread_nice "system_server" "Input" "-20"
+	pin_thread_on_perf "system_server" "Input"
 	# Not important
 	change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "5"
 	# Speed up searching service binder
 	change_task_nice "servicemanag" "-20"
 	# Prevent display service from being preempted by normal tasks
 	change_task_rt "\.hardware\.display" "2"
-	# Let worker threads run with max nice
+	# Let KGSL worker thread run with max nice and pin it on perf cluster as it is a perf critical task (rendering frames to the display)
 	change_task_nice "kgsl_worker" "-20"
+	pin_proc_on_perf "kgsl_worker_thread"
+	# Let mali worker threads run with max nice as it is perf critical
+	change_task_nice "mali_jd_thread" "-20"
+	change_task_nice "mali_event_thread" "-20"
+	# Let RCU tasks kthread run on perf cluster
+	pin_proc_on_perf "rcu_task"
+	# Prevent kgsl worker thread from being preempted by less important tasks
+	change_task_rt "kgsl_worker_thread" "6"
 	# Kernel reclaim threads run on more power-efficient cores
 	change_task_nice "kswapd" "-2"
 	change_task_nice "oom_reaper" "-2"
+	# Let system run with max nice too
+	change_task_nice "system" "-20"
+	# Let devfreq boost run with max nice as it is also a perf critical task (boosting DDR)
+	change_task_nice "devfreq_boost" "-20"
+	# Affine kthreads to the perf cluster as they also play a major role in rendering frames to the display
+	pin_proc_on_perf "crtc_event"
+	pin_proc_on_perf "crtc_commit"
+	pin_proc_on_perf "pp_event"
+	pin_proc_on_perf "mdss_fb"
+	# Affine TS workqueue to perf cluster to reduce latency
+	pin_proc_on_perf "fts_wq"
+	pin_proc_on_perf "nvt_ts"
+	pin_proc_on_perf "sec_ts_isr"
+	pin_proc_on_perf "fts_isr"
+	# Queue input handler functions with max nice
+	change_task_nice "early_wakeup_clk_wq" "-20"
+	# Queue mdss rotator kthread with max nice
+	change_task_nice "rot_thread" "-20"
+	# Affine fingerprint service to BIG cluster to reduce latency
+	pin_proc_on_perf "erprint"
+	# Pin HWC on perf cluster to reduce jitter / latency
+	pin_proc_on_perf "composer" 
 	# Boost app boot process, zygote--com.xxxx.xxx
 	# Usap nicing isn't necessary as it is already set to max nice by default
 	change_task_nice "zygote" "-20"
@@ -5995,8 +5985,6 @@ apply_all() {
 	sched_ft_"$ktsr_prof_en"
 	sched_"$ktsr_prof_en"
 	uclamp_"$ktsr_prof_en"
-	[[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] && ufs_default
-	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && ufs_max || ufs_pwr_saving
 	vm_lmk_"$ktsr_prof_en"
 	[[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] && enable_pewq || disable_pewq
 	[[ "$ktsr_prof_en" == "battery" ]] && enable_mcps || disable_mcps
@@ -6005,9 +5993,6 @@ apply_all() {
 	[[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] && enable_lpm || disable_lpm
 	[[ "$ktsr_prof_en" != "extreme" ]] && [[ "$ktsr_prof_en" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
 	[[ "$ktsr_prof_en" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
-	[[ "$ktsr_prof_en" == "balanced" ]] && emmc_clk_sclg_balanced
-	[[ "$ktsr_prof_en" == "battery" ]] && emmc_clk_sclg_pwr_saving
-	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && disable_emmc_clk_sclg
 	[[ "$ktsr_prof_en" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 }
@@ -6034,8 +6019,6 @@ apply_all_auto() {
 	sched_ft_$(getprop kingauto.prof)
 	sched_$(getprop kingauto.prof)
 	uclamp_$(getprop kingauto.prof)
-	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && ufs_default
-	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && ufs_max || ufs_pwr_saving
 	vm_lmk_$(getprop kingauto.prof)
 	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_pewq || disable_pewq
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_mcps || disable_mcps
@@ -6044,9 +6027,6 @@ apply_all_auto() {
 	[[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && enable_lpm || disable_lpm
 	[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
-	[[ "$(getprop kingauto.prof)" == "balanced" ]] && emmc_clk_sclg_balanced
-	[[ "$(getprop kingauto.prof)" == "battery" ]] && emmc_clk_sclg_pwr_saving
-	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_emmc_clk_sclg
 	[[ "$(getprop kingauto.prof)" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 }

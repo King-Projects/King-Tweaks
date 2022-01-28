@@ -57,7 +57,7 @@ fscc_start
 adjshield_stop
 adjshield_start
 rebuild_process_scan_cache
-cgroup_bbn_opt
+usr_bbn_opt
 
 # Save mode to be applied automatically after reboot
 save_panel
@@ -95,6 +95,9 @@ config_pwr_spd
 disable_debug
 
 disable_migt
+
+disable_emmc_clk_sclg
+disable_ufs_clk_sclg
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 while true; do
 	sleep 2

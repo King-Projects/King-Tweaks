@@ -17,7 +17,7 @@ full_ram=$((total_ram * 20 / 100))
 				kmsg "User is playing, applied gaming profile"
 				sync
 				setprop kingauto.prof "gaming"
-				change_task_nice "$gpid" "-18"
+				change_task_nice "$gpid" "-1"
 				apply_all_auto
 				sleep 30
 				for spid in $(pgrep -f com.whatsapp) $(pgrep -f com.zhiliaoapp) $(pgrep -f com.adobe) $(pgrep -f org.telegram) $(pgrep -f com.netflix) $(pgrep -f com.wemesh) $(pgrep -f com.discord) $(pgrep -f com.google.android.youtube) $(pgrep -f com.facebook) $(pgrep -f com.android.chrome) $(pgrep -f com.brave) $(pgrep -f com.UCMobile) $(pgrep -f org.mozilla) $(pgrep -f com.duckduckgo) $(pgrep -f com.opera) $(pgrep -f com.microsoft) $(pgrep -f org.torproject) $(pgrep -f com.instagram) $(pgrep -f com.twitch); do
@@ -32,7 +32,7 @@ full_ram=$((total_ram * 20 / 100))
 								kmsg "User is running benchmark / heavy apps. Applied extreme profile"
 								sync
 								setprop kingauto.prof "extreme"
-								change_task_nice "$bpid" "-18"
+								change_task_nice "$bpid" "-1"
 								apply_all_auto
 								sleep 30
 							fi
