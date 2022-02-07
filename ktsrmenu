@@ -15,7 +15,7 @@ ls /data >/dev/null 2>&1 || {
 }
 
 # Import magisk util_functions.sh
-[[ -f /data/adb/magisk/util_functions.sh ]] && . /data/adb/magisk/util_functions.sh || {
+[[ -f "/data/adb/magisk/util_functions.sh" ]] && . /data/adb/magisk/util_functions.sh || {
 	echo "[!] util_functions.sh not detected"
 	exit 1
 }
@@ -85,7 +85,7 @@ menu() {
 	echo "${Y}* KTSR CLI *${N}"
 	echo "${Y}************${N}"
 	echo ""
-	echo "${G}Ver: 1.6.3.1-beta-r10${N}"
+	echo "${G}Ver: 1.6.3.2-beta-r11${N}"
 	echo ""
 	echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 	echo ""
@@ -236,8 +236,9 @@ menu() {
 			;;
 		"7")
 			echo "${B}Optimizing packages...${N}"
+			pm compile -a -f --compile-layouts
 			cmd package bg-dexopt-job
-			sleep 5
+			sleep 2
 			menu
 			;;
 		"8")

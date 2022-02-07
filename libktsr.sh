@@ -16,7 +16,7 @@ kernel="/proc/sys/kernel/"
 vm="/proc/sys/vm/"
 cpuset="/dev/cpuset/"
 stune="/dev/stune/"
-lmk="/sys/module/lowmemorykiller/"
+lmk="/sys/module/lowmemorykiller/parameters"
 blkio="/dev/blkio/"
 cpuctl="/dev/cpuctl/"
 fs="/proc/sys/fs/"
@@ -46,12 +46,14 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.0.4"
+lib_ver="1.0.5"
 #ktsr_cfg="/data/media/0/KTSR/KTSR.conf"
 #pkg_on_ta=false
-migt="/sys/module/migt/parameters"
+migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
+zram="/sys/module/zram/parameters/"
+lmk="$(pgrep -f lmkd)"
 
 # Log in white and continue (unnecessary)
 kmsg() { echo -e "[$(date +%T)]: [*] $@" >>"$klog"; }
@@ -573,11 +575,36 @@ disable_devfreq_boost() {
 }
 
 get_ka_pid() {
-	if [[ "$(pgrep -f kingauto)" != "" ]]; then
-		echo "$(pgrep -f kingauto)"
-	else
-		echo "[Not Running]"
-	fi
+	[[ "$(pgrep -f kingauto)" != "" ]] && echo "$(pgrep -f kingauto)" || echo "[Not Running]"
+}
+
+[[ "$total_ram_kb" -gt "8388608" ]] && {
+	minfree="25600,38400,51200,64000,256000,307200"
+	efk="204800"
+}
+[[ "$total_ram_kb" -le "8388608" ]] && {
+	minfree="25600,38400,51200,64000,153600,179200"
+	efk="128000"
+}
+[[ "$total_ram_kb" -le "6291456" ]] && {
+	minfree="25600,38400,51200,64000,102400,128000"
+	efk="102400"
+}
+[[ "$total_ram_kb" -le "4197304" ]] && {
+	minfree="12800,19200,25600,32000,76800,102400"
+	efk="76800"
+}
+[[ "$total_ram_kb" -le "3145728" ]] && {
+	minfree="12800,19200,25600,32000,51200,76800"
+	efk="51200"
+}
+[[ "$total_ram_kb" -le "2098652" ]] && {
+	minfree="12800,19200,25600,32000,38400,51200"
+	efk="25600"
+}
+[[ "$total_ram_kb" -le "1049326" ]] && {
+	minfree="5120,10240,12800,15360,25600,38400"
+	efk="19200"
 }
 
 print_info() {
@@ -638,7 +665,8 @@ print_info() {
 stop_services() {
 	# Stop perf and other userspace processes from tinkering with kernel parameters
 	for v in 0 1 2 3 4; do
-	stop vendor.qti.hardware.perf@${v}.${v}-service 2>/dev/null
+		stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
+		stop vendor.oneplus.hardware.brain@$v.$v-service 2>/dev/null
 	done
 	stop perfd 2>/dev/null
 	# Enable / disable mpdecision according to the actual profile, and disable few debug services
@@ -701,10 +729,10 @@ disable_core_ctl() {
 
 enable_core_ctl() {
 	for i in 4 7; do
-	for core_ctl in /sys/devices/system/cpu/cpu$i/core_ctl/; do
-		[[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
-		[[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "0"
-	done
+		for core_ctl in /sys/devices/system/cpu/cpu$i/core_ctl/; do
+			[[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
+			[[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "0"
+		done
 	done
 
 	[[ -e "/sys/power/cpuhotplug/enable" ]] && write "/sys/power/cpuhotplug/enable" "1"
@@ -2562,9 +2590,78 @@ config_cpuset_gaming() {
 	esac
 }
 
-boost_balanced() {
+boost_latency() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
+		kmsg "Tweaked dynamic stune boost"
+		kmsg3 ""
+	}
+
+	[[ -d "/sys/module/cpu_boost/" ]] && {
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
+		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
+		kmsg "Tweaked CAF CPU input boost"
+		kmsg3 ""
+	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "128"
+		kmsg "Tweaked CPU input boost"
+		kmsg3 ""
+	}
+}
+
+boost_balanced() {
+	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
+		kmsg "Tweaked dynamic stune boost"
+		kmsg3 ""
+	}
+
+	[[ -d "/sys/module/cpu_boost/" ]] && {
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "88"
+		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
+		kmsg "Tweaked CAF CPU input boost"
+		kmsg3 ""
+	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "88"
+		kmsg "Tweaked CPU input boost"
+		kmsg3 ""
+	}
+}
+
+boost_extreme() {
+	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
+		kmsg "Tweaked dynamic stune boost"
+		kmsg3 ""
+	}
+
+	[[ -d "/sys/module/cpu_boost/" ]] && {
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
+		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
+		kmsg "Tweaked CAF CPU input boost"
+		kmsg3 ""
+	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "156"
+		kmsg "Tweaked CPU input boost"
+		kmsg3 ""
+	}
+}
+
+boost_battery() {
+	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
@@ -2585,75 +2682,6 @@ boost_balanced() {
 	}
 }
 
-boost_balanced() {
-	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
-		kmsg "Tweaked dynamic stune boost"
-		kmsg3 ""
-	}
-
-	[[ -d "/sys/module/cpu_boost/" ]] && {
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "50"
-		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
-		kmsg "Tweaked CAF CPU input boost"
-		kmsg3 ""
-	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "50"
-		kmsg "Tweaked CPU input boost"
-		kmsg3 ""
-	}
-}
-
-boost_extreme() {
-	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
-		kmsg "Tweaked dynamic stune boost"
-		kmsg3 ""
-	}
-
-	[[ -d "/sys/module/cpu_boost/" ]] && {
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "100"
-		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
-		kmsg "Tweaked CAF CPU input boost"
-		kmsg3 ""
-	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "100"
-		kmsg "Tweaked CPU input boost"
-		kmsg3 ""
-	}
-}
-
-boost_battery() {
-	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
-		kmsg "Tweaked dynamic stune boost"
-		kmsg3 ""
-	}
-
-	[[ -d "/sys/module/cpu_boost/" ]] && {
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "48"
-		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
-		kmsg "Tweaked CAF CPU input boost"
-		kmsg3 ""
-	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "48"
-		kmsg "Tweaked CPU input boost"
-		kmsg3 ""
-	}
-}
-
 boost_gaming() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
@@ -2663,7 +2691,7 @@ boost_gaming() {
 	}
 
 	[[ -d "/sys/module/cpu_boost/" ]] && {
-		write "/sys/module/cpu_boost/parameters/input_boost_ms" "96"
+		write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
@@ -2671,7 +2699,7 @@ boost_gaming() {
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
-		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "96"
+		write "/sys/module/cpu_input_boost/parameters/input_boost_duration" "156"
 		kmsg "Tweaked CPU input boost"
 		kmsg3 ""
 	}
@@ -2696,6 +2724,7 @@ io_latency() {
 		write "${queue}rotational" "0"
 		write "${queue}iosched/slice_idle" "0"
 		write "${queue}iosched/group_idle" "1"
+		write "${queue}iosched/quantum" "16"
 		write "${queue}read_ahead_kb" "32"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "2"
@@ -2744,6 +2773,7 @@ io_balanced() {
 		write "${queue}rotational" "0"
 		write "${queue}iosched/slice_idle" "0"
 		write "${queue}iosched/group_idle" "1"
+		write "${queue}iosched/quantum" "16"
 		write "${queue}read_ahead_kb" "128"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "1"
@@ -2790,6 +2820,7 @@ io_extreme() {
 		write "${queue}rotational" "0"
 		write "${queue}iosched/slice_idle" "0"
 		write "${queue}iosched/group_idle" "1"
+		write "${queue}iosched/quantum" "16"
 		write "${queue}read_ahead_kb" "256"
 		write "${queue}nomerges" "2"
 		write "${queue}rq_affinity" "2"
@@ -2836,6 +2867,7 @@ io_battery() {
 		write "${queue}rotational" "0"
 		write "${queue}iosched/slice_idle" "0"
 		write "${queue}iosched/group_idle" "1"
+		write "${queue}iosched/quantum" "16"
 		write "${queue}read_ahead_kb" "64"
 		write "${queue}nomerges" "0"
 		write "${queue}rq_affinity" "0"
@@ -2882,6 +2914,7 @@ io_gaming() {
 		write "${queue}rotational" "0"
 		write "${queue}iosched/slice_idle" "0"
 		write "${queue}iosched/group_idle" "1"
+		write "${queue}iosched/quantum" "16"
 		write "${queue}read_ahead_kb" "256"
 		write "${queue}nomerges" "2"
 		write "${queue}rq_affinity" "2"
@@ -4497,6 +4530,7 @@ sched_ft_latency() {
 	[[ -e "/sys/kernel/debug/sched_features" ]] && {
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
+		write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
 	}
@@ -4506,6 +4540,7 @@ sched_ft_balanced() {
 	[[ -e "/sys/kernel/debug/sched_features" ]] && {
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
+		write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
 	}
@@ -4515,6 +4550,7 @@ sched_ft_extreme() {
 	[[ -e "/sys/kernel/debug/sched_features" ]] && {
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
+		write "/sys/kernel/debug/sched_features" "NO_ENERGY_AWARE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
 	}
@@ -4524,6 +4560,7 @@ sched_ft_battery() {
 	[[ -e "/sys/kernel/debug/sched_features" ]] && {
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
+		write "/sys/kernel/debug/sched_features" "ENERGY_AWARE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
 	}
@@ -4533,6 +4570,7 @@ sched_ft_gaming() {
 	[[ -e "/sys/kernel/debug/sched_features" ]] && {
 		write "/sys/kernel/debug/sched_features" "NEXT_BUDDY"
 		write "/sys/kernel/debug/sched_features" "NO_TTWU_QUEUE"
+		write "/sys/kernel/debug/sched_features" "NO_ENERGY_AWARE"
 		kmsg "Tweaked scheduler features"
 		kmsg3 ""
 	}
@@ -4563,8 +4601,8 @@ sched_latency() {
 	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_latency"
 	[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((sched_period_latency / sched_tasks_latency))"
 	[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((sched_period_latency / sched_tasks_latency))"
-	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
-	[[ -e "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" ]] && write "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" "200000"
+	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "2000000"
+	[[ -e "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" ]] && write "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" "2000000"
 	[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 	[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 	write "${kernel}sched_nr_migrate" "8"
@@ -4600,7 +4638,7 @@ sched_latency() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	
+
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4613,8 +4651,8 @@ sched_balanced() {
 	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_balance"
 	[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((sched_period_balance / sched_tasks_balance))"
 	[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((sched_period_balance / 2))"
-	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
-	[[ -e "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" ]] && write "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" "200000"
+	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "2500000"
+	[[ -e "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" ]] && write "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" "2500000"
 	[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 	[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 	write "${kernel}sched_nr_migrate" "32"
@@ -4647,7 +4685,7 @@ sched_balanced() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	
+
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4694,7 +4732,7 @@ sched_extreme() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	
+
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4707,8 +4745,8 @@ sched_battery() {
 	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_battery"
 	[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((sched_period_battery / sched_tasks_battery))"
 	[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((sched_period_battery / 2))"
-	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "200000"
-	[[ -e "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" ]] && write "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" "200000"
+	[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "3000000"
+	[[ -e "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" ]] && write "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" "3000000"
 	[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 	[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
 	write "${kernel}sched_nr_migrate" "256"
@@ -4741,7 +4779,7 @@ sched_battery() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	
+
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4788,7 +4826,7 @@ sched_gaming() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	
+
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4827,10 +4865,12 @@ disable_fp_boost() {
 
 # Credits to helloklf again
 disable_ufs_clk_sclg() {
-		write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "0"
-		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
-		kmsg "Disabled UFS clock scaling"
-		kmsg3 ""
+	write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "0"
+	write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
+	# Test if this will cause drain later
+	write "/sys/devices/platform/soc/1d84000.ufshc/hibern8_on_idle_enable" "0"
+	kmsg "Disabled UFS clock scaling"
+	kmsg3 ""
 }
 
 ppm_policy_default() {
@@ -4874,16 +4914,16 @@ ppm_policy_max() {
 }
 
 cpu_clk_min() {
-	# Set min efficient CPU clock
+	# Set min I'mefficient CPUs frequency
 	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
-		for i in 576000 652800 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1113600 1152000 1209600 1459200 1689600 1708800; do
+		for i in 576000 652800 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1689600 1708800 1766400; do
 			[[ "$(grep $i ${pl}scaling_available_frequencies)" ]] && write "${pl}scaling_min_freq" "$i"
 		done
 	done
 }
 
 cpu_clk_default() {
-	# Set max CPU clock
+	# Set default CPUs frequency
 	for cpus in /sys/devices/system/cpu/cpufreq/policy*/; do
 		[[ -e "${cpus}scaling_max_freq" ]] && {
 			write "${cpus}scaling_max_freq" "$cpu_max_freq"
@@ -4909,7 +4949,7 @@ cpu_clk_default() {
 }
 
 cpu_clk_max() {
-	# Set min & max CPU clock
+	# Set max CPUs frequency
 	for cpus in /sys/devices/system/cpu/cpufreq/policy*/; do
 		[[ -e "${cpus}scaling_min_freq" ]] && {
 			write "${cpus}scaling_min_freq" "$cpu_max_freq"
@@ -4939,95 +4979,45 @@ cpu_clk_max() {
 }
 
 vm_lmk_latency() {
-	[[ "$total_ram_kb" -gt "8388608" ]] && {
-		minfree="25600,38400,51200,64000,256000,307200"
-		efk="204800"
-	}
-	[[ "$total_ram_kb" -le "8388608" ]] && {
-		minfree="25600,38400,51200,64000,153600,179200"
-		efk="128000"
-	}
-	[[ "$total_ram_kb" -le "6291456" ]] && {
-		minfree="25600,38400,51200,64000,102400,128000"
-		efk="102400"
-	}
-	[[ "$total_ram_kb" -le "4197304" ]] && {
-		minfree="12800,19200,25600,32000,76800,102400"
-		efk="76800"
-	}
-	[[ "$total_ram_kb" -le "3145728" ]] && {
-		minfree="12800,19200,25600,32000,51200,76800"
-		efk="51200"
-	}
-	[[ "$total_ram_kb" -le "2098652" ]] && {
-		minfree="12800,19200,25600,32000,38400,51200"
-		efk="25600"
-	}
-	[[ "$total_ram_kb" -le "1049326" ]] && {
-		minfree="5120,10240,12800,15360,25600,38400"
-		efk="19200"
-	}
 	# Always sync before dropping caches
 	sync
 	# VM settings to improve overall user experience and performance
 	write "${vm}drop_caches" "3"
 	write "${vm}dirty_background_ratio" "15"
 	write "${vm}dirty_ratio" "40"
-	write "${vm}dirty_expire_centisecs" "5000"
-	write "${vm}dirty_writeback_centisecs" "5000"
+	write "${vm}dirty_expire_centisecs" "4000"
+	write "${vm}dirty_writeback_centisecs" "4000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "3600"
 	write "${vm}overcommit_ratio" "100"
-	# Use SSWAP on devices if it do not have more than 6 GB RAM
-	[[ "$total_ram" -lt "6144" ]] && write "${vm}swappiness" "190"
-	[[ "$(cat "${vm}swappiness")" != "190" ]] && write "${vm}swappiness" "100"
+	# Use more zRAM / swap by default if possible
+	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
+	[[ "$total_ram" -le "8192" ]] && write "${vm}swappiness" "120"
+	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
+	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "200"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
-	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
+	[[ ! "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1" || [[ "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "0"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
-	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "$minfree"
-	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
-	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
-	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
+	[[ -e "${lmk}minfree" ]] && write "${lmk}minfree" "$minfree"
+	[[ -e "${lmk}oom_reaper" ]] && write "${lmk}oom_reaper" "1"
+	[[ -e "${lmk}lmk_fast_run" ]] && write "${lmk}lmk_fast_run" "0"
+	[[ -e "${lmk}enable_adaptive_lmk" ]] && write "${lmk}enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "$efk"
-	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
-	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "100"
+	[[ -e "${lmk}cost" ]] && write "${lmk}cost" "4096"
+	[[ -e "${vm}watermark_scale_factor" ]] && write "${vm}watermark_scale_factor" "100"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "4096" ]] && write "${zram}wb_start_mins" "180"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && write "${zram}wb_start_mins" "240"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "360"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -gt "8192" ]] && write "${zram}wb_start_mins" "480"
 
 	kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 	kmsg3 ""
 }
 
 vm_lmk_balanced() {
-	[[ "$total_ram_kb" -gt "8388608" ]] && {
-		minfree="25600,38400,51200,64000,256000,307200"
-		efk="204800"
-	}
-	[[ "$total_ram_kb" -le "8388608" ]] && {
-		minfree="25600,38400,51200,64000,153600,179200"
-		efk="128000"
-	}
-	[[ "$total_ram_kb" -le "6291456" ]] && {
-		minfree="25600,38400,51200,64000,102400,128000"
-		efk="102400"
-	}
-	[[ "$total_ram_kb" -le "4197304" ]] && {
-		minfree="12800,19200,25600,32000,76800,102400"
-		efk="76800"
-	}
-	[[ "$total_ram_kb" -le "3145728" ]] && {
-		minfree="12800,19200,25600,32000,51200,76800"
-		efk="51200"
-	}
-	[[ "$total_ram_kb" -le "2098652" ]] && {
-		minfree="12800,19200,25600,32000,38400,51200"
-		efk="25600"
-	}
-	[[ "$total_ram_kb" -le "1049326" ]] && {
-		minfree="5120,10240,12800,15360,25600,38400"
-		efk="19200"
-	}
 	sync
 	write "${vm}drop_caches" "2"
 	write "${vm}dirty_background_ratio" "5"
@@ -5037,113 +5027,69 @@ vm_lmk_balanced() {
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "3600"
 	write "${vm}overcommit_ratio" "100"
-	[[ "$total_ram" -lt "6144" ]] && write "${vm}swappiness" "190"
-	[[ "$(cat "${vm}swappiness")" != "190" ]] && write "${vm}swappiness" "100"
+	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
+	[[ "$total_ram" -le "8192" ]] && write "${vm}swappiness" "120"
+	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
+	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
-	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
+	[[ ! "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1" || [[ "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "0"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
-	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "$minfree"
-	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
-	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
-	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
+	[[ -e "${lmk}minfree" ]] && write "${lmk}minfree" "$minfree"
+	[[ -e "${lmk}oom_reaper" ]] && write "${lmk}oom_reaper" "1"
+	[[ -e "${lmk}lmk_fast_run" ]] && write "${lmk}lmk_fast_run" "0"
+	[[ -e "${lmk}enable_adaptive_lmk" ]] && write "${lmk}enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "$efk"
-	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
-	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "100"
+	[[ -e "${lmk}cost" ]] && write "${lmk}cost" "4096"
+	[[ -e "${vm}watermark_scale_factor" ]] && write "${vm}watermark_scale_factor" "100"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "4096" ]] && write "${zram}wb_start_mins" "180"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && write "${zram}wb_start_mins" "240"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "360"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -gt "8192" ]] && write "${zram}wb_start_mins" "480"
 
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
 }
 
 vm_lmk_extreme() {
-	[[ "$total_ram_kb" -gt "8388608" ]] && {
-		minfree="25600,38400,51200,64000,256000,307200"
-		efk="204800"
-	}
-	[[ "$total_ram_kb" -le "8388608" ]] && {
-		minfree="25600,38400,51200,64000,153600,179200"
-		efk="128000"
-	}
-	[[ "$total_ram_kb" -le "6291456" ]] && {
-		minfree="25600,38400,51200,64000,102400,128000"
-		efk="102400"
-	}
-	[[ "$total_ram_kb" -le "4197304" ]] && {
-		minfree="12800,19200,25600,32000,76800,102400"
-		efk="76800"
-	}
-	[[ "$total_ram_kb" -le "3145728" ]] && {
-		minfree="12800,19200,25600,32000,51200,76800"
-		efk="51200"
-	}
-	[[ "$total_ram_kb" -le "2098652" ]] && {
-		minfree="12800,19200,25600,32000,38400,51200"
-		efk="25600"
-	}
-	[[ "$total_ram_kb" -le "1049326" ]] && {
-		minfree="5120,10240,12800,15360,25600,38400"
-		efk="19200"
-	}
 	sync
 	write "${vm}drop_caches" "3"
 	write "${vm}dirty_background_ratio" "10"
 	write "${vm}dirty_ratio" "40"
-	write "${vm}dirty_expire_centisecs" "3000"
-	write "${vm}dirty_writeback_centisecs" "3000"
+	write "${vm}dirty_expire_centisecs" "5000"
+	write "${vm}dirty_writeback_centisecs" "5000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "3600"
 	write "${vm}overcommit_ratio" "100"
-	[[ "$total_ram" -lt "6144" ]] && write "${vm}swappiness" "190"
-	[[ "$(cat "${vm}swappiness")" != "190" ]] && write "${vm}swappiness" "100"
+	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
+	[[ "$total_ram" -le "8192" ]] && write "${vm}swappiness" "120"
+	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
+	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "80"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
-	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
+	[[ ! "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1" || [[ "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "0"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
-	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "$minfree"
-	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
-	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
-	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
+	[[ -e "${lmk}minfree" ]] && write "${lmk}minfree" "$minfree"
+	[[ -e "${lmk}oom_reaper" ]] && write "${lmk}oom_reaper" "1"
+	[[ -e "${lmk}lmk_fast_run" ]] && write "${lmk}lmk_fast_run" "0"
+	[[ -e "${lmk}enable_adaptive_lmk" ]] && write "${lmk}enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "$efk"
-	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
-	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "100"
+	[[ -e "${lmk}cost" ]] && write "${lmk}cost" "4096"
+	[[ -e "${vm}watermark_scale_factor" ]] && write "${vm}watermark_scale_factor" "100"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "4096" ]] && write "${zram}wb_start_mins" "180"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && write "${zram}wb_start_mins" "240"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "360"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -gt "8192" ]] && write "${zram}wb_start_mins" "480"
 
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
 }
 
 vm_lmk_battery() {
-	[[ "$total_ram_kb" -gt "8388608" ]] && {
-		minfree="25600,38400,51200,64000,256000,307200"
-		efk="204800"
-	}
-	[[ "$total_ram_kb" -le "8388608" ]] && {
-		minfree="25600,38400,51200,64000,153600,179200"
-		efk="128000"
-	}
-	[[ "$total_ram_kb" -le "6291456" ]] && {
-		minfree="25600,38400,51200,64000,102400,128000"
-		efk="102400"
-	}
-	[[ "$total_ram_kb" -le "4197304" ]] && {
-		minfree="12800,19200,25600,32000,76800,102400"
-		efk="76800"
-	}
-	[[ "$total_ram_kb" -le "3145728" ]] && {
-		minfree="12800,19200,25600,32000,51200,76800"
-		efk="51200"
-	}
-	[[ "$total_ram_kb" -le "2098652" ]] && {
-		minfree="12800,19200,25600,32000,38400,51200"
-		efk="25600"
-	}
-	[[ "$total_ram_kb" -le "1049326" ]] && {
-		minfree="5120,10240,12800,15360,25600,38400"
-		efk="19200"
-	}
 	sync
 	write "${vm}drop_caches" "0"
 	write "${vm}dirty_background_ratio" "5"
@@ -5153,79 +5099,63 @@ vm_lmk_battery() {
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "3600"
 	write "${vm}overcommit_ratio" "100"
-	[[ "$total_ram" -lt "6144" ]] && write "${vm}swappiness" "190"
-	[[ "$(cat "${vm}swappiness")" != "190" ]] && write "${vm}swappiness" "100"
+	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
+	[[ "$total_ram" -le "8192" ]] && write "${vm}swappiness" "120"
+	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
+	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
-	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
+	[[ ! "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1" || [[ "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "0"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
-	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "$minfree"
-	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
-	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
-	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
+	[[ -e "${lmk}minfree" ]] && write "${lmk}minfree" "$minfree"
+	[[ -e "${lmk}oom_reaper" ]] && write "${lmk}oom_reaper" "1"
+	[[ -e "${lmk}lmk_fast_run" ]] && write "${lmk}lmk_fast_run" "0"
+	[[ -e "${lmk}enable_adaptive_lmk" ]] && write "${lmk}enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "$efk"
-	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
-	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "100"
+	[[ -e "${lmk}cost" ]] && write "${lmk}cost" "4096"
+	[[ -e "${vm}watermark_scale_factor" ]] && write "${vm}watermark_scale_factor" "100"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "4096" ]] && write "${zram}wb_start_mins" "180"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && write "${zram}wb_start_mins" "240"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "360"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -gt "8192" ]] && write "${zram}wb_start_mins" "480"
 
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
 }
 
 vm_lmk_gaming() {
-	[[ "$total_ram_kb" -gt "8388608" ]] && {
-		minfree="25600,38400,51200,64000,256000,307200"
-		efk="204800"
-	}
-	[[ "$total_ram_kb" -le "8388608" ]] && {
-		minfree="25600,38400,51200,64000,153600,179200"
-		efk="128000"
-	}
-	[[ "$total_ram_kb" -le "6291456" ]] && {
-		minfree="25600,38400,51200,64000,102400,128000"
-		efk="102400"
-	}
-	[[ "$total_ram_kb" -le "4197304" ]] && {
-		minfree="12800,19200,25600,32000,76800,102400"
-		efk="76800"
-	}
-	[[ "$total_ram_kb" -le "3145728" ]] && {
-		minfree="12800,19200,25600,32000,51200,76800"
-		efk="51200"
-	}
-	[[ "$total_ram_kb" -le "2098652" ]] && {
-		minfree="12800,19200,25600,32000,38400,51200"
-		efk="25600"
-	}
-	[[ "$total_ram_kb" -le "1049326" ]] && {
-		minfree="5120,10240,12800,15360,25600,38400"
-		efk="19200"
-	}
 	sync
 	write "${vm}drop_caches" "3"
 	write "${vm}dirty_background_ratio" "10"
 	write "${vm}dirty_ratio" "40"
-	write "${vm}dirty_expire_centisecs" "3000"
-	write "${vm}dirty_writeback_centisecs" "3000"
+	write "${vm}dirty_expire_centisecs" "5000"
+	write "${vm}dirty_writeback_centisecs" "5000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "3600"
 	write "${vm}overcommit_ratio" "100"
-	[[ "$total_ram" -lt "6144" ]] && write "${vm}swappiness" "190"
-	[[ "$(cat "${vm}swappiness")" != "190" ]] && write "${vm}swappiness" "100"
+	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
+	[[ "$total_ram" -le "8192" ]] && write "${vm}swappiness" "120"
+	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
+	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "75"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
-	[[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1"
+	[[ ! "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1" || [[ "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "0"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
 	[[ -e "${vm}oom_dump_tasks" ]] && write "${vm}oom_dump_tasks" "0"
-	[[ -e "${lmk}parameters/minfree" ]] && write "${lmk}parameters/minfree" "$minfree"
-	[[ -e "${lmk}parameters/oom_reaper" ]] && write "${lmk}parameters/oom_reaper" "1"
-	[[ -e "${lmk}parameters/lmk_fast_run" ]] && write "${lmk}parameters/lmk_fast_run" "0"
-	[[ -e "${lmk}parameters/enable_adaptive_lmk" ]] && write "${lmk}parameters/enable_adaptive_lmk" "0"
+	[[ -e "${lmk}minfree" ]] && write "${lmk}minfree" "$minfree"
+	[[ -e "${lmk}oom_reaper" ]] && write "${lmk}oom_reaper" "1"
+	[[ -e "${lmk}lmk_fast_run" ]] && write "${lmk}lmk_fast_run" "0"
+	[[ -e "${lmk}enable_adaptive_lmk" ]] && write "${lmk}enable_adaptive_lmk" "0"
 	[[ -e "${vm}extra_free_kbytes" ]] && write "${vm}extra_free_kbytes" "$efk"
-	[[ -e "${lmk}parameters/cost" ]] && write "${lmk}parameters/cost" "4096"
-	[[ -e "${vm}parameters/watermark_scale_factor" ]] && write "${vm}parameters/watermark_scale_factor" "100"
+	[[ -e "${lmk}cost" ]] && write "${lmk}cost" "4096"
+	[[ -e "${vm}watermark_scale_factor" ]] && write "${vm}watermark_scale_factor" "100"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "4096" ]] && write "${zram}wb_start_mins" "180"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && write "${zram}wb_start_mins" "240"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "360"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -gt "8192" ]] && write "${zram}wb_start_mins" "480"
 
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
@@ -5369,7 +5299,7 @@ config_tcp() {
 	write "${tcp}tcp_keepalive_probes" "10"
 	write "${tcp}tcp_keepalive_intvl" "30"
 	write "${tcp}tcp_fin_timeout" "30"
-	write "${tcp}tcp_low_latency" "1"
+	write "${tcp}tcp_mtu_probing" "1"
 
 	kmsg "Applied TCP tweaks"
 	kmsg3 ""
@@ -5416,7 +5346,7 @@ disable_hp_snd() {
 enable_lpm() {
 	for lpm in /sys/module/lpm_levels/system/*/*/*/; do
 		[[ -d "/sys/module/lpm_levels/" ]] && {
-			write "/sys/module/lpm_levels/parameters/lpm_prediction" "Y"
+			write "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
 			write "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "Y"
 			write "/sys/module/lpm_levels/parameters/sleep_disabled" "N"
 			write "${lpm}idle_enabled" "Y"
@@ -5498,7 +5428,7 @@ disable_emmc_clk_sclg() {
 	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
 
 	kmsg "Disabled EMMC clock scaling"
-	kmsg2 ""
+	kmsg3 ""
 }
 
 disable_debug() {
@@ -5510,6 +5440,7 @@ disable_debug() {
 	done
 
 	kmsg "Disabled misc debugging"
+	kmsg3 ""
 }
 
 perfmgr_default() {
@@ -5550,11 +5481,11 @@ perfmgr_pwr_saving() {
 
 disable_migt() {
 	[[ -d "$migt" ]] && {
-		write "${migt}/migt_freq" "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
-		write "${migt}/glk_freq_limit_start" "0"
-		write "${migt}/glk_freq_limit_walt" "0"
-		write "${migt}/glk_maxfreq" "0 0 0"
-		write "${migt}/migt_ceiling_freq" "0 0 0"
+		write "${migt}migt_freq" "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
+		write "${migt}glk_freq_limit_start" "0"
+		write "${migt}glk_freq_limit_walt" "0"
+		write "${migt}glk_maxfreq" "0 0 0"
+		write "${migt}migt_ceiling_freq" "0 0 0"
 	}
 }
 
@@ -5574,7 +5505,7 @@ write_panel() { echo "$1" >>"${bbn_banner}"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential process optimizer 
-Version: 1.2.8-r3
+Version: 1.2.9-r4
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -5885,7 +5816,6 @@ fscc_status() {
 usr_bbn_opt() {
 	# Input Dispatcher / Reader
 	change_thread_nice "system_server" "Input" "-20"
-	pin_thread_on_perf "system_server" "Input"
 	# Not important
 	change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "5"
 	# Speed up searching service binder
@@ -5902,31 +5832,53 @@ usr_bbn_opt() {
 	pin_proc_on_perf "rcu_task"
 	# Prevent kgsl worker thread from being preempted by less important tasks
 	change_task_rt "kgsl_worker_thread" "6"
+	# Pin LMKD to perf cluster as it is has the critical task of reclaiming memory to the system
+	pin_proc_on_perf "lmkd"
 	# Kernel reclaim threads run on more power-efficient cores
+	# Also pin oom_reaper on perf cluster
 	change_task_nice "kswapd" "-2"
 	change_task_nice "oom_reaper" "-2"
+	pin_proc_on_perf "oom_reaper"
 	# Let system run with max nice too
 	change_task_nice "system" "-20"
 	# Let devfreq boost run with max nice as it is also a perf critical task (boosting DDR)
 	change_task_nice "devfreq_boost" "-20"
-	# Affine kthreads to the perf cluster as they also play a major role in rendering frames to the display
+	# Pin these kthreads to the perf cluster as they also play a major role in rendering frames to the display
 	pin_proc_on_perf "crtc_event"
 	pin_proc_on_perf "crtc_commit"
 	pin_proc_on_perf "pp_event"
 	pin_proc_on_perf "mdss_fb"
-	# Affine TS workqueue to perf cluster to reduce latency
+	pin_proc_on_perf "mdss_display_wake"
+	pin_proc_on_perf "vsync_retire_work"
+	# Pin TS workqueue to perf cluster to reduce latency
 	pin_proc_on_perf "fts_wq"
 	pin_proc_on_perf "nvt_ts"
-	pin_proc_on_perf "sec_ts_isr"
-	pin_proc_on_perf "fts_isr"
-	# Queue input handler functions with max nice
-	change_task_nice "early_wakeup_clk_wq" "-20"
 	# Queue mdss rotator kthread with max nice
 	change_task_nice "rot_thread" "-20"
-	# Affine fingerprint service to BIG cluster to reduce latency
+	# Queue UFS clock gating workqueue with max nice
+	change_task_nice "ufs_clk_gating" "-20"
+	# Pin fingerprint service to BIG cluster to reduce latency
 	pin_proc_on_perf "erprint"
-	# Pin HWC on perf cluster to reduce jitter / latency
-	pin_proc_on_perf "composer" 
+	# Pin HWC on mid cluster to reduce jitter / latency
+	pin_proc_on_mid "composer"
+	# Queue CVP fence request handler with max nice
+	change_task_nice "thread_fence" "-20"
+	# Queue cpu_boostd on perf cluster with max nice for obvious reasons
+	change_task_nice "cpu_boostd" "-20"
+	pin_proc_on_perf "cpu_boostd"
+	# Queue cpu_boost worker thread on little cluster
+	# Reduce it's rt prio to avoid it preempting more critical tasks
+	change_task_rt "cpu_boost_worker_thread" "2"
+	pin_proc_on_pwr "cpu_boost_worker_thread"
+	# Queue touchscreen related workers with max nice
+	change_task_nice "speedup_resume_wq" "-20"
+	change_task_nice "lcd_trigger_load_tp_fw_wq" "-20"
+	change_task_nice "syna_tcm_freq_hop" "-20"
+	change_task_nice "touch_delta_wq" "-20"
+	change_task_nice "tp_async" "-20"
+	change_task_nice "early_wakeup_clk_wq" "-20"
+	# Pin memory compaction thread on perf cluster
+	pin_proc_on_perf "kcompactd"
 	# Boost app boot process, zygote--com.xxxx.xxx
 	# Usap nicing isn't necessary as it is already set to max nice by default
 	change_task_nice "zygote" "-20"
@@ -5950,7 +5902,7 @@ clear_logs() {
 	[[ "$(stat -t "/data/media/0/KTSR/sqlite_opt.log" 2>/dev/null | awk '{print $2}')" -ge "$sqlite_opt_max_size" ]] && rm -rf "/data/media/0/KTSR/sqlite_opt.log"
 }
 
-# Get screen state (ON | OFF)
+# Return 0 / 1
 get_scrn_state() {
 	scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
 	[[ "$scrn_state" == "" ]] && scrn_state=$(dumpsys window policy | grep screenState | awk -F '=' '{print $2}')
