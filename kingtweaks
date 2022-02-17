@@ -64,6 +64,8 @@ save_panel
 
 #[[ ! -f ${ktsr_cfg} ]] && ktsr_create_default_cfg
 
+stop_services
+
 [[ -d "$memcg" ]] && config_memcg
 
 [[ -d "$blkio" ]] && config_blkio

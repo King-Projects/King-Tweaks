@@ -46,7 +46,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.0.5"
+lib_ver="1.0.6"
 #ktsr_cfg="/data/media/0/KTSR/KTSR.conf"
 #pkg_on_ta=false
 migt="/sys/module/migt/parameters/"
@@ -669,12 +669,7 @@ stop_services() {
 		stop vendor.oneplus.hardware.brain@$v.$v-service 2>/dev/null
 	done
 	stop perfd 2>/dev/null
-	# Enable / disable mpdecision according to the actual profile, and disable few debug services
-	[[ "$ktsr_prof_en" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && {
-		start mpdecision 2>/dev/null
-	} || {
-		stop mpdecision 2>/dev/null
-	}
+	stop mpdecision 2>/dev/null
 	stop miuibooster 2>/dev/null
 	stop vendor.perfservice 2>/dev/null
 	stop vendor.cnss_diag 2>/dev/null
@@ -3130,30 +3125,30 @@ cpu_battery() {
 	done
 
 	for governor in $(find /sys/devices/system/cpu/ -name *util* -type d); do
-		write "$governor/up_rate_limit_us" "4500"
-		write "$governor/down_rate_limit_us" "16000"
+		write "$governor/up_rate_limit_us" "5000"
+		write "$governor/down_rate_limit_us" "20000"
 		write "$governor/pl" "1"
 		write "$governor/iowait_boost_enable" "0"
-		write "$governor/rate_limit_us" "16000"
+		write "$governor/rate_limit_us" "20000"
 		write "$governor/hispeed_load" "99"
 		write "$governor/hispeed_freq" "$cpu_max_freq"
 	done
 
 	for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d); do
-		write "$governor/up_rate_limit_us" "4500"
-		write "$governor/down_rate_limit_us" "16000"
+		write "$governor/up_rate_limit_us" "5000"
+		write "$governor/down_rate_limit_us" "20000"
 		write "$governor/pl" "1"
 		write "$governor/iowait_boost_enable" "0"
-		write "$governor/rate_limit_us" "16000"
+		write "$governor/rate_limit_us" "20000"
 		write "$governor/hispeed_load" "99"
 		write "$governor/hispeed_freq" "$cpu_max_freq"
 	done
 
 	for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d); do
-		write "$governor/timer_rate" "16000"
+		write "$governor/timer_rate" "20000"
 		write "$governor/boost" "0"
 		write "$governor/io_is_busy" "0"
-		write "$governor/timer_slack" "4000"
+		write "$governor/timer_slack" "5000"
 		write "$governor/input_boost" "0"
 		write "$governor/use_migration_notif" "1"
 		write "$governor/ignore_hispeed_on_notif" "0"
@@ -3162,7 +3157,7 @@ cpu_battery() {
 		write "$governor/boostpulse" "0"
 		write "$governor/fastlane" "1"
 		write "$governor/fast_ramp_down" "1"
-		write "$governor/sampling_rate" "16000"
+		write "$governor/sampling_rate" "20000"
 		write "$governor/sampling_rate_min" "20000"
 		write "$governor/max_freq_hysteresis" "0"
 		write "$governor/min_sample_time" "20000"
@@ -4916,7 +4911,7 @@ ppm_policy_max() {
 cpu_clk_min() {
 	# Set min I'mefficient CPUs frequency
 	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
-		for i in 576000 652800 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1689600 1708800 1766400; do
+		for i in 576000 652800 691200 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1689600 1708800 1766400; do
 			[[ "$(grep $i ${pl}scaling_available_frequencies)" ]] && write "${pl}scaling_min_freq" "$i"
 		done
 	done
@@ -5675,7 +5670,16 @@ change_task_rt() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
 			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			chrt -p "$2" "$temp_tid" >>"$bbn_log"
+			chrt -p "$temp_tid" "$2" >>"$bbn_log"
+		done
+	done
+}
+
+change_task_rt_ff() {
+	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
+		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
+			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
+			chrt -f -p "$temp_tid" "$2" >>"$bbn_log"
 		done
 	done
 }
@@ -5820,8 +5824,8 @@ usr_bbn_opt() {
 	change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "5"
 	# Speed up searching service binder
 	change_task_nice "servicemanag" "-20"
-	# Prevent display service from being preempted by normal tasks
-	change_task_rt "\.hardware\.display" "2"
+	# Prevent display service from being preempted by less critical tasks
+	change_task_rt "\.hardware\.display" "16"
 	# Let KGSL worker thread run with max nice and pin it on perf cluster as it is a perf critical task (rendering frames to the display)
 	change_task_nice "kgsl_worker" "-20"
 	pin_proc_on_perf "kgsl_worker_thread"
@@ -5835,10 +5839,8 @@ usr_bbn_opt() {
 	# Pin LMKD to perf cluster as it is has the critical task of reclaiming memory to the system
 	pin_proc_on_perf "lmkd"
 	# Kernel reclaim threads run on more power-efficient cores
-	# Also pin oom_reaper on perf cluster
 	change_task_nice "kswapd" "-2"
 	change_task_nice "oom_reaper" "-2"
-	pin_proc_on_perf "oom_reaper"
 	# Let system run with max nice too
 	change_task_nice "system" "-20"
 	# Let devfreq boost run with max nice as it is also a perf critical task (boosting DDR)
@@ -5877,19 +5879,26 @@ usr_bbn_opt() {
 	change_task_nice "touch_delta_wq" "-20"
 	change_task_nice "tp_async" "-20"
 	change_task_nice "early_wakeup_clk_wq" "-20"
-	# Pin memory compaction thread on perf cluster
-	pin_proc_on_perf "kcompactd"
+	# Move some essential workers to SCHED_RR
+	change_task_rt "kgsl_worker_thread" "16"
+	change_task_rt "adreno_dispatch" "16"
+	change_task_rt "crtc_commit" "16"
+	change_task_rt "crtc_event" "16"
+	change_task_rt "pp_event" "16"
+	change_task_rt "rot_commitq" "5"
+	change_task_rt "rot_doneq" "5"
+	change_task_rt "rot_fenceq" "5"
 	# Boost app boot process, zygote--com.xxxx.xxx
 	# Usap nicing isn't necessary as it is already set to max nice by default
 	change_task_nice "zygote" "-20"
 	[[ "$miui" == "true" ]] && [[ "$soc" == "lahaina" ]] || [[ "$soc" == "kona" ]] || [[ "$soc" == "msmnile" ]] && {
 		unpin_proc "\.miui\.home"
-		change_task_affinity "\.miui\.home" "7f"
-		change_task_nice "miui.home" "-18"
+		change_task_affinity "\.miui\.home" "0f"
+		change_task_nice "miui.home" "-20"
 	} || {
 		unpin_proc "\.miui\.home"
-		change_task_affinity "\.miui\.home" "ff"
-		change_task_nice "miui.home" "-18"
+		change_task_affinity "\.miui\.home" "7f"
+		change_task_nice "miui.home" "-20"
 	}
 }
 
@@ -5917,7 +5926,6 @@ get_scrn_state() {
 
 apply_all() {
 	print_info
-	stop_services
 	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_devfreq_boost || disable_devfreq_boost
 	[[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] && enable_core_ctl || disable_core_ctl
 	boost_"$ktsr_prof_en"
@@ -5951,7 +5959,6 @@ apply_all() {
 
 apply_all_auto() {
 	print_info
-	stop_services
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_devfreq_boost || disable_devfreq_boost
 	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_core_ctl || disable_core_ctl
 	boost_$(getprop kingauto.prof)
