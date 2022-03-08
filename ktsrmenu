@@ -132,25 +132,25 @@ menu() {
 	echo ""
 	echo "[15] Access our telegram group"
 	echo ""
-	if [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]]; then
+	[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && {
 		echo "[16] 50 HZ Refresh Rate"
 		echo ""
-	elif [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]]; then
+} || [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]] && {
 		echo "[16] 50 HZ Refresh Rate"
 		echo ""
 		echo "[17] 55 HZ Refresh Rate"
 		echo ""
-	fi
-	if [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "60" ]]; then
+}
+	[[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "60" ]] && {
 		echo "[18] 60 HZ Refresh Rate"
 		echo ""
-	elif [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]]; then
+} || [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]] && {
 		echo "[19] 90 HZ Refresh Rate"
 		echo ""
-	elif [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]]; then
+} || [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]] && {
 		echo "[20] 120 HZ Refresh Rate"
 		echo ""
-	fi
+}
 	echo "[21] Reset Refresh Rate config"
 	echo ""
 	echo "[22] Free RAM [ Balanced ] (Will only drop caches)."
@@ -159,13 +159,13 @@ menu() {
 	echo ""
 	echo "[24] Free RAM [ Extreme ] (Will kill all apps, and drop caches)."
 	echo ""
-	if [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]]; then
+	[[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]] && {
 		echo "[25] Switch to dynamic thermal profile (May improve charging speed)"
 		echo ""
-	elif [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]]; then
+} || [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]] && {
 		echo "[26] Switch to default thermal profile"
 		echo ""
-	fi
+}
 	echo "[27] Reset battery stats"
 	echo ""
 	echo "[28] Access our Wiki"
@@ -522,20 +522,18 @@ while getopts ":p:f:h:" opt; do
 			echo "${G}Done!${N}"
 			;;
 		f)
-			if [[ "$2" == "1" ]]; then
+			[[ "$2" == "1" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
 				echo "${G}Done!${N}"
 				sleep 2
-
-			elif [[ "$2" == "2" ]]; then
+			} || [[ "$2" == "2" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
 				am kill-all
 				echo "${G}Done!${N}"
 				sleep 3
-
-			elif [[ "$2" == "3" ]]; then
+			} || [[ "$2" == "3" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
 				am kill-all
@@ -545,9 +543,7 @@ while getopts ":p:f:h:" opt; do
 				done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
 				echo "${G}Done!${N}"
 				sleep 2
-			else
-				help_me
-			fi
+			}
 			;;
 		h | *)
 			help_me

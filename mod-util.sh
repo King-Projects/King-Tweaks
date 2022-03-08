@@ -2,26 +2,27 @@
 ##########################################################################################
 # Terminal Utility Functions
 # by veez21
-# modified by Pedro (pedrozzz0 @ GitHub)
+# Modified by Pedro (pedrozzz0 @ GitHub)
 ##########################################################################################
 
 # Modutil Version
-MODUTILVER="v2.6.6-KTSR"
-MODUTILVCODE="266"
+MODUTILVER="v2.6.7-KTSR"
+MODUTILVCODE="267"
 
 isABDevice=false
 
 # Check A/B slot
-if [[ -d "/system_root" ]]; then
+[[ -d "/system_root" ]] && {
 	isABDevice=true
 	SYSTEM="/system_root/system"
 	SYSTEM2="/system"
 	CACHELOC="/data/cache"
-else
+} || {
 	SYSTEM="/system"
 	SYSTEM2="/system"
 	CACHELOC="/cache"
-fi
+}
+
 [[ -z "$SYSTEM" ]] && {
 	echo "[!] Something went wrong"
 	exit 1
@@ -36,40 +37,37 @@ fi
 # set_busybox <busybox binary>
 # alias busybox applets
 set_busybox() {
-	if [[ -x "$1" ]]; then
+	[[ -x "$1" ]] && {
 		for i in $(${1} --list); do
-			if [[ "$i" != 'echo' ]]; then
-				alias "$i"="$1 $i" >/dev/null 2>&1
-			fi
+			[[ "$i" != 'echo' ]] && {
+				alias $i="$1 $i" >/dev/null 2>&1
+			}
 		done
 		_busybox=true
-		_bb="$1"
-	fi
+		_bb=$1
+	}
 }
 _busybox=false
-if [[ -n "$_bb" ]]; then
-	true
-elif [[ -x "$SYSTEM2/xbin/busybox" ]]; then
-	_bb="$SYSTEM2/xbin/busybox"
-elif [[ -x "$SYSTEM2/bin/busybox" ]]; then
-	_bb="$SYSTEM2/bin/busybox"
-else
+[[ -n "$_bb" ]] && true || [[ -x "$SYSTEM2/xbin/busybox" ]] && _bb="$SYSTEM2/xbin/busybox" || [[ -x "$SYSTEM2/bin/busybox" ]] && _bb="$SYSTEM2/bin/busybox" || {
 	echo "[!] Busybox not detected"
 	echo "Please install it (@osm0sis busybox recommended)"
 	false
-fi
+}
 set_busybox "$_bb"
+
 [[ $? -ne "0" ]] && {
 	echo "[!] Something went wrong"
 	exit $?
 }
+
 [[ -n "$ANDROID_SOCKET_adbd" ]] && alias clear='echo'
 _bbname="$($_bb | head -n 1 | awk '{print $1,$2}')"
 BBok=true
-if [[ "$_bbname" == "" ]]; then
-	_bbname="[!] Busybox not found"
+
+[[ "$_bbname" == "" ]] && {
+	_bbname="[!] Busybox not found, please install it for full usage of KTSR"
 	BBok=false
-fi
+}
 
 #=========================== Default Functions and Variables
 
@@ -77,7 +75,7 @@ fi
 set_perm() {
 	chown "$2":"$3" "$1" || return 1
 	chmod "$4" "$1" || return 1
-	(if [[ -z "$5" ]]; then
+	([[ -z "$5" ]] && {
 		case "$1" in
 			*"system/vendor/app/"*) chcon 'u:object_r:vendor_app_file:s0' "$1" ;;
 			*"system/vendor/etc/"*) chcon 'u:object_r:vendor_configs_file:s0' "$1" ;;
@@ -85,9 +83,7 @@ set_perm() {
 			*"system/vendor/"*) chcon 'u:object_r:vendor_file:s0' "$1" ;;
 			*) chcon 'u:object_r:system_file:s0' "$1" ;;
 		esac
-	else
-		chcon "$5" "$1"
-	fi) || return 1
+	} || chcon "$5" "$1") || return 1
 }
 
 # Set perm recursive
@@ -141,24 +137,21 @@ ABILONG=$(grep_prop ro.product.cpu.abi)
 ARCH=arm
 ARCH32=arm
 IS64BIT=false
-if [[ "$ABI" == "x86" ]]; then
+[[ "$ABI" == "x86" ]] && {
 	ARCH=x86
 	ARCH32=x86
-fi
-if [[ "$ABI2" == "x86" ]]; then
+} || [[ "$ABI2" == "x86" ]] && {
 	ARCH=x86
 	ARCH32=x86
-fi
-if [[ "$ABILONG" == "arm64-v8a" ]]; then
+} || [[ "$ABILONG" == "arm64-v8a" ]] && {
 	ARCH=arm64
 	ARCH32=arm
 	IS64BIT=true
-fi
-if [[ "$ABILONG" == "x86_64" ]]; then
+} || [[ "$ABILONG" == "x86_64" ]] && {
 	ARCH=x64
 	ARCH32=x86
 	IS64BIT=true
-fi
+}
 
 # Version Number
 VER=$(grep_prop version "$MODDIR/module.prop")
@@ -201,7 +194,7 @@ loadBar=' '        # Load UI
 character_no=$(echo "$MODTITLE $VER $REL" | wc -c)
 
 # Divider
-div="${Bl}$(printf '%*s' "$character_no" '' | tr " " "=")${N}"
+div="$Bl$(printf '%*s' "$character_no" '' | tr " " "=")$N"
 
 # title_div [-c] <title>
 # based on $div with <title>
@@ -214,7 +207,7 @@ title_div() {
 		message="$@ "
 		no=$(echo "$@" | wc -c)
 	}
-	[[ "$character_no" -gt "$no" ]] && local extdiv=$((character_no - no)) || {
+	[[ "$character_no" -gt "$no" ]] && extdiv=$((character_no - no)) || {
 		echo "Invalid!"
 		return 1
 	}
@@ -223,29 +216,25 @@ title_div() {
 
 # set_file_prop <property> <value> <prop.file>
 set_file_prop() {
-	if [[ -f "$3" ]]; then
-		if grep -q "$1=" "$3"; then
-			sed -i "s/${1}=.*/${1}=${2}/g" "$3"
-		else
-			echo "$1=$2" >>"$3"
-		fi
-	else
-		echo "[!] $3 doesn't exist"
-		return 1
-	fi
+	[[ -f "$3" ]] && {
+		grep -q "$1=" "$3" && sed -i "s/${1}=.*/${1}=${2}/g" "$3" || echo "$1=$2" >>"$3" || {
+			echo "[!] $3 doesn't exist"
+			return 1
+		}
+	}
 }
 
 # https://github.com/fearside/ProgressBar
 # ProgressBar <progress> <total>
 ProgressBar() {
 	# Determine Screen Size
-	if [[ "$COLUMNS" -le "57" ]]; then
+	[[ "$COLUMNS" -le "57" ]] && {
 		var1=2
 		var2=20
-	else
+	} || {
 		var1=4
 		var2=40
-	fi
+	}
 	# Process data
 	_progress=$((($1 * 100 / $2 * 100) / 100))
 	_done=$(((_progress * var1) / 10))

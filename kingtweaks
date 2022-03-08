@@ -9,7 +9,7 @@ modpath="/data/adb/modules/KTSR"
 source "$modpath/libs/libktsr.sh"
 
 # Check for root permissions and bail if not granted
-[[ "$(id -u)" != "0" ]] && {
+[[ "$UID" != "0" ]] && {
 	kmsg2 "No root permissions. Exiting..."
 	exit 1
 }
@@ -45,7 +45,7 @@ fscc_add_apex_lib "bouncycastle.jar"
 	fscc_add_apk "com.android.systemui"
 	fscc_add_dex "com.android.systemui"
 }
-[[ "$total_ram" -ge "3072" ]] && {
+[[ "$total_ram" -ge "4096" ]] && {
 	fscc_add_app_home
 	fscc_add_app_ime
 }
@@ -64,7 +64,7 @@ save_panel
 
 #[[ ! -f ${ktsr_cfg} ]] && ktsr_create_default_cfg
 
-stop_services
+[[ -d "$f2fs" ]] && config_f2fs
 
 [[ -d "$memcg" ]] && config_memcg
 
@@ -131,7 +131,7 @@ while true; do
 			;;
 	esac
 
-	case "${ktsr_prof}" in
+	case "$ktsr_prof" in
 		1)
 			ktsr_prof_pt=automático
 			;;
@@ -279,7 +279,7 @@ while true; do
 					;;
 			esac
 
-			killall kingauto >/dev/null 2>&1
+			kingauto --exit
 			setprop kingauto.prof null
 			balanced
 
@@ -320,7 +320,7 @@ while true; do
 					;;
 			esac
 
-			killall kingauto >/dev/null 2>&1
+			kingauto --exit
 			setprop kingauto.prof null
 			extreme
 
@@ -361,7 +361,7 @@ while true; do
 					;;
 			esac
 
-			killall kingauto >/dev/null 2>&1
+			kingauto --exit
 			setprop kingauto.prof null
 			battery
 
@@ -402,7 +402,7 @@ while true; do
 					;;
 			esac
 
-			killall kingauto >/dev/null 2>&1
+			kingauto --exit
 			setprop kingauto.prof null
 			gaming
 
@@ -443,7 +443,7 @@ while true; do
 					;;
 			esac
 
-			killall kingauto >/dev/null 2>&1
+			kingauto --exit
 			setprop kingauto.prof null
 			latency
 
@@ -464,32 +464,6 @@ while true; do
 					toast_fr_1
 					;;
 			esac
-			#case "${pkg_on_ta}" in
-			#"true")
-			#for pkg_nm in "$(cat "${ktsr_cfg}" | awk '{print $1}' | sed -e '1,3d')"; do
-			#pkg_nm2="$(cat /proc/$(pgrep -f "${pkg_nm}")/cmdline)"
-			#prof_nm="$(grep -Eo "${pkg_nm2}" "${ktsr_cfg}" | awk '{print $2}')"
-			#done
-			#case "${prof_nm}" in
-			#"latency")
-			#setprop persist.king.tweaks.prof 6
-			#;;
-			#"gaming")
-			#setprop persist.king.tweaks.prof 5
-			#;;
-			#"extreme")
-			#setprop persist.king.tweaks.prof 4
-			#;;
-			#"balanced")
-			#setprop persist.king.tweaks.prof 3
-			#;;
-			#"battery")
-			#setprop persist.king.tweaks.prof 2
-			#;;
-			#esac
-			#;;
-			#esac
-			#;;
 			;;
 	esac
 done
