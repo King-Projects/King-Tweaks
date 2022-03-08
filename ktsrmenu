@@ -85,7 +85,7 @@ menu() {
 	echo "${Y}* KTSR CLI *${N}"
 	echo "${Y}************${N}"
 	echo ""
-	echo "${G}Ver: 1.6.3.2-beta-r11${N}"
+	echo "${G}Ver: 1.6.3.3-beta-r12${N}"
 	echo ""
 	echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 	echo ""

@@ -47,7 +47,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.0.6"
+lib_ver="1.0.7"
 #ktsr_cfg="/data/media/0/KTSR/KTSR.conf"
 #pkg_on_ta=false
 migt="/sys/module/migt/parameters/"
@@ -5593,7 +5593,7 @@ write_panel() { echo "$1" >>"${bbn_banner}"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential process optimizer 
-Version: 1.2.9-r4
+Version: 1.3.0-r5
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)

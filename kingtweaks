@@ -9,7 +9,7 @@ modpath="/data/adb/modules/KTSR"
 source "$modpath/libs/libktsr.sh"
 
 # Check for root permissions and bail if not granted
-[[ "$UID" != "0" ]] && {
+[[ "$(id -u)" != "0" ]] && {
 	kmsg2 "No root permissions. Exiting..."
 	exit 1
 }
@@ -61,6 +61,8 @@ usr_bbn_opt
 
 # Save mode to be applied automatically after reboot
 save_panel
+
+setprop king.tweaks.support 1
 
 #[[ ! -f ${ktsr_cfg} ]] && ktsr_create_default_cfg
 
