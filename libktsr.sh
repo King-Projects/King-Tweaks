@@ -47,9 +47,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.0.7"
-#ktsr_cfg="/data/media/0/KTSR/KTSR.conf"
-#pkg_on_ta=false
+lib_ver="1.0.8"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -528,7 +526,7 @@ sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 	sql_bd_dt="Please install SQLite3 first"
 }
 
-# Calculate CPU load (50 MS)
+# Calculate CPU load (50 ms)
 read -r cpu user nice system idle iowait irq softirq steal guest </proc/stat
 cpu_active_prev=$((user + system + nice + softirq + steal))
 cpu_total_prev=$((user + system + nice + softirq + steal + idle + iowait))
@@ -540,7 +538,7 @@ cpu_load=$((100 * (cpu_active_cur - cpu_active_prev) / (cpu_total_cur - cpu_tota
 
 [[ -d "/proc/ppm/" ]] && [[ "$mtk" == "true" ]] && ppm=true
 
-# Check if CPU uses BIG.little technology
+# Check if CPU uses BIG.little architecture
 for i in 1 2 3 4 5 6 7; do
 	[[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
 done
@@ -607,7 +605,6 @@ get_ka_pid() {
 print_info() {
 	kmsg3 ""
 	kmsg "General Info"
-
 	kmsg3 ""
 	kmsg3 "** Date of execution: $(date)"
 	kmsg3 "** Kernel: $kern_ver_name"
@@ -701,9 +698,7 @@ stop_services() {
 		start thermanager 2>/dev/null
 		start thermal_manager 2>/dev/null
 	}
-	[[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values"
-	[[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
-
+	[[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values" || [[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
 	kmsg "Disabled few debug services and userspace daemons that may conflict with KTSR"
 	kmsg3 ""
 }
@@ -2814,7 +2809,6 @@ io_latency() {
 	for i in /sys/block/sd*/bdi/; do
 		write "${i}min_ratio" "5"
 	done
-
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -2863,7 +2857,6 @@ io_balanced() {
 	for i in /sys/block/sd*/bdi/; do
 		write "${i}min_ratio" "5"
 	done
-
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -2912,7 +2905,6 @@ io_extreme() {
 	for i in /sys/block/sd*/bdi/; do
 		write "${i}min_ratio" "5"
 	done
-
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -2961,7 +2953,6 @@ io_battery() {
 	for i in /sys/block/sd*/bdi/; do
 		write "${i}min_ratio" "5"
 	done
-
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -3010,7 +3001,6 @@ io_gaming() {
 	for i in /sys/block/sd*/bdi/; do
 		write "${i}min_ratio" "5"
 	done
-
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -3523,7 +3513,6 @@ gpu_latency() {
 		kmsg "Disabled adreno idler"
 		kmsg3 ""
 	}
-
 	kmsg "Tweaked GPU parameters"
 	kmsg3 ""
 }
@@ -3658,7 +3647,6 @@ gpu_balanced() {
 		kmsg "Enabled and tweaked adreno idler"
 		kmsg3 ""
 	}
-
 	kmsg "Tweaked GPU parameters"
 	kmsg3 ""
 }
@@ -3788,7 +3776,6 @@ gpu_extreme() {
 		kmsg "Disabled adreno idler"
 		kmsg3 ""
 	}
-
 	kmsg "Tweaked GPU parameters"
 	kmsg3 ""
 }
@@ -3923,7 +3910,6 @@ gpu_battery() {
 		kmsg "Enabled and tweaked adreno idler algorithm"
 		kmsg3 ""
 	}
-
 	kmsg "Tweaked GPU parameters"
 	kmsg3 ""
 }
@@ -4053,7 +4039,6 @@ gpu_gaming() {
 		kmsg "Disabled adreno idler"
 		kmsg3 ""
 	}
-
 	kmsg "Tweaked GPU parameters"
 	kmsg3 ""
 }
@@ -4153,7 +4138,6 @@ schedtune_latency() {
 		write "${stune}schedtune.util_est_en" "0"
 		write "${stune}schedtune.ontime_en" "0"
 		write "${stune}schedtune.prefer_high_cap" "0"
-
 		kmsg "Tweaked schedtune settings"
 		kmsg3 ""
 	}
@@ -4230,7 +4214,6 @@ schedtune_balanced() {
 		write "${stune}schedtune.util_est_en" "0"
 		write "${stune}schedtune.ontime_en" "0"
 		write "${stune}schedtune.prefer_high_cap" "0"
-
 		kmsg "Tweaked schedtune settings"
 		kmsg3 ""
 	}
@@ -4307,7 +4290,6 @@ schedtune_extreme() {
 		write "${stune}schedtune.util_est_en" "0"
 		write "${stune}schedtune.ontime_en" "0"
 		write "${stune}schedtune.prefer_high_cap" "0"
-
 		kmsg "Tweaked schedtune settings"
 		kmsg3 ""
 	}
@@ -4384,7 +4366,6 @@ schedtune_battery() {
 		write "${stune}schedtune.util_est_en" "0"
 		write "${stune}schedtune.ontime_en" "0"
 		write "${stune}schedtune.prefer_high_cap" "0"
-
 		kmsg "Tweaked schedtune settings"
 		kmsg3 ""
 	}
@@ -4460,7 +4441,6 @@ schedtune_gaming() {
 		write "${stune}schedtune.util_est_en" "0"
 		write "${stune}schedtune.ontime_en" "0"
 		write "${stune}schedtune.prefer_high_cap" "0"
-
 		kmsg "Tweaked schedtune settings"
 		kmsg3 ""
 	}
@@ -4753,7 +4733,6 @@ sched_latency() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4803,7 +4782,6 @@ sched_balanced() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4853,7 +4831,6 @@ sched_extreme() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4903,7 +4880,6 @@ sched_battery() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -4953,7 +4929,6 @@ sched_gaming() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
 }
@@ -5063,7 +5038,6 @@ cpu_clk_default() {
 			write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
 		}
 	done
-
 	kmsg "Tweaked CPU clocks"
 	kmsg3 ""
 
@@ -5093,7 +5067,6 @@ cpu_clk_max() {
 			write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
 		}
 	done
-
 	kmsg "Tweaked CPU clocks"
 	kmsg3 ""
 
@@ -5421,7 +5394,6 @@ config_tcp() {
 	write "${tcp}tcp_keepalive_intvl" "30"
 	write "${tcp}tcp_fin_timeout" "30"
 	write "${tcp}tcp_mtu_probing" "1"
-
 	kmsg "Applied TCP tweaks"
 	kmsg3 ""
 }
@@ -5474,7 +5446,6 @@ enable_lpm() {
 			write "${lpm}suspend_enabled" "Y"
 		}
 	done
-
 	kmsg "Enabled LPM"
 	kmsg3 ""
 }
@@ -5489,7 +5460,6 @@ disable_lpm() {
 			write "${lpm}suspend_enabled" "N"
 		}
 	done
-
 	kmsg "Disabled LPM"
 	kmsg3 ""
 }
@@ -5547,7 +5517,6 @@ disable_emmc_clk_sclg() {
 		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
 		write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"
 	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
-
 	kmsg "Disabled EMMC clock scaling"
 	kmsg3 ""
 }
@@ -5625,7 +5594,7 @@ disable_thermal_disguise() {
 }
 
 # $1:content
-write_panel() { echo "$1" >>"${bbn_banner}"; }
+write_panel() { echo "$1" >>"$bbn_banner"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential process optimizer 
@@ -5650,34 +5619,12 @@ com.tencent.ig
 "
 }
 
-#ktsr_write_cfg() { echo "$1" >>${ktsr_cfg}; }
-
-#ktsr_create_default_cfg() {
-#ktsr_write_cfg "# KTSR Config File
-# When given packages is detected running, it will switch to the chosen profile to the specific package automatically.
-# List all the package names of the apps which you want to be on a specific profile while running.
-#com.riotgames.league.wildrift gaming
-#com.activision.callofduty.shooter gaming
-#com.mobile.legends gaming
-#com.tencent.ig gaming
-#"
-#}
-
-#is_pkg_on_ta() {
-#for pkg_nm in "$(cat "${ktsr_cfg}" | awk '{print $1}' | sed -e '1,3d')"; do
-#if [[ "$(grep -Eo "$(pgrep -f ${pkg_nm})" ${toptcdir})" ]] && [[ "$(cat /proc/"$(pgrep -f ${pkg_nm})"/oom_score_adj)" == "0" ]] || [[ "$(cat /proc/"$(pgrep -f ${pkg_nm})"/oom_score_adj)" == "1" ]]; then
-#pkg_on_ta=true
-#fi
-#done
-#}
-
 config_memcg() {
 	[[ -f "${memcg}sys_critical/memory.swappiness" ]] && write "${memcg}sys_critical/memory.swappiness" "0"
 	[[ -f "${memcg}system/memory.swappiness" ]] && write "${memcg}system/memory.swappiness" "0"
 	find "$memcg" -name memory.move_charge_at_immigrate | while read file; do
 		write "$file" "1"
 	done
-
 	kmsg "Tweaked memory cgroups"
 	kmsg3 ""
 }
@@ -5819,7 +5766,7 @@ change_thread_nice() {
 	done
 }
 
-# $1:task_name $2:priority(99-x, 1<=x<=99)
+# $1:task_name $2:priority(99-x, 1<=x<=99) (SCHED_RR)
 change_task_rt() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
@@ -5829,6 +5776,7 @@ change_task_rt() {
 	done
 }
 
+# $1:task_name $2:priority(99-x, 1<=x<=99) (SCHED_FIFO)
 change_task_rt_ff() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
 		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
@@ -6027,7 +5975,7 @@ usr_bbn_opt() {
 	change_task_nice "ufs_clk_gating" "-20"
 	# Pin fingerprint service to perf cluster to reduce latency
 	pin_proc_on_perf "erprint"
-	# Run HWC on perf cluster to reduce jitter / latency
+	# Pin HWC on perf cluster to reduce jitter / latency
 	pin_proc_on_perf "composer"
 	# Queue CVP fence request handler with max nice
 	change_task_nice "thread_fence" "-20"
@@ -6159,11 +6107,9 @@ latency() {
 	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
 	cmd power set-fixed-performance-mode-enabled false >/dev/null 2>&1
 	cmd thermalservice reset >/dev/null 2>&1
-
 	kmsg "Latency profile applied. Enjoy!"
 	kmsg3 ""
 	exit=$(date +%s)
-
 	exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
@@ -6172,7 +6118,6 @@ automatic() {
 	kmsg "Applying automatic profile"
 	sync
 	kingauto &
-
 	kmsg "Applied automatic profile"
 	kmsg3 ""
 }
@@ -6183,11 +6128,9 @@ balanced() {
 	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
 	cmd power set-fixed-performance-mode-enabled false >/dev/null 2>&1
 	cmd thermalservice reset >/dev/null 2>&1
-
 	kmsg "Balanced profile applied. Enjoy!"
 	kmsg3 ""
 	exit=$(date +%s)
-
 	exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
@@ -6198,11 +6141,9 @@ extreme() {
 	cmd power set-adaptive-power-saver-enabled false >/dev/null 2>&1
 	cmd power set-fixed-performance-mode-enabled true >/dev/null 2>&1
 	cmd thermalservice override-status 0 >/dev/null 2>&1l
-
 	kmsg "Extreme profile applied. Enjoy!"
 	kmsg3 ""
 	exit=$(date +%s)
-
 	exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
@@ -6213,11 +6154,9 @@ battery() {
 	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
 	cmd power set-fixed-performance-mode-enabled false >/dev/null 2>&1
 	cmd thermalservice reset >/dev/null 2>&1
-
 	kmsg "Battery profile applied. Enjoy!"
 	kmsg3 ""
 	exit=$(date +%s)
-
 	exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
@@ -6229,11 +6168,9 @@ gaming() {
 	cmd power set-fixed-performance-mode-enabled true >/dev/null 2>&1
 	cmd thermalservice override-status 0 >/dev/null 2>&1
 	cmd notification set_dnd priority >/dev/null 2>&1
-
 	kmsg "Gaming profile applied. Enjoy!"
 	kmsg3 ""
 	exit=$(date +%s)
-
 	exec_time=$((exit - init))
 	kmsg "Spent time: $exec_time seconds."
 }
