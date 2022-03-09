@@ -677,9 +677,11 @@ stop_services() {
 	stop charge_logger 2>/dev/null
 	stop oneplus_brain_service 2>/dev/null
 	stop statsd 2>/dev/null
-	stop vendor.xiaomi.hardware.misys@1.0-service 2>/dev/null
-	stop vendor.xiaomi.hardware.misys@2.0-service 2>/dev/null
-	stop vendor.xiaomi.hardware.misys@3.0-service 2>/dev/null
+	# Disable MIUI useless daemons on AOSP
+	[[ "$miui" == "false" ]] && stop vendor.xiaomi.hardware.misys@1.0-service 2>/dev/null
+	[[ "$miui" == "false" ]] && stop vendor.xiaomi.hardware.misys@2.0-service 2>/dev/null
+	[[ "$miui" == "false" ]] && stop vendor.xiaomi.hardware.misys@3.0-service 2>/dev/null
+	[[ "$miui" == "false" ]] && stop mlid 2>/dev/null
 	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
 		stop thermal 2>/dev/null
 		stop thermald 2>/dev/null
@@ -702,7 +704,7 @@ stop_services() {
 	[[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values"
 	[[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
 
-	kmsg "Disabled few debug services"
+	kmsg "Disabled few debug services and userspace daemons that may conflict with KTSR"
 	kmsg3 ""
 }
 
@@ -4083,6 +4085,7 @@ config_pwr_spd() {
 schedtune_latency() {
 	[[ -d "$stune" ]] && {
 		write "${stune}background/schedtune.boost" "0"
+		write "${stune}background/schedtune.colocate" "0"
 		write "${stune}background/schedtune.prefer_idle" "0"
 		write "${stune}background/schedtune.sched_boost" "0"
 		write "${stune}background/schedtune.sched_boost_no_override" "1"
@@ -4092,6 +4095,7 @@ schedtune_latency() {
 		write "${stune}background/schedtune.prefer_high_cap" "0"
 
 		write "${stune}foreground/schedtune.boost" "0"
+		write "${stune}foreground/schedtune.colocate" "0"
 		write "${stune}foreground/schedtune.prefer_idle" "0"
 		write "${stune}foreground/schedtune.sched_boost" "0"
 		write "${stune}foreground/schedtune.sched_boost_no_override" "1"
@@ -4100,8 +4104,9 @@ schedtune_latency() {
 		write "${stune}foreground/schedtune.ontime_en" "0"
 		write "${stune}foreground/schedtune.prefer_high_cap" "0"
 
-		write "${stune}nnapi-hal/schedtune.boost" "0"
-		write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
+		write "${stune}nnapi-hal/schedtune.boost" "1"
+		write "${stune}nnapi-hal/schedtune.colocate" "0"
+		write "${stune}nnapi-hal/schedtune.prefer_idle" "1"
 		write "${stune}nnapi-hal/schedtune.sched_boost" "0"
 		write "${stune}nnapi-hal/schedtune.sched_boost_no_override" "1"
 		write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
@@ -4110,6 +4115,7 @@ schedtune_latency() {
 		write "${stune}nnapi-hal/schedtune.prefer_high_cap" "0"
 
 		write "${stune}rt/schedtune.boost" "0"
+		write "${stune}rt/schedtune.colocate" "0"
 		write "${stune}rt/schedtune.prefer_idle" "0"
 		write "${stune}rt/schedtune.sched_boost" "0"
 		write "${stune}rt/schedtune.sched_boost_no_override" "1"
@@ -4119,24 +4125,27 @@ schedtune_latency() {
 		write "${stune}rt/schedtune.prefer_high_cap" "0"
 
 		write "${stune}camera-daemon/schedtune.boost" "0"
+		write "${stune}camera-daemon/schedtune.colocate" "0"
 		write "${stune}camera-daemon/schedtune.prefer_idle" "1"
 		write "${stune}camera-daemon/schedtune.sched_boost" "0"
 		write "${stune}camera-daemon/schedtune.sched_boost_no_override" "1"
 		write "${stune}camera-daemon/schedtune.prefer_perf" "0"
 		write "${stune}camera-daemon/schedtune.util_est_en" "0"
 		write "${stune}camera-daemon/schedtune.ontime_en" "0"
-		write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
+		write "${stune}camera-daemon/schedtune.prefer_high_cap" "1"
 
 		write "${stune}top-app/schedtune.boost" "10"
+		write "${stune}top-app/schedtune.colocate" "1"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "0"
 		write "${stune}top-app/schedtune.sched_boost_no_override" "1"
 		write "${stune}top-app/schedtune.prefer_perf" "1"
 		write "${stune}top-app/schedtune.util_est_en" "1"
 		write "${stune}top-app/schedtune.ontime_en" "1"
-		write "${stune}top-app/schedtune.prefer_high_cap" "0"
+		write "${stune}top-app/schedtune.prefer_high_cap" "1"
 
 		write "${stune}schedtune.boost" "0"
+		write "${stune}schedtune.colocate" "0"
 		write "${stune}schedtune.prefer_idle" "0"
 		write "${stune}schedtune.sched_boost" "0"
 		write "${stune}schedtune.sched_boost_no_override" "0"
@@ -4153,6 +4162,7 @@ schedtune_latency() {
 schedtune_balanced() {
 	[[ -d "$stune" ]] && {
 		write "${stune}background/schedtune.boost" "0"
+		write "${stune}background/schedtune.colocate" "0"
 		write "${stune}background/schedtune.prefer_idle" "0"
 		write "${stune}background/schedtune.sched_boost" "0"
 		write "${stune}background/schedtune.sched_boost_no_override" "1"
@@ -4162,6 +4172,7 @@ schedtune_balanced() {
 		write "${stune}background/schedtune.prefer_high_cap" "0"
 
 		write "${stune}foreground/schedtune.boost" "0"
+		write "${stune}foreground/schedtune.colocate" "0"
 		write "${stune}foreground/schedtune.prefer_idle" "0"
 		write "${stune}foreground/schedtune.sched_boost" "0"
 		write "${stune}foreground/schedtune.sched_boost_no_override" "1"
@@ -4170,8 +4181,9 @@ schedtune_balanced() {
 		write "${stune}foreground/schedtune.ontime_en" "0"
 		write "${stune}foreground/schedtune.prefer_high_cap" "0"
 
-		write "${stune}nnapi-hal/schedtune.boost" "0"
-		write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
+		write "${stune}nnapi-hal/schedtune.boost" "1"
+		write "${stune}nnapi-hal/schedtune.colocate" "0"
+		write "${stune}nnapi-hal/schedtune.prefer_idle" "1"
 		write "${stune}nnapi-hal/schedtune.sched_boost" "0"
 		write "${stune}nnapi-hal/schedtune.sched_boost_no_override" "1"
 		write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
@@ -4180,6 +4192,7 @@ schedtune_balanced() {
 		write "${stune}nnapi-hal/schedtune.prefer_high_cap" "0"
 
 		write "${stune}rt/schedtune.boost" "0"
+		write "${stune}rt/schedtune.colocate" "0"
 		write "${stune}rt/schedtune.prefer_idle" "0"
 		write "${stune}rt/schedtune.sched_boost" "0"
 		write "${stune}rt/schedtune.sched_boost_no_override" "1"
@@ -4189,24 +4202,27 @@ schedtune_balanced() {
 		write "${stune}rt/schedtune.prefer_high_cap" "0"
 
 		write "${stune}camera-daemon/schedtune.boost" "0"
+		write "${stune}camera-daemon/schedtune.colocate" "0"
 		write "${stune}camera-daemon/schedtune.prefer_idle" "1"
 		write "${stune}camera-daemon/schedtune.sched_boost" "0"
 		write "${stune}camera-daemon/schedtune.sched_boost_no_override" "1"
 		write "${stune}camera-daemon/schedtune.prefer_perf" "0"
 		write "${stune}camera-daemon/schedtune.util_est_en" "0"
 		write "${stune}camera-daemon/schedtune.ontime_en" "0"
-		write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
+		write "${stune}camera-daemon/schedtune.prefer_high_cap" "1"
 
 		write "${stune}top-app/schedtune.boost" "10"
+		write "${stune}top-app/schedtune.colocate" "1"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "0"
 		write "${stune}top-app/schedtune.sched_boost_no_override" "1"
 		write "${stune}top-app/schedtune.prefer_perf" "1"
 		write "${stune}top-app/schedtune.util_est_en" "1"
 		write "${stune}top-app/schedtune.ontime_en" "1"
-		write "${stune}top-app/schedtune.prefer_high_cap" "0"
+		write "${stune}top-app/schedtune.prefer_high_cap" "1"
 
 		write "${stune}schedtune.boost" "0"
+		write "${stune}schedtune.colocate" "0"
 		write "${stune}schedtune.prefer_idle" "0"
 		write "${stune}schedtune.sched_boost" "0"
 		write "${stune}schedtune.sched_boost_no_override" "0"
@@ -4223,6 +4239,7 @@ schedtune_balanced() {
 schedtune_extreme() {
 	[[ -d "$stune" ]] && {
 		write "${stune}background/schedtune.boost" "0"
+		write "${stune}background/schedtune.colocate" "0"
 		write "${stune}background/schedtune.prefer_idle" "0"
 		write "${stune}background/schedtune.sched_boost" "0"
 		write "${stune}background/schedtune.sched_boost_no_override" "1"
@@ -4231,17 +4248,19 @@ schedtune_extreme() {
 		write "${stune}background/schedtune.ontime_en" "0"
 		write "${stune}background/schedtune.prefer_high_cap" "0"
 
-		write "${stune}foreground/schedtune.boost" "50"
+		write "${stune}foreground/schedtune.boost" "0"
+		write "${stune}foreground/schedtune.colocate" "0"
 		write "${stune}foreground/schedtune.prefer_idle" "1"
-		write "${stune}foreground/schedtune.sched_boost" "15"
+		write "${stune}foreground/schedtune.sched_boost" "0"
 		write "${stune}foreground/schedtune.sched_boost_no_override" "1"
 		write "${stune}foreground/schedtune.prefer_perf" "0"
-		write "${stune}foreground/schedtune.util_est_en" "1"
-		write "${stune}foreground/schedtune.ontime_en" "1"
+		write "${stune}foreground/schedtune.util_est_en" "0"
+		write "${stune}foreground/schedtune.ontime_en" "0"
 		write "${stune}foreground/schedtune.prefer_high_cap" "0"
 
 		write "${stune}nnapi-hal/schedtune.boost" "0"
-		write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
+		write "${stune}nnapi-hal/schedtune.colocate" "0"
+		write "${stune}nnapi-hal/schedtune.prefer_idle" "1"
 		write "${stune}nnapi-hal/schedtune.sched_boost" "0"
 		write "${stune}nnapi-hal/schedtune.sched_boost_no_override" "1"
 		write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
@@ -4250,6 +4269,7 @@ schedtune_extreme() {
 		write "${stune}nnapi-hal/schedtune.prefer_high_cap" "0"
 
 		write "${stune}rt/schedtune.boost" "0"
+		write "${stune}rt/schedtune.colocate" "0"
 		write "${stune}rt/schedtune.prefer_idle" "0"
 		write "${stune}rt/schedtune.sched_boost" "0"
 		write "${stune}rt/schedtune.sched_boost_no_override" "1"
@@ -4259,6 +4279,7 @@ schedtune_extreme() {
 		write "${stune}rt/schedtune.prefer_high_cap" "0"
 
 		write "${stune}camera-daemon/schedtune.boost" "0"
+		write "${stune}camera-daemon/schedtune.colocate" "0"
 		write "${stune}camera-daemon/schedtune.prefer_idle" "1"
 		write "${stune}camera-daemon/schedtune.sched_boost" "0"
 		write "${stune}camera-daemon/schedtune.sched_boost_no_override" "1"
@@ -4267,7 +4288,8 @@ schedtune_extreme() {
 		write "${stune}camera-daemon/schedtune.ontime_en" "0"
 		write "${stune}camera-daemon/schedtune.prefer_high_cap" "1"
 
-		write "${stune}top-app/schedtune.boost" "50"
+		write "${stune}top-app/schedtune.boost" "100"
+		write "${stune}top-app/schedtune.colocate" "1"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "15"
 		write "${stune}top-app/schedtune.sched_boost_no_override" "1"
@@ -4277,6 +4299,7 @@ schedtune_extreme() {
 		write "${stune}top-app/schedtune.prefer_high_cap" "1"
 
 		write "${stune}schedtune.boost" "0"
+		write "${stune}schedtune.colocate" "0"
 		write "${stune}schedtune.prefer_idle" "0"
 		write "${stune}schedtune.sched_boost" "0"
 		write "${stune}schedtune.sched_boost_no_override" "0"
@@ -4293,6 +4316,7 @@ schedtune_extreme() {
 schedtune_battery() {
 	[[ -d "$stune" ]] && {
 		write "${stune}background/schedtune.boost" "0"
+		write "${stune}background/schedtune.colocate" "0"
 		write "${stune}background/schedtune.prefer_idle" "0"
 		write "${stune}background/schedtune.sched_boost" "0"
 		write "${stune}background/schedtune.sched_boost_no_override" "1"
@@ -4302,7 +4326,8 @@ schedtune_battery() {
 		write "${stune}background/schedtune.prefer_high_cap" "0"
 
 		write "${stune}foreground/schedtune.boost" "0"
-		write "${stune}foreground/schedtune.prefer_idle" "0"
+		write "${stune}foreground/schedtune.colocate" "0"
+		write "${stune}foreground/schedtune.prefer_idle" "1"
 		write "${stune}foreground/schedtune.sched_boost" "0"
 		write "${stune}foreground/schedtune.sched_boost_no_override" "1"
 		write "${stune}foreground/schedtune.prefer_perf" "0"
@@ -4311,7 +4336,8 @@ schedtune_battery() {
 		write "${stune}foreground/schedtune.prefer_high_cap" "0"
 
 		write "${stune}nnapi-hal/schedtune.boost" "0"
-		write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
+		write "${stune}nnapi-hal/schedtune.colocate" "0"
+		write "${stune}nnapi-hal/schedtune.prefer_idle" "1"
 		write "${stune}nnapi-hal/schedtune.sched_boost" "0"
 		write "${stune}nnapi-hal/schedtune.sched_boost_no_override" "1"
 		write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
@@ -4320,6 +4346,7 @@ schedtune_battery() {
 		write "${stune}nnapi-hal/schedtune.prefer_high_cap" "0"
 
 		write "${stune}rt/schedtune.boost" "0"
+		write "${stune}rt/schedtune.colocate" "0"
 		write "${stune}rt/schedtune.prefer_idle" "0"
 		write "${stune}rt/schedtune.sched_boost" "0"
 		write "${stune}rt/schedtune.sched_boost_no_override" "1"
@@ -4329,6 +4356,7 @@ schedtune_battery() {
 		write "${stune}rt/schedtune.prefer_high_cap" "0"
 
 		write "${stune}camera-daemon/schedtune.boost" "0"
+		write "${stune}camera-daemon/schedtune.colocate" "0"
 		write "${stune}camera-daemon/schedtune.prefer_idle" "1"
 		write "${stune}camera-daemon/schedtune.sched_boost" "0"
 		write "${stune}camera-daemon/schedtune.sched_boost_no_override" "1"
@@ -4338,6 +4366,7 @@ schedtune_battery() {
 		write "${stune}camera-daemon/schedtune.prefer_high_cap" "1"
 
 		write "${stune}top-app/schedtune.boost" "0"
+		write "${stune}top-app/schedtune.colocate" "1"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "0"
 		write "${stune}top-app/schedtune.sched_boost_no_override" "1"
@@ -4347,6 +4376,7 @@ schedtune_battery() {
 		write "${stune}top-app/schedtune.prefer_high_cap" "1"
 
 		write "${stune}schedtune.boost" "0"
+		write "${stune}schedtune.colocate" "0"
 		write "${stune}schedtune.prefer_idle" "0"
 		write "${stune}schedtune.sched_boost" "0"
 		write "${stune}schedtune.sched_boost_no_override" "0"
@@ -4371,7 +4401,8 @@ schedtune_gaming() {
 		write "${stune}background/schedtune.ontime_en" "0"
 		write "${stune}background/schedtune.prefer_high_cap" "0"
 
-		write "${stune}foreground/schedtune.boost" "50"
+		write "${stune}foreground/schedtune.boost" "0"
+		write "${stune}foreground/schedtune.colocate" "0"
 		write "${stune}foreground/schedtune.prefer_idle" "1"
 		write "${stune}foreground/schedtune.sched_boost" "15"
 		write "${stune}foreground/schedtune.sched_boost_no_override" "1"
@@ -4381,7 +4412,8 @@ schedtune_gaming() {
 		write "${stune}foreground/schedtune.prefer_high_cap" "1"
 
 		write "${stune}nnapi-hal/schedtune.boost" "0"
-		write "${stune}nnapi-hal/schedtune.prefer_idle" "0"
+		write "${stune}nnapi-hal/schedtune.colocate" "0"
+		write "${stune}nnapi-hal/schedtune.prefer_idle" "1"
 		write "${stune}nnapi-hal/schedtune.sched_boost" "0"
 		write "${stune}nnapi-hal/schedtune.sched_boost_no_override" "1"
 		write "${stune}nnapi-hal/schedtune.prefer_perf" "0"
@@ -4390,6 +4422,7 @@ schedtune_gaming() {
 		write "${stune}nnapi-hal/schedtune.prefer_high_cap" "0"
 
 		write "${stune}rt/schedtune.boost" "0"
+		write "${stune}rt/schedtune.colocate" "0"
 		write "${stune}rt/schedtune.prefer_idle" "0"
 		write "${stune}rt/schedtune.sched_boost" "0"
 		write "${stune}rt/schedtune.prefer_perf" "0"
@@ -4398,6 +4431,7 @@ schedtune_gaming() {
 		write "${stune}rt/schedtune.prefer_high_cap" "0"
 
 		write "${stune}camera-daemon/schedtune.boost" "0"
+		write "${stune}camera-daemon/schedtune.colocate" "0"
 		write "${stune}camera-daemon/schedtune.prefer_idle" "1"
 		write "${stune}camera-daemon/schedtune.sched_boost" "0"
 		write "${stune}camera-daemon/schedtune.sched_boost_no_override" "1"
@@ -4406,7 +4440,8 @@ schedtune_gaming() {
 		write "${stune}camera-daemon/schedtune.ontime_en" "0"
 		write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
 
-		write "${stune}top-app/schedtune.boost" "50"
+		write "${stune}top-app/schedtune.boost" "100"
+		write "${stune}top-app/schedtune.colocate" "1"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "15"
 		write "${stune}top-app/schedtune.sched_boost_no_override" "1"
@@ -4416,6 +4451,7 @@ schedtune_gaming() {
 		write "${stune}top-app/schedtune.prefer_high_cap" "0"
 
 		write "${stune}schedtune.boost" "0"
+		write "${stune}schedtune.colocate" "0"
 		write "${stune}schedtune.prefer_high_cap" "0"
 		write "${stune}schedtune.prefer_idle" "0"
 		write "${stune}schedtune.sched_boost" "0"
@@ -5078,7 +5114,7 @@ vm_lmk_latency() {
 	write "${vm}dirty_expire_centisecs" "4000"
 	write "${vm}dirty_writeback_centisecs" "4000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "120"
 	write "${vm}overcommit_ratio" "100"
 	# Use more zRAM / swap by default if possible
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
@@ -5114,7 +5150,7 @@ vm_lmk_balanced() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "120"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
 	[[ "$total_ram" -ge "8192" ]] && write "${vm}swappiness" "120"
@@ -5149,14 +5185,14 @@ vm_lmk_extreme() {
 	write "${vm}dirty_expire_centisecs" "5000"
 	write "${vm}dirty_writeback_centisecs" "5000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "120"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
 	[[ "$total_ram" -ge "8192" ]] && write "${vm}swappiness" "120"
 	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
 	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
-	write "${vm}vfs_cache_pressure" "80"
+	write "${vm}vfs_cache_pressure" "200"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 	[[ ! "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1" || [[ "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "0"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
@@ -5184,14 +5220,14 @@ vm_lmk_battery() {
 	write "${vm}dirty_expire_centisecs" "200"
 	write "${vm}dirty_writeback_centisecs" "500"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "120"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
 	[[ "$total_ram" -ge "8192" ]] && write "${vm}swappiness" "120"
 	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
 	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
-	write "${vm}vfs_cache_pressure" "100"
+	write "${vm}vfs_cache_pressure" "60"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 	[[ ! "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1" || [[ "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "0"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
@@ -5219,14 +5255,14 @@ vm_lmk_gaming() {
 	write "${vm}dirty_expire_centisecs" "5000"
 	write "${vm}dirty_writeback_centisecs" "5000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "120"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
 	[[ "$total_ram" -ge "8192" ]] && write "${vm}swappiness" "120"
 	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
 	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
-	write "${vm}vfs_cache_pressure" "75"
+	write "${vm}vfs_cache_pressure" "200"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
 	[[ ! "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "1" || [[ "$lmk" ]] && [[ -e "${vm}reap_mem_on_sigkill" ]] && write "${vm}reap_mem_on_sigkill" "0"
 	[[ -e "${vm}swap_ratio" ]] && write "${vm}swap_ratio" "100"
@@ -6076,7 +6112,7 @@ apply_all() {
 	[[ "$ktsr_prof_en" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
 	[[ "$ktsr_prof_en" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ -e "$board_sensor_temp" ]] && [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
-	[[ "$ktsr_prof_en" == "gaming" ]] && [[ "$ktsr_prof_en" == "extreme" ]] && realme_gt 1 || realme_gt 0
+	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && realme_gt 1 || realme_gt 0
 	[[ "$(type sqlite3)" ]] && [[ -e "$joyose_db" ]] && joyose_dfps_clear
 }
 
@@ -6112,7 +6148,7 @@ apply_all_auto() {
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
 	[[ "$(getprop kingauto.prof)" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ -e "$board_sensor_temp" ]] && [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
-	[[ "$(getprop kingauto.prof)" == "gaming" ]] && [[ "$(getprop kingauto.prof)" == "extreme" ]] && realme_gt 1 || realme_gt 0
+	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && realme_gt 1 || realme_gt 0
 	[[ "$(type sqlite3)" ]] && [[ -e "$joyose_db" ]] && joyose_dfps_clear
 }
 
