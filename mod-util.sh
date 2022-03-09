@@ -6,22 +6,22 @@
 ##########################################################################################
 
 # Modutil Version
-MODUTILVER="v2.6.7-KTSR"
-MODUTILVCODE="267"
+MODUTILVER="v2.6.8-KTSR"
+MODUTILVCODE="268"
 
 isABDevice=false
 
 # Check A/B slot
-[[ -d "/system_root" ]] && {
+if [[ -d "/system_root" ]]; then
 	isABDevice=true
 	SYSTEM="/system_root/system"
 	SYSTEM2="/system"
 	CACHELOC="/data/cache"
-} || {
+else
 	SYSTEM="/system"
 	SYSTEM2="/system"
 	CACHELOC="/cache"
-}
+fi
 
 [[ -z "$SYSTEM" ]] && {
 	echo "[!] Something went wrong"
@@ -40,7 +40,7 @@ set_busybox() {
 	[[ -x "$1" ]] && {
 		for i in $(${1} --list); do
 			[[ "$i" != 'echo' ]] && {
-				alias $i="$1 $i" >/dev/null 2>&1
+				alias "$i"="$1 $i" >/dev/null 2>&1
 			}
 		done
 		_busybox=true
@@ -48,6 +48,7 @@ set_busybox() {
 	}
 }
 _busybox=false
+
 [[ -n "$_bb" ]] && true || [[ -x "$SYSTEM2/xbin/busybox" ]] && _bb="$SYSTEM2/xbin/busybox" || [[ -x "$SYSTEM2/bin/busybox" ]] && _bb="$SYSTEM2/bin/busybox" || {
 	echo "[!] Busybox not detected"
 	echo "Please install it (@osm0sis busybox recommended)"
@@ -69,7 +70,7 @@ BBok=true
 	BBok=false
 }
 
-#=========================== Default Functions and Variables
+#======== Default Functions and Variables
 
 # Set perm
 set_perm() {
