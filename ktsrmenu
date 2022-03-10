@@ -135,22 +135,22 @@ menu() {
 	[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && {
 		echo "[16] 50 HZ Refresh Rate"
 		echo ""
-} || [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]] && {
+	} || [[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz)" ]] && {
 		echo "[16] 50 HZ Refresh Rate"
 		echo ""
 		echo "[17] 55 HZ Refresh Rate"
 		echo ""
-}
+	}
 	[[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "60" ]] && {
 		echo "[18] 60 HZ Refresh Rate"
 		echo ""
-} || [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]] && {
+	} || [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "90" ]] && {
 		echo "[19] 90 HZ Refresh Rate"
 		echo ""
-} || [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]] && {
+	} || [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]] && {
 		echo "[20] 120 HZ Refresh Rate"
 		echo ""
-}
+	}
 	echo "[21] Reset Refresh Rate config"
 	echo ""
 	echo "[22] Free RAM [ Balanced ] (Will only drop caches)."
@@ -162,10 +162,10 @@ menu() {
 	[[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" != "2" ]] && {
 		echo "[25] Switch to dynamic thermal profile (May improve charging speed)"
 		echo ""
-} || [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]] && {
+	} || [[ -e "/sys/class/thermal/thermal_message/sconfig" ]] && [[ "$(cat /sys/class/thermal/thermal_message/sconfig)" == "2" ]] && {
 		echo "[26] Switch to default thermal profile"
 		echo ""
-}
+	}
 	echo "[27] Reset battery stats"
 	echo ""
 	echo "[28] Access our Wiki"
@@ -469,7 +469,8 @@ menu() {
 		"33")
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=opengl/' "$MODDIR/system.prop"
-			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=false/' "$MODDIR/system.prop"
+			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=/' "$MODDIR/system.prop"
+			#sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
@@ -477,15 +478,17 @@ menu() {
 		"34")
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' "$MODDIR/system.prop"
-			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=false/' "$MODDIR/system.prop"
+			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=/' "$MODDIR/system.prop"
+			#sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
 			;;
 		"35")
 			echo "You may need to reboot to apply the changes"
-			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiavk/' "$MODDIR/system.prop"
+			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=/' "$MODDIR/system.prop"
 			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=true/' "$MODDIR/system.prop"
+			#sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
 			echo "${G}Done!${N}"
 			sleep 2
 			menu
@@ -510,11 +513,12 @@ help_me() {
 	echo "-p [profile] [1-6] [change between profiles without opening the terminal GUI]"
 	echo "-f [free ram] [1-3] [Higher value means more agressive]"
 	echo "-h [help] [show this message]"
+	echo "-g [game] [enable DND and disable automatic brightness]"
 	am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
 	exit
 }
 
-while getopts ":p:f:h:" opt; do
+while getopts ":p:f:h:g:" opt; do
 	case "$opt" in
 		p)
 			echo "${B}Applying profile...${N}"
@@ -544,6 +548,11 @@ while getopts ":p:f:h:" opt; do
 				echo "${G}Done!${N}"
 				sleep 2
 			}
+			;;
+		g)
+			cmd notification set_dnd priority >/dev/null 2>&1
+			settings put system screen_brightness_mode 0 >/dev/null 2>&1
+			echo "${G}Done!${N}"
 			;;
 		h | *)
 			help_me

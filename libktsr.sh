@@ -6167,7 +6167,6 @@ gaming() {
 	cmd power set-adaptive-power-saver-enabled false >/dev/null 2>&1
 	cmd power set-fixed-performance-mode-enabled true >/dev/null 2>&1
 	cmd thermalservice override-status 0 >/dev/null 2>&1
-	cmd notification set_dnd priority >/dev/null 2>&1
 	kmsg "Gaming profile applied. Enjoy!"
 	kmsg3 ""
 	exit=$(date +%s)
