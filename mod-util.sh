@@ -6,8 +6,8 @@
 ##########################################################################################
 
 # Modutil Version
-MODUTILVER="v2.6.8-KTSR"
-MODUTILVCODE="268"
+MODUTILVER="v2.6.9-KTSR"
+MODUTILVCODE="269"
 
 isABDevice=false
 
@@ -55,11 +55,6 @@ _busybox=false
 	false
 }
 set_busybox "$_bb"
-
-[[ $? -ne "0" ]] && {
-	echo "[!] Something went wrong"
-	exit $?
-}
 
 [[ -n "$ANDROID_SOCKET_adbd" ]] && alias clear='echo'
 _bbname="$($_bb | head -n 1 | awk '{print $1,$2}')"
