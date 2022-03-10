@@ -26,6 +26,7 @@ current_prof=none
 				apply_all_auto
 				sleep 25
 				}
+				done
 				for spid in $(pgrep -f whatsapp) $(pgrep -f zhiliaoapp) $(pgrep -f com.adobe) $(pgrep -f telegram) $(pgrep -f nekox) $(pgrep -f challegram) $(pgrep -f com.netflix) $(pgrep -f com.wemesh) $(pgrep -f com.discord) $(pgrep -f android.youtube) $(pgrep -f facebook.katana) $(pgrep -f android.chrome) $(pgrep -f brave.browser) $(pgrep -f UCMobile) $(pgrep -f org.mozilla) $(pgrep -f duckduckgo) $(pgrep -f com.opera) $(pgrep -f microsoft) $(pgrep -f torproject) $(pgrep -f instagram.android) $(pgrep -f twitch); do
 					[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$spid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$spid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$spid"/oom_score_adj)" == "0" ]] || || [[ ! "$current_prof" != "balanced" ]] && continue || {
 						kmsg "User is using social media, and etc apps. Applied balanced profile"
@@ -37,6 +38,7 @@ current_prof=none
 						apply_all_auto
 						sleep 25
 						}
+						done
 						for bpid in $(pgrep -f primatelabs) $(pgrep -f gensuite) $(pgrep -f android.benchmark) $(pgrep -f test.uibench) $(pgrep -f Saplin.CPDT) $(pgrep -f glbenchmark) $(pgrep -f passmark) $(pgrep -f  $(pgrep -f app.speedramp) $(pgrep -f app.beatsync) $(pgrep -f kinemaster) $(pgrep -f dmandroid) $(pgrep -f cputhrottlingtest) $(pgrep -f android.camera) $(pgrep -f GoogleCamera) $(pgrep -f snapcam); do
 							[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$gpid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$gpid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$gpid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "gaming" ]] && continue || {
 								kmsg "User is running benchmark / heavy apps. Applied extreme profile"
@@ -48,9 +50,7 @@ current_prof=none
 								apply_all_auto
 								sleep 25
 								}
-						done
-				done
-		done
+							done
 
 		[[ ! "$scrn_on" == "0" ]] || [[ ! "$current_prof" != "sleeping" ]] && continue || {
 			kmsg "Device screen is turned off. Applied battery profile, extended script check time"
