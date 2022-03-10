@@ -10,8 +10,6 @@ full_ram=$((total_ram * 20 / 100))
 
 current_prof=none
 
-[[ "$1" == "--exit" ]] && exit 0
-
 (
 	while true; do
 		# This script basically check if packages PIDs is found on stune / cpuset top-app tasks
@@ -25,31 +23,31 @@ current_prof=none
 				get_all
 				apply_all_auto
 				sleep 25
+			}
+			for spid in $(pgrep -f whatsapp) $(pgrep -f zhiliaoapp) $(pgrep -f com.adobe) $(pgrep -f telegram) $(pgrep -f nekox) $(pgrep -f challegram) $(pgrep -f com.netflix) $(pgrep -f com.wemesh) $(pgrep -f com.discord) $(pgrep -f android.youtube) $(pgrep -f facebook.katana) $(pgrep -f android.chrome) $(pgrep -f brave.browser) $(pgrep -f UCMobile) $(pgrep -f mozilla) $(pgrep -f duckduckgo) $(pgrep -f com.opera) $(pgrep -f microsoft) $(pgrep -f torproject) $(pgrep -f instagram.android) $(pgrep -f twitch); do
+				[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$spid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$spid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$spid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "balanced" ]] && continue || {
+					kmsg "User is using social media, and etc apps. Applied balanced profile"
+					sync
+					setprop kingauto.prof "balanced"
+					change_task_nice "erprint" "0"
+					current_prof=balanced
+					get_all
+					apply_all_auto
+					sleep 25
 				}
-				for spid in $(pgrep -f whatsapp) $(pgrep -f zhiliaoapp) $(pgrep -f com.adobe) $(pgrep -f telegram) $(pgrep -f nekox) $(pgrep -f challegram) $(pgrep -f com.netflix) $(pgrep -f com.wemesh) $(pgrep -f com.discord) $(pgrep -f android.youtube) $(pgrep -f facebook.katana) $(pgrep -f android.chrome) $(pgrep -f brave.browser) $(pgrep -f UCMobile) $(pgrep -f mozilla) $(pgrep -f duckduckgo) $(pgrep -f com.opera) $(pgrep -f microsoft) $(pgrep -f torproject) $(pgrep -f instagram.android) $(pgrep -f twitch); do
-					[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$spid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$spid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$spid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "balanced" ]] && continue || {
-						kmsg "User is using social media, and etc apps. Applied balanced profile"
+				for bpid in $(pgrep -f primatelabs) $(pgrep -f gensuite) $(pgrep -f android.benchmark) $(pgrep -f test.uibench) $(pgrep -f Saplin.CPDT) $(pgrep -f glbenchmark) $(pgrep -f passmark) $(pgrep -f app.speedramp) $(pgrep -f app.beatsync) $(pgrep -f kinemaster) $(pgrep -f dmandroid) $(pgrep -f cputhrottlingtest) $(pgrep -f android.camera) $(pgrep -f GoogleCamera) $(pgrep -f snapcam); do
+					[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$gpid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$gpid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$gpid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "gaming" ]] && continue || {
+						kmsg "User is running benchmark / heavy apps. Applied extreme profile"
 						sync
-						setprop kingauto.prof "balanced"
+						setprop kingauto.prof "extreme"
 						change_task_nice "erprint" "0"
-						current_prof=balanced
+						current_prof=extreme
 						get_all
 						apply_all_auto
 						sleep 25
-						}
-						for bpid in $(pgrep -f primatelabs) $(pgrep -f gensuite) $(pgrep -f android.benchmark) $(pgrep -f test.uibench) $(pgrep -f Saplin.CPDT) $(pgrep -f glbenchmark) $(pgrep -f passmark) $(pgrep -f app.speedramp) $(pgrep -f app.beatsync) $(pgrep -f kinemaster) $(pgrep -f dmandroid) $(pgrep -f cputhrottlingtest) $(pgrep -f android.camera) $(pgrep -f GoogleCamera) $(pgrep -f snapcam); do
-							[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$gpid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$gpid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$gpid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "gaming" ]] && continue || {
-								kmsg "User is running benchmark / heavy apps. Applied extreme profile"
-								sync
-								setprop kingauto.prof "extreme"
-								change_task_nice "erprint" "0"
-								current_prof=extreme
-								get_all
-								apply_all_auto
-								sleep 25
-								}
-						done
+					}
 				done
+			done
 		done
 
 		[[ ! "$scrn_on" == "0" ]] || [[ ! "$current_prof" != "sleeping" ]] && continue || {
@@ -61,7 +59,7 @@ current_prof=none
 			get_all
 			apply_all_auto
 			sleep 60
-}
+		}
 
 		[[ ! "$batt_sts" == "Charging" ]] || [[ ! "$current_prof" != "charging" ]] && continue || {
 			kmsg "Device is charging, trying to reduce battery cycles by applying battery profile and extending check time"
@@ -84,7 +82,7 @@ current_prof=none
 			apply_all_auto
 		}
 
-		[[ ! "$batt_pctg" -ge "20" ]] || [[ ! "$current_prof" != "nobehaviour" ]] && continue || {
+		[[ ! "$current_prof" != "nobehaviour" ]] && continue || {
 			kmsg "No considerable usage found. Applied latency profile"
 			sync
 			setprop kingauto.prof "latency"
@@ -96,10 +94,10 @@ current_prof=none
 		}
 
 		[[ "$avail_ram" -le "$full_ram" ]] && {
-		kmsg "Device ram is almost fully in use, dropping caches to free some RAM"
-		sync
-		write "${vm}drop_caches" "3"
-		get_all
+			kmsg "Device ram is almost fully in use, dropping caches to free some RAM"
+			sync
+			write "${vm}drop_caches" "3"
+			get_all
 		}
 	done
 ) &

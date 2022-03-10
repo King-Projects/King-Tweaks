@@ -47,7 +47,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.0.8"
+lib_ver="1.0.9"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -6114,8 +6114,8 @@ latency() {
 	kmsg "Spent time: $exec_time seconds."
 }
 automatic() {
-	kmsg3 ""
 	kmsg "Applying automatic profile"
+	kmsg3 ""
 	sync
 	kingauto &
 	kmsg "Applied automatic profile"
