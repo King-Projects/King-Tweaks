@@ -6,8 +6,8 @@
 ##########################################################################################
 
 # Modutil Version
-MODUTILVER="v2.6.9-KTSR"
-MODUTILVCODE="269"
+MODUTILVER="v2.7.0-KTSR"
+MODUTILVCODE="270"
 
 isABDevice=false
 
@@ -49,12 +49,22 @@ set_busybox() {
 }
 _busybox=false
 
-[[ -n "$_bb" ]] && true || [[ -x "$SYSTEM2/xbin/busybox" ]] && _bb="$SYSTEM2/xbin/busybox" || [[ -x "$SYSTEM2/bin/busybox" ]] && _bb="$SYSTEM2/bin/busybox" || {
+if [[ -n "$_bb" ]]; then
+	true
+elif [[ -x "$SYSTEM2/xbin/busybox" ]]; then
+	_bb="$SYSTEM2/xbin/busybox"
+elif [[ -x "$SYSTEM2/bin/busybox" ]]; then
+	_bb="$SYSTEM2/bin/busybox"
+else
 	echo "[!] Busybox not detected"
 	echo "Please install it (@osm0sis busybox recommended)"
 	false
-}
+fi
 set_busybox "$_bb"
+[[ $? -ne "0" ]] && {
+	echo "[!] Something went wrong"
+	exit $?
+}
 
 [[ -n "$ANDROID_SOCKET_adbd" ]] && alias clear='echo'
 _bbname="$($_bb | head -n 1 | awk '{print $1,$2}')"
