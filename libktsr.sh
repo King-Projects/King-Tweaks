@@ -117,6 +117,9 @@ write() {
 		return 1
 	}
 
+	# Sync the pending changes
+	sync
+
 	# Log the success
 	kmsg1 "$1 $curval -> $2"
 }
