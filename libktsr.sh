@@ -2651,7 +2651,7 @@ config_cpuset_gaming() {
 boost_latency() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "15"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "700"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
 	}
@@ -2659,9 +2659,9 @@ boost_latency() {
 	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "128"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "0"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "0"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "500"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
@@ -2674,7 +2674,7 @@ boost_latency() {
 boost_balanced() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "10"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "700"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
 	}
@@ -2682,9 +2682,9 @@ boost_balanced() {
 	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "88"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "0"
 		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "500"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
@@ -2697,7 +2697,7 @@ boost_balanced() {
 boost_extreme() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "700"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
 	}
@@ -2705,9 +2705,9 @@ boost_extreme() {
 	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "0"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "0"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "500"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
@@ -2720,7 +2720,7 @@ boost_extreme() {
 boost_battery() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "1"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "500"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
 	}
@@ -2728,9 +2728,9 @@ boost_battery() {
 	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "64"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "0"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "0"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "500"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
@@ -2743,7 +2743,7 @@ boost_battery() {
 boost_gaming() {
 	[[ -e "/sys/module/cpu_boost/parameters/dynamic_stune_boost" ]] && {
 		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost" "50"
-		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/dynamic_stune_boost_ms" "700"
 		kmsg "Tweaked dynamic stune boost"
 		kmsg3 ""
 	}
@@ -2751,9 +2751,9 @@ boost_gaming() {
 	[[ -d "/sys/module/cpu_boost/" ]] && {
 		write "/sys/module/cpu_boost/parameters/input_boost_ms" "156"
 		write "/sys/module/cpu_boost/parameters/input_boost_enabled" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "1"
-		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "1"
-		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "750"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_input" "0"
+		write "/sys/module/cpu_boost/parameters/sched_boost_on_powerkey_input" "0"
+		write "/sys/module/cpu_boost/parameters/powerkey_input_boost_ms" "500"
 		kmsg "Tweaked CAF CPU input boost"
 		kmsg3 ""
 	} || [[ -d "/sys/module/cpu_input_boost/" ]] && {
