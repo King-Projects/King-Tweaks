@@ -552,6 +552,8 @@ while getopts ":p:f:h:g:" opt; do
 		g)
 			cmd notification set_dnd priority >/dev/null 2>&1
 			settings put system screen_brightness_mode 0 >/dev/null 2>&1
+			wm set-user-rotation lock /dev/null 2>&1
+			wm user-rotation lock /dev/null 2>&1
 			echo "${G}Done!${N}"
 			;;
 		h | *)

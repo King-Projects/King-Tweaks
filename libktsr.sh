@@ -445,9 +445,6 @@ batt_tmp=$((batt_tmp / 10))
 [[ "$qcom" == "true" ]] && gpu_mdl=$(cat "${gpui}gpu_model")
 [[ "$gpu_mdl" == "" ]] && gpu_mdl=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 
-# Fetch drivers info
-[[ "$exynos" == "true" ]] || [[ "$mtk" == "true" ]] && drvs_info=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $4,5,$6,$7,$8,$9,$10,$11,$12,$13}') || drvs_info=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $6,$7,$8,$9,$10,$11,$12,$13}' | tr -d ,)
-
 # Fetch max refresh rate
 rr=$(dumpsys display 2>/dev/null | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
 
@@ -499,9 +496,6 @@ disable_adreno_gpu_thrtl() {
 	gpu_thrtl_lvl=$(cat "${gpu}thermal_pwrlevel")
 	[[ "$gpu_thrtl_lvl" -eq "1" ]] || [[ "$gpu_thrtl_lvl" -gt "1" ]] && gpu_calc_thrtl=$((gpu_thrtl_lvl - gpu_thrtl_lvl)) || gpu_calc_thrtl=0
 }
-
-# Fetch GPU load
-[[ -e "${gpui}gpu_busy_percentage" ]] && gpu_load=$(cat "${gpui}gpu_busy_percentage" | tr -d %) || [[ -e "${gpu}utilization" ]] && gpu_load=$(cat "${gpu}utilization") || [[ -e "/proc/mali/utilization" ]] && gpu_load=$(cat /proc/mali/utilization) || [[ -e "${gpu}load" ]] && gpu_load=$(cat "${gpu}load" | tr -d %) || [[ -e "${gpui}gpu_busy" ]] && gpu_load=$(cat "${gpui}gpu_busy" | tr -d %)
 
 # Fetch the number of CPU cores
 nr_cores=$(cat /sys/devices/system/cpu/possible | awk -F "-" '{print $2}')
@@ -572,6 +566,21 @@ disable_devfreq_boost() {
 	kmsg3 ""
 }
 
+dram_max() {
+	for i in /sys/devices/platform/*.dvfsrc/helio-dvfsrc/; do
+		write "/sys/devices/platform/boot_dramboost/dramboost/dramboost" "1"
+		ddr_opp=$(cat "${i}dvfsrc_opp_table" | head -1)
+		write "${i}dvfsrc_force_vcore_dvfs_opp" "${ddr_opp:4:2}"
+	done
+}
+
+dram_default() {
+	for i in /sys/devices/platform/*.dvfsrc/helio-dvfsrc/; do
+		write "/sys/devices/platform/boot_dramboost/dramboost/dramboost" "0"
+		write "${i}dvfsrc_force_vcore_dvfs_opp" "-1"
+	done
+}
+
 get_ka_pid() {
 	[[ "$(pgrep -f kingauto)" != "" ]] && echo "$(pgrep -f kingauto)" || echo "[Not Running]"
 }
@@ -607,54 +616,53 @@ get_ka_pid() {
 
 print_info() {
 	kmsg3 ""
-	kmsg "General Info"
+	kmsg "General info"
 	kmsg3 ""
 	kmsg3 "** Date of execution: $(date)"
 	kmsg3 "** Kernel: $kern_ver_name"
-	kmsg3 "** Kernel Build Date: $kern_bd_dt"
+	kmsg3 "** Kernel build date: $kern_bd_dt"
 	kmsg3 "** SOC: $soc_mf, $soc"
 	kmsg3 "** SDK: $sdk"
-	kmsg3 "** Android Version: $avs"
-	kmsg3 "** CPU Governor: $cpu_gov"
-	kmsg3 "** CPU Load: $cpu_load%"
+	kmsg3 "** Android version: $avs"
+	kmsg3 "** Android ID: $(settings get secure android_id)"
+	kmsg3 "** CPU governor: $cpu_gov"
+	kmsg3 "** CPU load: $cpu_load%"
 	kmsg3 "** Number of cores: $nr_cores"
-	kmsg3 "** CPU Freq: $cpu_min_clk_mhz-${cpu_max_clk_mhz}MHz"
-	kmsg3 "** CPU Scheduling Type: $cpu_sched"
-	kmsg3 "** AArch: $arch"
-	kmsg3 "** GPU Load: $gpu_load%"
-	kmsg3 "** GPU Freq: $gpu_min_clk_mhz-${gpu_max_clk_mhz}MHz"
-	kmsg3 "** GPU Model: $gpu_mdl"
-	kmsg3 "** GPU Drivers Info: $drvs_info"
-	kmsg3 "** GPU Governor: $gpu_gov"
+	kmsg3 "** CPU freq: $cpu_min_clk_mhz-${cpu_max_clk_mhz}MHz"
+	kmsg3 "** CPU scheduling type: $cpu_sched"
+	kmsg3 "** Arch: $arch"
+	kmsg3 "** GPU freq: $gpu_min_clk_mhz-${gpu_max_clk_mhz}MHz"
+	kmsg3 "** GPU model: $gpu_mdl"
+	kmsg3 "** GPU governor: $gpu_gov"
 	kmsg3 "** Device: $dvc_brnd, $dvc_cdn"
 	kmsg3 "** ROM: $rom_info"
-	kmsg3 "** Screen Resolution: $(wm size | awk '{print $3}' | tail -n 1)"
-	kmsg3 "** Screen Density: $(wm density | awk '{print $3}' | tail -n 1) PPI"
-	kmsg3 "** Refresh Rate: ${rr}HZ"
-	kmsg3 "** Build Version: $bd_ver"
-	kmsg3 "** Build Codename: $bd_cdn"
-	kmsg3 "** Build Release: $bd_rel"
-	kmsg3 "** Build Date: $bd_dt"
-	kmsg3 "** Lib Version: $lib_ver"
-	kmsg3 "** Battery Charge Level: $batt_pctg%"
-	kmsg3 "** Battery Capacity: ${batt_cpct}mAh"
-	kmsg3 "** Battery Health: $batt_hth"
-	kmsg3 "** Battery Status: $batt_sts"
-	kmsg3 "** Battery Temperature: $batt_tmp°C"
+	kmsg3 "** Screen resolution: $(wm size | awk '{print $3}' | tail -n 1)"
+	kmsg3 "** Screen density: $(wm density | awk '{print $3}' | tail -n 1) PPI"
+	kmsg3 "** Supported refresh rate: ${rr}HZ"
+	kmsg3 "** KTSR build version: $bd_ver"
+	kmsg3 "** KTSR build codename: $bd_cdn"
+	kmsg3 "** KTSR build release: $bd_rel"
+	kmsg3 "** KTSR build date: $bd_dt"
+	kmsg3 "** KTSR lib version: $lib_ver"
+	kmsg3 "** Battery charge lvl: $batt_pctg%"
+	kmsg3 "** Battery capacity: ${batt_cpct}mAh"
+	kmsg3 "** Battery health: $batt_hth"
+	kmsg3 "** Battery status: $batt_sts"
+	kmsg3 "** Battery temperature: $batt_tmp°C"
 	kmsg3 "** Device RAM: ${total_ram}MB"
-	kmsg3 "** Device Available RAM: ${avail_ram}MB"
+	kmsg3 "** Device available RAM: ${avail_ram}MB"
 	kmsg3 "** Root: $root"
-	kmsg3 "** SQLite Version: $sql_ver"
-	kmsg3 "** SQLite Build Date: $sql_bd_dt"
-	kmsg3 "** System Uptime: $sys_uptime"
+	kmsg3 "** SQLite version: $sql_ver"
+	kmsg3 "** SQLite build date: $sql_bd_dt"
+	kmsg3 "** System uptime: $sys_uptime"
 	kmsg3 "** SELinux: $slnx_stt"
 	kmsg3 "** Busybox: $bb_ver"
 	kmsg3 "** Current KTSR PID: $$"
-	kmsg3 "** Current KTSR Auto PID: $(get_ka_pid)"
+	kmsg3 "** Current automatic PID: $(get_ka_pid)"
 	kmsg3 ""
 	kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
-	kmsg3 "** Telegram Channel: https://t.me/kingprojectz"
-	kmsg3 "** Telegram Group: https://t.me/kingprojectzdiscussion"
+	kmsg3 "** Telegram channel: https://t.me/kingprojectz"
+	kmsg3 "** Telegram group: https://t.me/kingprojectzdiscussion"
 	kmsg3 "** Credits to all people involved to make it possible."
 	kmsg3 ""
 }
@@ -677,11 +685,17 @@ stop_services() {
 	stop charge_logger 2>/dev/null
 	stop oneplus_brain_service 2>/dev/null
 	stop statsd 2>/dev/null
+	write "/sys/kernel/debug/fpsgo/common/force_onoff" "0"
+	write "/sys/kernel/debug/fpsgo/common/stop_boost" "1"
+	write "/proc/sla/config" "enable=1"
+	write "/proc/perfmgr/syslimiter/syslimiter_force_disable" "1"
+	write "/proc/perfmgr/syslimiter/syslimitertolerance_percent" "100"
 	# Disable MIUI useless daemons on AOSP
 	[[ "$miui" == "false" ]] && stop vendor.xiaomi.hardware.misys@1.0-service 2>/dev/null
 	[[ "$miui" == "false" ]] && stop vendor.xiaomi.hardware.misys@2.0-service 2>/dev/null
 	[[ "$miui" == "false" ]] && stop vendor.xiaomi.hardware.misys@3.0-service 2>/dev/null
 	[[ "$miui" == "false" ]] && stop mlid 2>/dev/null
+	stop miuibooster 2>/dev/null
 	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
 		stop thermal 2>/dev/null
 		stop thermald 2>/dev/null
@@ -691,6 +705,7 @@ stop_services() {
 		stop vendor.thermal-engine 2>/dev/null
 		stop thermanager 2>/dev/null
 		stop thermal_manager 2>/dev/null
+		write "/proc/driver/thermal/sspm_thermal_throttle" "1"
 	} || {
 		start thermal 2>/dev/null
 		start thermald 2>/dev/null
@@ -700,6 +715,7 @@ stop_services() {
 		start vendor.thermal-engine 2>/dev/null
 		start thermanager 2>/dev/null
 		start thermal_manager 2>/dev/null
+		write "/proc/driver/thermal/sspm_thermal_throttle" "0"
 	}
 	[[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values" || [[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
 	kmsg "Disabled few debug services and userspace daemons that may conflict with KTSR"
@@ -3493,11 +3509,19 @@ gpu_latency() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
+		for i in 1 2 3 4 5 6 7 8 9 10; do
+			write "/proc/gpufreq/gpufreq_limit_table" "$ 1 1"
+		done
+	}
+
+	[[ -d "/sys/kernel/ged/" ]] && {
+		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "25"
+		write "/sys/kernel/ged/hal/dvfs_margin_value" "25"
 	}
 
 	# Tweak some other mali parameters
 	[[ -d "/proc/mali/" ]] && {
-		[[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+		write "/proc/mali/dvfs_enable" "1"
 		write "/proc/mali/always_on" "1"
 	}
 
@@ -3625,10 +3649,18 @@ gpu_balanced() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
+		for i in 1 2 3 4 5 6 7 8 9 10; do
+			write "/proc/gpufreq/gpufreq_limit_table" "$ 1 1"
+		done
+	}
+
+	[[ -d "/sys/kernel/ged/" ]] && {
+		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "20"
+		write "/sys/kernel/ged/hal/dvfs_margin_value" "20"
 	}
 
 	[[ -d "/proc/mali/" ]] && {
-		[[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+		write "/proc/mali/dvfs_enable" "1"
 		write "/proc/mali/always_on" "1"
 	}
 
@@ -3759,10 +3791,18 @@ gpu_extreme() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
+		for i in 1 2 3 4 5 6 7 8 9 10; do
+			write "/proc/gpufreq/gpufreq_limit_table" "$ 1 1"
+		done
+	}
+
+	[[ -d "/sys/kernel/ged/" ]] && {
+		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "30"
+		write "/sys/kernel/ged/hal/dvfs_margin_value" "30"
 	}
 
 	[[ -d "/proc/mali/" ]] && {
-		[[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+		write "/proc/mali/dvfs_enable" "1"
 		write "/proc/mali/always_on" "1"
 	}
 
@@ -3888,10 +3928,18 @@ gpu_battery() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
+		for i in 1 2 3 4 5 6 7 8 9 10; do
+			write "/proc/gpufreq/gpufreq_limit_table" "$ 1 1"
+		done
+	}
+
+	[[ -d "/sys/kernel/ged/" ]] && {
+		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "15"
+		write "/sys/kernel/ged/hal/dvfs_margin_value" "15"
 	}
 
 	[[ -d "/proc/mali/" ]] && {
-		[[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "1"
+		write "/proc/mali/dvfs_enable" "1"
 		write "/proc/mali/always_on" "0"
 	}
 
@@ -4022,10 +4070,18 @@ gpu_gaming() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
+		for i in 1 2 3 4 5 6 7 8 9 10; do
+			write "/proc/gpufreq/gpufreq_limit_table" "$ 0 0"
+		done
+	}
+
+	[[ -d "/sys/kernel/ged/" ]] && {
+		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "130"
+		write "/sys/kernel/ged/hal/dvfs_margin_value" "130"
 	}
 
 	[[ -d "/proc/mali/" ]] && {
-		[[ "$one_ui" == "false" ]] && write "/proc/mali/dvfs_enable" "0"
+		write "/proc/mali/dvfs_enable" "0"
 		write "/proc/mali/always_on" "1"
 	}
 
@@ -4732,6 +4788,10 @@ sched_latency() {
 	# Tweak VIDC DDR
 	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
 	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
+	write "/sys/devices/system/cpu/sched/hint_enable" "0"
+	write "${kernel}slide_boost_enabled" "0"
+	write "${kernel}launcher_boost_enabled" "0"
+	write "/sys/kernel/tracing/events/sched/sched_boost_cpu" "0"
 	for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
@@ -4781,6 +4841,10 @@ sched_balanced() {
 	write "/sys/kernel/rcu_normal" "1"
 	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
 	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "1"
+	write "/sys/devices/system/cpu/sched/hint_enable" "0"
+	write "${kernel}slide_boost_enabled" "0"
+	write "${kernel}launcher_boost_enabled" "0"
+	write "/sys/kernel/tracing/events/sched/sched_boost_cpu" "0"
 	for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
@@ -4818,7 +4882,7 @@ sched_extreme() {
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
-	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "1"
+	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
 	[[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
 	[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
@@ -4830,6 +4894,10 @@ sched_extreme() {
 	write "/sys/kernel/rcu_normal" "1"
 	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "1"
 	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
+	write "/sys/devices/system/cpu/sched/hint_enable" "0"
+	write "${kernel}slide_boost_enabled" "0"
+	write "${kernel}launcher_boost_enabled" "0"
+	write "/sys/kernel/tracing/events/sched/sched_boost_cpu" "0"
 	for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
@@ -4879,6 +4947,10 @@ sched_battery() {
 	write "/sys/kernel/rcu_normal" "1"
 	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
 	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "1"
+	write "/sys/devices/system/cpu/sched/hint_enable" "0"
+	write "${kernel}slide_boost_enabled" "0"
+	write "${kernel}launcher_boost_enabled" "0"
+	write "/sys/kernel/tracing/events/sched/sched_boost_cpu" "0"
 	for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
@@ -4916,7 +4988,7 @@ sched_gaming() {
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
-	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "1"
+	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
 	[[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
 	[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
@@ -4928,6 +5000,10 @@ sched_gaming() {
 	write "/sys/kernel/rcu_normal" "1"
 	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "1"
 	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
+	write "/sys/devices/system/cpu/sched/hint_enable" "0"
+	write "${kernel}slide_boost_enabled" "0"
+	write "${kernel}launcher_boost_enabled" "0"
+	write "/sys/kernel/tracing/events/sched/sched_boost_cpu" "0"
 	for bcl_md in /sys/devices/soc*/qcom,bcl.*/mode; do
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
@@ -5581,11 +5657,15 @@ disable_migt() {
 		write "${migt}glk_freq_limit_walt" "0"
 		write "${migt}glk_maxfreq" "0 0 0"
 		write "${migt}migt_ceiling_freq" "0 0 0"
+		write "${migt}glk_disable" "1"
+
+		settings put secure speed_mode_enable 1
 	}
 }
 
 enable_thermal_disguise() {
-	write "$board_sensor_temp" "370"
+	disable_migt
+	write "$board_sensor_temp" "36000"
 	chmod 000 "$board_sensor_temp" 2>/dev/null
 	nohup pm clear com.xiaomi.gamecenter.sdk.service >/dev/null 2>&1 &
 	nohup pm disable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
@@ -5601,7 +5681,7 @@ write_panel() { echo "$1" >>"$bbn_banner"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential process optimizer 
-Version: 1.3.0-r5
+Version: 1.3.1-r5
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -5638,7 +5718,6 @@ config_blkio() {
 	write "${blkio}blkio.leaf_weight" "1000"
 	write "${blkio}background/blkio.weight" "100"
 	write "${blkio}background/blkio.leaf_weight" "100"
-
 	kmsg "Tweaked IO blocks"
 	kmsg3 ""
 }
@@ -5646,11 +5725,8 @@ config_blkio() {
 # Credits to DavidPisces @ GitHub
 config_f2fs() {
 	[[ "$(ls /sys/fs/f2fs | grep dm)" == "$(getprop dev.mnt.blk.data)" ]] && write "/sys/block/$(getprop dev.mnt.blk.data)/queue/read_ahead_kb" "128"
-
-	[[ "$soc" == "kona" ]] || [[ "$soc" == "lahaina" ]] || [[ "$soc" == "lito" ]] || [[ "$soc" == "SM8150" ]] || [[ "$soc" == "SM8250" ]] || [[ "$soc" == "SM8350" ]] || [[ "$soc" == "SM8450" ]] && {
-		write "$f2fs$(getprop dev.mnt.blk.data)/cp_interval" "200"
-		write "$f2fs$(getprop dev.mnt.blk.data)/gc_urgent_sleep_time" "50"
-	}
+	write "$f2fs$(getprop dev.mnt.blk.data)/cp_interval" "200"
+	write "$f2fs$(getprop dev.mnt.blk.data)/gc_urgent_sleep_time" "50"
 	write "$f2fs$(getprop dev.mnt.blk.data)/iostat_enable" "0"
 }
 
@@ -5666,6 +5742,19 @@ realme_gt() {
 joyose_dfps_clear() {
 	params='{"header":{"version":"2022121231","network_improve":true,"index_enable":true,"mqs_enable":true},"game_booster":{"booster_enable":true,"cpuset_enable":true,"tuner_enable":true,"monitor":{"monitor_enable":false,"analytics_enable":false,"default_interval":2},"support_motor_app":[],"support_display_refresh_rates":[60,90,120],"support_dynamic_refresh_rate_games":[],"support_highfps_app":[],"scale_app_enable":false,"support_scale_app_list":[],"support_gdpvo_app":[],"support_gt_app":[],"dynamic_fps_global":{"dynamic_fps":"10:120,30:120,35:120,38:120,50:90,52:60","dynamic_fps_M":"10:120,35:120,50:90,52:60"},"migt":[],"booster_config":{"default_config":[],"scene_config":[],"ovrride_config":[]}}}'
 	sqlite3 $joyose_db "update cloud_config set params = '$params' where config_name = 'booster_config'"
+}
+
+sched_isolation_disable() {
+	for i in 0 1 2 3 4 5 6 7; do
+		write "/sys/devices/system/cpu/sched/set_sched_deisolation" "$i"
+	done
+	chmod 000 "/sys/devices/system/cpu/sched/set_sched_isolation"
+}
+
+sched_deisolation() {
+	for i in 0 1 2 3 4 5 6 7; do
+		write "/sys/devices/system/cpu/sched/set_sched_isolation" "$i"
+	done
 }
 
 adjshield_start() {
@@ -5928,7 +6017,6 @@ fscc_status() {
 usr_bbn_opt() {
 	# Input Dispatcher / Reader
 	change_thread_nice "system_server" "Input" "-20"
-	pin_thread_on_perf "system_server" "Input"
 	# Not important
 	change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "4"
 	# Speed up searching service manager
@@ -5958,9 +6046,9 @@ usr_bbn_opt() {
 	pin_proc_on_perf "mdss_fb"
 	pin_proc_on_perf "mdss_display_wake"
 	pin_proc_on_perf "vsync_retire_work"
-	# Allow SystemUI to run on all cores
+	pin_proc_on_perf "adreno_dispatch"
+	# Allow SystemUI and system_server to run on all cores
 	pin_proc_on_all "systemui"
-	# Allow also system_server the same
 	pin_proc_on_all "system_server"
 	# Pin HWUI task to perf cluster
 	pin_thread_on_perf "system_server" "hwuiTask"
@@ -5982,12 +6070,14 @@ usr_bbn_opt() {
 	pin_proc_on_perf "composer"
 	# Queue CVP fence request handler with max nice
 	change_task_nice "thread_fence" "-20"
-	# Queue cpu_boostd and worker on perf cluster with max nice for obvious reasons
+	# Queue powerkey_cpu_boost, cpu_boostd and worker on perf cluster with max nice for obvious reasons
 	change_task_nice "cpu_boostd" "-20"
 	pin_proc_on_perf "cpu_boostd"
 	change_task_rt "cpu_boost_worker_thread" "2"
 	change_task_nice "cpu_boost_worker_thread" "-20"
 	pin_proc_on_perf "cpu_boost_worker_thread"
+	change_task_nice "key_cpu_bo" "-20"
+	pin_proc_on_perf "key_cpu_bo"
 	# Queue touchscreen related workers with max nice
 	change_task_nice "speedup_resume_wq" "-20"
 	change_task_nice "lcd_trigger_load_tp_fw_wq" "-20"
@@ -6004,6 +6094,8 @@ usr_bbn_opt() {
 	change_task_rt "rot_commitq" "5"
 	change_task_rt "rot_doneq" "5"
 	change_task_rt "rot_fenceq" "5"
+	change_task_rt "systemui" "0"
+	change_task_rt "miui.home" "0"
 	# Boost app boot process, zygote--com.xxxx.xxx
 	# Usap nicing isn't necessary as it is already set to max nice by default
 	change_task_nice "zygote" "-20"
@@ -6035,6 +6127,7 @@ apply_all() {
 	print_info
 	stop_services
 	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_devfreq_boost || disable_devfreq_boost
+	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && dram_max || dram_default
 	[[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] && enable_core_ctl || disable_core_ctl
 	boost_"$ktsr_prof_en"
 	io_"$ktsr_prof_en"
@@ -6071,6 +6164,7 @@ apply_all_auto() {
 	print_info
 	stop_services
 	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_devfreq_boost || disable_devfreq_boost
+	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && dram_max || dram_default
 	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_core_ctl || disable_core_ctl
 	boost_$(getprop kingauto.prof)
 	io_$(getprop kingauto.prof)
