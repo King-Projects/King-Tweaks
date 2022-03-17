@@ -90,10 +90,6 @@ config_pwr_spd
 
 disable_debug
 
-disable_migt
-
-disable_emmc_clk_sclg
-disable_ufs_clk_sclg
 [[ -d "$f2fs" ]] && config_f2fs
 [[ -d "$memcg" ]] && config_memcg
 [[ -d "$blkio" ]] && config_blkio

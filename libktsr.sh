@@ -47,7 +47,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.1.0"
+lib_ver="1.1.1"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -4993,15 +4993,6 @@ disable_fp_boost() {
 	}
 }
 
-# Credits to helloklf again
-disable_ufs_clk_sclg() {
-	# Test if this will cause power drain later
-	write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "0"
-	write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
-	kmsg "Disabled UFS clock scaling"
-	kmsg3 ""
-}
-
 ppm_policy_default() {
 	[[ "$ppm" == "true" ]] && {
 		write "/proc/ppm/policy_status" "1 0"
@@ -5540,15 +5531,6 @@ enable_sam_fast_chrg() {
 	}
 }
 
-disable_emmc_clk_sclg() {
-	[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && {
-		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
-		write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"
-	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
-	kmsg "Disabled EMMC clock scaling"
-	kmsg3 ""
-}
-
 disable_debug() {
 	# Disable kernel debugging / logging
 	for i in debug_mask log_level* debug_level* *debug_mode enable_ramdumps edac_mc_log* enable_event_log *log_level* *log_ue* *log_ce* log_ecn_error snapshot_crashdumper seclog* compat-log *log_enabled tracing_on mballoc_debug; do
@@ -5628,8 +5610,8 @@ disable_thermal_disguise() {
 write_panel() { echo "$1" >>"$bbn_banner"; }
 
 save_panel() {
-	write_panel "[*] Bourbon - the essential process optimizer 
-Version: 1.3.1-r5
+	write_panel "[*] Bourbon - the essential task optimizer 
+Version: 1.3.2-r5
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -5962,8 +5944,7 @@ usr_bbn_opt() {
 	change_thread_nice "system_server" "Input" "-20"
 	# Not important
 	change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "4"
-	# Speed up searching service manager
-	# Pin it to the perf cluster
+	# Speed up searching service manager, pin it to the perf cluster
 	change_task_nice "servicemanag" "-20"
 	pin_proc_on_perf "servicemanag"
 	# Let KGSL and mali worker thread run with max nice and pin it on perf cluster as it is a perf critical task (rendering frames to the display)
@@ -5989,12 +5970,6 @@ usr_bbn_opt() {
 	pin_proc_on_perf "mdss_fb"
 	pin_proc_on_perf "mdss_display_wake"
 	pin_proc_on_perf "vsync_retire_work"
-	pin_proc_on_perf "adreno_dispatch"
-	# Allow SystemUI and system_server to run on all cores
-	pin_proc_on_all "systemui"
-	pin_proc_on_all "system_server"
-	# Pin HWUI task to perf cluster
-	pin_thread_on_perf "system_server" "hwuiTask"
 	# Pin SF to perf cluster
 	pin_proc_on_perf "surfaceflinger"
 	# Pin TS workqueue to perf cluster to reduce latency
@@ -6005,8 +5980,9 @@ usr_bbn_opt() {
 	pin_proc_on_perf "hardware.hyper"
 	pin_proc_on_perf "hardware.wifi"
 	pin_proc_on_perf "wlbtd"
-	# Queue UFS clock gating workqueue with max nice
+	# Queue UFS / MMC clock gating workqueue with max nice
 	change_task_nice "ufs_clk_gating" "-20"
+	change_task_nice "mmc_clk_gate" "-20"
 	# Pin fingerprint service to perf cluster to reduce latency
 	pin_proc_on_perf "erprint"
 	# Pin HWC on perf cluster to reduce jitter / latency
@@ -6037,10 +6013,8 @@ usr_bbn_opt() {
 	change_task_rt "rot_commitq" "5"
 	change_task_rt "rot_doneq" "5"
 	change_task_rt "rot_fenceq" "5"
-	change_task_rt "systemui" "0"
 	change_task_rt "miui.home" "0"
 	# Boost app boot process, zygote--com.xxxx.xxx
-	# Usap nicing isn't necessary as it is already set to max nice by default
 	change_task_nice "zygote" "-20"
 }
 
@@ -6101,7 +6075,6 @@ apply_all() {
 	[[ "$ktsr_prof_en" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ -e "$board_sensor_temp" ]] && [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && realme_gt 1 || realme_gt 0
-	[[ "$(type sqlite3)" ]] && [[ -e "$joyose_db" ]] && joyose_dfps_clear
 }
 
 apply_all_auto() {
@@ -6139,15 +6112,12 @@ apply_all_auto() {
 	[[ "$(getprop kingauto.prof)" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ -e "$board_sensor_temp" ]] && [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && realme_gt 1 || realme_gt 0
-	[[ "$(type sqlite3)" ]] && [[ -e "$joyose_db" ]] && joyose_dfps_clear
 }
 
 latency() {
 	init=$(date +%s)
 	sync
 	apply_all
-	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
-	cmd power set-fixed-performance-mode-enabled false >/dev/null 2>&1
 	cmd thermalservice reset >/dev/null 2>&1
 	kmsg "Latency profile applied. Enjoy!"
 	kmsg3 ""
@@ -6167,8 +6137,6 @@ balanced() {
 	init=$(date +%s)
 	sync
 	apply_all
-	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
-	cmd power set-fixed-performance-mode-enabled false >/dev/null 2>&1
 	cmd thermalservice reset >/dev/null 2>&1
 	kmsg "Balanced profile applied. Enjoy!"
 	kmsg3 ""
@@ -6180,8 +6148,6 @@ extreme() {
 	init=$(date +%s)
 	sync
 	apply_all
-	cmd power set-adaptive-power-saver-enabled false >/dev/null 2>&1
-	cmd power set-fixed-performance-mode-enabled true >/dev/null 2>&1
 	cmd thermalservice override-status 0 >/dev/null 2>&1l
 	kmsg "Extreme profile applied. Enjoy!"
 	kmsg3 ""
@@ -6193,8 +6159,6 @@ battery() {
 	init=$(date +%s)
 	sync
 	apply_all
-	cmd power set-adaptive-power-saver-enabled true >/dev/null 2>&1
-	cmd power set-fixed-performance-mode-enabled false >/dev/null 2>&1
 	cmd thermalservice reset >/dev/null 2>&1
 	kmsg "Battery profile applied. Enjoy!"
 	kmsg3 ""
@@ -6206,8 +6170,6 @@ gaming() {
 	init=$(date +%s)
 	sync
 	apply_all
-	cmd power set-adaptive-power-saver-enabled false >/dev/null 2>&1
-	cmd power set-fixed-performance-mode-enabled true >/dev/null 2>&1
 	cmd thermalservice override-status 0 >/dev/null 2>&1
 	kmsg "Gaming profile applied. Enjoy!"
 	kmsg3 ""
