@@ -85,7 +85,7 @@ menu() {
 	echo "${Y}* KTSR CLI *${N}"
 	echo "${Y}************${N}"
 	echo ""
-	echo "${G}Ver: 1.6.3.3-beta-r12${N}"
+	echo "${G}Ver: 1.6.3.4-r12${N}"
 	echo ""
 	echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 	echo ""
@@ -182,12 +182,14 @@ menu() {
 		echo "[32] Disable Gapps"
 		echo ""
 	}
+	[[ "$sdk" -ge "28" ]] && {
 	echo "[33] Set renderer to OpenGL"
 	echo ""
 	echo "[34] Set renderer to Skia OpenGL"
 	echo ""
 	echo "[35] Set renderer to Skia Vulkan"
 	echo ""
+	}
 	echo "${R}[0] Exit${N}"
 	echo ""
 	echo -n "${Y}[*] Select the desired option:${N} "
@@ -196,41 +198,41 @@ menu() {
 		"1")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "1" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"2")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "2" 2>/dev/null
-			echo "${G}Done!"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"3")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "3" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			menu
 			;;
 		"4")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "4" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"5")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "5" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"6")
 			echo "${B}Applying profile...${N}"
 			setprop persist.king.tweaks.prof "6" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
@@ -248,7 +250,7 @@ menu() {
 			settings put global forced_app_standby_enabled 1 2>/dev/null
 			settings put global app_auto_restriction_enabled true 2>/dev/null
 			settings put global forced_app_standby_for_small_battery_enabled 1 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
@@ -265,19 +267,19 @@ menu() {
 			settings reset global app_auto_restriction_enabled 2>/dev/null
 			settings put global forced_app_standby_for_small_battery_enabled 0 2>/dev/null
 			settings reset global forced_app_standby_for_small_battery_enabled 1 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!""
 			sleep 2
 			menu
 			;;
 		"10")
 			cmd netpolicy set restrict-background true 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"11")
 			cmd netpolicy set restrict-background false 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
@@ -285,20 +287,20 @@ menu() {
 			echo "${B}Applying settings...${N}"
 			settings put secure location_mode "0" 2>/dev/null
 			settings put global assisted_gps_enabled "0" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"13")
 			settings put global assisted_gps_enabled "1" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"14")
 			echo "${B}Cleaning debug logs and system trash...${N}"
 			cleantrash 2>/dev/null
-			echo "${G}Done!${N}"
+			echo "${G}[*] Done!${N}"
 			sleep 2
 			menu
 			;;
@@ -308,13 +310,13 @@ menu() {
 			;;
 		"16")
 			[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "50" >"/sys/module/mdss_mdp/parameters/custom_hz" || echo "Y" >"/sys/module/mdss_mdp/parameters/custom_hz"
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"17")
 			[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && [[ "$(grep -Eo '[0-9]' /sys/module/mdss_mdp/parameters/custom_hz 2>/dev/null)" ]] && echo "55" >"/sys/module/mdss_mdp/parameters/custom_hz"
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
@@ -326,7 +328,7 @@ menu() {
 			settings put global oneplus_screen_refresh_rate 1 2>/dev/null
 			settings put secure coloros_screen_refresh_rate 2 2>/dev/null
 			service call SurfaceFlinger 1035 i32 1 >/dev/null 2>&1
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
@@ -337,7 +339,7 @@ menu() {
 			settings put global oneplus_screen_refresh_rate 0 2>/dev/null
 			settings put secure coloros_screen_refresh_rate 1 2>/dev/null
 			service call SurfaceFlinger 1035 i32 0 >/dev/null 2>&1
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
@@ -347,7 +349,7 @@ menu() {
 			settings put system user_refresh_rate 120 2>/dev/null
 			settings put global oneplus_screen_refresh_rate 0 2>/dev/null
 			settings put secure coloros_screen_refresh_rate 3 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
@@ -358,23 +360,23 @@ menu() {
 			settings reset global oneplus_screen_refresh_rate >/dev/null 2>&1
 			settings reset secure coloros_screen_refresh_rate >/dev/null 2>&1
 			service call SurfaceFlinger 1035 i32 1 >/dev/null 2>&1
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"22")
 			sync
 			echo "3" >"/proc/sys/vm/drop_caches"
-			echo "${G}Done!${N}"
-			sleep 3
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
+			sleep 4
 			menu
 			;;
 		"23")
 			sync
 			echo "3" >"/proc/sys/vm/drop_caches"
 			am kill-all
-			echo "${G}Done!${N}"
-			sleep 3
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
+			sleep 4
 			menu
 			;;
 		"24")
@@ -391,13 +393,13 @@ menu() {
 			;;
 		"25")
 			echo "2" >"/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"26")
 			echo "0" >"/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
@@ -409,7 +411,7 @@ menu() {
 			rm -rf /data/system/battery-history 2>/dev/null
 			rm -rf /data/vendor/charge_logger 2>/dev/null
 			rm -rf /data/charge_logger 2>/dev/null
-			echo "${G}Done!${N}"
+			echo "${G}[*] Done!${N}"
 			sleep 2
 			menu
 			;;
@@ -419,27 +421,27 @@ menu() {
 		"29")
 			echo "Values supported: [0.3-0.9]"
 			echo "Lower means more downscaled / lower resolution"
-			echo "Enter a value from the supported range: "
+			echo "[*] Enter a value from the supported range: "
 			read -r lvl
 			echo "E.G: [com.android.camera]"
-			echo "Enter a package name:"
+			echo "[*] Enter a package name:"
 			read -r pkg
 			cmd game downscale "$lvl" "$pkg" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"30")
 			echo "E.G: [com.android.camera]"
-			echo "Enter a package name:"
+			echo "[*] Enter a package name:"
 			read -r pkg
 			cmd game downscale disable "$pkg" 2>/dev/null
-			echo "${G}Done!${N}"
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
 		"31")
-			echo "Enabling Gapps..."
+			echo "[*] Enabling Gapps..."
 			pm enable com.google.android.gsf 2>/dev/null
 			pm enable com.google.android.gsf.login 2>/dev/null
 			pm enable com.google.android.gms 2>/dev/null
@@ -448,7 +450,7 @@ menu() {
 			pm enable com.android.vending 2>/dev/null
 			pm enable com.google.android.play.games 2>/dev/null
 			pm enable com.google.android.syncadapters.contacts 2>/dev/null
-			echo "${G}Done!${N}"
+			echo "${G}[*] Done!${N}"
 			sleep 2
 			menu
 			;;
@@ -462,36 +464,53 @@ menu() {
 			pm disable com.android.vending 2>/dev/null
 			pm disable com.google.android.play.games 2>/dev/null
 			pm disable com.google.android.syncadapters.contacts 2>/dev/null
-			echo "${G}Done!${N}"
+			echo "${G}[*] Done!${N}"
 			sleep 2
 			menu
 			;;
 		"33")
+			[[ "$sdk" -ge "28" ]] && {
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=opengl/' "$MODDIR/system.prop"
 			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=/' "$MODDIR/system.prop"
 			#sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
-			echo "${G}Done!${N}"
+			echo "${G}[*] Done!${N}"
 			sleep 2
 			menu
+			} || {
+			echo "[!] Android version not supported!"
+			sleep 2
+			menu
+			}
 			;;
 		"34")
+			[[ "$sdk" -ge "28" ]] && {
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' "$MODDIR/system.prop"
 			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=/' "$MODDIR/system.prop"
 			#sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
-			echo "${G}Done!${N}"
+			echo "${G}[*] Done!${N}"
 			sleep 2
 			menu
+			} || {
+			echo "[!] Android version not supported!"
+			sleep 2
+			menu
+			}
 			;;
 		"35")
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=/' "$MODDIR/system.prop"
 			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=true/' "$MODDIR/system.prop"
 			#sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
-			echo "${G}Done!${N}"
+			echo "${G}[*] Done!${N}"
 			sleep 2
 			menu
+			} || {
+			echo "[!] Android version not supported!"
+			sleep 2
+			menu
+			}
 			;;
 		"0")
 			echo "${G}Hope that see ya soon! ;)${N}"
@@ -505,15 +524,16 @@ menu() {
 [[ $# -eq "0" ]] && menu
 
 help_me() {
-	echo "$MODTITLE $VER($REL)"
-	echo "by $AUTHOR"
-	echo "Usage: $_name"
-	echo "or: $_name [options]..."
-	echo "Supported options:"
-	echo "-p [profile] [1-6] [change between profiles without opening the terminal GUI]"
-	echo "-f [free ram] [1-3] [Higher value means more agressive]"
-	echo "-h [help] [show this message]"
-	echo "-g [game] [enable DND and disable automatic brightness]"
+	echo "$MODTITLE $VER($REL)
+	by $AUTHOR
+	Usage: $_name
+	or: $_name [options]...
+	Telegram group: https://t.me/kingprojectz
+	Supported options:
+	-p [profile] [1-6] [change between profiles without opening the terminal GUI]
+	-f [free ram] [1-3] [Higher value means more agressive]
+	-h [help] [show this message]
+	-g [game] [enable DND and disable automatic rotation/brightness]"
 	am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
 	exit
 }
@@ -521,21 +541,21 @@ help_me() {
 while getopts ":p:f:h:g:" opt; do
 	case "$opt" in
 		p)
-			echo "${B}Applying profile...${N}"
+			echo "${B}[*] Applying profile...${N}"
 			setprop persist.king.tweaks.prof "$2" 2>/dev/null
-			echo "${G}Done!${N}"
+			echo "${G}[*] Done!${N}"
 			;;
 		f)
 			[[ "$2" == "1" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
-				echo "${G}Done!${N}"
+				echo "${G}D[*] Done!${N}"
 				sleep 2
 			} || [[ "$2" == "2" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
 				am kill-all
-				echo "${G}Done!${N}"
+				echo "${G}[*] Done!${N}"
 				sleep 3
 			} || [[ "$2" == "3" ]] && {
 				sync
@@ -545,7 +565,7 @@ while getopts ":p:f:h:g:" opt; do
 				while IFS= read -r pkg_nm; do
 					[[ "$pkg_nm" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]] && [[ "$pkg_nm" != "com.pittvandewitt.viperfx" ]] && [[ "$pkg_nm" != "com.topjohnwu.magisk" ]] && [[ "$pkg_nm" != "ridmik.keyboard" ]] && [[ "$pkg_nm" != "com.maxmpz.equalizer" ]] && [[ "$pkg_nm" != "com.miui.screenrecorder" ]] && am force-stop "$pkg_nm"
 				done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
-				echo "${G}Done!${N}"
+				echo "${G}[*] Done!${N}"
 				sleep 2
 			}
 			;;
@@ -554,7 +574,7 @@ while getopts ":p:f:h:g:" opt; do
 			settings put system screen_brightness_mode 0 >/dev/null 2>&1
 			wm set-user-rotation lock /dev/null 2>&1
 			wm user-rotation lock /dev/null 2>&1
-			echo "${G}Done!${N}"
+			echo "${G}[*] Done!${N}"
 			;;
 		h | *)
 			help_me
