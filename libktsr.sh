@@ -47,7 +47,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.1.1"
+lib_ver="1.1.2-stable"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -5611,7 +5611,7 @@ write_panel() { echo "$1" >>"$bbn_banner"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential task optimizer 
-Version: 1.3.2-r5
+Version: 1.3.3-r5-stable
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -5630,26 +5630,6 @@ com.activision.callofduty.shooter
 com.mobile.legends
 com.tencent.ig
 "
-}
-
-config_memcg() {
-	[[ -f "${memcg}sys_critical/memory.swappiness" ]] && write "${memcg}sys_critical/memory.swappiness" "0"
-	[[ -f "${memcg}system/memory.swappiness" ]] && write "${memcg}system/memory.swappiness" "0"
-	find "$memcg" -name memory.move_charge_at_immigrate | while read file; do
-		write "$file" "1"
-	done
-	kmsg "Tweaked memory cgroups"
-	kmsg3 ""
-}
-
-config_blkio() {
-	# Reserve 90% IO bandwith for foreground tasks
-	write "${blkio}blkio.weight" "1000"
-	write "${blkio}blkio.leaf_weight" "1000"
-	write "${blkio}background/blkio.weight" "100"
-	write "${blkio}background/blkio.leaf_weight" "100"
-	kmsg "Tweaked IO blocks"
-	kmsg3 ""
 }
 
 # Credits to DavidPisces @ GitHub
