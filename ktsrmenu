@@ -267,7 +267,7 @@ menu() {
 			settings reset global app_auto_restriction_enabled 2>/dev/null
 			settings put global forced_app_standby_for_small_battery_enabled 0 2>/dev/null
 			settings reset global forced_app_standby_for_small_battery_enabled 1 2>/dev/null
-			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!""
+			[[ $? == "0" ]] && echo "${G}[*] Done!${N}" || echo "${R}[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
