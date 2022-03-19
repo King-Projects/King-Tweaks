@@ -499,6 +499,7 @@ menu() {
 			}
 			;;
 		"35")
+			[[ "$sdk" -ge "28" ]] && {
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=/' "$MODDIR/system.prop"
 			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=true/' "$MODDIR/system.prop"
