@@ -5632,26 +5632,6 @@ com.tencent.ig
 "
 }
 
-config_memcg() {
-	[[ -f "${memcg}sys_critical/memory.swappiness" ]] && write "${memcg}sys_critical/memory.swappiness" "0"
-	[[ -f "${memcg}system/memory.swappiness" ]] && write "${memcg}system/memory.swappiness" "0"
-	find "$memcg" -name memory.move_charge_at_immigrate | while read file; do
-		write "$file" "1"
-	done
-	kmsg "Tweaked memory cgroups"
-	kmsg3 ""
-}
-
-config_blkio() {
-	# Reserve 90% IO bandwith for foreground tasks
-	write "${blkio}blkio.weight" "1000"
-	write "${blkio}blkio.leaf_weight" "1000"
-	write "${blkio}background/blkio.weight" "100"
-	write "${blkio}background/blkio.leaf_weight" "100"
-	kmsg "Tweaked IO blocks"
-	kmsg3 ""
-}
-
 # Credits to DavidPisces @ GitHub
 config_f2fs() {
 	[[ "$(ls /sys/fs/f2fs | grep dm)" == "$(getprop dev.mnt.blk.data)" ]] && write "/sys/block/$(getprop dev.mnt.blk.data)/queue/read_ahead_kb" "128"
