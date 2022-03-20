@@ -47,7 +47,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.1.1"
+lib_ver="1.1.2"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -3097,7 +3097,7 @@ cpu_balanced() {
 	done
 
 	for governor in $(find /sys/devices/system/cpu/ -name *util* -type d); do
-		write "$governor/up_rate_limit_us" "5000"
+		write "$governor/up_rate_limit_us" "500"
 		write "$governor/down_rate_limit_us" "20000"
 		write "$governor/pl" "1"
 		write "$governor/iowait_boost_enable" "0"
@@ -3107,7 +3107,7 @@ cpu_balanced() {
 	done
 
 	for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d); do
-		write "$governor/up_rate_limit_us" "5000"
+		write "$governor/up_rate_limit_us" "500"
 		write "$governor/down_rate_limit_us" "20000"
 		write "$governor/pl" "1"
 		write "$governor/iowait_boost_enable" "0"
@@ -3120,7 +3120,7 @@ cpu_balanced() {
 		write "$governor/timer_rate" "20000"
 		write "$governor/boost" "0"
 		write "$governor/io_is_busy" "0"
-		write "$governor/timer_slack" "2000"
+		write "$governor/timer_slack" "500"
 		write "$governor/input_boost" "0"
 		write "$governor/use_migration_notif" "1"
 		write "$governor/ignore_hispeed_on_notif" "0"
@@ -5611,7 +5611,7 @@ write_panel() { echo "$1" >>"$bbn_banner"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential task optimizer 
-Version: 1.3.2-r5
+Version: 1.3.3-r5
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
