@@ -688,7 +688,7 @@ stop_services() {
 	stop statsd 2>/dev/null
 	write "/sys/kernel/debug/fpsgo/common/force_onoff" "0"
 	write "/sys/kernel/debug/fpsgo/common/stop_boost" "1"
-	write "/proc/sla/config" "enable=1"
+	write "/proc/sla/config" "enable=0"
 	write "/proc/perfmgr/syslimiter/syslimiter_force_disable" "1"
 	write "/proc/perfmgr/syslimiter/syslimitertolerance_percent" "100"
 	# Disable MIUI useless daemons on AOSP
@@ -3097,7 +3097,7 @@ cpu_balanced() {
 	done
 
 	for governor in $(find /sys/devices/system/cpu/ -name *util* -type d); do
-		write "$governor/up_rate_limit_us" "5000"
+		write "$governor/up_rate_limit_us" "500"
 		write "$governor/down_rate_limit_us" "20000"
 		write "$governor/pl" "1"
 		write "$governor/iowait_boost_enable" "0"
@@ -3107,7 +3107,7 @@ cpu_balanced() {
 	done
 
 	for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d); do
-		write "$governor/up_rate_limit_us" "5000"
+		write "$governor/up_rate_limit_us" "500"
 		write "$governor/down_rate_limit_us" "20000"
 		write "$governor/pl" "1"
 		write "$governor/iowait_boost_enable" "0"
@@ -3120,7 +3120,7 @@ cpu_balanced() {
 		write "$governor/timer_rate" "20000"
 		write "$governor/boost" "0"
 		write "$governor/io_is_busy" "0"
-		write "$governor/timer_slack" "2000"
+		write "$governor/timer_slack" "500"
 		write "$governor/input_boost" "0"
 		write "$governor/use_migration_notif" "1"
 		write "$governor/ignore_hispeed_on_notif" "0"
