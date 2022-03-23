@@ -47,7 +47,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.1.2-stable"
+lib_ver="1.1.3-stable"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -3621,7 +3621,7 @@ gpu_balanced() {
 		write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
 		write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
-		write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
+		write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "1"
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
 		write "/sys/module/ged/parameters/ged_smart_boost" "1"
 		write "/sys/module/ged/parameters/gpu_debug_enable" "0"
@@ -3763,7 +3763,7 @@ gpu_extreme() {
 		write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
 		write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
-		write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
+		write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "1"
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
 		write "/sys/module/ged/parameters/ged_smart_boost" "0"
 		write "/sys/module/ged/parameters/gpu_debug_enable" "0"
@@ -3900,7 +3900,7 @@ gpu_battery() {
 		write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
 		write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
-		write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
+		write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "1"
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
 		write "/sys/module/ged/parameters/ged_smart_boost" "0"
 		write "/sys/module/ged/parameters/gpu_debug_enable" "0"
@@ -4042,7 +4042,7 @@ gpu_gaming() {
 		write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
 		write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
-		write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "0"
+		write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "1"
 		write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
 		write "/sys/module/ged/parameters/ged_smart_boost" "0"
 		write "/sys/module/ged/parameters/gpu_debug_enable" "0"
@@ -5631,7 +5631,6 @@ com.tencent.ig
 
 # Credits to DavidPisces @ GitHub
 config_f2fs() {
-	[[ "$(ls /sys/fs/f2fs | grep dm)" == "$(getprop dev.mnt.blk.data)" ]] && write "/sys/block/$(getprop dev.mnt.blk.data)/queue/read_ahead_kb" "128"
 	write "$f2fs$(getprop dev.mnt.blk.data)/cp_interval" "200"
 	write "$f2fs$(getprop dev.mnt.blk.data)/gc_urgent_sleep_time" "50"
 	write "$f2fs$(getprop dev.mnt.blk.data)/iostat_enable" "0"
