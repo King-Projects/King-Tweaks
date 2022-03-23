@@ -692,9 +692,6 @@ stop_services() {
 	write "/proc/perfmgr/syslimiter/syslimiter_force_disable" "1"
 	write "/proc/perfmgr/syslimiter/syslimitertolerance_percent" "100"
 	# Disable MIUI useless daemons on AOSP
-	[[ "$miui" == "false" ]] && stop vendor.xiaomi.hardware.misys@1.0-service 2>/dev/null
-	[[ "$miui" == "false" ]] && stop vendor.xiaomi.hardware.misys@2.0-service 2>/dev/null
-	[[ "$miui" == "false" ]] && stop vendor.xiaomi.hardware.misys@3.0-service 2>/dev/null
 	[[ "$miui" == "false" ]] && stop mlid 2>/dev/null
 	stop miuibooster 2>/dev/null
 	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
