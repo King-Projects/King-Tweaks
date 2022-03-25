@@ -5608,7 +5608,7 @@ write_panel() { echo "$1" >>"$bbn_banner"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential task optimizer 
-Version: 1.3.3-r5
+Version: 1.3.4-r6
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -5973,8 +5973,8 @@ usr_bbn_opt() {
 	pin_proc_on_perf "nvt_ts"
 	pin_proc_on_perf "nvt_fwu"
 	# Pin Samsung HyperHAL, wifi HAL and daemon to perf cluster
-	pin_proc_on_perf "hardware.hyper"
-	pin_proc_on_perf "hardware.wifi"
+	pin_proc_on_perf "hyper@"
+	pin_proc_on_perf "wifi@"
 	pin_proc_on_perf "wlbtd"
 	# Queue UFS / MMC clock gating workqueue with max nice
 	change_task_nice "ufs_clk_gating" "-20"
@@ -6009,7 +6009,10 @@ usr_bbn_opt() {
 	change_task_rt "rot_commitq" "5"
 	change_task_rt "rot_doneq" "5"
 	change_task_rt "rot_fenceq" "5"
-	change_task_rt "miui.home" "0"
+	change_task_rt "miui.home" "1"
+	change_task_rt "system_server" "1"
+	change_task_rt "surfaceflinger" "1"
+	change_task_rt "servicemanag" "1"
 	# Boost app boot process, zygote--com.xxxx.xxx
 	change_task_nice "zygote" "-20"
 }
