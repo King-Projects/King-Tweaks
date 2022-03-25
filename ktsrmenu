@@ -85,7 +85,7 @@ menu() {
 	echo "${Y}* KTSR CLI *${N}"
 	echo "${Y}************${N}"
 	echo ""
-	echo "${G}Ver: 1.6.3.4-r12${N}"
+	echo "${G}Ver: 1.6.3.5-r13${N}"
 	echo ""
 	echo "[*] Current Profile: ${G}$ktsr_prof_en${N}"
 	echo ""
@@ -473,7 +473,7 @@ menu() {
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=opengl/' "$MODDIR/system.prop"
 			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=/' "$MODDIR/system.prop"
-			#sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
+			sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
 			echo "${G}[*] Done!${N}"
 			sleep 2
 			menu
@@ -488,7 +488,7 @@ menu() {
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' "$MODDIR/system.prop"
 			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=/' "$MODDIR/system.prop"
-			#sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
+			sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
 			echo "${G}[*] Done!${N}"
 			sleep 2
 			menu
@@ -503,7 +503,7 @@ menu() {
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=/' "$MODDIR/system.prop"
 			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=true/' "$MODDIR/system.prop"
-			#sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
+			sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
 			echo "${G}[*] Done!${N}"
 			sleep 2
 			menu
@@ -575,6 +575,9 @@ while getopts ":p:f:h:g:" opt; do
 			settings put system screen_brightness_mode 0 >/dev/null 2>&1
 			wm set-user-rotation lock /dev/null 2>&1
 			wm user-rotation lock /dev/null 2>&1
+			sync
+			echo "3" >"/proc/sys/vm/drop_caches"
+			am kill-all
 			echo "${G}[*] Done!${N}"
 			;;
 		h | *)
