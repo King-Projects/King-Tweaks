@@ -6,8 +6,8 @@
 ##########################################################################################
 
 # Modutil Version
-MODUTILVER="v2.7.0-KTSR"
-MODUTILVCODE="270"
+MODUTILVER="v2.7.1-KTSR"
+MODUTILVCODE="271"
 
 isABDevice=false
 
@@ -23,11 +23,6 @@ else
 	CACHELOC="/cache"
 fi
 
-[[ -z "$SYSTEM" ]] && {
-	echo "[!] Something went wrong"
-	exit 1
-}
-
 #=========================== Set Busybox up
 # Variables:
 #  BBok - If busybox detection was ok (true/false)
@@ -40,7 +35,7 @@ set_busybox() {
 	[[ -x "$1" ]] && {
 		for i in $(${1} --list); do
 			[[ "$i" != 'echo' ]] && {
-				alias "$i"="$1 $i" >/dev/null 2>&1
+				alias $i="$1 $i" >/dev/null 2>&1
 			}
 		done
 		_busybox=true
@@ -61,10 +56,6 @@ else
 	false
 fi
 set_busybox "$_bb"
-[[ $? -ne "0" ]] && {
-	echo "[!] Something went wrong"
-	exit $?
-}
 
 [[ -n "$ANDROID_SOCKET_adbd" ]] && alias clear='echo'
 _bbname="$($_bb | head -n 1 | awk '{print $1,$2}')"
