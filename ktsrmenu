@@ -82,7 +82,7 @@ menu() {
 	echo "$Y* KTSR Command Line Interface (CLI) *$N"
 	echo "$Y*************************************$N"
 	echo ""
-	echo "${G}Version: 1.6.3.6-r14$N"
+	echo "${G}Version: 1.6.3.7-r14$N"
 	echo ""
 	echo "$V[*] Current Profile:$N $G$ktsr_prof_en$N"
 	echo ""
@@ -390,7 +390,7 @@ menu() {
 			;;
 		"25")
 			echo "2" >"/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
-			[[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
+			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 2
 			menu
 			;;
@@ -536,14 +536,17 @@ Supported options:
 	exit
 }
 
-while getopts ":p:f:h:g:" opt; do
-	case "$opt" in
-		p | --profile)
+opts=":p:f:h:g-:"
+while getopts "$opts" opt; do
+	case "${opt}" in
+		-)
+			case "${OPTARG}" in
+			profile)
 			echo "${B}[*] Applying profile...${N}"
 			setprop persist.king.tweaks.prof "$2" 2>/dev/null
 			echo "${G}[*] Done!${N}"
 			;;
-		f | --clear-ram)
+			clear-ram)
 			[[ "$2" == "1" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
@@ -567,7 +570,7 @@ while getopts ":p:f:h:g:" opt; do
 				sleep 2
 			}
 			;;
-		g | --game)
+			game)
 			cmd notification set_dnd priority >/dev/null 2>&1
 			settings put system screen_brightness_mode 0 >/dev/null 2>&1
 			wm set-user-rotation lock >/dev/null 2>&1
@@ -577,7 +580,55 @@ while getopts ":p:f:h:g:" opt; do
 			am kill-all
 			echo "${G}[*] Done!${N}"
 			;;
-		h | --help)
+			help)
+			help_me
+			;;
+			*)
+			[[ "$OPTERR" == "1" ]] && [[ "${opts:0:1}" != ":" ]] && {
+            help_me
+            }
+			;;
+		esac;;
+		p)
+			echo "${B}[*] Applying profile...${N}"
+			setprop persist.king.tweaks.prof "$2" 2>/dev/null
+			echo "${G}[*] Done!${N}"
+			;;
+		f)
+			[[ "$2" == "1" ]] && {
+				sync
+				echo "3" >"/proc/sys/vm/drop_caches"
+				echo "${G}D[*] Done!${N}"
+				sleep 2
+			} || [[ "$2" == "2" ]] && {
+				sync
+				echo "3" >"/proc/sys/vm/drop_caches"
+				am kill-all
+				echo "${G}[*] Done!${N}"
+				sleep 3
+			} || [[ "$2" == "3" ]] && {
+				sync
+				echo "3" >"/proc/sys/vm/drop_caches"
+				am kill-all
+				sleep 3
+				while IFS= read -r pkg_nm; do
+					[[ "$pkg_nm" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]] && [[ "$pkg_nm" != "com.pittvandewitt.viperfx" ]] && [[ "$pkg_nm" != "com.topjohnwu.magisk" ]] && [[ "$pkg_nm" != "ridmik.keyboard" ]] && [[ "$pkg_nm" != "com.maxmpz.equalizer" ]] && [[ "$pkg_nm" != "com.miui.screenrecorder" ]] && am force-stop "$pkg_nm"
+				done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
+				echo "${G}[*] Done!${N}"
+				sleep 2
+			}
+			;;
+		g)
+			cmd notification set_dnd priority >/dev/null 2>&1
+			settings put system screen_brightness_mode 0 >/dev/null 2>&1
+			wm set-user-rotation lock >/dev/null 2>&1
+			wm user-rotation lock >/dev/null 2>&1
+			sync
+			echo "3" >"/proc/sys/vm/drop_caches"
+			am kill-all
+			echo "${G}[*] Done!${N}"
+			;;
+		h)
 			help_me
 			;;
 	esac
