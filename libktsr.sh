@@ -47,7 +47,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.1.4-stable"
+lib_ver="1.1.6-stable"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -417,7 +417,7 @@ kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 	avail_ram="Please install busybox first"
 }
 
-# Fetch battery actual capacity
+# Fetch battery current capacity available
 [[ -e "/sys/class/power_supply/battery/capacity" ]] && batt_pctg=$(cat /sys/class/power_supply/battery/capacity) || batt_pctg=$(dumpsys battery 2>/dev/null | awk '/level/{print $2}')
 
 # Fetch build version
@@ -436,7 +436,7 @@ bd_cdn=$(grep version= "${modpath}module.prop" | sed "s/version=//" | awk -F "-"
 batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
 [[ "$batt_tmp" == "" ]] && [[ -e "/sys/class/power_supply/battery/temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/temp) || [[ "$batt_tmp" == "" ]] && [[ -e "/sys/class/power_supply/battery/batt_temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
 
-# Ignore the battery temperature decimal
+# Ignore the battery temperature decimal (37.x)
 batt_tmp=$((batt_tmp / 10))
 
 # Fetch GPU model
@@ -475,7 +475,7 @@ case "$batt_sts" in
 	*) batt_sts="$batt_sts" ;;
 esac
 
-# Fetch battery total capacity
+# Fetch battery total capacity (mAh)
 batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
 [[ "$batt_cpct" == "" ]] && batt_cpct=$(dumpsys batterystats 2>/dev/null | awk '/Capacity:/{print $2}' | cut -d "," -f 1)
 [[ "$batt_cpct" -ge "1000000" ]] && batt_cpct=$((batt_cpct / 1000))
@@ -503,7 +503,7 @@ nr_cores=$((nr_cores + 1))
 # Fetch device brand
 dvc_brnd=$(getprop ro.product.brand)
 
-# Check if we're running on OneUI
+# Make sure if we're running on OneUI
 [[ "$(getprop net.knoxscep.version)" ]] || [[ "$(getprop ril.product_code)" ]] || [[ "$(getprop ro.boot.em.model)" ]] || [[ "$(getprop net.knoxvpn.version)" ]] || [[ "$(getprop ro.securestorage.knox)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Samsung)" ]] || [[ "$(getprop ro.build.PDA)" ]] && {
 	one_ui=true
 	samsung=true
@@ -511,7 +511,7 @@ dvc_brnd=$(getprop ro.product.brand)
 
 bt_dvc=$(getprop ro.boot.bootdevice)
 
-# Fetch the amount of time since the system is running
+# Fetch the amount of time that system has been running
 sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
 [[ "$(command -v sqlite3)" ]] && {
@@ -616,7 +616,6 @@ get_ka_pid() {
 }
 
 print_info() {
-	kmsg3 ""
 	kmsg "General info"
 	kmsg3 ""
 	kmsg3 "** Date of execution: $(date)"
@@ -5103,11 +5102,11 @@ vm_lmk_latency() {
 	write "${vm}dirty_expire_centisecs" "4000"
 	write "${vm}dirty_writeback_centisecs" "4000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "120"
+	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
 	# Use more zRAM / swap by default if possible
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
-	[[ "$total_ram" -ge "8192" ]] && write "${vm}swappiness" "120"
+	[[ "$total_ram" -gt "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${vm}swappiness" "120"
 	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
 	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
@@ -5134,15 +5133,15 @@ vm_lmk_latency() {
 vm_lmk_balanced() {
 	sync
 	write "${vm}drop_caches" "2"
-	write "${vm}dirty_background_ratio" "5"
+	write "${vm}dirty_background_ratio" "10"
 	write "${vm}dirty_ratio" "30"
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "120"
+	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
-	[[ "$total_ram" -ge "8192" ]] && write "${vm}swappiness" "120"
+	[[ "$total_ram" -gt "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${vm}swappiness" "120"
 	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
 	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
@@ -5174,10 +5173,10 @@ vm_lmk_extreme() {
 	write "${vm}dirty_expire_centisecs" "5000"
 	write "${vm}dirty_writeback_centisecs" "5000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "120"
+	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
-	[[ "$total_ram" -ge "8192" ]] && write "${vm}swappiness" "120"
+	[[ "$total_ram" -gt "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${vm}swappiness" "120"
 	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
 	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
@@ -5204,15 +5203,15 @@ vm_lmk_extreme() {
 vm_lmk_battery() {
 	sync
 	write "${vm}drop_caches" "0"
-	write "${vm}dirty_background_ratio" "5"
-	write "${vm}dirty_ratio" "20"
+	write "${vm}dirty_background_ratio" "10"
+	write "${vm}dirty_ratio" "30"
 	write "${vm}dirty_expire_centisecs" "200"
 	write "${vm}dirty_writeback_centisecs" "500"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "120"
+	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
-	[[ "$total_ram" -ge "8192" ]] && write "${vm}swappiness" "120"
+	[[ "$total_ram" -gt "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${vm}swappiness" "120"
 	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
 	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
@@ -5244,10 +5243,10 @@ vm_lmk_gaming() {
 	write "${vm}dirty_expire_centisecs" "5000"
 	write "${vm}dirty_writeback_centisecs" "5000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "120"
+	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
-	[[ "$total_ram" -ge "8192" ]] && write "${vm}swappiness" "120"
+	[[ "$total_ram" -gt "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${vm}swappiness" "120"
 	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
 	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
@@ -5995,6 +5994,8 @@ usr_bbn_opt() {
 	change_task_rt "servicemanag" "1"
 	# Boost app boot process, zygote--com.xxxx.xxx
 	change_task_nice "zygote" "-20"
+	# Queue VM writeback with max nice
+	change_task_nice "writeback" "-20"
 }
 
 clear_logs() {

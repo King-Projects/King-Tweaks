@@ -62,7 +62,7 @@ current_prof=none
 		}
 
 		[[ ! "$batt_sts" == "Charging" ]] || [[ ! "$current_prof" != "charging" ]] && continue || {
-			kmsg "Device is charging, trying to reduce battery cycles by applying battery profile and extending check time"
+			kmsg "Device is charging, trying to reduce battery cycles by applying battery profile"
 			sync
 			setprop kingauto.prof "battery"
 			change_task_nice "erprint" "0"
@@ -82,22 +82,22 @@ current_prof=none
 			apply_all_auto
 		}
 
-		[[ ! "$current_prof" != "nobehaviour" ]] && continue || {
-			kmsg "No considerable usage found. Applied latency profile"
-			sync
-			setprop kingauto.prof "latency"
-			change_task_nice "erprint" "0"
-			current_prof=nobehaviour
-			get_all
-			apply_all_auto
-			sleep 20
-		}
-
 		[[ "$avail_ram" -le "$full_ram" ]] && {
 			kmsg "Device ram is almost fully in use, dropping caches to free some RAM"
 			sync
 			write "${vm}drop_caches" "3"
 			get_all
+		}
+
+		[[ ! "$current_prof" != "nobehaviour" ]] && continue || {
+			kmsg "No considerable usage found. Applied battery profile"
+			sync
+			setprop kingauto.prof "battery"
+			change_task_nice "erprint" "0"
+			current_prof=nobehaviour
+			get_all
+			apply_all_auto
+			sleep 20
 		}
 	done
 ) &
