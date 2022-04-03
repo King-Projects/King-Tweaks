@@ -5526,7 +5526,7 @@ disable_ufs_clk_gate() {
 
 enable_ufs_clk_gate() {
 	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
-		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
+		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "1"
 		kmsg "Enabled UFS clock gate"
 		kmsg3 ""
 	}
