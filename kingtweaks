@@ -268,7 +268,7 @@ while true; do
 					;;
 			esac
 
-			killall kingauto
+			kill_svc kingauto
 			setprop kingauto.prof null
 			balanced
 
@@ -309,7 +309,7 @@ while true; do
 					;;
 			esac
 
-			killall kingauto
+			kill_svc kingauto
 			setprop kingauto.prof null
 			extreme
 
@@ -350,7 +350,7 @@ while true; do
 					;;
 			esac
 
-			killall kingauto
+			kill_svc kingauto
 			setprop kingauto.prof null
 			battery
 
@@ -391,7 +391,7 @@ while true; do
 					;;
 			esac
 
-			killall kingauto
+			kill_svc kingauto
 			setprop kingauto.prof null
 			gaming
 
@@ -432,7 +432,7 @@ while true; do
 					;;
 			esac
 
-			killall kingauto
+			kill_svc kingauto
 			setprop kingauto.prof null
 			latency
 
