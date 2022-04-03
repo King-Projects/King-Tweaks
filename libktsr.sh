@@ -47,7 +47,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.1.6-stable"
+lib_ver="1.1.7-stable"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -121,6 +121,11 @@ write() {
 
 	# Log the success
 	kmsg1 "$1 $curval -> $2"
+}
+
+kill_svc() {
+	stop $1 2>/dev/null
+	killall -9 $1 2>/dev/null
 }
 
 # Duration in nanoseconds of one scheduling period
@@ -670,38 +675,39 @@ print_info() {
 stop_services() {
 	# Stop perf and other userspace processes from tinkering with kernel parameters
 	for v in 0 1 2 3 4; do
-		stop vendor.qti.hardware.perf@$v.$v-service 2>/dev/null
-		stop vendor.oneplus.hardware.brain@$v.$v-service 2>/dev/null
+		kill_svc vendor.qti.hardware.perf@$v.$v-service
+		kill_svc vendor.oneplus.hardware.brain@$v.$v-service
 	done
-	stop perfd 2>/dev/null
-	stop mpdecision 2>/dev/null
-	stop vendor.perfservice 2>/dev/null
-	stop cnss_diag 2>/dev/null
-	stop vendor.cnss_diag 2>/dev/null
-	stop tcpdump 2>/dev/null
-	stop vendor.tcpdump 2>/dev/null
-	stop ipacm-diag 2>/dev/null
-	stop vendor.ipacm-diag 2>/dev/null
-	stop charge_logger 2>/dev/null
-	stop oneplus_brain_service 2>/dev/null
-	stop statsd 2>/dev/null
+	kill_svc perfd
+	kill_svc mpdecision
+	kill_svc perfservice
+	kill_svc vendor.perfservice
+	kill_svc cnss_diag
+	kill_svc vendor.cnss_diag
+	kill_svc tcpdump
+	kill_svc vendor.tcpdump
+	kill_svc ipacm-diag 
+	kill_svc vendor.ipacm-diag
+	kill_svc charge_logger
+	kill_svc oneplus_brain_service
+	kill_svc statsd
 	write "/sys/kernel/debug/fpsgo/common/force_onoff" "0"
 	write "/sys/kernel/debug/fpsgo/common/stop_boost" "1"
 	write "/proc/sla/config" "enable=0"
 	write "/proc/perfmgr/syslimiter/syslimiter_force_disable" "1"
 	write "/proc/perfmgr/syslimiter/syslimitertolerance_percent" "100"
 	# Disable MIUI useless daemons on AOSP
-	[[ "$miui" == "false" ]] && stop mlid 2>/dev/null
-	stop miuibooster 2>/dev/null
+	[[ "$miui" == "false" ]] && kill_svc mlid
+	kill_svc miuibooster
 	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
-		stop thermal 2>/dev/null
-		stop thermald 2>/dev/null
-		stop thermalservice 2>/dev/null
-		stop mi_thermald 2>/dev/null
-		stop thermal-engine 2>/dev/null
-		stop vendor.thermal-engine 2>/dev/null
-		stop thermanager 2>/dev/null
-		stop thermal_manager 2>/dev/null
+		kill_svc thermal
+		kill_svc thermald
+		kill_svc thermalservice
+		kill_svc mi_thermald
+		kill_svc thermal-engine
+		kill_svc vendor.thermal-engine
+		kill_svc thermanager
+		kill_svc thermal_manager
 		write "/proc/driver/thermal/sspm_thermal_throttle" "1"
 	} || {
 		start thermal 2>/dev/null
@@ -4711,7 +4717,7 @@ sched_latency() {
 	[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "25"
 	[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
-	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
+	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
 	# We do not need it on android, and also is disabled by default on redhat for security purposes
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	# Set memory sleep mode to s2idle
@@ -4770,7 +4776,7 @@ sched_balanced() {
 	[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "20"
 	[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
-	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
+	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
@@ -4823,7 +4829,7 @@ sched_extreme() {
 	[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "30"
 	[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "0"
-	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
+	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
@@ -4876,7 +4882,7 @@ sched_battery() {
 	[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "15"
 	[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
-	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
+	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "1"
@@ -4929,7 +4935,7 @@ sched_gaming() {
 	[[ -e "${kernel}sched_init_task_load" ]] && write "${kernel}sched_init_task_load" "30"
 	[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "0"
-	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "0"
+	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
@@ -5097,17 +5103,18 @@ vm_lmk_latency() {
 	sync
 	# VM settings to improve overall user experience and performance
 	write "${vm}drop_caches" "3"
-	write "${vm}dirty_background_ratio" "15"
+	write "${vm}dirty_background_ratio" "10"
 	write "${vm}dirty_ratio" "40"
-	write "${vm}dirty_expire_centisecs" "4000"
-	write "${vm}dirty_writeback_centisecs" "4000"
+	write "${vm}dirty_expire_centisecs" "3000"
+	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
+	write "${vm}extfrag_threshold" "750"
 	# Use more zRAM / swap by default if possible
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
 	[[ "$total_ram" -gt "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${vm}swappiness" "120"
-	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
+	[[ "$total_ram" -gt "8192" ]] && write "${vm}swappiness" "90"
 	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "200"
@@ -5123,9 +5130,9 @@ vm_lmk_latency() {
 	[[ -e "${lmk}cost" ]] && write "${lmk}cost" "4096"
 	[[ -e "${vm}watermark_scale_factor" ]] && write "${vm}watermark_scale_factor" "100"
 	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "4096" ]] && write "${zram}wb_start_mins" "180"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && write "${zram}wb_start_mins" "240"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "360"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -gt "8192" ]] && write "${zram}wb_start_mins" "480"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "6144" ]] && write "${zram}wb_start_mins" "240"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${zram}wb_start_mins" "360"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "480"
 	kmsg "Tweaked various VM / LMK parameters for a improved user-experience"
 	kmsg3 ""
 }
@@ -5140,9 +5147,10 @@ vm_lmk_balanced() {
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
+	write "${vm}extfrag_threshold" "750"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
 	[[ "$total_ram" -gt "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${vm}swappiness" "120"
-	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
+	[[ "$total_ram" -gt "8192" ]] && write "${vm}swappiness" "90"
 	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "100"
@@ -5158,9 +5166,9 @@ vm_lmk_balanced() {
 	[[ -e "${lmk}cost" ]] && write "${lmk}cost" "4096"
 	[[ -e "${vm}watermark_scale_factor" ]] && write "${vm}watermark_scale_factor" "100"
 	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "4096" ]] && write "${zram}wb_start_mins" "180"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && write "${zram}wb_start_mins" "240"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "360"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -gt "8192" ]] && write "${zram}wb_start_mins" "480"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "6144" ]] && write "${zram}wb_start_mins" "240"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${zram}wb_start_mins" "360"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "480"
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
 }
@@ -5170,15 +5178,13 @@ vm_lmk_extreme() {
 	write "${vm}drop_caches" "3"
 	write "${vm}dirty_background_ratio" "10"
 	write "${vm}dirty_ratio" "40"
-	write "${vm}dirty_expire_centisecs" "5000"
-	write "${vm}dirty_writeback_centisecs" "5000"
+	write "${vm}dirty_expire_centisecs" "3000"
+	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
-	[[ "$total_ram" -gt "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${vm}swappiness" "120"
-	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
-	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
+	write "${vm}extfrag_threshold" "750"
+	write "${vm}swappiness" "60"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "200"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -5193,27 +5199,25 @@ vm_lmk_extreme() {
 	[[ -e "${lmk}cost" ]] && write "${lmk}cost" "4096"
 	[[ -e "${vm}watermark_scale_factor" ]] && write "${vm}watermark_scale_factor" "100"
 	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "4096" ]] && write "${zram}wb_start_mins" "180"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && write "${zram}wb_start_mins" "240"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "360"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -gt "8192" ]] && write "${zram}wb_start_mins" "480"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "6144" ]] && write "${zram}wb_start_mins" "240"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${zram}wb_start_mins" "360"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "480"
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
 }
 
 vm_lmk_battery() {
 	sync
-	write "${vm}drop_caches" "0"
+	write "${vm}drop_caches" "1"
 	write "${vm}dirty_background_ratio" "10"
-	write "${vm}dirty_ratio" "30"
-	write "${vm}dirty_expire_centisecs" "200"
-	write "${vm}dirty_writeback_centisecs" "500"
+	write "${vm}dirty_ratio" "26"
+	write "${vm}dirty_expire_centisecs" "500"
+	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
-	[[ "$total_ram" -gt "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${vm}swappiness" "120"
-	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
-	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
+	write "${vm}extfrag_threshold" "750"
+	write "${vm}swappiness" "80"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "60"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -5228,9 +5232,9 @@ vm_lmk_battery() {
 	[[ -e "${lmk}cost" ]] && write "${lmk}cost" "4096"
 	[[ -e "${vm}watermark_scale_factor" ]] && write "${vm}watermark_scale_factor" "100"
 	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "4096" ]] && write "${zram}wb_start_mins" "180"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && write "${zram}wb_start_mins" "240"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "360"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -gt "8192" ]] && write "${zram}wb_start_mins" "480"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "6144" ]] && write "${zram}wb_start_mins" "240"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${zram}wb_start_mins" "360"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "480"
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
 }
@@ -5240,15 +5244,13 @@ vm_lmk_gaming() {
 	write "${vm}drop_caches" "3"
 	write "${vm}dirty_background_ratio" "10"
 	write "${vm}dirty_ratio" "40"
-	write "${vm}dirty_expire_centisecs" "5000"
-	write "${vm}dirty_writeback_centisecs" "5000"
+	write "${vm}dirty_expire_centisecs" "3000"
+	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
 	write "${vm}stat_interval" "60"
 	write "${vm}overcommit_ratio" "100"
-	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
-	[[ "$total_ram" -gt "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${vm}swappiness" "120"
-	[[ "$total_ram" -gt "8192" ]] && write "${vm}rswappiness" "90"
-	[[ "$(cat ${vm}swappiness)" -ne "160" ]] || [[ "$(cat ${vm}swappiness)" -ne "120" ]] || [[ "$(cat ${vm}swappiness)" -ne "90" ]] && write "${vm}swappiness" "100"
+	write "${vm}extfrag_threshold" "750"
+	write "${vm}swappiness" "60"
 	write "${vm}laptop_mode" "0"
 	write "${vm}vfs_cache_pressure" "200"
 	[[ -d "/sys/module/process_reclaim/" ]] && write "/sys/module/process_reclaim/parameters/enable_process_reclaim" "0"
@@ -5263,9 +5265,9 @@ vm_lmk_gaming() {
 	[[ -e "${lmk}cost" ]] && write "${lmk}cost" "4096"
 	[[ -e "${vm}watermark_scale_factor" ]] && write "${vm}watermark_scale_factor" "100"
 	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "4096" ]] && write "${zram}wb_start_mins" "180"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && write "${zram}wb_start_mins" "240"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "360"
-	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -gt "8192" ]] && write "${zram}wb_start_mins" "480"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -le "6144" ]] && write "${zram}wb_start_mins" "240"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "6144" ]] && [[ "$total_ram" -lt "8192" ]] && write "${zram}wb_start_mins" "360"
+	[[ -e "${zram}wb_start_mins" ]] && [[ "$total_ram" -ge "8192" ]] && write "${zram}wb_start_mins" "480"
 	kmsg "Tweaked various VM and LMK parameters for a improved user-experience"
 	kmsg3 ""
 }
@@ -5409,6 +5411,7 @@ config_tcp() {
 	write "${tcp}tcp_keepalive_intvl" "30"
 	write "${tcp}tcp_fin_timeout" "30"
 	write "${tcp}tcp_mtu_probing" "1"
+	write "${tcp}tcp_slow_start_after_idle" "0"
 	kmsg "Applied TCP tweaks"
 	kmsg3 ""
 }
@@ -5607,7 +5610,7 @@ write_panel() { echo "$1" >>"$bbn_banner"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential task optimizer 
-Version: 1.3.4-r6-stable
+Version: 1.3.5-r6-stable
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -5918,7 +5921,8 @@ usr_bbn_opt() {
 	# Input Dispatcher / Reader
 	change_thread_nice "system_server" "Input" "-20"
 	# Not important
-	change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom" "4"
+	change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom|SchedBoost" "4"
+	pin_thread_on_pwr "system_server" "CachedAppOpt|Greezer|TaskSnapshot|Oom|PeriodicClean|SchedBoost|mi_analytics_up|mistat_db"
 	# Speed up searching service manager, pin it to the perf cluster
 	change_task_nice "servicemanag" "-20"
 	pin_proc_on_perf "servicemanag"
@@ -5927,7 +5931,7 @@ usr_bbn_opt() {
 	pin_proc_on_perf "kgsl_worker_thread"
 	change_task_nice "mali_jd_thread" "-20"
 	change_task_nice "mali_event_thread" "-20"
-	# Let RCU tasks kthread run on perf cluster
+	# Pin RCU tasks on perf cluster
 	pin_proc_on_perf "rcu_task"
 	# Pin LMKD to perf cluster as it is has the critical task of reclaiming memory to the system
 	pin_proc_on_perf "lmkd"
@@ -5974,11 +5978,11 @@ usr_bbn_opt() {
 	pin_proc_on_perf "key_cpu_bo"
 	# Queue touchscreen related workers with max nice
 	change_task_nice "speedup_resume_wq" "-20"
-	change_task_nice "lcd_trigger_load_tp_fw_wq" "-20"
-	change_task_nice "syna_tcm_freq_hop" "-20"
+	change_task_nice "load_tp_fw_wq" "-20"
+	change_task_nice "tcm_freq_hop" "-20"
 	change_task_nice "touch_delta_wq" "-20"
 	change_task_nice "tp_async" "-20"
-	change_task_nice "early_wakeup_clk_wq" "-20"
+	change_task_nice "wakeup_clk_wq" "-20"
 	# Move some critical tasks to SCHED_RR
 	change_task_rt "kgsl_worker_thread" "16"
 	change_task_rt "adreno_dispatch" "16"
