@@ -6,74 +6,74 @@ modpath="/data/adb/modules/KTSR"
 # Load libraries
 source "$modpath/libs/libktsr.sh"
 
-full_ram=$((total_ram * 20 / 100))
+full_ram=$((total_ram * 25 / 100))
 
 current_prof=none
 
 (
 	while true; do
 		# This script basically try to check which app is on top-app (being rendered on the screen)
-		for gpid in $(pgrep -f gaijin) $(pgrep -f krunker) $(pgrep -f pubg) $(pgrep -f sega) $(pgrep -f capcom) $(pgrep -f fallout) $(pgrep -f Parsecs) $(pgrep -f streetsof) $(pgrep -f shinobi) $(pgrep -f begma) $(pgrep -f Taimanin) $(pgrep -f techo.google) $(pgrep -f cats.google) $(pgrep -f hyperburner) $(pgrep -f Machinarium) $(pgrep -f botanicula) $(pgrep -f samorost3) $(pgrep -f Samorost) $(pgrep -f survivalgb) $(pgrep -f mir4) $(pgrep -f nexon) $(pgrep -f grayraven) $(pgrep -f arknights) $(pgrep -f AzurLane) $(pgrep -f gamefsac) $(pgrep -f masters.) $(pgrep -f sonic) $(pgrep -f Psyonix) $(pgrep -f tgc) $(pgrep -f jp.garud) $(pgrep -f mobile.leg) $(pgrep -f duty.shooter) $(pgrep -f hypergryph) $(pgrep -f denachina) $(pgrep -f bilibili) $(pgrep -f injustice) $(pgrep -f games.) $(pgrep -f hanjiasongshu) $(pgrep -f sofunny) $(pgrep -f kurogame) $(pgrep -f ersx2) $(pgrep -f dolphinemu) $(pgrep -f retroarch) $(pgrep -f Snes) $(pgrep -f gba) $(pgrep -f gbc) $(pgrep -f pokemongo) $(pgrep -f emu.drastic) $(pgrep -f kabam) $(pgrep -f marvelbattle) $(pgrep -f val.craft.z) $(pgrep -f action.cyber) $(pgrep -f game.rpg) $(pgrep -f classicboy) $(pgrep -f RecRoom) $(pgrep -f lemudroid) $(pgrep -f fzurita) $(pgrep -f citra_emu) $(pgrep -f duckstation) $(pgrep -f games.) $(pgrep -f slither) $(pgrep -f fallbuddies) $(pgrep -f digitalsky) $(pgrep -f superevilmegacorp) $(pgrep -f yingxiong) $(pgrep -f netease) $(pgrep -f tipsworks) $(pgrep -f playdigious) $(pgrep -f studiowildcard) $(pgrep -f wardrumstudios) $(pgrep -f Games.) $(pgrep -f com2us) $(pgrep -f czuuks) $(pgrep -f junegaming) $(pgrep -f pixelbite) $(pgrep -f junesoftware) $(pgrep -f sozap) $(pgrep -f dotemu) $(pgrep -f playables) $(pgrep -f digital.tt) $(pgrep -f cobalt.google) $(pgrep -f purple.google) $(pgrep -f unit.yellow) $(pgrep -f unit.mercury) $(pgrep -f unit.green) $(pgrep -f unit.silver) $(pgrep -f star) $(pgrep -f bethsoft) $(pgrep -f blackpanther) $(pgrep -f noodlecake) $(pgrep -f NextFloor) $(pgrep -f StarvePocket) $(pgrep -f agaming) $(pgrep -f astragon) $(pgrep -f chucklefish) $(pgrep -f t2ksports) $(pgrep -f tt2ksports) $(pgrep -f ayonline) $(pgrep -f dreamotion) $(pgrep -f snailgameusa) $(pgrep -f haegin) $(pgrep -f panzerdog) $(pgrep -f igg) $(pgrep -f gtarcade) $(pgrep -f com.gta) $(pgrep -f seleuco) $(pgrep -f innersloth) $(pgrep -f kiloo) $(pgrep -f imaginalis) $(pgrep -f illumix) $(pgrep -f ickteam) $(pgrep -f mobigame) $(pgrep -f masomo) $(pgrep -f emagroup) $(pgrep -f eramobile) $(pgrep -f wb.goog) $(pgrep -f wb.lego) $(pgrep -f app.game) $(pgrep -f polarbit) $(pgrep -f carxtech) $(pgrep -f CarXTech) $(pgrep -f assoluto) $(pgrep -f ubisoft) $(pgrep -f rayark) $(pgrep -f android_google) $(pgrep -f ppsspp) $(pgrep -f interactive.) $(pgrep -f playgendary) $(pgrep -f badflyinteractive) $(pgrep -f pearlabyss) $(pgrep -f smp) $(pgrep -f axlebolt) $(pgrep -f criticalops) $(pgrep -f ractive) $(pgrep -f gamedevltd) $(pgrep -f gameoverflow) $(pgrep -f modernstrike) $(pgrep -f 10tons) $(pgrep -f destinywarfare) $(pgrep -f nekki) $(pgrep -f shadowfight) $(pgrep -f ChillyRoom) $(pgrep -f chillyroom) $(pgrep -f mniacs.da2) $(pgrep -f mojang) $(pgrep -f miHoYo) $(pgrep -f miniclip) $(pgrep -f byss) $(pgrep -f android.omega) $(pgrep -f hitmansniper) $(pgrep -f mobile.legends) $(pgrep -f moonton) $(pgrep -f ANMP.Gloft) $(pgrep -f anmp) $(pgrep -f trueaxis) $(pgrep -f netmarble) $(pgrep -f eyougame) $(pgrep -f game.) $(pgrep -f dts) $(pgrep -f activision) $(pgrep -f konami) $(pgrep -f gamevil) $(pgrep -f pixonic) $(pgrep -f eparadiso) $(pgrep -f argaming) $(pgrep -f supercell) $(pgrep -f a.gp.) $(pgrep -f a.game.) $(pgrep -f a.games.) $(pgrep -f pixel.gun3d) $(pgrep -f pixel.survival) $(pgrep -f titan.cd) $(pgrep -f survival.rpg) $(pgrep -f ohbibi) $(pgrep -f formula) $(pgrep -f streetracer) $(pgrep -f games505) $(pgrep -f realboxing) $(pgrep -f RealSteel) $(pgrep -f rovio) $(pgrep -f designs.pay) $(pgrep -f roblox) $(pgrep -f halfbrick) $(pgrep -f blizzard) $(pgrep -f doubleaxion) $(pgrep -f bhvr) $(pgrep -f lnrgame); do
+		for gpid in $(pgrep -f gaijin) $(pgrep -f krunker) $(pgrep -f pubg) $(pgrep -f sega) $(pgrep -f capcom) $(pgrep -f fallout) $(pgrep -f Parsecs) $(pgrep -f streetsof) $(pgrep -f shinobi) $(pgrep -f begma) $(pgrep -f Taimanin) $(pgrep -f techo.google) $(pgrep -f cats.google) $(pgrep -f hyperburner) $(pgrep -f Machinarium) $(pgrep -f botanicula) $(pgrep -f samorost3) $(pgrep -f Samorost) $(pgrep -f survivalgb) $(pgrep -f mir4) $(pgrep -f nexon) $(pgrep -f grayraven) $(pgrep -f arknights) $(pgrep -f AzurLane) $(pgrep -f gamefsac) $(pgrep -f masters.) $(pgrep -f sonic) $(pgrep -f Psyonix) $(pgrep -f tgc) $(pgrep -f jp.garud) $(pgrep -f mobile.leg) $(pgrep -f duty.shooter) $(pgrep -f hypergryph) $(pgrep -f denachina) $(pgrep -f bilibili) $(pgrep -f injustice) $(pgrep -f games.) $(pgrep -f hanjiasongshu) $(pgrep -f sofunny) $(pgrep -f kurogame) $(pgrep -f ersx2) $(pgrep -f dolphinemu) $(pgrep -f retroarch) $(pgrep -f Snes) $(pgrep -f gba) $(pgrep -f gbc) $(pgrep -f pokemongo) $(pgrep -f emu.drastic) $(pgrep -f kabam) $(pgrep -f marvelbattle) $(pgrep -f val.craft.z) $(pgrep -f action.cyber) $(pgrep -f game.rpg) $(pgrep -f classicboy) $(pgrep -f RecRoom) $(pgrep -f lemudroid) $(pgrep -f fzurita) $(pgrep -f citra_emu) $(pgrep -f duckstation) $(pgrep -f games.) $(pgrep -f slither) $(pgrep -f fallbuddies) $(pgrep -f digitalsky) $(pgrep -f superevilmegacorp) $(pgrep -f yingxiong) $(pgrep -f netease) $(pgrep -f tipsworks) $(pgrep -f playdigious) $(pgrep -f studiowildcard) $(pgrep -f wardrumstudios) $(pgrep -f Games.) $(pgrep -f com2us) $(pgrep -f czuuks) $(pgrep -f junegaming) $(pgrep -f pixelbite) $(pgrep -f junesoftware) $(pgrep -f sozap) $(pgrep -f dotemu) $(pgrep -f playables) $(pgrep -f digital.tt) $(pgrep -f cobalt.google) $(pgrep -f purple.google) $(pgrep -f unit.yellow) $(pgrep -f unit.mercury) $(pgrep -f unit.green) $(pgrep -f unit.silver) $(pgrep -f star) $(pgrep -f bethsoft) $(pgrep -f blackpanther) $(pgrep -f noodlecake) $(pgrep -f studio.) $(pgrep -f NextFloor) $(pgrep -f StarvePocket) $(pgrep -f agaming) $(pgrep -f astragon) $(pgrep -f chucklefish) $(pgrep -f t2ksports) $(pgrep -f tt2ksports) $(pgrep -f ayonline) $(pgrep -f dreamotion) $(pgrep -f snailgameusa) $(pgrep -f haegin) $(pgrep -f panzerdog) $(pgrep -f igg) $(pgrep -f gtarcade) $(pgrep -f com.gta) $(pgrep -f seleuco) $(pgrep -f innersloth) $(pgrep -f kiloo) $(pgrep -f imaginalis) $(pgrep -f illumix) $(pgrep -f ickteam) $(pgrep -f mobigame) $(pgrep -f masomo) $(pgrep -f emagroup) $(pgrep -f eramobile) $(pgrep -f wb.goog) $(pgrep -f wb.lego) $(pgrep -f app.game) $(pgrep -f polarbit) $(pgrep -f carxtech) $(pgrep -f CarXTech) $(pgrep -f assoluto) $(pgrep -f ubisoft) $(pgrep -f rayark) $(pgrep -f android_google) $(pgrep -f ppsspp) $(pgrep -f interactive.) $(pgrep -f playgendary) $(pgrep -f badflyinteractive) $(pgrep -f pearlabyss) $(pgrep -f smp) $(pgrep -f axlebolt) $(pgrep -f criticalops) $(pgrep -f ractive) $(pgrep -f gamedevltd) $(pgrep -f gameoverflow) $(pgrep -f modernstrike) $(pgrep -f 10tons) $(pgrep -f destinywarfare) $(pgrep -f nekki) $(pgrep -f shadowfight) $(pgrep -f ChillyRoom) $(pgrep -f chillyroom) $(pgrep -f mniacs.da2) $(pgrep -f mojang) $(pgrep -f miHoYo) $(pgrep -f miniclip) $(pgrep -f byss) $(pgrep -f android.omega) $(pgrep -f hitmansniper) $(pgrep -f mobile.legends) $(pgrep -f moonton) $(pgrep -f ANMP.Gloft) $(pgrep -f anmp) $(pgrep -f trueaxis) $(pgrep -f netmarble) $(pgrep -f eyougame) $(pgrep -f game.) $(pgrep -f dts) $(pgrep -f activision) $(pgrep -f konami) $(pgrep -f gamevil) $(pgrep -f pixonic) $(pgrep -f eparadiso) $(pgrep -f argaming) $(pgrep -f supercell) $(pgrep -f a.gp.) $(pgrep -f a.game.) $(pgrep -f a.games.) $(pgrep -f pixel.gun3d) $(pgrep -f pixel.survival) $(pgrep -f titan.cd) $(pgrep -f survival.rpg) $(pgrep -f ohbibi) $(pgrep -f formula) $(pgrep -f streetracer) $(pgrep -f games505) $(pgrep -f realboxing) $(pgrep -f RealSteel) $(pgrep -f rovio) $(pgrep -f designs.pay) $(pgrep -f roblox) $(pgrep -f halfbrick) $(pgrep -f blizzard) $(pgrep -f doubleaxion) $(pgrep -f bhvr) $(pgrep -f lnrgame); do
 			[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$gpid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$gpid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$gpid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "gaming" ]] && continue || {
-				kmsg "User is playing, applied gaming profile"
+				kmsg "User is playing, applying gaming profile..."
 				sync
 				setprop kingauto.prof "gaming"
 				change_task_nice "erprint" "0"
 				current_prof=gaming
 				get_all
 				apply_all_auto
-				sleep 25
+				sleep 20
 			}
 			for spid in $(pgrep -f whatsapp) $(pgrep -f zhiliaoapp) $(pgrep -f com.adobe) $(pgrep -f telegram) $(pgrep -f geforcenow) $(pgrep -f nekox) $(pgrep -f disneyplus) $(pgrep -f avod.third) $(pgrep -f challegram) $(pgrep -f crunchyroll) $(pgrep -f netflix) $(pgrep -f wemesh) $(pgrep -f discord) $(pgrep -f android.youtube) $(pgrep -f facebook) $(pgrep -f android.chrome) $(pgrep -f brave.browser) $(pgrep -f UCMobile) $(pgrep -f mozilla) $(pgrep -f duckduckgo) $(pgrep -f com.opera) $(pgrep -f microsoft) $(pgrep -f torproject) $(pgrep -f instagram.android) $(pgrep -f twitch); do
 				[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$spid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$spid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$spid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "balanced" ]] && continue || {
-					kmsg "User is using social media, streaming and/or etc apps. Applied balanced profile"
+					kmsg "User is using social media, streaming and/or etc apps. Applying balanced profile..."
 					sync
 					setprop kingauto.prof "balanced"
 					change_task_nice "erprint" "0"
 					current_prof=balanced
 					get_all
 					apply_all_auto
-					sleep 25
+					sleep 20
 				}
 				for bpid in $(pgrep -f primatelabs) $(pgrep -f gensuite) $(pgrep -f android.benchmark) $(pgrep -f test.uibench) $(pgrep -f Saplin.CPDT) $(pgrep -f glbenchmark) $(pgrep -f passmark) $(pgrep -f app.speedramp) $(pgrep -f app.beatsync) $(pgrep -f kinemaster) $(pgrep -f dmandroid) $(pgrep -f cputhrottlingtest) $(pgrep -f android.camera) $(pgrep -f GoogleCamera) $(pgrep -f snapcam); do
 					[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$gpid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$gpid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$gpid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "gaming" ]] && continue || {
-						kmsg "User is running benchmark / heavy apps. Applied extreme profile"
+						kmsg "User is running benchmark / heavy apps. Applying extreme profile..."
 						sync
 						setprop kingauto.prof "extreme"
 						change_task_nice "erprint" "0"
 						current_prof=extreme
 						get_all
 						apply_all_auto
-						sleep 25
+						sleep 20
 					}
 				done
 			done
 		done
 
 		[[ ! "$scrn_on" == "0" ]] || [[ ! "$current_prof" != "sleeping" ]] && continue || {
-			kmsg "Device screen is turned off. Applied battery profile, extended script check time"
+			kmsg "Device screen is turned off. Sleeping..."
 			sync
 			setprop kingauto.prof "battery"
 			change_task_nice "erprint" "-20"
 			current_prof=sleeping
 			get_all
 			apply_all_auto
-			sleep 90
+			sleep 40
 		}
 
-		[[ ! "$batt_sts" == "Charging" ]] || [[ ! "$current_prof" != "charging" ]] && continue || {
-			kmsg "Device is charging, trying to reduce battery cycles by applying battery profile"
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_sts" == "Charging" ]] || [[ ! "$current_prof" != "charging" ]] && continue || {
+			kmsg "Device is charging, reducing power consumption by applying battery profile..."
 			sync
 			setprop kingauto.prof "battery"
 			change_task_nice "erprint" "0"
 			current_prof=charging
 			get_all
 			apply_all_auto
-			sleep 45
+			sleep 40
 		}
 
-		[[ ! "$batt_pctg" -lt "15" ]] || [[ ! "$current_prof" != "lowbatt" ]] && continue || {
-			kmsg "Device battery is lower than 20%, applying battery profile to prolong battery life"
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_pctg" -le "15" ]] || [[ ! "$current_prof" != "lowbatt" ]] && continue || {
+			kmsg "Device battery is <= 15%, applying battery profile to prolong battery life..."
 			sync
 			setprop kingauto.prof "battery"
 			change_task_nice "erprint" "0"
@@ -82,22 +82,22 @@ current_prof=none
 			apply_all_auto
 		}
 
-		[[ "$avail_ram" -le "$full_ram" ]] && {
-			kmsg "Device ram is almost fully in use, dropping caches to free some RAM"
+		[[ ! "$scrn_on" != "0" ]] || [[ "$avail_ram" -le "$full_ram" ]] && {
+			kmsg "Amount of RAM available on device is low, dropping caches to free some of it..."
 			sync
 			write "${vm}drop_caches" "3"
 			get_all
 		}
 
-		[[ ! "$current_prof" != "nobehaviour" ]] && continue || {
-			kmsg "No considerable usage found. Applied battery profile"
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$current_prof" != "nobehaviour" ]] && continue || {
+			kmsg "No considerable usage found. Applying battery profile by default..."
 			sync
 			setprop kingauto.prof "battery"
 			change_task_nice "erprint" "0"
 			current_prof=nobehaviour
 			get_all
 			apply_all_auto
-			sleep 20
+			sleep 15
 		}
 	done
 ) &
