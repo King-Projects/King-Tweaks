@@ -47,7 +47,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.1.7-master"
+lib_ver="1.1.8-master"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -552,6 +552,14 @@ enable_devfreq_boost() {
 		max_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $1}')
 		[[ "$max_devfreq2" -gt "$max_devfreq" ]] && max_devfreq="$max_devfreq2"
 		write "${dir}min_freq" "$max_devfreq"
+		write "${dir}bw_hwmon/hyst_length" "0"
+		write "${dir}bw_hwmon/hist_memory" "0"
+		write "${dir}bw_hwmon/hyst_trigger_count" "0"
+		for i in /sys/class/devfreq/*-bw/; do
+			write "${i}bw_hwmon/io_percent" "80"
+			write "${i}bw_hwmon/sample_ms" "10"
+		done
+		write "/dev/cpu_dma_latency" "61"
 	done
 	kmsg "Enabled devfreq boost"
 	kmsg3 ""
@@ -563,6 +571,14 @@ disable_devfreq_boost() {
 		min_devfreq2=$(cat "${dir}available_frequencies" | awk -F ' ' '{print $NF}')
 		[[ "$min_devfreq2" -lt "$min_devfreq" ]] && min_devfreq="$min_devfreq2"
 		write "${dir}min_freq" "$min_devfreq"
+		write "${dir}bw_hwmon/hyst_length" "10"
+		write "${dir}bw_hwmon/hist_memory" "20"
+		write "${dir}bw_hwmon/hyst_trigger_count" "3"
+		for i in /sys/class/devfreq/*-bw/; do
+			write "${i}bw_hwmon/io_percent" "80"
+			write "${i}bw_hwmon/sample_ms" "4"
+		done
+		write "/dev/cpu_dma_latency" "100"
 	done
 	kmsg "Disabled devfreq boost"
 	kmsg3 ""
@@ -2818,17 +2834,11 @@ io_latency() {
 				break
 			fi
 		done
-
 		write "${queue}read_ahead_kb" "0"
 	done
 
-	for i in /sys/block/mmcblk*/bdi/; do
-		write "${i}min_ratio" "5"
-	done
-
-	for i in /sys/block/sd*/bdi/; do
-		write "${i}min_ratio" "5"
-	done
+	write "/sys/block/mmcblk0/bdi/min_ratio" "5"
+	write "/sys/block/sda/bdi/min_ratio" "5"
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -2866,17 +2876,11 @@ io_balanced() {
 				break
 			fi
 		done
-
 		write "${queue}read_ahead_kb" "0"
 	done
 
-	for i in /sys/block/mmcblk*/bdi/; do
-		write "${i}min_ratio" "5"
-	done
-
-	for i in /sys/block/sd*/bdi/; do
-		write "${i}min_ratio" "5"
-	done
+	write "/sys/block/mmcblk0/bdi/min_ratio" "5"
+	write "/sys/block/sda/bdi/min_ratio" "5"
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -2914,17 +2918,11 @@ io_extreme() {
 				break
 			fi
 		done
-
 		write "${queue}read_ahead_kb" "0"
 	done
 
-	for i in /sys/block/mmcblk*/bdi/; do
-		write "${i}min_ratio" "5"
-	done
-
-	for i in /sys/block/sd*/bdi/; do
-		write "${i}min_ratio" "5"
-	done
+	write "/sys/block/mmcblk0/bdi/min_ratio" "5"
+	write "/sys/block/sda/bdi/min_ratio" "5"
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -2962,17 +2960,11 @@ io_battery() {
 				break
 			fi
 		done
-
 		write "${queue}read_ahead_kb" "0"
 	done
 
-	for i in /sys/block/mmcblk*/bdi/; do
-		write "${i}min_ratio" "5"
-	done
-
-	for i in /sys/block/sd*/bdi/; do
-		write "${i}min_ratio" "5"
-	done
+	write "/sys/block/mmcblk0/bdi/min_ratio" "5"
+	write "/sys/block/sda/bdi/min_ratio" "5"
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -3010,17 +3002,11 @@ io_gaming() {
 				break
 			fi
 		done
-
 		write "${queue}read_ahead_kb" "0"
 	done
 
-	for i in /sys/block/mmcblk*/bdi/; do
-		write "${i}min_ratio" "5"
-	done
-
-	for i in /sys/block/sd*/bdi/; do
-		write "${i}min_ratio" "5"
-	done
+	write "/sys/block/mmcblk0/bdi/min_ratio" "5"
+	write "/sys/block/sda/bdi/min_ratio" "5"
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -3828,7 +3814,7 @@ gpu_battery() {
 	if [[ "$qcom" == "true" ]]; then
 		avail_govs="$(cat "${gpu}devfreq/available_governors")"
 
-		for governor in msm-adreno-tz simple_ondemand ondemand; do
+		for governor in simple_ondemand msm-adreno-tz ondemand; do
 			if [[ "$avail_govs" == *"$governor"* ]]; then
 				write "${gpu}devfreq/governor" "$governor"
 				break
@@ -3838,7 +3824,7 @@ gpu_battery() {
 	elif [[ "$exynos" == "true" ]]; then
 		avail_govs="$(cat "${gpui}gpu_available_governor")"
 
-		for governor in Interactive mali_ondemand ondemand Dynamic Static; do
+		for governor in mali_ondemand Interactive ondemand Dynamic Static; do
 			if [[ "$avail_govs" == *"$governor"* ]]; then
 				write "${gpui}gpu_governor" "$governor"
 				break
@@ -3848,7 +3834,7 @@ gpu_battery() {
 	elif [[ "$mtk" == "true" ]]; then
 		avail_govs="$(cat "${gpu}available_governors")"
 
-		for governor in Interactive mali_ondemand ondemand Dynamic Static; do
+		for governor in mali_ondemand Interactive ondemand Dynamic Static; do
 			if [[ "$avail_govs" == *"$governor"* ]]; then
 				write "${gpui}gpu_governor" "$governor"
 				break
@@ -4694,7 +4680,7 @@ disable_crc() {
 sched_latency() {
 	# Tweak kernel settings to improve overall performance
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
-	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "3"
+	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "15"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	write "${kernel}sched_tunable_scaling" "0"
 	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_latency"
@@ -4753,7 +4739,7 @@ sched_latency() {
 
 sched_balanced() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "1"
-	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "5"
+	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "10"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	write "${kernel}sched_tunable_scaling" "0"
 	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_balance"
@@ -4806,7 +4792,7 @@ sched_balanced() {
 
 sched_extreme() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
-	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "20"
+	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "25"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	write "${kernel}sched_tunable_scaling" "0"
 	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_throughput"
@@ -4912,7 +4898,7 @@ sched_battery() {
 
 sched_gaming() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
-	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "20"
+	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "25"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	write "${kernel}sched_tunable_scaling" "0"
 	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_throughput"
@@ -5036,7 +5022,7 @@ ppm_policy_max() {
 }
 
 cpu_clk_min() {
-	# Set min I'mefficient CPUs frequency
+	# Set efficient CPU frequency
 	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
 		for i in 576000 652800 691200 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1689600 1708800 1766400; do
 			[[ "$(grep $i ${pl}scaling_available_frequencies)" ]] && write "${pl}scaling_min_freq" "$i"
@@ -5045,7 +5031,7 @@ cpu_clk_min() {
 }
 
 cpu_clk_default() {
-	# Set default CPUs frequency
+	# Set default CPU frequency
 	for cpus in /sys/devices/system/cpu/cpufreq/policy*/; do
 		[[ -e "${cpus}scaling_max_freq" ]] && {
 			write "${cpus}scaling_max_freq" "$cpu_max_freq"
@@ -5070,7 +5056,7 @@ cpu_clk_default() {
 }
 
 cpu_clk_max() {
-	# Set max CPUs frequency
+	# Set maximum CPU frequency
 	for cpus in /sys/devices/system/cpu/cpufreq/policy*/; do
 		[[ -e "${cpus}scaling_min_freq" ]] && {
 			write "${cpus}scaling_min_freq" "$cpu_max_freq"
@@ -5108,7 +5094,7 @@ vm_lmk_latency() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "40"
 	write "${vm}overcommit_ratio" "100"
 	write "${vm}extfrag_threshold" "750"
 	# Use more zRAM / swap by default if possible
@@ -5145,7 +5131,7 @@ vm_lmk_balanced() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "40"
 	write "${vm}overcommit_ratio" "100"
 	write "${vm}extfrag_threshold" "750"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
@@ -5181,7 +5167,7 @@ vm_lmk_extreme() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "40"
 	write "${vm}overcommit_ratio" "100"
 	write "${vm}extfrag_threshold" "750"
 	write "${vm}swappiness" "60"
@@ -5214,7 +5200,7 @@ vm_lmk_battery() {
 	write "${vm}dirty_expire_centisecs" "500"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "40"
 	write "${vm}overcommit_ratio" "100"
 	write "${vm}extfrag_threshold" "750"
 	write "${vm}swappiness" "80"
@@ -5247,7 +5233,7 @@ vm_lmk_gaming() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "60"
+	write "${vm}stat_interval" "40"
 	write "${vm}overcommit_ratio" "100"
 	write "${vm}extfrag_threshold" "750"
 	write "${vm}swappiness" "60"
@@ -5526,6 +5512,22 @@ enable_sam_fast_chrg() {
 	[[ -e "/sys/class/sec/switch/afc_disable" ]] && {
 		write "/sys/class/sec/switch/afc_disable" "0"
 		kmsg "Enabled fast charging on Samsung devices"
+		kmsg3 ""
+	}
+}
+
+disable_ufs_clk_gate() {
+	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
+		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
+		kmsg "Disabled UFS clock gate"
+		kmsg3 ""
+	}
+}
+
+enable_ufs_clk_gate() {
+	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
+		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
+		kmsg "Enabled UFS clock gate"
 		kmsg3 ""
 	}
 }
@@ -5869,9 +5871,15 @@ rebuild_process_scan_cache() { ps_ret="$(ps -Ao pid,args)"; }
 fscc_path_apk_to_oat() { echo "${1%/*}/oat"; }
 
 # $1:file/dir
-fscc_list_append() { fscc_file_list="$fscc_file_list $1"; }
+# Only append if object isn't already on file list
+fscc_list_append() { [[ ! "$fscc_file_list" == *"$1"* ]] && fscc_file_list="$fscc_file_list $1"; }
 
-fscc_add_obj() { [[ -e "$1" ]] && fscc_list_append "$1"; }
+# Only append if object doesn't already exists either on pinner service to avoid unnecessary memory expenses
+fscc_add_obj() { 
+	while IFS= read -r obj; do
+		[[ "$1" != "$obj" ]] && fscc_list_append "$1"
+	done <<<"$(dumpsys pinner | grep -E -i "$1" | awk '{print $1}')"
+}
 
 # $1:package_name
 # pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
@@ -6079,6 +6087,7 @@ apply_all() {
 	[[ "$ktsr_prof_en" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ -e "$board_sensor_temp" ]] && [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && realme_gt 1 || realme_gt 0
+	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && disable_ufs_clk_gate || enable_ufs_clk_gate
 }
 
 apply_all_auto() {
@@ -6116,6 +6125,7 @@ apply_all_auto() {
 	[[ "$(getprop kingauto.prof)" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ -e "$board_sensor_temp" ]] && [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && realme_gt 1 || realme_gt 0
+	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && disable_ufs_clk_gate || enable_ufs_clk_gate
 }
 
 latency() {
