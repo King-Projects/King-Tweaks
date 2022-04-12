@@ -22,7 +22,7 @@ current_prof=none
 				current_prof=gaming
 				get_all
 				apply_all_auto
-				sleep 20
+				sleep 30
 			}
 			for spid in $(pgrep -f whatsapp) $(pgrep -f zhiliaoapp) $(pgrep -f com.adobe) $(pgrep -f telegram) $(pgrep -f geforcenow) $(pgrep -f nekox) $(pgrep -f disneyplus) $(pgrep -f avod.third) $(pgrep -f challegram) $(pgrep -f crunchyroll) $(pgrep -f netflix) $(pgrep -f wemesh) $(pgrep -f discord) $(pgrep -f android.youtube) $(pgrep -f facebook) $(pgrep -f android.chrome) $(pgrep -f brave.browser) $(pgrep -f UCMobile) $(pgrep -f mozilla) $(pgrep -f duckduckgo) $(pgrep -f com.opera) $(pgrep -f microsoft) $(pgrep -f torproject) $(pgrep -f instagram.android) $(pgrep -f twitch); do
 				[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$spid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$spid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$spid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "balanced" ]] && continue || {
@@ -33,7 +33,7 @@ current_prof=none
 					current_prof=balanced
 					get_all
 					apply_all_auto
-					sleep 20
+					sleep 30
 				}
 				for bpid in $(pgrep -f primatelabs) $(pgrep -f gensuite) $(pgrep -f android.benchmark) $(pgrep -f test.uibench) $(pgrep -f Saplin.CPDT) $(pgrep -f glbenchmark) $(pgrep -f passmark) $(pgrep -f app.speedramp) $(pgrep -f app.beatsync) $(pgrep -f kinemaster) $(pgrep -f dmandroid) $(pgrep -f cputhrottlingtest) $(pgrep -f android.camera) $(pgrep -f GoogleCamera) $(pgrep -f snapcam); do
 					[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$gpid" "$toptsdir")" ]] || [[ ! "$(grep -Eo "$gpid" "$toptcdir")" ]] && [[ ! "$(cat /proc/"$gpid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "gaming" ]] && continue || {
@@ -44,7 +44,7 @@ current_prof=none
 						current_prof=extreme
 						get_all
 						apply_all_auto
-						sleep 20
+						sleep 30
 					}
 				done
 			done
@@ -58,7 +58,7 @@ current_prof=none
 			current_prof=sleeping
 			get_all
 			apply_all_auto
-			sleep 40
+			sleep 45
 		}
 
 		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_sts" == "Charging" ]] || [[ ! "$current_prof" != "charging" ]] && continue || {
@@ -69,7 +69,7 @@ current_prof=none
 			current_prof=charging
 			get_all
 			apply_all_auto
-			sleep 40
+			sleep 45
 		}
 
 		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_pctg" -le "15" ]] || [[ ! "$current_prof" != "lowbatt" ]] && continue || {
@@ -80,10 +80,11 @@ current_prof=none
 			current_prof=lowbatt
 			get_all
 			apply_all_auto
+			sleep 45
 		}
 
 		[[ ! "$scrn_on" != "0" ]] || [[ "$avail_ram" -le "$full_ram" ]] && {
-			kmsg "Amount of RAM available on device is low, dropping caches to free some of it..."
+			kmsg "RAM available on device is limited, dropping caches to free some of it..."
 			sync
 			write "${vm}drop_caches" "3"
 			get_all
@@ -97,7 +98,7 @@ current_prof=none
 			current_prof=nobehaviour
 			get_all
 			apply_all_auto
-			sleep 15
+			sleep 25
 		}
 	done
 ) &

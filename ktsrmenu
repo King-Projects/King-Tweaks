@@ -82,7 +82,7 @@ menu() {
 	echo "$Y* KTSR Command Line Interface (CLI) *$N"
 	echo "$Y*************************************$N"
 	echo ""
-	echo "${G}Version: 1.6.3.7-r14$N"
+	echo "${G}Version: 1.6.3.8-r14$N"
 	echo ""
 	echo "$V[*] Current Profile:$N $G$ktsr_prof_en$N"
 	echo ""
@@ -469,8 +469,6 @@ menu() {
 			[[ "$sdk" -ge "28" ]] && {
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=opengl/' "$MODDIR/system.prop"
-			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=/' "$MODDIR/system.prop"
-			sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
 			echo "${G}[*] Done!$N"
 			sleep 2
 			menu
@@ -484,8 +482,6 @@ menu() {
 			[[ "$sdk" -ge "28" ]] && {
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' "$MODDIR/system.prop"
-			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=/' "$MODDIR/system.prop"
-			sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
 			echo "${G}[*] Done!$N"
 			sleep 2
 			menu
@@ -498,9 +494,7 @@ menu() {
 		"35")
 			[[ "$sdk" -ge "28" ]] && {
 			echo "You may need to reboot to apply the changes"
-			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=/' "$MODDIR/system.prop"
-			sed -i 's/ro.hwui.use_vulkan.*/ro.hwui.use_vulkan=true/' "$MODDIR/system.prop"
-			sed -i '/debug.renderengine.backend/s/.*/debug.renderengine.backend=skiaglthreaded/' "$MODDIR/system.prop"
+			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiavk/' "$MODDIR/system.prop"
 			echo "${G}[*] Done!$N"
 			sleep 2
 			menu
