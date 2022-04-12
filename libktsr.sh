@@ -3,7 +3,6 @@
 # Credits: Ktweak, by Draco (tytydraco @ GitHub), LSpeed, Dan (Paget69 @ XDA), mogoroku @ GitHub, vtools, by helloklf @ GitHub, Cuprum-Turbo-Adjustment, by chenzyadb @ CoolApk, qti-mem-opt & Uperf, by Matt Yang (yc9559 @ CoolApk) and Pandora's Box, by Eight (dlwlrma123 @ GitHub).
 # Thanks: GR for some help
 # If you wanna use it as part of your project, please maintain the credits to it's respectives authors.
-# TODO: Implement a proper debug flag
 
 ###############################
 # Variables
@@ -47,7 +46,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.1.8-stable"
+lib_ver="1.1.9-stable"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -126,6 +125,7 @@ write() {
 kill_svc() {
 	stop $1 2>/dev/null
 	killall -9 $1 2>/dev/null
+	killall -9 $(find /vendor/bin -type f -name "$1") 2>/dev/null
 }
 
 # Duration in nanoseconds of one scheduling period
@@ -527,16 +527,6 @@ sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 	sql_bd_dt="Please install SQLite3 first"
 }
 
-# Calculate CPU load (50 ms)
-read -r cpu user nice system idle iowait irq softirq steal guest </proc/stat
-cpu_active_prev=$((user + system + nice + softirq + steal))
-cpu_total_prev=$((user + system + nice + softirq + steal + idle + iowait))
-usleep 50000
-read -r cpu user nice system idle iowait irq softirq steal guest </proc/stat
-cpu_active_cur=$((user + system + nice + softirq + steal))
-cpu_total_cur=$((user + system + nice + softirq + steal + idle + iowait))
-cpu_load=$((100 * (cpu_active_cur - cpu_active_prev) / (cpu_total_cur - cpu_total_prev)))
-
 [[ -d "/proc/ppm/" ]] && [[ "$mtk" == "true" ]] && ppm=true
 
 # Check if CPU uses BIG.little architecture
@@ -647,7 +637,6 @@ print_info() {
 	kmsg3 "** Android version: $avs"
 	kmsg3 "** Android ID: $(settings get secure android_id)"
 	kmsg3 "** CPU governor: $cpu_gov"
-	kmsg3 "** CPU load: $cpu_load%"
 	kmsg3 "** Number of cores: $nr_cores"
 	kmsg3 "** CPU freq: $cpu_min_clk_mhz-${cpu_max_clk_mhz}MHz"
 	kmsg3 "** CPU scheduling type: $cpu_sched"
@@ -684,7 +673,7 @@ print_info() {
 	kmsg3 "** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0"
 	kmsg3 "** Telegram channel: https://t.me/kingprojectz"
 	kmsg3 "** Telegram group: https://t.me/kingprojectzdiscussion"
-	kmsg3 "** Credits to all people involved to make it possible."
+	kmsg3 "** Credits to all people involved to make this project possible."
 	kmsg3 ""
 }
 
@@ -702,7 +691,7 @@ stop_services() {
 	kill_svc vendor.cnss_diag
 	kill_svc tcpdump
 	kill_svc vendor.tcpdump
-	kill_svc ipacm-diag 
+	kill_svc ipacm-diag
 	kill_svc vendor.ipacm-diag
 	kill_svc charge_logger
 	kill_svc oneplus_brain_service
@@ -714,7 +703,7 @@ stop_services() {
 	write "/proc/perfmgr/syslimiter/syslimitertolerance_percent" "100"
 	# Disable MIUI useless daemons on AOSP
 	[[ "$miui" == "false" ]] && kill_svc mlid
-	kill_svc miuibooster
+	#kill_svc miuibooster
 	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
 		kill_svc thermal
 		kill_svc thermald
@@ -761,7 +750,8 @@ disable_core_ctl() {
 }
 
 enable_core_ctl() {
-	for i in 4 7; do
+	local n=7
+	for ((i = 4; i <= n; i++)); do
 		for core_ctl in /sys/devices/system/cpu/cpu$i/core_ctl/; do
 			[[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
 			[[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "0"
@@ -3146,7 +3136,7 @@ cpu_extreme() {
 		write "$governor/pl" "1"
 		write "$governor/iowait_boost_enable" "0"
 		write "$governor/rate_limit_us" "0"
-		write "$governor/hispeed_load" "65"
+		write "$governor/hispeed_load" "75"
 		write "$governor/hispeed_freq" "$cpu_max_freq"
 	done
 
@@ -3156,7 +3146,7 @@ cpu_extreme() {
 		write "$governor/pl" "1"
 		write "$governor/iowait_boost_enable" "0"
 		write "$governor/rate_limit_us" "0"
-		write "$governor/hispeed_load" "65"
+		write "$governor/hispeed_load" "75"
 		write "$governor/hispeed_freq" "$cpu_max_freq"
 	done
 
@@ -3176,7 +3166,7 @@ cpu_extreme() {
 		write "$governor/sampling_rate_min" "0"
 		write "$governor/max_freq_hysteresis" "79000"
 		write "$governor/min_sample_time" "0"
-		write "$governor/go_hispeed_load" "65"
+		write "$governor/go_hispeed_load" "75"
 		write "$governor/hispeed_freq" "$cpu_max_freq"
 		write "$governor/sched_freq_inc_notify" "200000"
 		write "$governor/sched_freq_dec_notify" "400000"
@@ -3257,7 +3247,7 @@ cpu_gaming() {
 		write "$governor/pl" "1"
 		write "$governor/iowait_boost_enable" "0"
 		write "$governor/rate_limit_us" "0"
-		write "$governor/hispeed_load" "65"
+		write "$governor/hispeed_load" "75"
 		write "$governor/hispeed_freq" "$cpu_max_freq"
 	done
 
@@ -3267,7 +3257,7 @@ cpu_gaming() {
 		write "$governor/pl" "1"
 		write "$governor/iowait_boost_enable" "0"
 		write "$governor/rate_limit_us" "0"
-		write "$governor/hispeed_load" "65"
+		write "$governor/hispeed_load" "75"
 		write "$governor/hispeed_freq" "$cpu_max_freq"
 	done
 
@@ -3287,7 +3277,7 @@ cpu_gaming() {
 		write "$governor/sampling_rate_min" "0"
 		write "$governor/max_freq_hysteresis" "79000"
 		write "$governor/min_sample_time" "0"
-		write "$governor/go_hispeed_load" "65"
+		write "$governor/go_hispeed_load" "75"
 		write "$governor/hispeed_freq" "$cpu_max_freq"
 		write "$governor/sched_freq_inc_notify" "200000"
 		write "$governor/sched_freq_dec_notify" "400000"
@@ -3466,8 +3456,8 @@ gpu_latency() {
 		write "/sys/module/ged/parameters/ged_boost_enable" "0"
 		write "/sys/module/ged/parameters/boost_gpu_enable" "0"
 		write "/sys/module/ged/parameters/boost_extra" "0"
-		write "/sys/module/ged/parameters/enable_cpu_boost" "0"
-		write "/sys/module/ged/parameters/enable_gpu_boost" "0"
+		write "/sys/module/ged/parameters/enable_cpu_boost" "1"
+		write "/sys/module/ged/parameters/enable_gpu_boost" "1"
 		write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
 		write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
 		write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
@@ -3489,6 +3479,13 @@ gpu_latency() {
 		write "/sys/module/ged/parameters/gpu_idle" "100"
 	}
 
+	[[ -d "/sys/kernel/gbe/" ]] && {
+		write "/sys/kernel/gbe/gbe_enable1" "1"
+		write "/sys/kernel/gbe/gbe_enable2" "1"
+		write "/sys/kernel/gbe/gbe2_max_boost_cnt" "2"
+		write "/sys/kernel/gbe/gbe2_loading_th" "20"
+	}
+
 	[[ -d "/proc/gpufreq/" ]] && {
 		write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
 		write "/proc/gpufreq/gpufreq_input_boost" "0"
@@ -3496,9 +3493,6 @@ gpu_latency() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
-		for i in 1 2 3 4 5 6 7 8 9 10; do
-			write "/proc/gpufreq/gpufreq_limit_table" "$ 1 1"
-		done
 	}
 
 	[[ -d "/sys/kernel/ged/" ]] && {
@@ -3628,6 +3622,12 @@ gpu_balanced() {
 		write "/sys/module/ged/parameters/gpu_idle" "100"
 	}
 
+	[[ -d "/sys/kernel/gbe/" ]] && {
+		write "/sys/kernel/gbe/gbe_enable1" "0"
+		write "/sys/kernel/gbe/gbe_enable2" "0"
+		write "/sys/kernel/gbe/gbe2_max_boost_cnt" "5"
+	}
+
 	[[ -d "/proc/gpufreq/" ]] && {
 		write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
 		write "/proc/gpufreq/gpufreq_opp_freq" "0"
@@ -3636,9 +3636,6 @@ gpu_balanced() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
-		for i in 1 2 3 4 5 6 7 8 9 10; do
-			write "/proc/gpufreq/gpufreq_limit_table" "$ 1 1"
-		done
 	}
 
 	[[ -d "/sys/kernel/ged/" ]] && {
@@ -3747,8 +3744,13 @@ gpu_extreme() {
 		write "/sys/module/ged/parameters/ged_boost_enable" "1"
 		write "/sys/module/ged/parameters/boost_gpu_enable" "0"
 		write "/sys/module/ged/parameters/boost_extra" "1"
+<<<<<<< HEAD
 		write "/sys/module/ged/parameters/enable_cpu_boost" "0"
 		write "/sys/module/ged/parameters/enable_gpu_boost" "0"
+=======
+		write "/sys/module/ged/parameters/enable_cpu_boost" "1"
+		write "/sys/module/ged/parameters/enable_gpu_boost" "1"
+>>>>>>> fc2b2d9 (A lot of fixes, improvements and changes)
 		write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
 		write "/sys/module/ged/parameters/ged_force_mdp_enable" "1"
 		write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
@@ -3770,6 +3772,13 @@ gpu_extreme() {
 		write "/sys/module/ged/parameters/gpu_idle" "100"
 	}
 
+	[[ -d "/sys/kernel/gbe/" ]] && {
+		write "/sys/kernel/gbe/gbe_enable1" "1"
+		write "/sys/kernel/gbe/gbe_enable2" "1"
+		write "/sys/kernel/gbe/gbe2_max_boost_cnt" "2"
+		write "/sys/kernel/gbe/gbe2_loading_th" "20"
+	}
+
 	[[ -d "/proc/gpufreq/" ]] && {
 		write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
 		write "/proc/gpufreq/gpufreq_opp_freq" "0"
@@ -3778,9 +3787,6 @@ gpu_extreme() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
-		for i in 1 2 3 4 5 6 7 8 9 10; do
-			write "/proc/gpufreq/gpufreq_limit_table" "$ 1 1"
-		done
 	}
 
 	[[ -d "/sys/kernel/ged/" ]] && {
@@ -3907,6 +3913,12 @@ gpu_battery() {
 		write "/sys/module/ged/parameters/gpu_idle" "100"
 	}
 
+	[[ -d "/sys/kernel/gbe/" ]] && {
+		write "/sys/kernel/gbe/gbe_enable1" "0"
+		write "/sys/kernel/gbe/gbe_enable2" "0"
+		write "/sys/kernel/gbe/gbe2_max_boost_cnt" "5"
+	}
+
 	[[ -d "/proc/gpufreq/" ]] && {
 		write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
 		write "/proc/gpufreq/gpufreq_opp_freq" "0"
@@ -3915,9 +3927,6 @@ gpu_battery() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
-		for i in 1 2 3 4 5 6 7 8 9 10; do
-			write "/proc/gpufreq/gpufreq_limit_table" "$ 1 1"
-		done
 	}
 
 	[[ -d "/sys/kernel/ged/" ]] && {
@@ -4027,7 +4036,7 @@ gpu_gaming() {
 		write "/sys/module/ged/parameters/boost_gpu_enable" "0"
 		write "/sys/module/ged/parameters/boost_extra" "1"
 		write "/sys/module/ged/parameters/enable_cpu_boost" "1"
-		write "/sys/module/ged/parameters/enable_gpu_boost" "0"
+		write "/sys/module/ged/parameters/enable_gpu_boost" "1"
 		write "/sys/module/ged/parameters/enable_game_self_frc_detect" "1"
 		write "/sys/module/ged/parameters/ged_force_mdp_enable" "1"
 		write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
@@ -4049,6 +4058,13 @@ gpu_gaming() {
 		write "/sys/module/ged/parameters/gpu_idle" "0"
 	}
 
+	[[ -d "/sys/kernel/gbe/" ]] && {
+		write "/sys/kernel/gbe/gbe_enable1" "1"
+		write "/sys/kernel/gbe/gbe_enable2" "1"
+		write "/sys/kernel/gbe/gbe2_max_boost_cnt" "2"
+		write "/sys/kernel/gbe/gbe2_loading_th" "20"
+	}
+
 	[[ -d "/proc/gpufreq/" ]] && {
 		write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
 		write "/proc/gpufreq/gpufreq_opp_freq" "$gpu_max"
@@ -4057,9 +4073,6 @@ gpu_gaming() {
 		write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
 		write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
-		for i in 1 2 3 4 5 6 7 8 9 10; do
-			write "/proc/gpufreq/gpufreq_limit_table" "$ 0 0"
-		done
 	}
 
 	[[ -d "/sys/kernel/ged/" ]] && {
@@ -4230,7 +4243,7 @@ schedtune_balanced() {
 		write "${stune}camera-daemon/schedtune.util_est_en" "0"
 		write "${stune}camera-daemon/schedtune.ontime_en" "0"
 		write "${stune}camera-daemon/schedtune.prefer_high_cap" "1"
-		write "${stune}top-app/schedtune.boost" "10"
+		write "${stune}top-app/schedtune.boost" "5"
 		write "${stune}top-app/schedtune.colocate" "1"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "0"
@@ -4264,7 +4277,7 @@ schedtune_extreme() {
 		write "${stune}background/schedtune.util_est_en" "0"
 		write "${stune}background/schedtune.ontime_en" "0"
 		write "${stune}background/schedtune.prefer_high_cap" "0"
-		write "${stune}foreground/schedtune.boost" "0"
+		write "${stune}foreground/schedtune.boost" "50"
 		write "${stune}foreground/schedtune.colocate" "0"
 		write "${stune}foreground/schedtune.prefer_idle" "1"
 		write "${stune}foreground/schedtune.sched_boost" "0"
@@ -4272,7 +4285,7 @@ schedtune_extreme() {
 		write "${stune}foreground/schedtune.prefer_perf" "0"
 		write "${stune}foreground/schedtune.util_est_en" "0"
 		write "${stune}foreground/schedtune.ontime_en" "0"
-		write "${stune}foreground/schedtune.prefer_high_cap" "0"
+		write "${stune}foreground/schedtune.prefer_high_cap" "1"
 		write "${stune}nnapi-hal/schedtune.boost" "0"
 		write "${stune}nnapi-hal/schedtune.colocate" "0"
 		write "${stune}nnapi-hal/schedtune.prefer_idle" "1"
@@ -4300,7 +4313,7 @@ schedtune_extreme() {
 		write "${stune}camera-daemon/schedtune.util_est_en" "0"
 		write "${stune}camera-daemon/schedtune.ontime_en" "0"
 		write "${stune}camera-daemon/schedtune.prefer_high_cap" "1"
-		write "${stune}top-app/schedtune.boost" "100"
+		write "${stune}top-app/schedtune.boost" "50"
 		write "${stune}top-app/schedtune.colocate" "1"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "15"
@@ -4370,7 +4383,7 @@ schedtune_battery() {
 		write "${stune}camera-daemon/schedtune.util_est_en" "0"
 		write "${stune}camera-daemon/schedtune.ontime_en" "0"
 		write "${stune}camera-daemon/schedtune.prefer_high_cap" "1"
-		write "${stune}top-app/schedtune.boost" "0"
+		write "${stune}top-app/schedtune.boost" "1"
 		write "${stune}top-app/schedtune.colocate" "1"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "0"
@@ -4443,10 +4456,10 @@ schedtune_gaming() {
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "15"
 		write "${stune}top-app/schedtune.sched_boost_no_override" "1"
-		write "${stune}top-app/schedtune.prefer_perf" "0"
+		write "${stune}top-app/schedtune.prefer_perf" "1"
 		write "${stune}top-app/schedtune.util_est_en" "1"
 		write "${stune}top-app/schedtune.ontime_en" "1"
-		write "${stune}top-app/schedtune.prefer_high_cap" "0"
+		write "${stune}top-app/schedtune.prefer_high_cap" "1"
 		write "${stune}schedtune.boost" "0"
 		write "${stune}schedtune.colocate" "0"
 		write "${stune}schedtune.prefer_high_cap" "0"
@@ -4706,8 +4719,6 @@ sched_latency() {
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
 	# We do not need it on android, and also is disabled by default on redhat for security purposes
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
-	# Set memory sleep mode to s2idle
-	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
@@ -4764,7 +4775,6 @@ sched_balanced() {
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
-	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
@@ -4792,7 +4802,7 @@ sched_balanced() {
 
 sched_extreme() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
-	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "25"
+	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "20"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	write "${kernel}sched_tunable_scaling" "0"
 	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_throughput"
@@ -4817,7 +4827,6 @@ sched_extreme() {
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "0"
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
-	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
@@ -4870,7 +4879,6 @@ sched_battery() {
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
-	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "1"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
@@ -4898,7 +4906,7 @@ sched_battery() {
 
 sched_gaming() {
 	[[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
-	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "25"
+	[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "20"
 	[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 	write "${kernel}sched_tunable_scaling" "0"
 	[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_throughput"
@@ -4923,7 +4931,6 @@ sched_gaming() {
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "0"
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
 	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
-	[[ -e "/sys/power/mem_sleep" ]] && write "/sys/power/mem_sleep" "s2idle"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
@@ -5094,7 +5101,7 @@ vm_lmk_latency() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "40"
+	write "${vm}stat_interval" "30"
 	write "${vm}overcommit_ratio" "100"
 	write "${vm}extfrag_threshold" "750"
 	# Use more zRAM / swap by default if possible
@@ -5131,7 +5138,7 @@ vm_lmk_balanced() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "40"
+	write "${vm}stat_interval" "30"
 	write "${vm}overcommit_ratio" "100"
 	write "${vm}extfrag_threshold" "750"
 	[[ "$total_ram" -le "6144" ]] && write "${vm}swappiness" "160"
@@ -5167,7 +5174,7 @@ vm_lmk_extreme() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "40"
+	write "${vm}stat_interval" "30"
 	write "${vm}overcommit_ratio" "100"
 	write "${vm}extfrag_threshold" "750"
 	write "${vm}swappiness" "60"
@@ -5200,7 +5207,7 @@ vm_lmk_battery() {
 	write "${vm}dirty_expire_centisecs" "500"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "40"
+	write "${vm}stat_interval" "30"
 	write "${vm}overcommit_ratio" "100"
 	write "${vm}extfrag_threshold" "750"
 	write "${vm}swappiness" "80"
@@ -5233,7 +5240,7 @@ vm_lmk_gaming() {
 	write "${vm}dirty_expire_centisecs" "3000"
 	write "${vm}dirty_writeback_centisecs" "3000"
 	write "${vm}page-cluster" "0"
-	write "${vm}stat_interval" "40"
+	write "${vm}stat_interval" "30"
 	write "${vm}overcommit_ratio" "100"
 	write "${vm}extfrag_threshold" "750"
 	write "${vm}swappiness" "60"
@@ -5516,20 +5523,42 @@ enable_sam_fast_chrg() {
 	}
 }
 
-disable_ufs_clk_gate() {
+enable_ufs_perf_mode() {
 	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
+		write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "0"
+		write "/sys/devices/platform/soc/1d84000.ufshc/hibern8_on_idle_enable" "0"
 		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
-		kmsg "Disabled UFS clock gate"
+		kmsg "Enabled UFS performance mode"
 		kmsg3 ""
 	}
 }
 
-enable_ufs_clk_gate() {
+disable_ufs_perf_mode() {
 	[[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && {
+		write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "1"
+		write "/sys/devices/platform/soc/1d84000.ufshc/hibern8_on_idle_enable" "1"
 		write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "1"
-		kmsg "Enabled UFS clock gate"
+		kmsg "Disabled UFS performance mode"
 		kmsg3 ""
 	}
+}
+
+enable_emmc_clk_scl() {
+	[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && {
+		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
+		write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "1"
+	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "1"
+	kmsg "Enabled EMMC clock scaling"
+	kmsg3 ""
+}
+
+disable_emmc_clk_scl() {
+	[[ -d "/sys/class/mmc_host/mmc0/" ]] && [[ -d "/sys/class/mmc_host/mmc1/" ]] && {
+		write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
+		write "/sys/class/mmc_host/mmc1/clk_scaling/enable" "0"
+	} || [[ -d "/sys/class/mmc_host/mmc0/" ]] && write "/sys/class/mmc_host/mmc0/clk_scaling/enable" "0"
+	kmsg "Disabled EMMC clock scaling"
+	ksmg3 ""
 }
 
 disable_debug() {
@@ -5612,7 +5641,7 @@ write_panel() { echo "$1" >>"$bbn_banner"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential task optimizer 
-Version: 1.3.5-r6-stable
+Version: 1.3.6-r6-stable
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -5628,8 +5657,145 @@ adjshield_create_default_cfg() {
 # List all the package names of the apps which you want to keep alive.
 com.riotgames.league.wildrift
 com.activision.callofduty.shooter
-com.mobile.legends
 com.tencent.ig
+com.dts.freefireth
+com.dts.freefiremax
+com.ngame.allstar.eu
+com.pubg.newstate
+com.mobile.legends
+xyz.aethersx2.android
+com.ea.gp.fifamobile
+com.gameloft.android.ANMP.GloftA9HM
+com.gameloft.android.ANMP.GloftMVHM
+com.gameloft.android.ANMP.GloftM5HM
+com.netease.idv.googleplay
+com.titan.cd.gb
+com.ea.gp.apexlegendsmobilefps
+com.igg.android.omegalegends
+com.netease.lztgglobal
+com.gamedevltd.modernstrike
+com.gamedevltd.wwh
+com.edkongames.mobs
+com.panzerdog.tacticool
+com.carxtech.rally
+com.carxtech.carxdr2
+com.CarXTech.CarXDriftRacingFull
+com.blitzteam.battleprime
+com.camouflaj.republique
+com.gaijin.xom
+com.hutchgames.rebelracing
+com.feralinteractive.gridas
+com.twoheadedshark.tco
+com.starkoment.JDMRacing
+com.madfingergames.legends
+com.gameinsight.gobandroid
+com.criticalforceentertainment.criticalops
+com.bhvr.deadbydaylight
+com.axlebolt.standoff2
+com.SevenBulls.CounterAttackShooter
+com.rexetstudio.blockstrike
+pvp.survival.rpg.fog
+com.gameloft.android.ANMP.GloftINHM
+com.nekki.shadowfightarena
+com.nekki.shadowfight3
+com.smgstudio.thumbdrift
+com.zerofour.driftwars
+com.tiramisu.driftmaxworld
+com.codemasters.F1Mobile
+com.rockstargames.gtasa
+com.rockstargames.bully
+com.rockstar.gta3
+com.rockstargames.gtalcs
+com.rockstargames.gtavc
+com.kbzyzhhb.oversea.and
+com.miHoYo.bh3global
+com.netease.sheltergp
+com.innersloth.spacemafia
+com.roblox.client
+com.supercell.brawlstars
+com.kiloo.subwaysurf
+com.miniclip.eightballpool
+com.mojang.minecraftpe
+com.king.candycrushsodasaga
+com.moonactive.coinmaster
+com.nianticlabs.pokemongo
+com.supercell.clashofclans
+com.supercell.clashroyale
+com.ludo.king
+com.gameloft.android.GloftDMKF
+com.sega.sonicdash
+com.playgendary.tanks
+air.com.lunime.gachaclub
+com.gameloft.android.GloftMBCF
+com.miHoYo.GenshinImpact
+com.matteljv.uno
+com.garena.game.kgvn
+com.pubg.krmobile
+com.ea.game.pvz2_row
+com.os.airforce
+com.gameloft.android.GloftMOTR
+com.habby.archero
+com.rubygames.assassin
+com.fgol.HungrySharkEvolution
+com.yolostudio.theimpostor
+com.tencent.tmgp.sgame
+com.wildlife.games.battle.royale.free.zooba
+com.pixel.gun3d
+com.tencent.iglite
+com.wildlifestudios.free.online.games.suspects
+com.playtika.wsop.gp
+com.gameloft.android.GloftR19F
+com.kitkagames.fallbuddies
+com.combineinc.streetracing.driftthreeD
+com.gameloft.android.ANMP.GloftDMHM
+com.ea.game.nfs14_row
+com.zynga.starwars.hunters
+com.ohbibi.fps
+com.lockwoodpublishing.avakinlife
+com.halfbrick.jetpackjoyride
+com.ea.gp.simsmobile
+com.scopely.startrek
+net.wargaming.wot.blitz
+com.blizzard.wtcg.hearthstone
+com.ea.games.r3_row
+org.ppsspp.ppsspp
+org.ppsspp.ppssppgold
+se.illusionlabs.touchgrindbmx2
+com.wb.goog.mkx
+com.supercell.boombeach
+com.touchtao.soccerkinggoogle
+com.sandboxol.indiegame.bedwar
+com.bandainamcoent.dblegends_ww
+com.robtopx.geometrydashsubzero
+air.com.goodgamestudios.empirefourkingdoms
+com.neptune.domino
+com.kabam.marvelbattle
+com.gameloft.android.ANMP.GloftA8HM
+com.naturalmotion.customstreetracer2
+com.sega.sonicboomandroid
+com.ihari.escapetheprison
+net.apex_designs.payback2
+com.pixonic.wwr
+com.olzhas.carparking.multyplayer
+com.nexon.kart
+com.mojang.minecrafttrialpe
+com.wb.goog.got.conquest
+com.sandboxol.blockymods
+com.garena.game.fcsac
+com.whiture.apps.ludoorg
+com.ea.gp.maddennfl21mobile
+com.swiftappskom.thewolfrpg
+org.ppsspp.ppssppgold
+com.chillingo.robberybob2.android.gplay
+com.hasbro.beybladesenterprise
+com.vkslrzm.Zombie
+us.kr.baseballnine
+com.epsxe.ePSXe
+com.pixelfederation.ts2
+com.geewa.smashingfour
+com.ftt.boxingstar.gl.aos
+com.camelgames.aoz
+com.gameloft.android.GloftNOMP
 "
 }
 
@@ -5855,10 +6021,12 @@ fscc_path_apk_to_oat() { echo "${1%/*}/oat"; }
 fscc_list_append() { [[ ! "$fscc_file_list" == *"$1"* ]] && fscc_file_list="$fscc_file_list $1"; }
 
 # Only append if object doesn't already exists either on pinner service to avoid unnecessary memory expenses
-fscc_add_obj() { 
-	while IFS= read -r obj; do
-		[[ "$1" != "$obj" ]] && fscc_list_append "$1"
-	done <<<"$(dumpsys pinner | grep -E -i "$1" | awk '{print $1}')"
+fscc_add_obj() {
+	[[ "$sdk" -lt "24" ]] && fscc_list_append "$1" || {
+		while IFS= read -r obj; do
+			[[ "$1" != "$obj" ]] && fscc_list_append "$1"
+		done <<<"$(dumpsys pinner | grep -E -i "$1" | awk '{print $1}')"
+	}
 }
 
 # $1:package_name
@@ -5915,7 +6083,7 @@ fscc_add_apex_lib() { fscc_add_obj "$(find /apex -name "$1" | head -n 1)"; }
 # Multiple parameters, cannot be warped by ""
 fscc_start() { ${modpath}system/bin/$fscc_nm -fdlb0 $fscc_file_list; }
 
-fscc_stop() { killall "$fscc_nm" 2>/dev/null; }
+fscc_stop() { kill_svc "$fscc_nm"; }
 
 # Return:status
 fscc_status() {
@@ -5934,7 +6102,9 @@ usr_bbn_opt() {
 	# Speed up searching service manager, pin it to the perf cluster
 	change_task_nice "servicemanag" "-20"
 	pin_proc_on_perf "servicemanag"
-	# Let KGSL and mali worker thread run with max nice and pin it on perf cluster as it is a perf critical task (rendering frames to the display)
+	# Pin SystemUI to perf cluster
+	pin_proc_on_perf "systemui"
+	# PIN kgsl and mali worker thread to perf cluster with max nice as it is a perf critical task (rendering frames to the display)
 	change_task_nice "kgsl_worker" "-20"
 	pin_proc_on_perf "kgsl_worker_thread"
 	change_task_nice "mali_jd_thread" "-20"
@@ -5963,6 +6133,8 @@ usr_bbn_opt() {
 	pin_proc_on_perf "fts_wq"
 	pin_proc_on_perf "nvt_ts"
 	pin_proc_on_perf "nvt_fwu"
+	pin_proc_on_perf "touchfeature@"
+	pin_proc_on_perf "toucheventcheck"
 	# Pin Samsung HyperHAL, wifi HAL and daemon to perf cluster
 	pin_proc_on_perf "hyper@"
 	pin_proc_on_perf "wifi@"
@@ -6004,6 +6176,7 @@ usr_bbn_opt() {
 	change_task_rt "system_server" "1"
 	change_task_rt "surfaceflinger" "1"
 	change_task_rt "servicemanag" "1"
+	change_task_rt "systemui" "1"
 	# Boost app boot process, zygote--com.xxxx.xxx
 	change_task_nice "zygote" "-20"
 	# Queue VM writeback with max nice
@@ -6067,7 +6240,8 @@ apply_all() {
 	[[ "$ktsr_prof_en" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ -e "$board_sensor_temp" ]] && [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && realme_gt 1 || realme_gt 0
-	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && disable_ufs_clk_gate || enable_ufs_clk_gate
+	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && enable_ufs_perf_mode || disable_ufs_perf_mode
+	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && disable_emmc_clk_scl || enable_emmc_clk_scl
 }
 
 apply_all_auto() {
@@ -6105,7 +6279,8 @@ apply_all_auto() {
 	[[ "$(getprop kingauto.prof)" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
 	[[ -e "$board_sensor_temp" ]] && [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
 	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && realme_gt 1 || realme_gt 0
-	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && disable_ufs_clk_gate || enable_ufs_clk_gate
+	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && enable_ufs_perf_mode || disable_ufs_perf_mode
+	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && disable_emmc_clk_scl || enable_emmc_clk_scl
 }
 
 latency() {
