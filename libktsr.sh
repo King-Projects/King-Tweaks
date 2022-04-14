@@ -751,7 +751,7 @@ disable_core_ctl() {
 
 enable_core_ctl() {
 	local n=7
-	for ((i = 4; i <= n; i++)); do
+	for i in $(i = 4; i <= n; i++); do
 		for core_ctl in /sys/devices/system/cpu/cpu$i/core_ctl/; do
 			[[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
 			[[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "0"
