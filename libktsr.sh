@@ -5837,7 +5837,7 @@ adjshield_start() {
 	${modpath}system/bin/adjshield -o $adj_log -c $adj_cfg &
 }
 
-adjshield_stop() { killall "$adj_nm" 2>/dev/null; }
+adjshield_stop() { kill_svc "$adj_nm" 2>/dev/null; }
 
 # return:status
 adjshield_status() {
