@@ -14,19 +14,24 @@ source "$modpath/libs/libktsr.sh"
 	exit 1
 }
 
-# Clear logs & create dir first
+# Clear logs and create directory first
 [[ -e "$klog" ]] && rm -rf "$klog"
 [[ ! -d "/data/media/0/KTSR" ]] && mkdir -p "/data/media/0/KTSR"
 [[ -d "/data/media/0/KTSR/" ]] && touch "$klog"
 [[ -e "$kdbg" ]] && rm -rf "$kdbg"
 clear_logs
 
-# Run FSCC (similiar to PinnerService, Mlock(Unevictable) 200~350MB)
+# Just in case
+sleep 5
+
+# Run FSCC (similar to PinnerService, Mlock(Unevictable) 200~350MB)
 fscc_add_obj "$sys_frm/telephony-common.jar"
 fscc_add_obj "$sys_frm/qcnvitems.jar"
 fscc_add_obj "$sys_frm/oat"
 fscc_add_obj "$sys_frm/arm64"
 fscc_add_obj "/system/bin/surfaceflinger"
+fscc_add_obj "/system/bin/servicemanager"
+fscc_add_obj "$sys_lib/$(ps -Ao args $(pgrep -f composer) | awk '{print $3}')"
 fscc_add_obj "$sys_lib/libsurfaceflinger.so"
 fscc_add_obj "$sys_lib/libandroid_servers.so"
 fscc_add_obj "$sys_lib/libandroid_runtime.so"
@@ -61,8 +66,6 @@ usr_bbn_opt
 
 # Save mode to be applied automatically after reboot
 save_panel
-
-setprop king.tweaks.support 1
 
 cpu_clk_min
 cpu_clk_default
