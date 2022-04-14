@@ -3744,13 +3744,8 @@ gpu_extreme() {
 		write "/sys/module/ged/parameters/ged_boost_enable" "1"
 		write "/sys/module/ged/parameters/boost_gpu_enable" "0"
 		write "/sys/module/ged/parameters/boost_extra" "1"
-<<<<<<< HEAD
-		write "/sys/module/ged/parameters/enable_cpu_boost" "0"
-		write "/sys/module/ged/parameters/enable_gpu_boost" "0"
-=======
 		write "/sys/module/ged/parameters/enable_cpu_boost" "1"
 		write "/sys/module/ged/parameters/enable_gpu_boost" "1"
->>>>>>> fc2b2d9 (A lot of fixes, improvements and changes)
 		write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
 		write "/sys/module/ged/parameters/ged_force_mdp_enable" "1"
 		write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
