@@ -3109,7 +3109,6 @@ cpu_clk_default() {
 			}
 			write "${cpus}scaling_max_freq" "$cpu_max_freq"
 			write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
-			break
 		done
 	done
 	kmsg "Tweaked CPU clocks"
@@ -3782,9 +3781,9 @@ com.gameloft.android.GloftNOMP
 
 # Credits to DavidPisces @ GitHub
 config_f2fs() {
-	write "$f2fs*/cp_interval" "200"
-	write "$f2fs*/gc_urgent_sleep_time" "50"
-	write "$f2fs*/iostat_enable" "0"
+	write "${f2fs}mmcblk*/cp_interval" "200"
+	write "${f2fs}mmcblk*/gc_urgent_sleep_time" "50"
+	write "${f2fs}mmcblk*/iostat_enable" "0"
 }
 
 realme_gt() {
@@ -3815,7 +3814,7 @@ adjshield_start() {
 	rm -rf "$bbn_log"
 	rm -rf "$bbn_banner"
 	# check interval: 120 seconds - Deprecated, use event driven instead
-	${modpath}system/bin/adjshield -o "$adj_log" -c "$adj_cfg" &
+	${modpath}system/bin/adjshield -o $adj_log -c $adj_cfg &
 }
 
 adjshield_stop() { kill_svc "$adj_nm" 2>/dev/null; }
@@ -4062,7 +4061,7 @@ fscc_add_apex_lib() { fscc_add_obj "$(find /apex -name "$1" | head -n 1)"; }
 
 # After appending fscc_file_list
 # Multiple parameters, cannot be warped by ""
-fscc_start() { "${modpath}system/bin/$fscc_nm" -fdlb0 $fscc_file_list; }
+fscc_start() { ${modpath}system/bin/$fscc_nm -fdlb0 $fscc_file_list; }
 
 fscc_stop() { kill_svc "$fscc_nm"; }
 
@@ -4236,13 +4235,11 @@ apply_all() {
 		ppm_policy_max
 	} || [[ "$ktsr_prof_en" == "gaming" ]] && disable_ppm
 	[[ "$ktsr_prof_en" == "battery" ]] && {
-		cpu_clk_mid
 		enable_mcps
 		enable_kern_batt_saver
 		enable_lcd_prdc
 		perfmgr_pwr_saving
 	} || {
-		cpu_clk_default
 		disable_mcps
 		disable_kern_batt_saver
 		disable_lcd_prdc
