@@ -40,6 +40,8 @@ fscc_add_obj "$sys_lib/libandroidfw.so"
 fscc_add_obj "$sys_lib/libandroid.so"
 fscc_add_obj "$sys_lib/libhwui.so"
 fscc_add_obj "$sys_lib/libjpeg.so"
+fscc_add_obj "$sys_lib/libinput.so"
+fscc_add_obj "$sys_lib/libinputreader.so"
 fscc_add_obj "$vdr_lib/libssc.so"
 fscc_add_obj "$vdr_lib/libgsl.so"
 fscc_add_obj "$vdr_lib/sensors.ssc.so"
@@ -68,7 +70,6 @@ usr_bbn_opt
 # Save mode to be applied automatically after reboot
 save_panel
 
-cpu_clk_min
 cpu_clk_default
 
 disable_crc
