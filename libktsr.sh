@@ -417,7 +417,7 @@ kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 	avail_ram="Please install busybox first"
 }
 
-# Current battery capacity available 
+# Current battery capacity available
 [[ -e "/sys/class/power_supply/battery/capacity" ]] && batt_pctg=$(cat /sys/class/power_supply/battery/capacity) || batt_pctg=$(dumpsys battery 2>/dev/null | awk '/level/{print $2}')
 
 # KTSR build info
