@@ -4256,13 +4256,11 @@ apply_all() {
 		ppm_policy_max
 	} || [[ "$ktsr_prof_en" == "gaming" ]] && disable_ppm
 	[[ "$ktsr_prof_en" == "battery" ]] && {
-		cpu_clk_mid
 		enable_mcps
 		enable_kern_batt_saver
 		enable_lcd_prdc
 		perfmgr_pwr_saving
 	} || {
-		cpu_clk_default
 		disable_mcps
 		disable_kern_batt_saver
 		disable_lcd_prdc
