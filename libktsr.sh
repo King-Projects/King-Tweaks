@@ -46,7 +46,7 @@ big_little=false
 toptsdir="/dev/stune/top-app/tasks"
 toptcdir="/dev/cpuset/top-app/tasks"
 scrn_on=1
-lib_ver="1.2.0-master"
+lib_ver="1.2.1-master"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 memcg="/dev/memcg/"
@@ -3122,29 +3122,6 @@ cpu_clk_default() {
 	}
 }
 
-cpu_clk_mid() {
-	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
-		for i in 576000 652800 691200 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1689600 1708800 1766400; do
-			[[ "$(grep -q "$i" "${pl}scaling_available_frequencies")" ]] && {
-				write "${pl}scaling_min_freq" "$i"
-				write "${cpus}user_scaling_min_freq" "$i"
-			}
-			# Set max frequency -> mid frequency
-			write "${cpus}scaling_max_freq" "$((cpu_max_freq / 2))"
-			write "${cpus}user_scaling_max_freq" "$((cpu_max_freq / 2))"
-			break
-		done
-	done
-	kmsg "Tweaked CPU clocks"
-	kmsg3 ""
-
-	[[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] && {
-		write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
-		kmsg "Allow CPUs to use it's deepest sleep state"
-		kmsg3 ""
-	}
-}
-
 cpu_clk_max() {
 	# Set maximum CPU frequency
 	for cpus in /sys/devices/system/cpu/cpufreq/policy*/; do
@@ -4346,13 +4323,11 @@ apply_all_auto() {
 		ppm_policy_max
 	} || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_ppm
 	[[ "$(getprop kingauto.prof)" == "battery" ]] && {
-		cpu_clk_mid
 		enable_mcps
 		enable_kern_batt_saver
 		enable_lcd_prdc
 		perfmgr_pwr_saving
 	} || {
-		cpu_clk_default
 		disable_mcps
 		disable_kern_batt_saver
 		disable_lcd_prdc
