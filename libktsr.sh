@@ -115,7 +115,7 @@ write() {
 		return 1
 	}
 
-	# Sync the pending changes if any
+	# Sync the pending changes
 	sync
 
 	# Log the success
@@ -288,17 +288,16 @@ elif [[ -e "${gpu}devfreq/governor" ]]; then
 fi
 
 define_gpu_pl() {
-	# Number of power levels available
 	gpu_num_pl=$(cat "${gpu}num_pwrlevels")
 
-	# Lowest power level available
+	# Lowest power level
 	gpu_min_pl=$((gpu_num_pl - 1))
 
-	# Highest power level available
+	# Highest power level
 	gpu_max_pl=$(cat "${gpu}max_pwrlevel")
 }
 
-# Maximum CPU clock
+# Max CPU clock
 cpu_max_freq=$(cat /sys/devices/system/cpu/cpu7/cpufreq/cpuinfo_max_freq)
 cpu_max_freq2=$(cat /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_max_freq)
 cpu_max_freq3=$(cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_max_freq)
@@ -312,7 +311,7 @@ cpu_max_freq1_3=$(cat /sys/devices/system/cpu/cpu5/cpufreq/scaling_max_freq)
 [[ "$cpu_max_freq1_3" -gt "$cpu_max_freq1" ]] && [[ "$cpu_max_freq1_3" -gt "$cpu_max_freq1_2" ]] && cpu_max_freq1="$cpu_max_freq1_3"
 [[ "$cpu_max_freq1" -gt "$cpu_max_freq" ]] && cpu_max_freq="$cpu_max_freq1"
 
-# Minimum CPU clock
+# Fetch min CPU clock
 cpu_min_freq=$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq)
 cpu_min_freq2=$(cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_min_freq)
 cpu_min_freq1=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq)
@@ -322,11 +321,11 @@ cpu_min_freq1_2=$(cat /sys/devices/system/cpu/cpu5/cpufreq/scaling_min_freq)
 [[ "$cpu_min_freq1_2" -lt "$cpu_min_freq1" ]] && cpu_min_freq1="$cpu_min_freq1_2"
 [[ "$cpu_min_freq1" -lt "$cpu_min_freq" ]] && cpu_min_freq="$cpu_min_freq1"
 
-# Convert MHz > GHz
+# HZ -> MHz
 cpu_min_clk_mhz=$((cpu_min_freq / 1000))
 cpu_max_clk_mhz=$((cpu_max_freq / 1000))
 
-# Maximum GPU frequency
+# Max GPU frequency
 if [[ -e "${gpu}max_gpuclk" ]]; then
 	gpu_max_freq=$(cat "${gpu}max_gpuclk")
 
@@ -338,7 +337,7 @@ elif [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]]; then
 	mtk=true
 fi
 
-# Minimum GPU frequency
+# Min GPU frequency
 if [[ -e "${gpu}min_clock_mhz" ]]; then
 	gpu_min_freq=$(cat "${gpu}min_clock_mhz")
 	gpu_min_freq=$((gpu_min_freq * 1000000))
@@ -350,7 +349,7 @@ elif [[ -e "/proc/gpufreq/gpufreq_opp_dump" ]]; then
 	gpu_min_freq=$(cat /proc/gpufreq/gpufreq_opp_dump | tail -1 | awk '{print $4}' | cut -f1 -d ",")
 fi
 
-# Convert this to MHz in case it isn't already
+# HZ -> MHZ
 [[ "$gpu_max_freq" -ge "100000" ]] && {
 	gpu_max_clk_mhz=$((gpu_max_freq / 1000))
 	gpu_min_clk_mhz=$((gpu_min_freq / 1000))
@@ -374,37 +373,33 @@ sdk=$(getprop ro.build.version.sdk)
 [[ "$sdk" == "" ]] && sdk=$(getprop ro.vendor.build.version.sdk)
 [[ "$sdk" == "" ]] && sdk=$(getprop ro.vndk.version)
 
-# Arch
 arch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}')
 
 # ARV
 avs=$(getprop ro.build.version.release)
 
-# Codename
 dvc_cdn=$(getprop ro.product.device)
 
-# Root method / name
+# Root method
 root=$(su -v)
 
-# Detect in which hw we are running on
+# Check the SOC that we are running
 [[ "$(getprop ro.boot.hardware | grep qcom)" ]] || [[ "$(getprop ro.soc.manufacturer | grep QTI)" ]] || [[ "$(getprop ro.soc.manufacturer | grep Qualcomm)" ]] || [[ "$(getprop ro.hardware | grep qcom)" ]] || [[ "$(getprop ro.vendor.qti.soc_id)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Qualcomm)" ]] && qcom=true
 [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]] && exynos=true
 [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]] && mtk=true
 
-# Fetch the CPU scheduling type
+# CPU scheduling model
 for cpu in $(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_governors); do
 	case "$cpu" in
 		*sched*) cpu_sched="EAS" ;;
 		*util*) cpu_sched="EAS" ;;
 		*interactive*) cpu_sched="HMP" ;;
-		*) cpu_sched="?" ;;
+		*) cpu_sched="Unknown" ;;
 	esac
 done
 
-# Linux kernel name and version
+# Kernel info
 kern_ver_name=$(uname -r)
-
-# Build date
 kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 
 [[ "$(command -v busybox)" ]] && {
@@ -426,11 +421,11 @@ bd_rel=$(grep version= "${modpath}module.prop" | sed "s/version=//" | awk -F "-"
 bd_dt=$(grep build_date= "${modpath}module.prop" | sed "s/build_date=//")
 bd_cdn=$(grep version= "${modpath}module.prop" | sed "s/version=//" | awk -F "-" '{print $3}')
 
-# Battery temp
+# Battery temperature
 batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
 [[ "$batt_tmp" == "" ]] && [[ -e "/sys/class/power_supply/battery/temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/temp) || [[ "$batt_tmp" == "" ]] && [[ -e "/sys/class/power_supply/battery/batt_temp" ]] && batt_tmp=$(cat /sys/class/power_supply/battery/batt_temp)
 
-# Ignore the decimal on battery temp
+# Transform this to two algarisms only
 batt_tmp=$((batt_tmp / 10))
 
 # GPU model
@@ -438,9 +433,8 @@ batt_tmp=$((batt_tmp / 10))
 [[ "$qcom" == "true" ]] && gpu_mdl=$(cat "${gpui}gpu_model")
 [[ "$gpu_mdl" == "" ]] && gpu_mdl=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 
-# Max refresh rate available
+# Max refresh rate
 rr=$(dumpsys display 2>/dev/null | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
-
 [[ -z "$rr" ]] && rr=$(dumpsys display 2>/dev/null | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .) || rr=$(dumpsys display 2>/dev/null | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 
 # Battery health
@@ -469,9 +463,11 @@ case "$batt_sts" in
 	*) batt_sts="$batt_sts" ;;
 esac
 
-# Battery total capacity available
+# Battery total capacity
 batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
 [[ "$batt_cpct" == "" ]] && batt_cpct=$(dumpsys batterystats 2>/dev/null | awk '/Capacity:/{print $2}' | cut -d "," -f 1)
+
+# MA -> MAh
 [[ "$batt_cpct" -ge "1000000" ]] && batt_cpct=$((batt_cpct / 1000))
 
 # Busybox version
@@ -482,10 +478,10 @@ rom_info=$(getprop ro.build.description | awk '{print $1,$3,$4,$5}')
 [[ "$rom_info" == "" ]] && rom_info=$(getprop ro.bootimage.build.description | awk '{print $1,$3,$4,$5}')
 [[ "$rom_info" == "" ]] && rom_info=$(getprop ro.system.build.description | awk '{print $1,$3,$4,$5}')
 
-# SELinux status
+# SELinux policy
 [[ "$(cat /sys/fs/selinux/enforce)" == "1" ]] && slnx_stt="Enforcing" || slnx_stt="Permissive"
 
-# Check how many cores we have available
+# Number of CPU cores
 nr_cores=$(cat /sys/devices/system/cpu/possible | awk -F "-" '{print $2}')
 nr_cores=$((nr_cores + 1))
 
@@ -498,6 +494,7 @@ dvc_brnd=$(getprop ro.product.brand)
 	samsung=true
 }
 
+# Amount of time that system has been running
 sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
 [[ "$(command -v sqlite3)" ]] && {
@@ -510,11 +507,12 @@ sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
 [[ -d "/proc/ppm/" ]] && [[ "$mtk" == "true" ]] && ppm=true
 
-# Check if the SOC is BIG.little by default
+# Check if CPU uses BIG.little arch
 for i in 1 2 3 4 5 6 7; do
 	[[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
 done
 
+# Check if we're running on MIUI
 [[ "$(getprop ro.miui.ui.version.name)" ]] && miui=true
 
 disable_adreno_gpu_thrtl() {
@@ -640,8 +638,8 @@ print_info() {
 	kmsg3 "** KTSR build release: $bd_rel"
 	kmsg3 "** KTSR build date: $bd_dt"
 	kmsg3 "** KTSR lib version: $lib_ver"
-	kmsg3 "** Battery charge lvl: $batt_pctg%"
-	kmsg3 "** Battery capacity: ${batt_cpct}mAh"
+	kmsg3 "** Battery charge level: $batt_pctg%"
+	kmsg3 "** Battery total capacity: ${batt_cpct}mAh"
 	kmsg3 "** Battery health: $batt_hth"
 	kmsg3 "** Battery status: $batt_sts"
 	kmsg3 "** Battery temperature: $batt_tmp°C"
@@ -738,8 +736,8 @@ disable_core_ctl() {
 enable_core_ctl() {
 	n=7
 	for i in $(
-		i = 4
-		i <= n
+		i=4
+		i <=n
 		i++
 	); do
 		for core_ctl in /sys/devices/system/cpu/cpu$i/core_ctl/; do
@@ -876,9 +874,10 @@ boost_gaming() {
 	}
 }
 
+# I/O Scheduler tweaks
 io_latency() {
 	for queue in /sys/block/*/queue/; do
-		# Available schedulers from the block
+		# Fetch the available schedulers from the block
 		avail_scheds="$(cat "${queue}scheduler")"
 
 		# Select the first scheduler available
@@ -903,8 +902,10 @@ io_latency() {
 	done
 
 	for queue in /sys/block/zram*/queue/; do
+		# Fetch the available schedulers from the block
 		avail_scheds="$(cat "${queue}scheduler")"
 
+		# Select the first scheduler available
 		for sched in maple sio fiops bfq-sq bfq-mq bfq tripndroid zen anxiety mq-deadline deadline cfq noop none; do
 			if [[ "$avail_scheds" == *"$sched"* ]]; then
 				write "${queue}scheduler" "$sched"
@@ -914,8 +915,6 @@ io_latency() {
 		write "${queue}read_ahead_kb" "0"
 	done
 
-	write "/sys/block/mmcblk0/bdi/min_ratio" "5"
-	write "/sys/block/sda/bdi/min_ratio" "5"
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -956,8 +955,6 @@ io_balanced() {
 		write "${queue}read_ahead_kb" "0"
 	done
 
-	write "/sys/block/mmcblk0/bdi/min_ratio" "5"
-	write "/sys/block/sda/bdi/min_ratio" "5"
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -998,8 +995,6 @@ io_extreme() {
 		write "${queue}read_ahead_kb" "0"
 	done
 
-	write "/sys/block/mmcblk0/bdi/min_ratio" "5"
-	write "/sys/block/sda/bdi/min_ratio" "5"
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -1040,8 +1035,6 @@ io_battery() {
 		write "${queue}read_ahead_kb" "0"
 	done
 
-	write "/sys/block/mmcblk0/bdi/min_ratio" "5"
-	write "/sys/block/sda/bdi/min_ratio" "5"
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
@@ -1082,20 +1075,18 @@ io_gaming() {
 		write "${queue}read_ahead_kb" "0"
 	done
 
-	write "/sys/block/mmcblk0/bdi/min_ratio" "5"
-	write "/sys/block/sda/bdi/min_ratio" "5"
 	kmsg "Tweaked I/O scheduler"
 	kmsg3 ""
 }
 
 cpu_latency() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
-		# Available governors for the CPU
+		# Available governors from the CPU
 		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-		# Attempt to set the governor in this order by default
+		# Attempt to set the governor in this order
 		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
-			# Once a matching governor is found, set it and break for the CPU
+			# Once a matching governor is found, set it and break for this CPU
 			if [[ "$avail_govs" == *"$governor"* ]]; then
 				write "${cpu}scaling_governor" "$governor"
 				break
@@ -1103,7 +1094,7 @@ cpu_latency() {
 		done
 	done
 
-	# Apply governor specific tunables for available governors
+	# Apply governor specific tunables for schedutil, or it's modifications
 	for governor in $(find /sys/devices/system/cpu/ -name *util* -type d); do
 		write "$governor/up_rate_limit_us" "0"
 		write "$governor/down_rate_limit_us" "0"
@@ -1124,6 +1115,7 @@ cpu_latency() {
 		write "$governor/hispeed_freq" "$cpu_max_freq"
 	done
 
+	# Apply governor specific tunables for interactive
 	for governor in $(find /sys/devices/system/cpu/ -name *interactive* -type d); do
 		write "$governor/timer_rate" "0"
 		write "$governor/boost" "0"
@@ -2180,7 +2172,7 @@ gpu_gaming() {
 disable_crypto_tests() {
 	[[ -e "/sys/module/cryptomgr/parameters/notests" ]] && {
 		write "/sys/module/cryptomgr/parameters/notests" "Y"
-		kmsg "Disabled forced cryptography tests"
+		kmsg "Disabled cryptography tests"
 		kmsg3 ""
 	}
 }
@@ -2677,7 +2669,7 @@ uclamp_gaming() {
 
 config_fs() {
 	[[ -d "$fs" ]] && {
-		# Raise inotify limit, disable notification of files changes
+		# Raise inotify limit, disable the notification of files / directories changes
 		write "${fs}dir-notify-enable" "0"
 		write "${fs}lease-break-time" "15"
 		write "${fs}leases-enable" "1"
@@ -2804,7 +2796,7 @@ sched_latency() {
 	# Use normal grace periods to reduce power usage
 	write "/sys/kernel/rcu_expedited" "0"
 	write "/sys/kernel/rcu_normal" "1"
-	# VIDC DDR
+	# Tweak VIDC DDR
 	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
 	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
 	write "/sys/devices/system/cpu/sched/hint_enable" "0"
@@ -2845,7 +2837,6 @@ sched_balanced() {
 	[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
-	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
@@ -2897,7 +2888,6 @@ sched_extreme() {
 	[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "0"
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
-	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
@@ -2949,7 +2939,6 @@ sched_battery() {
 	[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "1"
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
-	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "1"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
@@ -3001,7 +2990,6 @@ sched_gaming() {
 	[[ -e "${kernel}sched_migration_fixup" ]] && write "${kernel}sched_migration_fixup" "0"
 	[[ -e "${kernel}sched_energy_aware" ]] && write "${kernel}sched_energy_aware" "0"
 	[[ -e "${kernel}hung_task_timeout_secs" ]] && write "${kernel}hung_task_timeout_secs" "600"
-	[[ -e "${kernel}sysrq" ]] && write "${kernel}sysrq" "0"
 	[[ -e "${kernel}sched_conservative_pl" ]] && write "${kernel}sched_conservative_pl" "0"
 	[[ -e "/sys/devices/system/cpu/sched/sched_boost" ]] && write "/sys/devices/system/cpu/sched/sched_boost" "0"
 	[[ -e "/sys/kernel/ems/eff_mode" ]] && write "/sys/kernel/ems/eff_mode" "0"
@@ -3025,22 +3013,6 @@ sched_gaming() {
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
 	kmsg "Tweaked various kernel parameters"
 	kmsg3 ""
-}
-
-enable_kvb() {
-	[[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] && {
-		write "/sys/module/acpuclock_krait/parameters/boost" "Y"
-		kmsg "Enabled krait voltage boost"
-		kmsg3 ""
-	}
-}
-
-disable_kvb() {
-	[[ -e "/sys/module/acpuclock_krait/parameters/boost" ]] && {
-		write "/sys/module/acpuclock_krait/parameters/boost" "N"
-		kmsg "Disabled krait voltage boost"
-		kmsg3 ""
-	}
 }
 
 enable_fp_boost() {
@@ -3068,7 +3040,7 @@ ppm_policy_default() {
 		write "/proc/ppm/policy_status" "5 0"
 		write "/proc/ppm/policy_status" "7 1"
 		write "/proc/ppm/policy_status" "9 0"
-		kmsg "Tweaked PPM policies"
+		kmsg "Tweaked PPM Policies"
 		kmsg3 ""
 		write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "0 $cpu_min_freq"
 		write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "1 $cpu_min_freq"
@@ -3088,7 +3060,7 @@ ppm_policy_max() {
 		write "/proc/ppm/policy_status" "5 0"
 		write "/proc/ppm/policy_status" "7 1"
 		write "/proc/ppm/policy_status" "9 1"
-		kmsg "Tweaked PPM policies"
+		kmsg "Tweaked PPM Policies"
 		kmsg3 ""
 		write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "0 $cpu_max_freq"
 		write "/proc/ppm/policy/hard_userlimit_min_cpu_freq" "1 $cpu_max_freq"
@@ -3100,7 +3072,7 @@ ppm_policy_max() {
 }
 
 cpu_clk_default() {
-	# Set efficient CPU frequency
+	# Try to set a more efficient CPU min frequency
 	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
 		for i in 576000 652800 691200 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1689600 1708800 1766400; do
 			[[ "$(grep -q "$i" "${pl}scaling_available_frequencies")" ]] && {
@@ -3109,6 +3081,7 @@ cpu_clk_default() {
 			}
 			write "${cpus}scaling_max_freq" "$cpu_max_freq"
 			write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
+			break
 		done
 	done
 	kmsg "Tweaked CPU clocks"
@@ -3121,21 +3094,25 @@ cpu_clk_default() {
 	}
 }
 
-cpu_clk_max() {
-	# Set maximum CPU frequency
-	for cpus in /sys/devices/system/cpu/cpufreq/policy*/; do
-		write "${cpus}scaling_min_freq" "$cpu_max_freq"
-		write "${cpus}scaling_max_freq" "$cpu_max_freq"
-		write "${cpus}user_scaling_min_freq" "$cpu_max_freq"
-		write "${cpus}user_scaling_max_freq" "$cpu_max_freq"
+cpu_clk_mid() {
+	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
+		for i in 576000 652800 691200 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1689600 1708800 1766400; do
+			[[ "$(grep -q "$i" "${pl}scaling_available_frequencies")" ]] && {
+				write "${pl}scaling_min_freq" "$i"
+				write "${cpus}user_scaling_min_freq" "$i"
+			}
+			# Max frequency -> mid frequency
+			write "${cpus}scaling_max_freq" "$((cpu_max_freq / 2))"
+			write "${cpus}user_scaling_max_freq" "$((cpu_max_freq / 2))"
+			break
+		done
 	done
-
 	kmsg "Tweaked CPU clocks"
 	kmsg3 ""
 
 	[[ -e "/sys/devices/system/cpu/cpuidle/use_deepest_state" ]] && {
-		write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "0"
-		kmsg "Don't allow CPUs to use it's deepest sleep state"
+		write "/sys/devices/system/cpu/cpuidle/use_deepest_state" "1"
+		kmsg "Allow CPUs to use it's deepest sleep state"
 		kmsg3 ""
 	}
 }
@@ -3689,7 +3666,7 @@ write_panel() { echo "$1" >>"$bbn_banner"; }
 
 save_panel() {
 	write_panel "[*] Bourbon - the essential task optimizer 
-Version: 1.3.7-r6-stable
+Version: 1.3.8-r7-stable
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -3791,7 +3768,7 @@ realme_gt() {
 	[[ "$gt" == "1" ]] || [[ "$gt" == "0" ]] && [[ "$gt" != "$1" ]] && {
 		[[ "$1" == "1" ]] && action='open' || action='close'
 		gt_receiver='com.coloros.oppoguardelf/com.coloros.performance.GTModeBroadcastReceiver'
-		[[ -n "$(pm query-receivers --brief -n "$gt_receiver" | grep "$gt_receiver")" ]] && am broadcast -a gt_mode_broadcast_intent_${action}_action -n "$gt_receiver" -f 0x01000000 || am broadcast -a gt_mode_broadcast_intent_${action}_action -f 0x01000000
+		[[ -n "$(pm query-receivers --brief -n $gt_receiver | grep $gt_receiver)" ]] && am broadcast -a gt_mode_broadcast_intent_${action}_action -n $gt_receiver -f 0x01000000 || am broadcast -a gt_mode_broadcast_intent_${action}_action -f 0x01000000
 	}
 }
 
@@ -4113,6 +4090,8 @@ usr_bbn_opt() {
 	pin_proc_on_perf "fts_wq"
 	pin_proc_on_perf "nvt_ts"
 	pin_proc_on_perf "nvt_fwu"
+	pin_proc_on_perf "touchfeature@"
+	pin_proc_on_perf "toucheventcheck"
 	# Pin Samsung HyperHAL, wifi HAL and daemon to perf cluster
 	pin_proc_on_perf "hyper@"
 	pin_proc_on_perf "wifi@"
@@ -4154,7 +4133,7 @@ usr_bbn_opt() {
 	change_task_rt "system_server" "2"
 	change_task_rt "surfaceflinger" "2"
 	change_task_rt "servicemanag" "2"
-	change_task_rt "systemui" "2"
+	change_task_rt "systemui" "1"
 	# Boost app boot process, zygote--com.xxxx.xxx
 	change_task_nice "zygote" "-20"
 	# Queue VM writeback with max nice
@@ -4162,9 +4141,8 @@ usr_bbn_opt() {
 }
 
 clear_logs() {
-	# Remove debug log if size is >= 1 MB
+	# Remove logs if size is >= 1 MB
 	kdbg_max_size=1000000
-	# Do the same to sqlite opt log
 	sqlite_opt_max_size=1000000
 	[[ "$(stat -t "$kdbg" 2>/dev/null | awk '{print $2}')" -ge "$kdbg_max_size" ]] && rm -rf "$kdbg"
 	[[ "$(stat -t "/data/media/0/KTSR/sqlite_opt.log" 2>/dev/null | awk '{print $2}')" -ge "$sqlite_opt_max_size" ]] && rm -rf "/data/media/0/KTSR/sqlite_opt.log"
@@ -4187,8 +4165,17 @@ apply_all() {
 	stop_services
 	bring_all_cores
 	io_"$ktsr_prof_en"
-	boost_"$ktsr_prof_en"
 	cpu_"$ktsr_prof_en"
+	boost_"$ktsr_prof_en"
+	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_devfreq_boost || disable_devfreq_boost
+	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && dram_max || dram_default
+	[[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] && enable_core_ctl || disable_core_ctl
+	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && sched_deisolation || sched_isolation
+	[[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "balanced" ]] && misc_cpu_default
+	[[ "$ktsr_prof_en" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
+	[[ "$ktsr_prof_en" != "gaming" ]] && enable_ppm || disable_ppm
+	[[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] && ppm_policy_default
+	[[ "$ktsr_prof_en" == "extreme" ]] && ppm_policy_max
 	hmp_"$ktsr_prof_en"
 	gpu_"$ktsr_prof_en"
 	schedtune_"$ktsr_prof_en"
@@ -4196,55 +4183,19 @@ apply_all() {
 	sched_"$ktsr_prof_en"
 	uclamp_"$ktsr_prof_en"
 	vm_lmk_"$ktsr_prof_en"
-	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && {
-		enable_devfreq_boost
-		dram_max
-		disable_core_ctl
-		sched_deisolation
-		enable_kvb
-		misc_cpu_max_pwr
-		disable_pewq
-		enable_tb
-		disable_lpm
-		disable_pm2_idle_mode
-		perfmgr_default
-		enable_thermal_disguise
-		realme_gt 1
-		enable_ufs_perf_mode
-		disable_emmc_clk_scl
-	} || {
-		disable_devfreq_boost
-		dram_default
-		enable_core_ctl
-		sched_isolation
-		disable_kvb
-		enable_ppm
-		ppm_policy_default
-		enable_pewq
-		disable_tb
-		enable_lpm
-		enable_pm2_idle_mode
-		disable_thermal_disguise
-		realme_gt 0
-		disable_ufs_perf_mode
-		enable_emmc_clk_scl
-	}
-	[[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "balanced" ]] && misc_cpu_default || misc_cpu_pwr_saving
-	[[ "$ktsr_prof_en" == "extreme" ]] && {
-		enable_ppm
-		ppm_policy_max
-	} || [[ "$ktsr_prof_en" == "gaming" ]] && disable_ppm
-	[[ "$ktsr_prof_en" == "battery" ]] && {
-		enable_mcps
-		enable_kern_batt_saver
-		enable_lcd_prdc
-		perfmgr_pwr_saving
-	} || {
-		disable_mcps
-		disable_kern_batt_saver
-		disable_lcd_prdc
-		perfmgr_default
-	}
+	[[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "battery" ]] && enable_pewq || disable_pewq
+	[[ "$ktsr_prof_en" == "battery" ]] && enable_mcps || disable_mcps
+	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_tb || disable_tb
+	[[ "$ktsr_prof_en" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
+	[[ "$ktsr_prof_en" == "battery" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] && enable_lpm || disable_lpm
+	[[ "$ktsr_prof_en" != "extreme" ]] && [[ "$ktsr_prof_en" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
+	[[ "$ktsr_prof_en" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
+	[[ "$ktsr_prof_en" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
+	[[ -e "$board_sensor_temp" ]] && [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
+	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && realme_gt 1 || realme_gt 0
+	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && enable_ufs_perf_mode || disable_ufs_perf_mode
+	[[ "$ktsr_prof_en" == "gaming" ]] || [[ "$ktsr_prof_en" == "extreme" ]] && disable_emmc_clk_scl || enable_emmc_clk_scl
+	[[ "$ktsr_prof_en" == "battery" ]] && [[ "$batt_pctg" -lt "20" ]] && cpu_clk_mid
 }
 
 apply_all_auto() {
@@ -4252,8 +4203,17 @@ apply_all_auto() {
 	stop_services
 	bring_all_cores
 	io_$(getprop kingauto.prof)
-	boost_$(getprop kingauto.prof)
 	cpu_$(getprop kingauto.prof)
+	boost_$(getprop kingauto.prof)
+	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_devfreq_boost || disable_devfreq_boost
+	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && dram_max || dram_default
+	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_core_ctl || disable_core_ctl
+	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && sched_deisolation || sched_isolation
+	[[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] && misc_cpu_default
+	[[ "$(getprop kingauto.prof)" == "battery" ]] && misc_cpu_pwr_saving || misc_cpu_max_pwr
+	[[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_ppm || disable_ppm
+	[[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && ppm_policy_default
+	[[ "$(getprop kingauto.prof)" == "extreme" ]] && ppm_policy_max
 	hmp_$(getprop kingauto.prof)
 	gpu_$(getprop kingauto.prof)
 	schedtune_$(getprop kingauto.prof)
@@ -4261,55 +4221,19 @@ apply_all_auto() {
 	sched_$(getprop kingauto.prof)
 	uclamp_$(getprop kingauto.prof)
 	vm_lmk_$(getprop kingauto.prof)
-	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
-		enable_devfreq_boost
-		dram_max
-		disable_core_ctl
-		sched_deisolation
-		enable_kvb
-		misc_cpu_max_pwr
-		disable_pewq
-		enable_tb
-		disable_lpm
-		disable_pm2_idle_mode
-		perfmgr_default
-		enable_thermal_disguise
-		realme_gt 1
-		enable_ufs_perf_mode
-		disable_emmc_clk_scl
-	} || {
-		disable_devfreq_boost
-		dram_default
-		enable_core_ctl
-		sched_isolation
-		disable_kvb
-		enable_ppm
-		ppm_policy_default
-		enable_pewq
-		disable_tb
-		enable_lpm
-		enable_pm2_idle_mode
-		disable_thermal_disguise
-		realme_gt 0
-		disable_ufs_perf_mode
-		enable_emmc_clk_scl
-	}
-	[[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] && misc_cpu_default || misc_cpu_pwr_saving
-	[[ "$(getprop kingauto.prof)" == "extreme" ]] && {
-		enable_ppm
-		ppm_policy_max
-	} || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_ppm
-	[[ "$(getprop kingauto.prof)" == "battery" ]] && {
-		enable_mcps
-		enable_kern_batt_saver
-		enable_lcd_prdc
-		perfmgr_pwr_saving
-	} || {
-		disable_mcps
-		disable_kern_batt_saver
-		disable_lcd_prdc
-		perfmgr_default
-	}
+	[[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "battery" ]] && enable_pewq || disable_pewq
+	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_mcps || disable_mcps
+	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_tb || disable_tb
+	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_kern_batt_saver || disable_kern_batt_saver
+	[[ "$(getprop kingauto.prof)" == "battery" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] || [[ "$(getprop kingauto.prof)" == "latency" ]] && enable_lpm || disable_lpm
+	[[ "$(getprop kingauto.prof)" != "extreme" ]] && [[ "$(getprop kingauto.prof)" != "gaming" ]] && enable_pm2_idle_mode || disable_pm2_idle_mode
+	[[ "$(getprop kingauto.prof)" == "battery" ]] && enable_lcd_prdc || disable_lcd_prdc
+	[[ "$(getprop kingauto.prof)" != "battery" ]] && perfmgr_default || perfmgr_pwr_saving
+	[[ -e "$board_sensor_temp" ]] && [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && enable_thermal_disguise || disable_thermal_disguise
+	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && realme_gt 1 || realme_gt 0
+	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && enable_ufs_perf_mode || disable_ufs_perf_mode
+	[[ "$(getprop kingauto.prof)" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] && disable_emmc_clk_scl || enable_emmc_clk_scl
+	[[ "$(getprop kingauto.prof)" == "battery" ]] && [[ "$batt_pctg" -lt "20" ]] && cpu_clk_mid
 }
 
 latency() {

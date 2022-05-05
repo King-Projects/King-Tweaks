@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # KTSR™ by pedro (pedrozzz0 @ GitHub)
-# Credits: Uperf & QTI-mem-opt by Matt Yang.
+# Credits: Uperf, QTI-mem-opt by Matt Yang
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 modpath="/data/adb/modules/KTSR"
