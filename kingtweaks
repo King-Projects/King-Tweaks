@@ -21,6 +21,8 @@ source "$modpath/libs/libktsr.sh"
 [[ -e "$kdbg" ]] && rm -rf "$kdbg"
 clear_logs
 
+sync
+
 # Just in case
 sleep 5
 
@@ -215,22 +217,22 @@ while true; do
 		"automatic")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast
+					toast &
 					;;
 				pt*)
-					toast_pt
+					toast_pt &
 					;;
 				id-ID)
-					toast_id
+					toast_id &
 					;;
 				tr*)
-					toast_tr
+					toast_tr &
 					;;
 				fr*)
-					toast_fr
+					toast_fr &
 					;;
 				*)
-					toast
+					toast &
 					;;
 			esac
 
@@ -238,38 +240,38 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1
+					toast_1 &
 					;;
 				pt*)
-					toast_pt_1
+					toast_pt_1 &
 					;;
 				id-ID)
-					toast_id_1
+					toast_id_1 &
 					;;
 				tr*)
-					toast_tr_1
+					toast_tr_1 &
 					;;
 				fr*)
-					toast_fr_1
+					toast_fr_1 &
 					;;
 			esac
 			;;
 		"balanced")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast
+					toast &
 					;;
 				pt*)
-					toast_pt
+					toast_pt &
 					;;
 				id-ID)
-					toast_id
+					toast_id &
 					;;
 				tr*)
-					toast_tr
+					toast_tr &
 					;;
 				fr*)
-					toast_fr
+					toast_fr &
 					;;
 			esac
 
@@ -279,38 +281,38 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1
+					toast_1 &
 					;;
 				pt*)
-					toast_pt_1
+					toast_pt_1 &
 					;;
 				id-ID)
-					toast_id_1
+					toast_id_1 &
 					;;
 				tr*)
-					toast_tr_1
+					toast_tr_1 &
 					;;
 				fr*)
-					toast_fr_1
+					toast_fr_1 &
 					;;
 			esac
 			;;
 		"extreme")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast
+					toast &
 					;;
 				pt*)
-					toast_pt
+					toast_pt &
 					;;
 				id-ID)
-					toast_id
+					toast_id &
 					;;
 				tr*)
-					toast_tr
+					toast_tr &
 					;;
 				fr*)
-					toast_fr
+					toast_fr &
 					;;
 			esac
 
@@ -320,38 +322,38 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1
+					toast_1 &
 					;;
 				pt*)
-					toast_pt_1
+					toast_pt_1 &
 					;;
 				id-ID)
-					toast_id_1
+					toast_id_1 &
 					;;
 				tr*)
-					toast_tr_1
+					toast_tr_1 &
 					;;
 				fr*)
-					toast_fr_1
+					toast_fr_1 &
 					;;
 			esac
 			;;
 		"battery")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast
+					toast &
 					;;
 				pt*)
-					toast_pt
+					toast_pt &
 					;;
 				id-ID)
-					toast_id
+					toast_id &
 					;;
 				tr*)
-					toast_tr
+					toast_tr &
 					;;
 				fr*)
-					toast_fr
+					toast_fr &
 					;;
 			esac
 
@@ -361,38 +363,38 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1
+					toast_1 &
 					;;
 				pt*)
-					toast_pt_1
+					toast_pt_1 &
 					;;
 				id-ID)
-					toast_id_1
+					toast_id_1 &
 					;;
 				tr*)
-					toast_tr_1
+					toast_tr_1 &
 					;;
 				fr*)
-					toast_fr_1
+					toast_fr_1 &
 					;;
 			esac
 			;;
 		"gaming")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast
+					toast &
 					;;
 				pt*)
-					toast_pt
+					toast_pt &
 					;;
 				id-ID)
-					toast_id
+					toast_id &
 					;;
 				tr*)
-					toast_tr
+					toast_tr &
 					;;
 				fr*)
-					toast_fr
+					toast_fr &
 					;;
 			esac
 
@@ -402,38 +404,38 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1
+					toast_1 &
 					;;
 				pt*)
-					toast_pt_1
+					toast_pt_1 &
 					;;
 				id-ID)
-					toast_id_1
+					toast_id_1 &
 					;;
 				tr*)
-					toast_tr_1
+					toast_tr_1 &
 					;;
 				fr*)
-					toast_fr_1
+					toast_fr_1 &
 					;;
 			esac
 			;;
 		"latency")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast
+					toast &
 					;;
 				pt*)
-					toast_pt
+					toast_pt &
 					;;
 				id-ID)
-					toast_id
+					toast_id &
 					;;
 				tr*)
-					toast_tr
+					toast_tr &
 					;;
 				fr*)
-					toast_fr
+					toast_fr &
 					;;
 			esac
 
@@ -443,19 +445,19 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1
+					toast_1 &
 					;;
 				pt*)
-					toast_pt_1
+					toast_pt_1 &
 					;;
 				id-ID)
-					toast_id_1
+					toast_id_1 &
 					;;
 				tr*)
-					toast_tr_1
+					toast_tr_1 &
 					;;
 				fr*)
-					toast_fr_1
+					toast_fr_1 &
 					;;
 			esac
 			;;
