@@ -10,7 +10,7 @@ source "$modpath/libs/libktsr.sh"
 
 # Check for root permissions and bail if not granted
 [[ "$(id -u)" != "0" ]] && {
-	kmsg2 "No root permissions. Exiting..."
+	log_e "No root permissions. Exiting..."
 	exit 1
 }
 
@@ -96,8 +96,6 @@ config_pwr_spd
 disable_debug
 
 [[ -d "$f2fs" ]] && config_f2fs
-[[ -d "$memcg" ]] && config_memcg
-[[ -d "$blkio" ]] && config_blkio
 ktsr_prof=$(getprop persist.king.tweaks.prof)
 while true; do
 	sleep 2
@@ -217,22 +215,22 @@ while true; do
 		"automatic")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast &
+					notif_start &
 					;;
 				pt*)
-					toast_pt &
+					notif_pt_start &
 					;;
 				id-ID)
-					toast_id &
+					notif_id_start &
 					;;
 				tr*)
-					toast_tr &
+					notif_tr_start &
 					;;
 				fr*)
-					toast_fr &
+					notif_fr_start &
 					;;
 				*)
-					toast &
+					notif_start &
 					;;
 			esac
 
@@ -240,38 +238,44 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1 &
+					notif_end &
 					;;
 				pt*)
-					toast_pt_1 &
+					notif_pt_end &
 					;;
 				id-ID)
-					toast_id_1 &
+					notif_id_end &
 					;;
 				tr*)
-					toast_tr_1 &
+					notif_tr_end &
 					;;
 				fr*)
-					toast_fr_1 &
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
 					;;
 			esac
 			;;
 		"balanced")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast &
+					notif_start &
 					;;
 				pt*)
-					toast_pt &
+					notif_pt_start &
 					;;
 				id-ID)
-					toast_id &
+					notif_id_start &
 					;;
 				tr*)
-					toast_tr &
+					notif_tr_start &
 					;;
 				fr*)
-					toast_fr &
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
 					;;
 			esac
 
@@ -281,38 +285,44 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1 &
+					notif_end &
 					;;
 				pt*)
-					toast_pt_1 &
+					notif_pt_end &
 					;;
 				id-ID)
-					toast_id_1 &
+					notif_id_end &
 					;;
 				tr*)
-					toast_tr_1 &
+					notif_tr_end &
 					;;
 				fr*)
-					toast_fr_1 &
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
 					;;
 			esac
 			;;
 		"extreme")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast &
+					notif_start &
 					;;
 				pt*)
-					toast_pt &
+					notif_pt_start &
 					;;
 				id-ID)
-					toast_id &
+					notif_id_start &
 					;;
 				tr*)
-					toast_tr &
+					notif_tr_start &
 					;;
 				fr*)
-					toast_fr &
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
 					;;
 			esac
 
@@ -322,38 +332,44 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1 &
+					notif_end &
 					;;
 				pt*)
-					toast_pt_1 &
+					notif_pt_end &
 					;;
 				id-ID)
-					toast_id_1 &
+					notif_id_end &
 					;;
 				tr*)
-					toast_tr_1 &
+					notif_tr_end &
 					;;
 				fr*)
-					toast_fr_1 &
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
 					;;
 			esac
 			;;
 		"battery")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast &
+					notif_start &
 					;;
 				pt*)
-					toast_pt &
+					notif_pt_start &
 					;;
 				id-ID)
-					toast_id &
+					notif_id_start &
 					;;
 				tr*)
-					toast_tr &
+					notif_tr_start &
 					;;
 				fr*)
-					toast_fr &
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
 					;;
 			esac
 
@@ -363,38 +379,44 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1 &
+					notif_end &
 					;;
 				pt*)
-					toast_pt_1 &
+					notif_pt_end &
 					;;
 				id-ID)
-					toast_id_1 &
+					notif_id_end &
 					;;
 				tr*)
-					toast_tr_1 &
+					notif_tr_end &
 					;;
 				fr*)
-					toast_fr_1 &
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
 					;;
 			esac
 			;;
 		"gaming")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast &
+					notif_start &
 					;;
 				pt*)
-					toast_pt &
+					notif_pt_start &
 					;;
 				id-ID)
-					toast_id &
+					notif_id_start &
 					;;
 				tr*)
-					toast_tr &
+					notif_tr_start &
 					;;
 				fr*)
-					toast_fr &
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
 					;;
 			esac
 
@@ -404,38 +426,44 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1 &
+					notif_end &
 					;;
 				pt*)
-					toast_pt_1 &
+					notif_pt_end &
 					;;
 				id-ID)
-					toast_id_1 &
+					notif_id_end &
 					;;
 				tr*)
-					toast_tr_1 &
+					notif_tr_end &
 					;;
 				fr*)
-					toast_fr_1 &
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
 					;;
 			esac
 			;;
 		"latency")
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast &
+					notif_start &
 					;;
 				pt*)
-					toast_pt &
+					notif_pt_start &
 					;;
 				id-ID)
-					toast_id &
+					notif_id_start &
 					;;
 				tr*)
-					toast_tr &
+					notif_tr_start &
 					;;
 				fr*)
-					toast_fr &
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
 					;;
 			esac
 
@@ -445,19 +473,22 @@ while true; do
 
 			case "$(getprop persist.sys.locale)" in
 				en*)
-					toast_1 &
+					notif_end &
 					;;
 				pt*)
-					toast_pt_1 &
+					notif_pt_end &
 					;;
 				id-ID)
-					toast_id_1 &
+					notif_id_end &
 					;;
 				tr*)
-					toast_tr_1 &
+					notif_tr_end &
 					;;
 				fr*)
-					toast_fr_1 &
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
 					;;
 			esac
 			;;
