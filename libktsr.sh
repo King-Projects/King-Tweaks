@@ -6,7 +6,7 @@
 
 log_i() {
 	echo "[$(date +%T)]: [*] $1" >>"$klog"
-	echo "" >"$klog"
+	echo "" >>"$klog"
 }
 
 log_d() {
@@ -74,7 +74,6 @@ stune="/dev/stune/"
 lmk="/sys/module/lowmemorykiller/parameters"
 cpuctl="/dev/cpuctl/"
 fs="/proc/sys/fs/"
-f2fs="/sys/fs/f2fs/"
 bbn_log="/data/media/0/KTSR/bourbon.log"
 bbn_banner="/data/media/0/KTSR/bourbon.info"
 adj_cfg="/data/media/0/KTSR/adjshield.conf"
@@ -2695,7 +2694,7 @@ sched_latency() {
 	write "${kernel}sched_nr_migrate" "8"
 	[[ -e "${kernel}sched_schedstats" ]] && write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
-	write "${kernel}printk_devlog_i" "off"
+	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "1"
@@ -2745,7 +2744,7 @@ sched_balanced() {
 	write "${kernel}sched_nr_migrate" "32"
 	[[ -e "${kernel}sched_schedstats" ]] && write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
-	write "${kernel}printk_devlog_i" "off"
+	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "1"
@@ -2797,7 +2796,7 @@ sched_extreme() {
 	write "${kernel}sched_nr_migrate" "128"
 	write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
-	write "${kernel}printk_devlog_i" "off"
+	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "0"
@@ -2849,7 +2848,7 @@ sched_battery() {
 	write "${kernel}sched_nr_migrate" "256"
 	write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
-	write "${kernel}printk_devlog_i" "off"
+	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "1"
@@ -2901,7 +2900,7 @@ sched_gaming() {
 	write "${kernel}sched_nr_migrate" "128"
 	write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
-	write "${kernel}printk_devlog_i" "off"
+	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "0"
@@ -3585,7 +3584,7 @@ com.gameloft.android.GloftNOMP
 
 # Credits to DavidPisces @ GitHub
 config_f2fs() {
-	for i in ${f2fs}mmcblk*/; do
+	for i in /sys/fs/f2fs*/mmcblk*/; do
 		write "${i}cp_interval" "200"
 		write "${i}gc_urgent_sleep_time" "50"
 		write "${i}iostat_enable" "0"
@@ -3911,9 +3910,11 @@ usr_bbn_opt() {
 	pin_proc_on_perf "devfreq_boost"
 	# Pin these kthreads to the perf cluster as they also play a major role in rendering frames to the display
 	# Pin only the first threads as others are non-essential
-	for i in {80..300}; do
+	n=80
+	while [[ "$n" -lt "301" ]]; do
 	pin_proc_on_perf "crtc_event:$i"
 	pin_proc_on_perf "crtc_commit:$i"
+	n=$((n+1))
 	break
 done
 	pin_proc_on_perf "pp_event"
@@ -3982,10 +3983,7 @@ get_scrn_state() {
 	[[ "$scrn_state" == "SCREEN_STATE_OFF" ]] && scrn_on=0 || scrn_on=1
 }
 
-[[ "$qcom" == "true" ]] && {
-	define_gpu_pl
-	disable_adreno_gpu_thrtl
-}
+[[ "$qcom" == "true" ]] && define_gpu_pl
 
 apply_all() {
 	print_info
