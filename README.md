@@ -1,14 +1,14 @@
 # What is King Tweaks Reborn™?
 
-**King Tweaks Reborn™** is a tweaker / optimizer magisk module which aim to improve user-experience.
+**King Tweaks Reborn™** is a optimizer magisk module which aim to improve android user-experience.
 
-It tweaks kernel settings, android settings, and much more to bring a less bloated and intrusive user-experience.
+It tweaks kernel both kernel and android parameters and much more to bring a more clean overall user-experience.
 
 # FAQ
 
-Is it universal?
+Is it universal/will work on X device?
 
-  - Yes, it is, and should work on most of the devices / SOCs properly.
+  - Yes, it should work on most of the devices/SOCs properly, but incompatibility with the kernel may exist.
 
 Can i see what the module is doing on my device?
 
@@ -54,3 +54,5 @@ Thanks to [Kartik Verma](https://github.com/TheHitMan7)
 
 Thanks to [Val Mandares](https://github.com/veez21) 
 and everyone that support my projects.
+
+![Jokes Card](https://readme-jokes.vercel.app/api)<br>

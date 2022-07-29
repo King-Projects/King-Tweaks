@@ -1,0 +1,110 @@
+#!/system/bin/sh
+# KTSR™ by pedro (pedrozzz0 @ GitHub)
+# If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
+modpath="/data/adb/modules/KTSR"
+
+# For debug purposes
+[[ "$1" == "-d" ]] || [[ "$1" == "--debug" ]] && set -x
+
+# Load libraries
+source "$modpath/libs/libcommon.sh"
+source "$modpath/libs/libktsr.sh"
+
+full_ram=$((total_ram * 25 / 100))
+
+current_prof=none
+
+ta_stune="/dev/stune/top-app/tasks"
+ta_cpuset="/dev/cpuset/top-app/tasks"
+
+scrn_on=1
+
+get_scrn_state() {
+	scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
+	[[ "$scrn_state" == "" ]] && scrn_state=$(dumpsys window policy | grep screenState | awk -F '=' '{print $2}')
+	[[ "$scrn_state" == "OFF" ]] && scrn_on=0 || scrn_on=1
+	[[ "$scrn_state" == "SCREEN_STATE_OFF" ]] && scrn_on=0 || scrn_on=1
+}
+
+(
+	while true; do
+		[[ "$current_prof" == "sleeping" ]] && sleep 150 || sleep 60
+		game_pid="$(pgrep -f 'gaijin|tencent.lolm|tmgp.cod|diablo.immortal|tmgp.pubgmhd|tease.mrzhna|legendsmobilefps|legendsmobile|HoYo.Yuanshen|miHoYo.ys.mi|krunker|GenshinImpact|pubg.newstate|game.kwgt|fun.mu3.gp.us|sega|capcom|fallout|Parsecs|streetsof|shinobi|begma|techo.google|cats.google|hyperburner|Machinarium|botanicula|samorost3|Samorost|survivalgb|mir4|nexon|grayraven.en|arknights|AzurLane|gamefsac|masters.|tmgp.sgame|league.wildrift|sonic|psyonix|tgc|jp.garud|mobile.leg|duty.shooter|hypergryph|3002013.android|denachina|bilibili|injustice|hanjiasongshu|funny.|sx2.android|dolphinemu|retroarch|Snes9xPlus|lator.gba|lator.gbc|nexomon|pokemongo|emu.drastic|kabam|marvelbattle|val.craft.z|action.cyber|game.rpg|classicboy|ity.RecRoom|fish.lemudroid|3.fzurita|citra_emu|duckstation|slither|es.fallbuddies|digitalsky|idreams.|egacorp.|yingxiong|netease.|swager.google|dcells.mobile|drumstudios.|games.|Games.|ndroid.common|simulator.|gaming.|elbite.|tware.mask|sozap.|dotemu.|playables.|digital.tt|cobalt.google|purple.google|unit.yellow|unit.mercury|unit.green|unit.silver|bethsoft.|cake.|studio.|starvepocket|astragon.|stardewvalley|sports.|ayonline|otion.|eusa.|haegin|igg|gtarcade.|com.gta|seleuco|innersloth|oo.|imaginalis|ickteam|game.|Game.|emagroup|eramobile|wb.goog.|lego.|app.game|RecklessRacing|carxtech|CarXTech|assoluto|ubisoft|ark.|android_google|ppsspp|tive.|ary.|blackdeser|standoff|criticalops|devltd.|flow.|modernstrike|tons.|estinywarfare|kki.|shadowfight|room.|geonShooter|fats.|minecraftpe|lip.|hitmansniper|obile.legends|anmp.gloft|xis.|ble.|ame.|duty.|ami.|vil.|nic.|brawlstars|clashroyale|clashof|boombeach|hayday|f1mobile|pixel.|titan.cd|survival.rpg|bibi.|racer|es505.|boxing|vio.|gns.pay|oblox.client|monsterdash|packjoyride|xion.|deadbydaylight')"
+			[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$game_pid" "$ta_stune")" ]] || [[ ! "$(grep -Eo "$game_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$game_pid"/oom_score_adj)" == "0" ]] || [[ "$current_prof" == "gaming" ]] && continue || {
+				log_i "User is playing, applying gaming profile..."
+				sync
+				setprop kingd.prof "gaming"
+				change_task_nice "erprint" "0"
+				current_prof=gaming
+				get_scrn_state
+				apply_all_auto
+			}
+			normal_pid="$(pgrep -f 'whatsapp|musically|music|adobe.|telegram|geforcenow|.nekox|disneyplus|avod.third|.challegram|.crunchyroll|mediaclient|mesh.android|danmaku.bili|bili.app.in|encent.qqlive|qiyi.video|video.|hijia.newlive|duowan.kiwi|douyu|youku|aweme.|.reader|.discord|droid.youtube|.katana|.orca|droid.chrome|brave.browser|.UCMobile|.mozilla|.duckduckgo|browser|Browser|opera.|soft.|droid.app')"
+				[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$normal_pid" "$ta_stune")" ]] || [[ ! "$(grep -Eo "$normal_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$normal_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "balanced" ]] && continue || {
+					log_i "User is using social media, streaming and/or etc apps. Applying battery profile..."
+					sync
+					setprop kingd.prof "battery"
+					change_task_nice "erprint" "0"
+					current_prof=battery
+					get_scrn_state
+					apply_all_auto
+				}
+				bench_pid="$(pgrep -f 'geekbench|gensuite|test.uibench|Saplin.CPDT|passmark|app.speedramp|app.beatsync|kinemaster|d.application|throttlingtest|ABenchMark|benchmark')"
+					[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$bench_pid" "$ta_stune")" ]] || [[ ! "$(grep -Eo "$bench_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$bench_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "gaming" ]] && continue || {
+						log_i "User is running benchmark / heavy apps. Applying extreme profile..."
+						sync
+						setprop kingd.prof "extreme"
+						change_task_nice "erprint" "0"
+						current_prof=extreme
+						get_scrn_state
+						apply_all_auto
+					}
+				
+		[[ ! "$scrn_on" == "0" ]] || [[ ! "$current_prof" != "sleeping" ]] && continue || {
+			log_i "Device screen is turned off. Sleeping..."
+			sync
+			setprop kingd.prof "battery"
+			change_task_nice "erprint" "-20"
+			current_prof=sleeping
+			get_scrn_state
+			apply_all_auto
+		}
+
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_sts" == "Charging" ]] || [[ ! "$current_prof" != "charging" ]] && continue || {
+			log_i "Device is charging, reducing power consumption by applying battery profile..."
+			sync
+			setprop kingd.prof "battery"
+			change_task_nice "erprint" "0"
+			current_prof=charging
+			get_scrn_state
+			apply_all_auto
+		}
+
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_pctg" -le "15" ]] || [[ ! "$current_prof" != "lowbatt" ]] && continue || {
+			log_i "Device charge is less than 15%, applying battery profile to prolong battery life..."
+			sync
+			setprop kingd.prof "battery"
+			change_task_nice "erprint" "0"
+			current_prof=lowbatt
+			get_scrn_state
+			apply_all_auto
+		}
+
+		[[ ! "$scrn_on" != "0" ]] || [[ "$avail_ram" -le "$full_ram" ]] && {
+			log_i "RAM available on device is limited, dropping caches to free some of it..."
+			sync
+			write "${vm}drop_caches" "3"
+			get_scrn_state
+		}
+
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$current_prof" != "nobehaviour" ]] && continue || {
+			log_i "No considerable usage found. Applying battery profile by default..."
+			sync
+			setprop kingd.prof "battery"
+			change_task_nice "erprint" "0"
+			current_prof=nobehaviour
+			get_scrn_state
+			apply_all_auto
+		}
+	done
+) &

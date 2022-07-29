@@ -11,7 +11,8 @@ blue=$(tput setaf 4)
 bold=$(tput bold)
 blink=$(tput blink)
 default=$(tput sgr0)
-v="2.0.4"
+v="2.1.0"
+
 vcd=$(grep versionCode= module.prop | sed "s/versionCode=//")
 
 read -r -p 'Build release: ' br
@@ -35,7 +36,7 @@ echo ""
 
 echo "Zipping ${blink}KTSR-$v-$br-$cdn$default..."
 
-zip -0 -r9 -ll "KTSR-$v-$br-$cdn.zip" . -x *.git* -x *.txt -x cleantrash -x mod-util.sh -x adjshield -x fscache-ctrl -x *.yml -x kingauto -x ktsrmenu -x kingtweaks -x *.apk -x *.bak -x libktsr.sh -x kcal.sh -x build.sh
+zip -0 -r9 -ll "KTSR-$v-$br-$cdn.zip" . -x *.git* -x *.txt -x cleantrash -x mod-util.sh -x adjshield -x fscache-ctrl -x *.yml -x kingd -x ktsrmenu -x kingtweaks -x gameoptd -x libcommon.sh -x libktsr.sh -x kcal.sh -x build.sh
 
 mv -f "KTSR-$v-$br-$cdn.zip" ../out
 
