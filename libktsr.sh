@@ -4,6 +4,9 @@
 # Thanks: GR for some help
 # If you wanna use the code as part of your project, please maintain the credits to it's respectives authors
 
+# TODO: remove this non-sense
+source "$modpath/libs/libcommon.sh"
+
 #####################
 # Variables
 #####################
@@ -27,7 +30,7 @@ exynos=false
 mtk=false
 ppm=false
 big_little=false
-lib_ver="1.3.0-master"
+lib_ver="1.3.1-master"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 zram="/sys/module/zram/parameters/"
@@ -3443,13 +3446,13 @@ enable_thermal_disguise() {
 	disable_migt
 	write "$board_sensor_temp" "36000"
 	chmod 000 "$board_sensor_temp" 2>/dev/null
-	nohup pm clear com.xiaomi.gamecenter.sdk.service >/dev/null 2>&1 &
-	nohup pm disable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
+	pm clear com.xiaomi.gamecenter.sdk.service >/dev/null 2>&1 &
+	pm disable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
 }
 
 disable_thermal_disguise() {
 	chmod 644 "$board_sensor_temp" 2>/dev/null
-	nohup pm enable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
+	pm enable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
 }
 
 # Credits to DavidPisces @ GitHub
