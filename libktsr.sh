@@ -4,6 +4,9 @@
 # Thanks: GR for some help
 # If you wanna use the code as part of your project, please maintain the credits to it's respectives authors
 
+# TODO: remove this
+source "$modpath/libs/libcommon.sh" 
+
 #####################
 # Variables
 #####################
