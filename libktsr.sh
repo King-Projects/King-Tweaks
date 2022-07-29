@@ -4,68 +4,12 @@
 # Thanks: GR for some help
 # If you wanna use the code as part of your project, please maintain the credits to it's respectives authors
 
-log_i() {
-	echo "[$(date +%T)]: [*] $1" >>"$klog"
-	echo "" >>"$klog"
-}
-
-log_d() {
-	echo "$1" >>"$kdbg"
-	echo "$1"
-}
-
-log_e() {
-	echo "[!] $1" >>"$kdbg"
-	echo "[!] $1"
-}
-
-notif_start() { su -lp 2000 -c "cmd notification post -S bigtext -t 'King Tweaks is executing' tag 'Applying $ktsr_prof_en profile...'" >/dev/null 2>&1; }
-
-notif_end() { su -lp 2000 -c "cmd notification post -S bigtext -t 'King Tweaks is executing' tag '$ktsr_prof_en profile applied'" >/dev/null 2>&1; }
-
-notif_pt_start() { su -lp 2000 -c "cmd notification post -S bigtext -t 'King Tweaks is executing' tag 'Aplicando perfil $ktsr_prof_pt...'" >/dev/null 2>&1; }
-
-notif_pt_end() { su -lp 2000 -c "cmd notification post -S bigtext -t 'King Tweaks is executing' tag 'Perfil $ktsr_prof_pt aplicado'" >/dev/null 2>&1; }
-
-notif_tr_start() { su -lp 2000 -c "cmd notification post -S bigtext -t 'King Tweaks is executing' tag '$ktsr_prof_tr profili uygulanıyor...'" >/dev/null 2>&1; }
-
-notif_tr_end() { su -lp 2000 -c "cmd notification post -S bigtext -t 'King Tweaks is executing' tag '$ktsr_prof_tr profili uygulandı'" >/dev/null 2>&1; }
-
-notif_id_start() { su -lp 2000 -c "cmd notification post -S bigtext -t 'King Tweaks is executing' tag 'Menerapkan profil $ktsr_prof_id...'" >/dev/null 2>&1; }
-
-notif_id_end() { su -lp 2000 -c "cmd notification post -S bigtext -t 'King Tweaks is executing' tag 'Profil $ktsr_prof_id terpakai'" >/dev/null 2>&1; }
-
-notif_fr_start() { su -lp 2000 -c "cmd notification post -S bigtext -t 'King Tweaks is executing' tag 'Chargement du profil $ktsr_prof_tr...'" >/dev/null 2>&1; }
-
-notif_fr_end() { su -lp 2000 -c "cmd notification post -S bigtext -t 'King Tweaks is executing' tag 'Profil $ktsr_prof_fr chargé'" >/dev/null 2>&1; }
-
-write() {
-	# Bail out if file does not exist
-	[[ ! -f "$1" ]] && return 1
-
-	# Make file writable in case it is not already
-	chmod +w "$1" 2>/dev/null
-
-	# Write the new value and bail if an error is present
-	! echo "$2" >"$1" 2>/dev/null && {
-		log_e "Failed: $1 → $2"
-		return 1
-	}
-	log_d "$1 → $2"
-}
-
-kill_svc() {
-	stop "$1" 2>/dev/null
-	killall -9 "$1" 2>/dev/null
-	killall -9 $(find /vendor/bin -type f -name "$1") 2>/dev/null
-}
-
 #####################
 # Variables
 #####################
 modpath="/data/adb/modules/KTSR/"
-klog="/data/media/0/KTSR/KTSR.log"
-kdbg="/data/media/0/KTSR/KTSR_DBG.log"
+klog="/data/media/0/ktsr/ktsr.log"
+kdbg="/data/media/0/ktsr/ktsr_dbg.log"
 tcp="/proc/sys/net/ipv4/"
 kernel="/proc/sys/kernel/"
 vm="/proc/sys/vm/"
@@ -74,17 +18,6 @@ stune="/dev/stune/"
 lmk="/sys/module/lowmemorykiller/parameters"
 cpuctl="/dev/cpuctl/"
 fs="/proc/sys/fs/"
-bbn_log="/data/media/0/KTSR/bourbon.log"
-bbn_banner="/data/media/0/KTSR/bourbon.info"
-adj_cfg="/data/media/0/KTSR/adjshield.conf"
-adj_log="/data/media/0/KTSR/adjshield.log"
-sys_frm="/system/framework"
-sys_lib="/system/lib64"
-vdr_lib="/vendor/lib64"
-dvk="/data/dalvik-cache"
-apx1="/apex/com.android.art/javalib"
-apx2="/apex/com.android.runtime/javalib"
-fscc_file_list=""
 perfmgr="/proc/perfmgr/"
 one_ui=false
 miui=false
@@ -94,15 +27,13 @@ exynos=false
 mtk=false
 ppm=false
 big_little=false
-toptsdir="/dev/stune/top-app/tasks"
-toptcdir="/dev/cpuset/top-app/tasks"
-scrn_on=1
-lib_ver="1.2.5-master"
+lib_ver="1.3.0-master"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 zram="/sys/module/zram/parameters/"
 lmk="$(pgrep -f lmkd)"
 fpsgo="/sys/module/mtk_fpsgo/parameters/"
+fpsgo_knl="/sys/kernel/fpsgo/parameters/"
 t_msg="/sys/class/thermal/thermal_message/"
 therm="/sys/class/thermal/tz-by-name/"
 
@@ -303,7 +234,7 @@ cpu_min_freq1_2=$(cat /sys/devices/system/cpu/cpu5/cpufreq/scaling_min_freq)
 [[ "$cpu_min_freq1_2" -lt "$cpu_min_freq1" ]] && cpu_min_freq1="$cpu_min_freq1_2"
 [[ "$cpu_min_freq1" -lt "$cpu_min_freq" ]] && cpu_min_freq="$cpu_min_freq1"
 
-# HZ -> MHz
+# HZ → MHz
 cpu_min_clk_mhz=$((cpu_min_freq / 1000))
 cpu_max_clk_mhz=$((cpu_max_freq / 1000))
 
@@ -527,18 +458,18 @@ disable_devfreq_boost() {
 
 dram_max() {
 	for i in /sys/devices/platform/*.dvfsrc/helio-dvfsrc/; do
-		write "/sys/devices/platform/boot_dramboost/dramboost/dramboost" "1"
 		ddr_opp=$(cat "${i}dvfsrc_opp_table" | head -1)
 		write "${i}dvfsrc_force_vcore_dvfs_opp" "${ddr_opp:4:2}"
 	done
+	[[ -d "/sys/devices/platform/boot_dramboost/" ]] && write "/sys/devices/platform/boot_dramboost/dramboost/dramboost" "1"
 	log_i "Enabled DRAM boost"
 }
 
 dram_default() {
 	for i in /sys/devices/platform/*.dvfsrc/helio-dvfsrc/; do
-		write "/sys/devices/platform/boot_dramboost/dramboost/dramboost" "0"
 		write "${i}dvfsrc_force_vcore_dvfs_opp" "-1"
 	done
+	[[ -d "/sys/devices/platform/boot_dramboost/" ]] && write "/sys/devices/platform/boot_dramboost/dramboost/dramboost" "0"
 	log_i "Disabled DRAM boost"
 }
 
@@ -590,8 +521,12 @@ set_therm_pol() {
 	}
 }
 
-get_ka_pid() {
-	[[ "$(pgrep -f kingauto)" != "" ]] && echo "$(pgrep -f kingauto)" || echo "[Service not running]"
+get_kd_pid() {
+	[[ "$(pgrep -f kingd)" != "" ]] && echo "$(pgrep -f kingd)" || echo "[Service not running]"
+}
+
+get_go_pid() {
+	[[ "$(pgrep -f gameoptd)" != "" ]] && echo "$(pgrep -f gameoptd)" || echo "[Service not running]"
 }
 
 print_info() {
@@ -602,20 +537,18 @@ print_info() {
 		** SOC: $soc_mf, $soc
 		** SDK: $sdk
 		** Android version: $avs
-		** Android ID: $(settings get secure android_id)
+		** Android UID: $(settings get secure android_id)
 		** CPU governor: $cpu_gov
 		** Number of CPUs: $nr_cores
 		** CPU freq: $cpu_min_clk_mhz-${cpu_max_clk_mhz}MHz
-		** CPU scheduling type: $cpu_sched
+		** CPU scheduling: $cpu_sched
 		** Arch: $arch
 		** GPU freq: $gpu_min_clk_mhz-${gpu_max_clk_mhz}MHz
 		** GPU model: $gpu_mdl
 		** GPU governor: $gpu_gov
 		** Device: $dvc_brnd, $dvc_cdn
 		** ROM: $rom_info
-		** Screen resolution: $(wm size | awk '{print $3}' | tail -n 1)
-		** Screen density: $(wm density | awk '{print $3}' | tail -n 1) PPI
-		** Supported refresh rate: ${rr}HZ
+		** Max refresh rate: ${rr}HZ
 		** KTSR build version: $bd_ver
 		** KTSR build codename: $bd_cdn
 		** KTSR build release: $bd_rel
@@ -627,7 +560,6 @@ print_info() {
 		** Battery status: $batt_sts
 		** Battery temperature: $batt_tmp°C
 		** Device RAM: ${total_ram}MB
-		** Device available RAM: ${avail_ram}MB
 		** Root: $root
 		** SQLite version: $sql_ver
 		** SQLite build date: $sql_bd_dt
@@ -635,18 +567,19 @@ print_info() {
 		** SELinux: $slnx_stt
 		** Busybox: $bb_ver
 		** Current KTSR PID: $$
-		** Current automatic PID: $(get_ka_pid)
-	
+		** Current king automatic daemon PID: $(get_kd_pid)
+		** Current game optimization daemon PID: $(get_go_pid)
+
 		** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0
 		** Telegram channel: https://t.me/kingprojectz
 		** Telegram group: https://t.me/kingprojectzdiscussion
 		** Thanks to all people involved to make this project possible
-"
+" >> "$klog"
 }
 
 # Stop perf and other userspace processes from tinkering with kernel parameters
 stop_services() {
-	for v in 0 1 2 3 4; do
+	for v in ${0..4}; do
 		kill_svc vendor.qti.hardware.perf@"$v"."$v"-service
 		kill_svc vendor.oneplus.hardware.brain@"$v"."$v"-service
 	done
@@ -683,37 +616,41 @@ stop_services() {
 		start vendor.thermal-engine 2>/dev/null
 		start thermanager 2>/dev/null
 		start thermal_manager 2>/dev/null
-		write "/proc/driver/thermal/sspm_thermal_throttle" "0"
+		write_lock "/proc/driver/thermal/sspm_thermal_throttle" "0"
 	}
+
 	[[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values" || [[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
+	[[ -e "/data/system/mcd/df" ]] && rm -rf "/data/system/mcd/df"
+    [[ -e "/data/system/migt/migt" ]] && rm -rf "/data/system/migt/migt"
+  
 	log_i "Disabled few debug services and userspace daemons that may conflict with KTSR"
 }
 
 disable_core_ctl() {
 	for core_ctl in /sys/devices/system/cpu/cpu*/core_ctl/; do
-		[[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "0"
-		[[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "1"
+		[[ -e "${core_ctl}enable" ]] && write_lock "${core_ctl}enable" "0"
+		[[ -e "${core_ctl}disable" ]] && write_lock "${core_ctl}disable" "1"
 	done
 
-	[[ -d "/sys/power/cpuhotplug/" ]] && write "/sys/power/cpuhotplug/enable" "0" || [[ -d "/sys/power/cpuhotplug/" ]] && write "/sys/power/cpuhotplug/enabled" "0"
-	[[ -d "/sys/devices/system/cpu/cpuhotplug/" ]] && write "/sys/devices/system/cpu/cpuhotplug/enabled" "0"
-	[[ -d "/sys/kernel/intelli_plug/" ]] && write "/sys/kernel/intelli_plug/intelli_plug_active" "0"
-	[[ -d "/sys/module/blu_plug/" ]] && write "/sys/module/blu_plug/parameters/enabled" "0"
-	[[ -d "/sys/devices/virtual/misc/mako_hotplug_control/" ]] && write "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
-	[[ -d "/sys/module/autosmp/" ]] && write "/sys/module/autosmp/parameters/enabled" "0"
-	[[ -d "/sys/kernel/zen_decision/" ]] && write "/sys/kernel/zen_decision/enabled" "0"
-	[[ -d "/proc/hps/" ]] && write "/proc/hps/enabled" "0"
-	[[ -d "/sys/module/scheduler/" ]] && write "/sys/module/scheduler/holders/mtk_core_ctl/parameters/policy_enable" "0"
-	[[ -d "/sys/module/thermal_interface/" ]] && write "/sys/module/thermal_interface/holders/mtk_core_ctl/parameters/policy_enable" "0"
-	[[ -d "/sys/module/mtk_core_ctl/" ]] && write "/sys/module/mtk_core_ctl/policy_enable" "0"
-	[[ -d "/sys/module/cpufreq_sugov_ext/" ]] && write "/sys/module/cpufreq_sugov_ext/holders/mtk_core_ctl/parameters/policy_enable" "0"
-	[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
-	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+	[[ -d "/sys/power/cpuhotplug/" ]] && write_lock "/sys/power/cpuhotplug/enable" "0" || [[ -d "/sys/power/cpuhotplug/" ]] && write_lock "/sys/power/cpuhotplug/enabled" "0"
+	[[ -d "/sys/devices/system/cpu/cpuhotplug/" ]] && write_lock "/sys/devices/system/cpu/cpuhotplug/enabled" "0"
+	[[ -d "/sys/kernel/intelli_plug/" ]] && write_lock "/sys/kernel/intelli_plug/intelli_plug_active" "0"
+	[[ -d "/sys/module/blu_plug/" ]] && write_lock "/sys/module/blu_plug/parameters/enabled" "0"
+	[[ -d "/sys/devices/virtual/misc/mako_hotplug_control/" ]] && write_lock "/sys/devices/virtual/misc/mako_hotplug_control/enabled" "0"
+	[[ -d "/sys/module/autosmp/" ]] && write_lock "/sys/module/autosmp/parameters/enabled" "0"
+	[[ -d "/sys/kernel/zen_decision/" ]] && write_lock "/sys/kernel/zen_decision/enabled" "0"
+	[[ -d "/proc/hps/" ]] && write_lock "/proc/hps/enabled" "0"
+	[[ -d "/sys/module/scheduler/" ]] && write_lock "/sys/module/scheduler/holders/mtk_core_ctl/parameters/policy_enable" "0"
+	[[ -d "/sys/module/thermal_interface/" ]] && write_lock "/sys/module/thermal_interface/holders/mtk_core_ctl/parameters/policy_enable" "0"
+	[[ -d "/sys/module/mtk_core_ctl/" ]] && write_lock "/sys/module/mtk_core_ctl/policy_enable" "0"
+	[[ -d "/sys/module/cpufreq_sugov_ext/" ]] && write_lock "/sys/module/cpufreq_sugov_ext/holders/mtk_core_ctl/parameters/policy_enable" "0"
+	[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write_lock "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
+	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write_lock "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 	log_i "Disabled core control & CPU hotplug"
 }
 
 enable_core_ctl() {
-	for i in 4 6 7; do
+	for i in 0 2 4 6 7; do
 		for core_ctl in /sys/devices/system/cpu/cpu$i/core_ctl/; do
 			[[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
 			[[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "0"
@@ -1044,7 +981,7 @@ cpu_latency() {
 		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
 		# Attempt to set the governor in this order
-		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
+		for governor in walt sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			# Once a matching governor is found, set it and break for this CPU
 			if [[ "$avail_govs" == *"$governor"* ]]; then
 				write "${cpu}scaling_governor" "$governor"
@@ -1101,7 +1038,7 @@ cpu_balanced() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
 		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
+		for governor in walt sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ "$avail_govs" == *"$governor"* ]]; then
 				write "${cpu}scaling_governor" "$governor"
 				break
@@ -1157,7 +1094,7 @@ cpu_extreme() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
 		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
+		for governor in walt sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ "$avail_govs" == *"$governor"* ]]; then
 				write "${cpu}scaling_governor" "$governor"
 				break
@@ -1212,7 +1149,7 @@ cpu_battery() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
 		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
+		for governor in walt sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ "$avail_govs" == *"$governor"* ]]; then
 				write "${cpu}scaling_governor" "$governor"
 				break
@@ -1268,7 +1205,7 @@ cpu_gaming() {
 	for cpu in /sys/devices/system/cpu/cpu*/cpufreq/; do
 		avail_govs="$(cat "${cpu}scaling_available_governors")"
 
-		for governor in sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
+		for governor in walt sched_pixel schedutil ts_schedutil pixel_schedutil blu_schedutil helix_schedutil Runutil electroutil smurfutil smurfutil_flex pixel_smurfutil alucardsched darknesssched pwrutilx interactive; do
 			if [[ "$avail_govs" == *"$governor"* ]]; then
 				write "${cpu}scaling_governor" "$governor"
 				break
@@ -1355,7 +1292,7 @@ enable_ppm() {
 }
 
 disable_ppm() {
-	[[ "$ppm" == "true" ]] && write "/proc/ppm/enabled" "0"
+	[[ "$ppm" == "true" ]] && write_lock "/proc/ppm/enabled" "0"
 	log_i "Tweaked CPU parameters"
 }
 
@@ -1535,6 +1472,10 @@ gpu_latency() {
 		write "/proc/mali/always_on" "1"
 	}
 
+	[[ -d "/proc/gpufreqv2/" ]] && write "/proc/gpufreqv2/fix_target_opp_index" "-1"
+
+	[[ -d "/sys/module/sspm_v3/" ]] && write "/sys/module/sspm_v3/holders/ged/parameters/is_GED_KPI_enabled" "1"
+
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
 	[[ -d "/sys/module/simple_gpu_algorithm/parameters/" ]] && {
@@ -1676,6 +1617,10 @@ gpu_balanced() {
 		write "/proc/mali/always_on" "1"
 	}
 
+	[[ -d "/proc/gpufreqv2/" ]] && write "/proc/gpufreqv2/fix_target_opp_index" "-1"
+
+	[[ -d "/sys/module/sspm_v3/" ]] && write "/sys/module/sspm_v3/holders/ged/parameters/is_GED_KPI_enabled" "1"
+
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
 	[[ -d "/sys/module/simple_gpu_algorithm/" ]] && {
@@ -1811,8 +1756,8 @@ gpu_extreme() {
 	}
 
 	[[ -d "/sys/kernel/ged/" ]] && {
-		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "30"
-		write "/sys/kernel/ged/hal/dvfs_margin_value" "30"
+		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "28"
+		write "/sys/kernel/ged/hal/dvfs_margin_value" "28"
 		write "/sys/kernel/ged/hal/dcs_mode" "0"
 	}
 
@@ -1820,6 +1765,10 @@ gpu_extreme() {
 		write "/proc/mali/dvfs_enable" "1"
 		write "/proc/mali/always_on" "1"
 	}
+
+	[[ -d "/proc/gpufreqv2/" ]] && write "/proc/gpufreqv2/fix_target_opp_index" "-1"
+
+	[[ -d "/sys/module/sspm_v3/" ]] && write "/sys/module/sspm_v3/holders/ged/parameters/is_GED_KPI_enabled" "1"
 
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
@@ -1926,7 +1875,7 @@ gpu_battery() {
 		write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
 		write "/sys/module/ged/parameters/gx_frc_mode" "0"
 		write "/sys/module/ged/parameters/gx_game_mode" "0"
-		write "/sys/module/ged/parameters/is_GED_KPI_enabled" "0"
+		write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
 		write "/sys/module/ged/parameters/boost_amp" "0"
 		write "/sys/module/ged/parameters/gx_boost_on" "0"
 		write "/sys/module/ged/parameters/gpu_idle" "100"
@@ -1950,8 +1899,8 @@ gpu_battery() {
 	}
 
 	[[ -d "/sys/kernel/ged/" ]] && {
-		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "15"
-		write "/sys/kernel/ged/hal/dvfs_margin_value" "15"
+		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "17"
+		write "/sys/kernel/ged/hal/dvfs_margin_value" "17"
 		write "/sys/kernel/ged/hal/dcs_mode" "0"
 	}
 
@@ -1959,6 +1908,10 @@ gpu_battery() {
 		write "/proc/mali/dvfs_enable" "1"
 		write "/proc/mali/always_on" "0"
 	}
+
+	[[ -d "/proc/gpufreqv2/" ]] && write "/proc/gpufreqv2/fix_target_opp_index" "-1"
+
+	[[ -d "/sys/module/sspm_v3/" ]] && write "/sys/module/sspm_v3/holders/ged/parameters/is_GED_KPI_enabled" "1"
 
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
@@ -2095,8 +2048,8 @@ gpu_gaming() {
 	}
 
 	[[ -d "/sys/kernel/ged/" ]] && {
-		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "130"
-		write "/sys/kernel/ged/hal/dvfs_margin_value" "130"
+		write "/sys/kernel/ged/hal/timer_base_dvfs_margin" "30"
+		write "/sys/kernel/ged/hal/dvfs_margin_value" "30"
 		write "/sys/kernel/ged/hal/dcs_mode" "0"
 	}
 
@@ -2104,6 +2057,10 @@ gpu_gaming() {
 		write "/proc/mali/dvfs_enable" "0"
 		write "/proc/mali/always_on" "1"
 	}
+
+	[[ -d "/proc/gpufreqv2/" ]] && write "/proc/gpufreqv2/fix_target_opp_index" "-1"
+
+	[[ -d "/sys/module/sspm_v3/" ]] && write "/sys/module/sspm_v3/holders/ged/parameters/is_GED_KPI_enabled" "1"
 
 	[[ -d "/sys/module/pvrsrvkm/" ]] && write "/sys/module/pvrsrvkm/parameters/gpu_dvfs_enable" "1"
 
@@ -2992,7 +2949,7 @@ cpu_clk_default() {
 	for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
 		write "${pl}scaling_max_freq" "$cpu_max_freq"
 		write "${pl}user_scaling_max_freq" "$cpu_max_freq"
-		for i in 576000 652800 691200 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1689600 1708800 1766400; do
+		for i in 576000 652800 691200 710400 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1689600 1708800 1766400; do
 			[[ "$(grep "$i" "${pl}scaling_available_frequencies")" ]] && {
 				write "${pl}scaling_min_freq" "$i"
 				write "${pl}user_scaling_min_freq" "$i"
@@ -3494,94 +3451,6 @@ disable_thermal_disguise() {
 	nohup pm enable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
 }
 
-write_panel() { echo "$1" >>"$bbn_banner"; }
-
-save_panel() {
-	write_panel "[*] Bourbon - the essential AIO optimizer 
-Version: 1.4.1-r7-master
-Last performed: $(date '+%Y-%m-%d %H:%M:%S')
-FSCC status: $(fscc_status)
-Adjshield status: $(adjshield_status)
-Adjshield config file: $adj_cfg"
-}
-
-adjshield_write_cfg() { echo "$1" >>"$adj_cfg"; }
-
-adjshield_create_default_cfg() {
-	adjshield_write_cfg "# AdjShield Config File
-# Prevent given packages from being killed by LMK by protecting oom_score_adj.
-# List all the package names of the apps which you want to keep alive.
-com.riotgames.league.wildrift
-com.activision.callofduty.shooter
-com.tencent.ig
-com.dts.freefireth
-com.dts.freefiremax
-com.ngame.allstar.eu
-com.pubg.newstate
-com.mobile.legends
-com.ea.gp.fifamobile
-com.gameloft.android.ANMP.GloftA9HM
-com.gameloft.android.ANMP.GloftMVHM
-com.gameloft.android.ANMP.GloftM5HM
-com.netease.idv.googleplay
-com.titan.cd.gb
-com.ea.gp.apexlegendsmobilefps
-com.igg.android.omegalegends
-com.netease.lztgglobal
-com.gamedevltd.modernstrike
-com.gamedevltd.wwh
-com.edkongames.mobs
-com.panzerdog.tacticool
-com.camouflaj.republique
-com.gaijin.xom
-com.feralinteractive.gridas
-com.twoheadedshark.tco
-com.madfingergames.legends
-com.gameinsight.gobandroid
-com.criticalforceentertainment.criticalops
-com.bhvr.deadbydaylight
-com.axlebolt.standoff2
-com.gameloft.android.ANMP.GloftINHM
-com.codemasters.F1Mobile
-com.miHoYo.bh3global
-com.netease.sheltergp
-com.roblox.client
-com.supercell.brawlstars
-com.miniclip.eightballpool
-com.mojang.minecraftpe
-com.supercell.clashroyale
-com.gameloft.android.GloftDMKF
-com.gameloft.android.GloftMBCF
-com.miHoYo.GenshinImpact
-com.garena.game.kgvn
-com.pubg.krmobile
-com.ea.game.pvz2_row
-com.gameloft.android.GloftMOTR
-com.tencent.tmgp.sgame
-com.pixel.gun3d
-com.tencent.iglite
-com.pubg.imobile
-com.playtika.wsop.gp
-com.gameloft.android.GloftR19F
-com.kitkagames.fallbuddies
-com.gameloft.android.ANMP.GloftDMHM
-com.ea.game.nfs14_row
-com.zynga.starwars.hunters
-com.ohbibi.fps
-com.scopely.startrek
-net.wargaming.wot.blitz
-com.blizzard.wtcg.hearthstone
-com.ea.games.r3_row
-com.wb.goog.mkx
-com.kabam.marvelbattle
-com.pixonic.wwr
-com.wb.goog.got.conquest
-com.garena.game.fcsac
-com.pixelfederation.ts2
-com.gameloft.android.GloftNOMP
-"
-}
-
 # Credits to DavidPisces @ GitHub
 config_f2fs() {
 	for i in /sys/fs/f2fs*/mmcblk*/; do
@@ -3622,276 +3491,10 @@ disable_mtk_thrtl() {
 	}
 }
 
-adjshield_start() {
-	rm -rf "$adj_log"
-	rm -rf "$bbn_log"
-	rm -rf "$bbn_banner"
-	# check interval: 120 seconds - Deprecated, use event driven instead
-	${modpath}system/bin/adjshield -o $adj_log -c $adj_cfg &
-}
-
-adjshield_stop() { kill_svc adjshield; }
-
-# return:status
-adjshield_status() {
-	[[ "$(pgrep -f "adjshield")" ]] && echo "Adjshield running. see $adj_log for details." || {
-		# Error: Log file not found
-		err="$(cat "$adj_log" | grep Error | head -1 | cut -d: -f2)"
-		[[ "$err" != "" ]] && echo "Not running. $err." || echo "Not running. Unknown reason."
-	}
-}
-
-# $1:task_name $2:cgroup_name $3:"cpuset"/"stune"
-change_task_cgroup() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			echo "$temp_tid" >"/dev/$3/$2/tasks"
-		done
-	done
-}
-
-# $1:process_name $2:cgroup_name $3:"cpuset"/"stune"
-change_proc_cgroup() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		comm="$(cat "/proc/$temp_pid/comm")"
-		echo "$temp_pid" >"/dev/$3/$2/cgroup.procs"
-	done
-}
-
-# $1:task_name $2:thread_name $3:cgroup_name $4:"cpuset"/"stune"
-change_thread_cgroup() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			[[ "$(echo "$comm" | grep -i -E "$2")" != "" ]] && echo "$temp_tid" >"/dev/$4/$3/tasks"
-		done
-	done
-}
-
-# $1:task_name $2:cgroup_name $3:"cpuset"/"stune"
-change_main_thread_cgroup() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		comm="$(cat "/proc/$temp_pid/comm")"
-		echo "$temp_pid" >"/dev/$3/$2/tasks"
-	done
-}
-
-# $1:task_name $2:hex_mask(0x00000003 is CPU0 and CPU1)
-change_task_affinity() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			taskset -p "$2" "$temp_tid" >>"$bbn_log"
-		done
-	done
-}
-
-# $1:task_name $2:thread_name $3:hex_mask(0x00000003 is CPU0 and CPU1)
-change_thread_affinity() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			[[ "$(echo "$comm" | grep -i -E "$2")" != "" ]] && taskset -p "$3" "$temp_tid" >>"$bbn_log"
-		done
-	done
-}
-
-# $1:task_name $2:nice(relative to 120)
-change_task_nice() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			renice -n +40 -p "$temp_tid"
-			renice -n -19 -p "$temp_tid"
-			renice -n "$2" -p "$temp_tid"
-		done
-	done
-}
-
-# $1:task_name $2:thread_name $3:nice(relative to 120)
-change_thread_nice() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			[[ "$(echo "$comm" | grep -i -E "$2")" != "" ]] && {
-				renice -n +40 -p "$temp_tid"
-				renice -n -19 -p "$temp_tid"
-				renice -n "$3" -p "$temp_tid"
-			}
-		done
-	done
-}
-
-# $1:task_name $2:priority(99-x, 1<=x<=99) (SCHED_RR)
-change_task_rt() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			chrt -p "$temp_tid" "$2" >>"$bbn_log"
-		done
-	done
-}
-
-# $1:task_name $2:priority(99-x, 1<=x<=99) (SCHED_FIFO)
-change_task_rt_ff() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			chrt -f -p "$temp_tid" "$2" >>"$bbn_log"
-		done
-	done
-}
-
-# $1:task_name $2:thread_name $3:priority(99-x, 1<=x<=99)
-change_thread_rt() {
-	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
-		for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-			comm="$(cat "/proc/$temp_pid/task/$temp_tid/comm")"
-			[[ "$(echo "$comm" | grep -i -E "$2")" != "" ]] && chrt -p "$3" "$temp_tid" >>"$bbn_log"
-		done
-	done
-}
-
-# $1:task_name
-# audio thread nice => -19
-change_task_high_prio() { change_task_nice "$1" "-19"; }
-
-# $1:task_name $2:thread_name
-change_thread_high_prio() { change_thread_nice "$1" "$2" "-19"; }
-
-unpin_thread() { change_thread_cgroup "$1" "$2" "" "cpuset"; }
-
-pin_thread_on_pwr() {
-	unpin_thread "$1" "$2"
-	change_thread_affinity "$1" "$2" "0f"
-}
-
-pin_thread_on_mid() {
-	unpin_thread "$1" "$2"
-	change_thread_affinity "$1" "$2" "7f"
-}
-
-pin_thread_on_perf() {
-	unpin_thread "$1" "$2"
-	change_thread_affinity "$1" "$2" "f0"
-}
-
-# $1:task_name
-unpin_proc() { change_task_cgroup "$1" "" "cpuset"; }
-
-pin_proc_on_pwr() {
-	unpin_proc "$1"
-	change_task_affinity "$1" "0f"
-}
-
-pin_proc_on_mid() {
-	unpin_proc "$1"
-	change_task_affinity "$1" "7f"
-}
-
-pin_proc_on_perf() {
-	unpin_proc "$1"
-	change_task_affinity "$1" "f0"
-}
-
-pin_proc_on_all() {
-	unpin_proc "$1"
-	change_task_affinity "$1" "ff"
-}
-
-# avoid matching grep itself
-# ps -Ao pid,args | grep kswapd
-# 150 [kswapd0]
-# 16490 grep kswapd
-rebuild_process_scan_cache() { ps_ret="$(ps -Ao pid,args)"; }
-
-# $1:apk_path $return:oat_path
-# OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
-fscc_path_apk_to_oat() { echo "${1%/*}/oat"; }
-
-# $1:file/dir
-# Only append if object isn't already on file list
-fscc_list_append() { [[ ! "$fscc_file_list" == *"$1"* ]] && fscc_file_list="$fscc_file_list $1"; }
-
-# Only append if object doesn't already exists either on pinner service to avoid unnecessary memory expenses
-fscc_add_obj() {
-	[[ "$sdk" -lt "24" ]] && fscc_list_append "$1" || {
-		while IFS= read -r obj; do
-			[[ "$1" != "$obj" ]] && fscc_list_append "$1"
-		done <<<"$(dumpsys pinner | grep -E -i "$1" | awk '{print $1}')"
-	}
-}
-
-# $1:package_name
-# pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
-fscc_add_apk() { [[ "$1" != "" ]] && fscc_add_obj "$(pm path "$1" | head -1 | cut -d: -f2)"; }
-
-# $1:package_name
-fscc_add_dex() {
-	[[ "$1" != "" ]] \
-		&& {
-			# pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
-			package_apk_path="$(pm path "$1" | head -1 | cut -d: -f2)"
-			# User app: OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
-			fscc_add_obj "${package_apk_path%/*}/oat"
-			# Remove apk name suffix
-			apk_nm="${package_apk_path%/*}"
-			# Remove path prefix
-			apk_nm="${apk_nm##*/}"
-			# System app: get dex & vdex
-			# /data/dalvik-cache/arm64/system@product@priv-app@OPSystemUI@OPSystemUI.apk@classes.dex
-		}
-	for dex in $(find "$dvk" | grep "@$apk_name@"); do
-		fscc_add_obj "$dex"
-	done
-}
-
-fscc_add_app_home() {
-	# Well, not working on Android 7.1
-	intent_act="android.intent.action.MAIN"
-	intent_cat="android.intent.category.HOME"
-	# "  packageName=com.microsoft.launcher"
-	pkg_nm="$(pm resolve-activity -a "$intent_act" -c "$intent_cat" | grep packageName | head -1 | cut -d= -f2)"
-	# /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.dex 16M/31M  53.2%
-	# /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.vdex 120K/120K  100%
-	# /system/priv-app/OPLauncher2/OPLauncher2.apk 14M/30M  46.1%
-	fscc_add_apk "$pkg_nm"
-	fscc_add_dex "$pkg_nm"
-}
-
-fscc_add_app_ime() {
-	# "      packageName=com.baidu.input_yijia"
-	pkg_nm="$(ime list | grep packageName | head -1 | cut -d= -f2)"
-	# /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.dex 5M/17M  33.1%
-	# /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.vdex 2M/7M  28.1%
-	# /system/app/baidushurufa/baidushurufa.apk 1M/28M  5.71%
-	# pin apk file in memory is not valuable
-	fscc_add_dex "$pkg_nm"
-}
-
-# $1:package_name
-fscc_add_apex_lib() { fscc_add_obj "$(find /apex -name "$1" | head -1)"; }
-
-# After appending fscc_file_list
-# Multiple parameters, cannot be warped by ""
-fscc_start() { ${modpath}system/bin/fscache-ctrl -fdlb0 $fscc_file_list; }
-
-fscc_stop() { kill_svc fscache-ctrl; }
-
-# Return:status
-fscc_status() {
-	# Get the correct value after waiting for fscc loading files
-	sleep 2
-	[[ "$(pgrep -f "fscache-ctrl")" ]] && echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache." || echo "Not running."
-}
-
 # Userspace bourbon optimization
 usr_bbn_opt() {
 	# Input dispatcher/reader
 	change_thread_nice "system_server" "Input" "-20"
-	# Not important
-	change_thread_nice "system_server" "Greezer|TaskSnapshot|Oom|SchedBoost" "4"
-	pin_thread_on_pwr "system_server" "CachedAppOpt|Greezer|TaskSnapshot|Oom|PeriodicClean|SchedBoost|mi_analytics_up|mistat_db"
 	# Speed up searching service manager
 	change_task_nice "servicemanag" "-20"
 	# Run KGSL/Mali workers with max priority as both are critical tasks
@@ -3899,6 +3502,7 @@ usr_bbn_opt() {
 	pin_proc_on_perf "kgsl_worker"
 	change_task_nice "mali_jd_thread" "-20"
 	change_task_nice "mali_event_thread" "-20"
+	pin_proc_on_perf "mali-cmar-backe"
 	# Pin RCU tasks on perf cluster
 	pin_proc_on_perf "rcu_task"
 	# Pin LMKD to perf cluster as it is has the important task of reclaiming memory to the system
@@ -3909,7 +3513,7 @@ usr_bbn_opt() {
 	change_task_nice "devfreq_boost" "-20"
 	pin_proc_on_perf "devfreq_boost"
 	# Pin these kthreads to the perf cluster as they also play a major role in rendering frames to the display
-	# Pin only the first threads as others are non-essential
+	# Pin only the first threads as others are non-critical
 	n=80
 	while [[ "$n" -lt "301" ]]; do
 	pin_proc_on_perf "crtc_event:$i"
@@ -3936,7 +3540,7 @@ done
 	# Queue CVP fence request handler with max priority
 	change_task_nice "thread_fence" "-20"
 	# Queue cpu_boost worker with max priority for obvious reasons
-	change_task_rt_ff "cpu_boost_work" "2"
+	change_task_rt "cpu_boost_work" "2"
 	change_task_nice "cpu_boost_work" "-20"
 	# Queue touchscreen related workers with max priority
 	change_task_nice "speedup_resume_wq" "-20"
@@ -3946,17 +3550,17 @@ done
 	change_task_nice "tp_async" "-20"
 	change_task_nice "wakeup_clk_wq" "-20"
 	# Set RT priority correctly for critical tasks
-	change_task_rt_ff "kgsl_worker_thread" "16"
-	change_task_rt_ff "crtc_commit" "16"
-	change_task_rt_ff "crtc_event" "16"
-	change_task_rt_ff "pp_event" "16"
-	change_task_rt_ff "rot_commitq" "5"
-	change_task_rt_ff "rot_doneq" "5"
-	change_task_rt_ff "rot_fenceq" "5"
-	change_task_rt_ff "system_server" "2"
-	change_task_rt_ff "surfaceflinger" "2"
-	change_task_rt_ff "composer" "2"
-	change_task_rt_ff "mali_jd_thread" "60"
+	change_task_rt "kgsl_worker_thread" "16"
+	change_task_rt "crtc_commit" "16"
+	change_task_rt "crtc_event" "16"
+	change_task_rt "pp_event" "16"
+	change_task_rt "rot_commitq" "5"
+	change_task_rt "rot_doneq" "5"
+	change_task_rt "rot_fenceq" "5"
+	change_task_rt "system_server" "2"
+	change_task_rt "surfaceflinger" "2"
+	change_task_rt "composer" "2"
+	change_task_rt "mali_jd_thread" "60"
 	# Boost app boot process
 	change_task_nice "zygote" "-20"
 	# Queue VM writeback with max priority
@@ -3974,13 +3578,6 @@ clear_logs() {
 	sqlite_opt_max_size=1000000
 	[[ "$(stat -t "$kdbg" 2>/dev/null | awk '{print $2}')" -ge "$kdbg_max_size" ]] && rm -rf "$kdbg"
 	[[ "$(stat -t "/data/media/0/KTSR/sqlite_opt.log" 2>/dev/null | awk '{print $2}')" -ge "$sqlite_opt_max_size" ]] && rm -rf "/data/media/0/KTSR/sqlite_opt.log"
-}
-
-get_scrn_state() {
-	scrn_state=$(dumpsys power 2>/dev/null | grep state=O | cut -d "=" -f 2)
-	[[ "$scrn_state" == "" ]] && scrn_state=$(dumpsys window policy | grep screenState | awk -F '=' '{print $2}')
-	[[ "$scrn_state" == "OFF" ]] && scrn_on=0 || scrn_on=1
-	[[ "$scrn_state" == "SCREEN_STATE_OFF" ]] && scrn_on=0 || scrn_on=1
 }
 
 [[ "$qcom" == "true" ]] && define_gpu_pl
@@ -4126,7 +3723,7 @@ latency() {
 automatic() {
 	log_i "Applying automatic profile"
 	sync
-	kingauto &
+	kingd &
 	log_i "Applied automatic profile"
 }
 balanced() {

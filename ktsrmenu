@@ -82,7 +82,7 @@ menu() {
 	echo "$Y* KTSR Command Line Interface (CLI) *$N"
 	echo "$Y*************************************$N"
 	echo ""
-	echo "${G}Version: 1.6.3.8-r14$N"
+	echo "${G}Version: 1.6.3.9-r15$N"
 	echo ""
 	echo "$V[*] Current Profile:$N $G$ktsr_prof_en$N"
 	echo ""
@@ -185,6 +185,21 @@ menu() {
 	echo "[34] Set renderer to Skia OpenGL"
 	echo ""
 	echo "[35] Set renderer to Skia Vulkan"
+	echo ""
+	}
+	[[ "$sdk" -ge "31" ]] && [[ "$(settings get global dynamic_power_savings_enabled)" != "null" ]] && {
+	echo "[36] Set dynamic power savings battery threshold (Option + value you want to set to)"
+	echo ""
+	[[ "$(settings get global dynamic_power_savings_enabled)" != "1" ]] && {
+	echo "[37] Enable dynamic power savings"
+	echo ""
+} || {
+	echo "[38] Disable dynamic power savings"
+	echo ""
+	}
+}
+	[[ "$(settings get system screen_off_timeout)" != "null" ]] && {
+	echo "[39] Set custom screen off timeout [Should be input in ms (5 sec = 5000)]"
 	echo ""
 	}
 	echo "$R[0] Exit$N"
@@ -322,6 +337,7 @@ menu() {
 			settings put system min_refresh_rate 60 2>/dev/null
 			settings put system peak_refresh_rate 60 2>/dev/null
 			settings put system user_refresh_rate 60 2>/dev/null
+			settings put system thermal_limit_refresh_rate 60 2>/dev/null
 			settings put global oneplus_screen_refresh_rate 1 2>/dev/null
 			settings put secure coloros_screen_refresh_rate 2 2>/dev/null
 			service call SurfaceFlinger 1035 i32 1 >/dev/null 2>&1
@@ -333,6 +349,7 @@ menu() {
 			settings put system min_refresh_rate 90 2>/dev/null
 			settings put system peak_refresh_rate 90 2>/dev/null
 			settings put system user_refresh_rate 90 2>/dev/null
+			settings put system thermal_limit_refresh_rate 90 2>/dev/null
 			settings put global oneplus_screen_refresh_rate 0 2>/dev/null
 			settings put secure coloros_screen_refresh_rate 1 2>/dev/null
 			service call SurfaceFlinger 1035 i32 0 >/dev/null 2>&1
@@ -344,6 +361,7 @@ menu() {
 			settings put system min_refresh_rate 120 2>/dev/null
 			settings put system peak_refresh_rate 120 2>/dev/null
 			settings put system user_refresh_rate 120 2>/dev/null
+			settings put system thermal_limit_refresh_rate 120 2>/dev/null
 			settings put global oneplus_screen_refresh_rate 0 2>/dev/null
 			settings put secure coloros_screen_refresh_rate 3 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
@@ -354,6 +372,7 @@ menu() {
 			settings reset system min_refresh_rate >/dev/null 2>&1
 			settings reset system peak_refresh_rate >/dev/null 2>&1
 			settings reset system user_refresh_rate >/dev/null 2>&1
+			settings reset system thermal_limit_refresh_rate >/dev/null 2>&1
 			settings reset global oneplus_screen_refresh_rate >/dev/null 2>&1
 			settings reset secure coloros_screen_refresh_rate >/dev/null 2>&1
 			service call SurfaceFlinger 1035 i32 1 >/dev/null 2>&1
@@ -482,7 +501,7 @@ menu() {
 			[[ "$sdk" -ge "28" ]] && {
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' "$MODDIR/system.prop"
-			echo "${G}[*] Done!$N"
+			echo "$G[*] Done!$N"
 			sleep 2
 			menu
 			} || {
@@ -495,11 +514,59 @@ menu() {
 			[[ "$sdk" -ge "28" ]] && {
 			echo "You may need to reboot to apply the changes"
 			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiavk/' "$MODDIR/system.prop"
-			echo "${G}[*] Done!$N"
+			echo "$G[*] Done!$N"
 			sleep 2
 			menu
 			} || {
 			echo "$R[!] Android version not supported!$N"
+			sleep 2
+			menu
+			}
+			;;
+		"36")
+			[[ "$sdk" -ge "31" ]] && {
+			settings put global dynamic_power_savings_disable_threshold $2
+			echo "$G[*] Done!$N"
+			sleep 2
+			menu
+			} || {
+			echo "$R[!] Android version not supported!$N"
+			sleep 2
+			menu
+			}
+			;;
+		"37")
+			[[ "$sdk" -ge "31" ]] && {
+			settings put global dynamic_power_savings_enabled 1
+			echo "$G[*] Done!$N"
+			sleep 2
+			menu
+			} || {
+			echo "$R[!] Android version not supported!$N"
+			sleep 2
+			menu
+			}
+			;;
+		"38")
+			[[ "$sdk" -ge "31" ]] && { 
+			settings put global dynamic_power_savings_enabled 0
+			echo "$G[*] Done!$N"
+			sleep 2
+			menu
+			} || {
+			echo "$R[!] Android version not supported!$N"
+			sleep 2
+			menu
+			}
+			;;
+		"39")
+			[[ "$(settings get system screen_off_timeout)" != "null" ]] && { 
+			settings put global screen_off_timeout $2
+			echo "$G[*] Done!$N"
+			sleep 2
+			menu
+			} || {
+			echo "$R[!] Node / Android version not supported!$N"
 			sleep 2
 			menu
 			}
@@ -532,25 +599,25 @@ Supported options:
 
 opts=":p:f:h:g-:"
 while getopts "$opts" opt; do
-	case "${opt}" in
+	case "$opt" in
 		-)
-			case "${OPTARG}" in
+			case "$OPTARG" in
 			profile)
-			echo "${B}[*] Applying profile...${N}"
+			echo "$B[*] Applying profile...$N"
 			setprop persist.king.tweaks.prof "$2" 2>/dev/null
-			echo "${G}[*] Done!${N}"
+			echo "$G[*] Done!$N"
 			;;
 			clear-ram)
 			[[ "$2" == "1" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
-				echo "${G}D[*] Done!${N}"
+				echo "$G[*] Done!$N"
 				sleep 2
 			} || [[ "$2" == "2" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
 				am kill-all
-				echo "${G}[*] Done!${N}"
+				echo "$G[*] Done!$N"
 				sleep 3
 			} || [[ "$2" == "3" ]] && {
 				sync
@@ -560,9 +627,9 @@ while getopts "$opts" opt; do
 				while IFS= read -r pkg_nm; do
 					[[ "$pkg_nm" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]] && [[ "$pkg_nm" != "com.pittvandewitt.viperfx" ]] && [[ "$pkg_nm" != "com.topjohnwu.magisk" ]] && [[ "$pkg_nm" != "ridmik.keyboard" ]] && [[ "$pkg_nm" != "com.maxmpz.equalizer" ]] && [[ "$pkg_nm" != "com.miui.screenrecorder" ]] && am force-stop "$pkg_nm"
 				done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
-				echo "${G}[*] Done!${N}"
+				echo "$G[*] Done!$N"
 				sleep 2
-			}
+			} || { echo "$R[!] Error: unexpected or null output!$N"; }
 			;;
 			game)
 			cmd notification set_dnd priority >/dev/null 2>&1
@@ -572,7 +639,7 @@ while getopts "$opts" opt; do
 			sync
 			echo "3" >"/proc/sys/vm/drop_caches"
 			am kill-all
-			echo "${G}[*] Done!${N}"
+			echo "$G[*] Done!$N"
 			;;
 			help)
 			help_me
@@ -584,21 +651,21 @@ while getopts "$opts" opt; do
 			;;
 		esac;;
 		p)
-			echo "${B}[*] Applying profile...${N}"
+			echo "$B[*] Applying profile...$N"
 			setprop persist.king.tweaks.prof "$2" 2>/dev/null
-			echo "${G}[*] Done!${N}"
+			echo "$G[*] Done!$N"
 			;;
 		f)
 			[[ "$2" == "1" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
-				echo "${G}D[*] Done!${N}"
+				echo "$G[*] Done!$N"
 				sleep 2
 			} || [[ "$2" == "2" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
 				am kill-all
-				echo "${G}[*] Done!${N}"
+				echo "$G[*] Done!$N"
 				sleep 3
 			} || [[ "$2" == "3" ]] && {
 				sync
@@ -608,7 +675,7 @@ while getopts "$opts" opt; do
 				while IFS= read -r pkg_nm; do
 					[[ "$pkg_nm" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]] && [[ "$pkg_nm" != "com.pittvandewitt.viperfx" ]] && [[ "$pkg_nm" != "com.topjohnwu.magisk" ]] && [[ "$pkg_nm" != "ridmik.keyboard" ]] && [[ "$pkg_nm" != "com.maxmpz.equalizer" ]] && [[ "$pkg_nm" != "com.miui.screenrecorder" ]] && am force-stop "$pkg_nm"
 				done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
-				echo "${G}[*] Done!${N}"
+				echo "$G[*] Done!$N"
 				sleep 2
 			}
 			;;
@@ -620,7 +687,7 @@ while getopts "$opts" opt; do
 			sync
 			echo "3" >"/proc/sys/vm/drop_caches"
 			am kill-all
-			echo "${G}[*] Done!${N}"
+			echo "$G[*] Done!$N"
 			;;
 		h)
 			help_me
