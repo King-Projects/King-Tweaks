@@ -32,6 +32,7 @@ migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 zram="/sys/module/zram/parameters/"
 lmk="$(pgrep -f lmkd)"
+auto_prof="$(getprop kingd.prof)"
 fpsgo="/sys/module/mtk_fpsgo/parameters/"
 fpsgo_knl="/sys/kernel/fpsgo/parameters/"
 t_msg="/sys/class/thermal/thermal_message/"
@@ -597,7 +598,7 @@ stop_services() {
 	kill_svc oneplus_brain_service
 	kill_svc statsd
 	[[ "$miui" == "false" ]] && kill_svc mlid
-	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
+	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$auto_prof" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
 		kill_svc thermal
 		kill_svc thermald
 		kill_svc thermalservice
@@ -3652,17 +3653,17 @@ apply_all_auto() {
 	bring_all_cores
 	set_thermal_pol
 	disable_mtk_thrtl
-	io_"$(getprop kingauto.prof)"
-	boost_"$(getprop kingauto.prof)"
-	cpu_"$(getprop kingauto.prof)"
-	hmp_"$(getprop kingauto.prof)"
-	gpu_"$(getprop kingauto.prof)"
-	schedtune_"$(getprop kingauto.prof)"
-	sched_ft_"$(getprop kingauto.prof)"
-	sched_"$(getprop kingauto.prof)"
-	uclamp_"$(getprop kingauto.prof)"
-	vm_lmk_"$(getprop kingauto.prof)"
-	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
+	io_"$auto_prof"
+	boost_"$auto_prof"
+	cpu_"$auto_prof"
+	hmp_"$auto_prof"
+	gpu_"$auto_prof"
+	schedtune_"$auto_prof"
+	sched_ft_"$auto_prof"
+	sched_"$auto_prof"
+	uclamp_"$auto_prof"
+	vm_lmk_"$auto_prof"
+	[[ "$auto_prof" == "extreme" ]] || [[ "$auto_prof" == "gaming" ]] && {
 		enable_devfreq_boost
 		dram_max
 		disable_core_ctl
@@ -3693,13 +3694,13 @@ apply_all_auto() {
 		disable_ufs_perf_mode
 		enable_emmc_clk_scl
 	}
-	[[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] && misc_cpu_default || misc_cpu_pwr_saving
-	[[ "$(getprop kingauto.prof)" == "extreme" ]] && {
+	[[ "$auto_prof" == "latency" ]] || [[ "$auto_prof" == "balanced" ]] && misc_cpu_default || misc_cpu_pwr_saving
+	[[ "$auto_prof" == "extreme" ]] && {
 		enable_ppm
 		ppm_policy_max
-	} || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_ppm
-	[[ "$(getprop kingauto.prof)" == "battery" ]] && [[ "$batt_pctg" -lt "20" ]] && cpu_clk_mid || cpu_clk_default
-	[[ "$(getprop kingauto.prof)" == "battery" ]] && {
+	} || [[ "$auto_prof" == "gaming" ]] && disable_ppm
+	[[ "$auto_prof" == "battery" ]] && [[ "$batt_pctg" -lt "20" ]] && cpu_clk_mid || cpu_clk_default
+	[[ "$auto_prof" == "battery" ]] && {
 		enable_kern_batt_saver
 		enable_lcd_prdc
 		perfmgr_pwr_saving

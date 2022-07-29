@@ -33,7 +33,7 @@ get_scrn_state() {
 			[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$game_pid" "$ta_stune")" ]] || [[ ! "$(grep -Eo "$game_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$game_pid"/oom_score_adj)" == "0" ]] || [[ "$current_prof" == "gaming" ]] && continue || {
 				log_i "User is playing, applying gaming profile..."
 				sync
-				setprop kingauto.prof "gaming"
+				setprop kingd.prof "gaming"
 				change_task_nice "erprint" "0"
 				current_prof=gaming
 				get_scrn_state
@@ -43,7 +43,7 @@ get_scrn_state() {
 				[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$normal_pid" "$ta_stune")" ]] || [[ ! "$(grep -Eo "$normal_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$normal_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "balanced" ]] && continue || {
 					log_i "User is using social media, streaming and/or etc apps. Applying battery profile..."
 					sync
-					setprop kingauto.prof "battery"
+					setprop kingd.prof "battery"
 					change_task_nice "erprint" "0"
 					current_prof=battery
 					get_scrn_state
@@ -53,7 +53,7 @@ get_scrn_state() {
 					[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -Eo "$bench_pid" "$ta_stune")" ]] || [[ ! "$(grep -Eo "$bench_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$bench_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "gaming" ]] && continue || {
 						log_i "User is running benchmark / heavy apps. Applying extreme profile..."
 						sync
-						setprop kingauto.prof "extreme"
+						setprop kingd.prof "extreme"
 						change_task_nice "erprint" "0"
 						current_prof=extreme
 						get_scrn_state
@@ -63,7 +63,7 @@ get_scrn_state() {
 		[[ ! "$scrn_on" == "0" ]] || [[ ! "$current_prof" != "sleeping" ]] && continue || {
 			log_i "Device screen is turned off. Sleeping..."
 			sync
-			setprop kingauto.prof "battery"
+			setprop kingd.prof "battery"
 			change_task_nice "erprint" "-20"
 			current_prof=sleeping
 			get_scrn_state
@@ -73,7 +73,7 @@ get_scrn_state() {
 		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_sts" == "Charging" ]] || [[ ! "$current_prof" != "charging" ]] && continue || {
 			log_i "Device is charging, reducing power consumption by applying battery profile..."
 			sync
-			setprop kingauto.prof "battery"
+			setprop kingd.prof "battery"
 			change_task_nice "erprint" "0"
 			current_prof=charging
 			get_scrn_state
@@ -83,7 +83,7 @@ get_scrn_state() {
 		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_pctg" -le "15" ]] || [[ ! "$current_prof" != "lowbatt" ]] && continue || {
 			log_i "Device charge is less than 15%, applying battery profile to prolong battery life..."
 			sync
-			setprop kingauto.prof "battery"
+			setprop kingd.prof "battery"
 			change_task_nice "erprint" "0"
 			current_prof=lowbatt
 			get_scrn_state
@@ -100,7 +100,7 @@ get_scrn_state() {
 		[[ ! "$scrn_on" != "0" ]] || [[ ! "$current_prof" != "nobehaviour" ]] && continue || {
 			log_i "No considerable usage found. Applying battery profile by default..."
 			sync
-			setprop kingauto.prof "battery"
+			setprop kingd.prof "battery"
 			change_task_nice "erprint" "0"
 			current_prof=nobehaviour
 			get_scrn_state
