@@ -40,14 +40,14 @@ mount -o remount,rw /cache 2>/dev/null
 mount -o rw,remount /cache 2>/dev/null
 
 # Logs should go in this file
-LOG="/data/media/0/KTSR/$ID-CLI.log"
-oldLOG="/data/media/0/KTSR/$ID-CLI-old.log"
+LOG="/data/media/0/ktsr/$ID-CLI.log"
+oldLOG="/data/media/0/ktsr/$ID-CLI-old.log"
 
 # Verbose output goes here
-VERLOG="/data/media/0/KTSR/$ID-verbose.log"
-oldVERLOG="/data/media/0/KTSR/$ID-verbose-old.log"
-stdoutLOG="/data/media/0/KTSR/$ID-CLI-STDOUT.log"
-oldstdoutLOG="/data/media/0/KTSR/$ID-CLI-STDOUT-old.log"
+VERLOG="/data/media/0/ktsr/$ID-verbose.log"
+oldVERLOG="/data/media/0/ktsr/$ID-verbose-old.log"
+stdoutLOG="/data/media/0/ktsr/$ID-CLI-STDOUT.log"
+oldstdoutLOG="/data/media/0/ktsr/$ID-CLI-STDOUT-old.log"
 
 # Start logging verbosely
 mv -f "$VERLOG" "$oldVERLOG" 2>/dev/null
@@ -82,7 +82,7 @@ menu() {
 	echo "$Y* KTSR Command Line Interface (CLI) *$N"
 	echo "$Y*************************************$N"
 	echo ""
-	echo "${G}Version: 1.6.3.9-r15$N"
+	echo "${G}Version: 1.6.4.0-r15$N"
 	echo ""
 	echo "$V[*] Current Profile:$N $G$ktsr_prof_en$N"
 	echo ""
