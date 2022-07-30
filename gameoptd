@@ -16,19 +16,19 @@ log_g() {
 	echo "[$(date +%T)]: [*] $1" >>"$glog"
 }
 
-log_i() { echo "$1" >> "$glog"; }
+log_i() { echo "$1" > "$glog"; }
 
 gameopt() {
 	rebuild_ps_cache
-	pin_thread_on_custom "dts.freefireth|league.wildrift|game.kwgt|tencent.lolm|league.wildrift|tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|GenshinImpact" "Apollo-Source|Apollo-File|UnityMain|UnityPreload" "80"
-	pin_thread_on_custom "dts.freefireth|league.wildrift|game.kwgt|tencent.lolm|league.wildrift|tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|GenshinImpact" "NativeThread|Thread-|UnityGfx|UnityMultiRende|ReadManager|UnityChoreograp|Worker Thread" "70"
-	pin_thread_on_pwr "dts.freefireth|league.wildrift|game.kwgt|tencent.lolm|league.wildrift|tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|GenshinImpact" "Audio|MIHOYO_NETWORK|tp_schedule|NDK Media|GVoice|FMOD mixer|FMOD stream|ff_read"
-	pin_thread_on_custom "tmgp.pubgmhd|tencent.ig|ease.jddsaef|etease.g93na|ease.g93natw|legendsmobilefps|legendsmobile|pubg.imobile|tease.mrzhna|hotta.|dw.h5yvzr.yt" "Thread-" "80"
-	pin_thread_on_custom "tmgp.pubgmhd|tencent.ig|legendsmobilefps|legendsmobile|pubg.imobile|tease.mrzhna|hotta.|dw.h5yvzr.yt" "RenderThread|TaskGraphNP|RHIThread|NativeThread|MainThread-UE4" "70"
+	pin_thread_on_custom "dts.freefireth|league.wildrift|game.kwgt|tencent.lolm|league.wildrift|tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|GenshinImpact|.allstar.eu|.game.kgth|fduty.shooter" "Apollo-Source|Apollo-File|UnityMain|UnityPreload" "80"
+	pin_thread_on_custom "dts.freefireth|league.wildrift|game.kwgt|tencent.lolm|league.wildrift|tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|GenshinImpact|.allstar.eu|.game.kgth|fduty.shooter" "NativeThread|Thread-|UnityGfx|UnityMultiRende|ReadManager|UnityChoreograp|Worker Thread" "70"
+	pin_thread_on_pwr "dts.freefireth|league.wildrift|game.kwgt|tencent.lolm|league.wildrift|tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|GenshinImpact|.allstar.eu|.game.kgth|fduty.shooter" "Audio|MIHOYO_NETWORK|tp_schedule|NDK Media|GVoice|FMOD mixer|FMOD stream|ff_read"
+	pin_thread_on_custom "tmgp.pubgmhd|tencent.ig|ease.jddsaef|etease.g93na|ease.g93natw|legendsmobilefps|legendsmobile|pubg.imobile|tease.mrzhna|hotta.|dw.h5yvzr.yt|roblox.client" "Thread-" "80"
+	pin_thread_on_custom "tmgp.pubgmhd|tencent.ig|ease.jddsaef|etease.g93na|ease.g93natw|legendsmobilefps|legendsmobile|pubg.imobile|tease.mrzhna|hotta.|dw.h5yvzr.yt|roblox.client" "RenderThread|TaskGraphNP|RHIThread|NativeThread|MainThread-UE4" "70"
 }
 
 log_i "[*] Game Optimization Daemon - Improving your experience™
-Version: 0.1-r1
+Version: 0.2-r1
 
 [$(date +%T)] [*] Game Optimization Logging started
 
@@ -39,7 +39,7 @@ echo "" >"$cpid"
 (
 while true; do
 sleep 120
-	pid="$(pgrep -f 'dts.freefireth|hotta.|.dw.h5yvzr.yt|GenshinImpact|cent.tmgp.cod|tmgp.pubgmhd|tencent.ig|pubg.imobile|tease.mrzhna|legendsmobilefps|ease.jddsaef|etease.g93na|ease.g93natw|ncent.tmgp.cf|legendsmobile|game.kwgt|obile.legends|tencent.lolm|league.wildrift|tmgp.sgame')"
+	pid="$(pgrep -f 'dts.freefireth|roblox.client|.game.kgth|fduty.shooter|allstar.eu|hotta.|.dw.h5yvzr.yt|GenshinImpact|cent.tmgp.cod|tmgp.pubgmhd|tencent.ig|pubg.imobile|tease.mrzhna|legendsmobilefps|ease.jddsaef|etease.g93na|ease.g93natw|ncent.tmgp.cf|legendsmobile|game.kwgt|obile.legends|tencent.lolm|league.wildrift|tmgp.sgame')"
 	game="$(cat /proc/"$pid"/comm)"
 	[[ ! "$pid" ]] && sleep 2
 	[[ "$pid" != "$(cat "$cpid" | tail -n 1)" ]] && echo "$pid" >> "$cpid" && {
