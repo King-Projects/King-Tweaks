@@ -3,6 +3,9 @@
 # Credits: Uperf, QTI-mem-opt by Matt Yang
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
+# For debug purposes
+[[ "$1" == "--debug" ]] || [[ "$1" == "-d" ]] && set -x
+
 modpath="/data/adb/modules/KTSR"
 
 # Load libraries

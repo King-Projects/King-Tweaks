@@ -2,9 +2,10 @@
 # KTSR™ by pedro (pedrozzz0 @ GitHub)
 # Thanks: tytydraco @ Github
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
-modpath="/data/adb/modules/KTSR"
 
 [[ "$1" == "--debug" ]] || [[ "$1" == "-d" ]] && set -x
+
+modpath="/data/adb/modules/KTSR"
 
 # Load libraries
 source "$modpath/libs/libcommon.sh"
@@ -20,15 +21,15 @@ log_i() { echo "$1" > "$glog"; }
 
 gameopt() {
 	rebuild_ps_cache
-	pin_thread_on_custom "dts.freefireth|league.wildrift|game.kwgt|tencent.lolm|league.wildrift|tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|GenshinImpact|.allstar.eu|.game.kgth|fduty.shooter" "Apollo-Source|Apollo-File|UnityMain|UnityPreload" "80"
-	pin_thread_on_custom "dts.freefireth|league.wildrift|game.kwgt|tencent.lolm|league.wildrift|tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|GenshinImpact|.allstar.eu|.game.kgth|fduty.shooter" "NativeThread|Thread-|UnityGfx|UnityMultiRende|ReadManager|UnityChoreograp|Worker Thread" "70"
-	pin_thread_on_pwr "dts.freefireth|league.wildrift|game.kwgt|tencent.lolm|league.wildrift|tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|GenshinImpact|.allstar.eu|.game.kgth|fduty.shooter" "Audio|MIHOYO_NETWORK|tp_schedule|NDK Media|GVoice|FMOD mixer|FMOD stream|ff_read"
-	pin_thread_on_custom "tmgp.pubgmhd|tencent.ig|ease.jddsaef|etease.g93na|ease.g93natw|legendsmobilefps|legendsmobile|pubg.imobile|tease.mrzhna|hotta.|dw.h5yvzr.yt|roblox.client" "Thread-" "80"
-	pin_thread_on_custom "tmgp.pubgmhd|tencent.ig|ease.jddsaef|etease.g93na|ease.g93natw|legendsmobilefps|legendsmobile|pubg.imobile|tease.mrzhna|hotta.|dw.h5yvzr.yt|roblox.client" "RenderThread|TaskGraphNP|RHIThread|NativeThread|MainThread-UE4" "70"
+	pin_thread_on_custom "dts.freefire|league.wildrift|ncent.game.kwgt|tencent.lolm|league.wildrift|cent.tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|o.GenshinImpact|game.allstar.eu|.game.kgth|lofduty.shooter|lebolt.standoff|flightsimulator|es.deadtrigger2|.carxtech.rally|DriftRacing|omin.protectors|om.sozap.badmen|erdog.tacticool|.netease.ddsfna|cade.next.mrglo|c.project_drift|headedshark.tco|amisu.driftmax2" "Apollo-Source|Apollo-File|UnityMain|UnityPreload" "80"
+	pin_thread_on_custom "dts.freefire|league.wildrift|ncent.game.kwgt|tencent.lolm|league.wildrift|cent.tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|o.GenshinImpact|game.allstar.eu|.game.kgth|lofduty.shooter|lebolt.standoff|flightsimulator|es.deadtrigger2|.carxtech.rally|DriftRacing|omin.protectors|om.sozap.badmen|erdog.tacticool|.netease.ddsfna|cade.next.mrglo|c.project_drift|headedshark.tco|amisu.driftmax2" "NativeThread|Thread-|UnityGfxDeviceW|UnityMultiRende|ReadManager|UnityChoreograp|Worker Thread" "70"
+	pin_thread_on_pwr "dts.freefire|league.wildrift|ncent.game.kwgt|tencent.lolm|league.wildrift|cent.tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|o.GenshinImpact|game.allstar.eu|.game.kgth|lofduty.shooter|xlebolt.standoff|cell.brawlstars|touchgames.dls|flightsimulator|ent.criticalops|td.modernstrike|es.deadtrigger2|.carxtech.rally|DriftRacing|omin.protectors|om.sozap.badmen|erdog.tacticool|.netease.ddsfna|cade.next.mrglo|c.project_drift|headedshark.tco|amisu.driftmax2" "Audio|MIHOYO_NETWORK|tp_schedule|NDK Media|GVoice|FMOD mixer|FMOD stream|ff_read"
+	pin_thread_on_custom "nt.tmgp.pubgmhd|com.tencent.ig|.netease.jddsaef|m.netease.g93na|netease.g93natw|egendsmobilefps|.legendsmobile|om.pubg.imobile|netease.mrzhna|hotta.|dw.h5yvzr.yt|m.roblox.client|cell.brawlstars|touchgames.dls|ent.criticalops|td.modernstrike" "Thread-" "80"
+	pin_thread_on_custom "nt.tmgp.pubgmhd|com.tencent.ig|.netease.jddsaef|m.netease.g93na|netease.g93natw|egendsmobilefps|.legendsmobile|om.pubg.imobile|netease.mrzhna|hotta.|dw.h5yvzr.yt|m.roblox.client|cell.brawlstars|touchgames.dls|ent.criticalops|td.modernstrike" "RenderThread|TaskGraphNP|RHIThread|NativeThread|MainThread-UE4" "70"
 }
 
 log_i "[*] Game Optimization Daemon - Improving your experience™
-Version: 0.2-r1
+Version: 0.3-r1
 
 [$(date +%T)] [*] Game Optimization Logging started
 
@@ -39,7 +40,7 @@ echo "" >"$cpid"
 (
 while true; do
 sleep 120
-	pid="$(pgrep -f 'dts.freefireth|roblox.client|.game.kgth|fduty.shooter|allstar.eu|hotta.|.dw.h5yvzr.yt|GenshinImpact|cent.tmgp.cod|tmgp.pubgmhd|tencent.ig|pubg.imobile|tease.mrzhna|legendsmobilefps|ease.jddsaef|etease.g93na|ease.g93natw|ncent.tmgp.cf|legendsmobile|game.kwgt|obile.legends|tencent.lolm|league.wildrift|tmgp.sgame')"
+	pid="$(pgrep -f 'dts.freefire|headedshark.tco|amisu.driftmax2|td.modernstrike|es.deadtrigger2|cade.next.mrglo|.netease.ddsfna|.carxtech.rally|DriftRacing|omin.protectors|om.sozap.badmen|erdog.tacticool|touchgames.dls|ent.criticalops|flightsimulator|league.wildrift|ncent.game.kwgt|tencent.lolm|league.wildrift|cent.tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|o.GenshinImpact|game.allstar.eu|.game.kgth|lofduty.shooter|lebolt.standoff|nt.tmgp.pubgmhd|com.tencent.ig|.netease.jddsaef|m.netease.g93na|netease.g93natw|egendsmobilefps|.legendsmobile|om.pubg.imobile|netease.mrzhna|hotta.|dw.h5yvzr.yt|m.roblox.client|cell.brawlstars')"
 	game="$(cat /proc/"$pid"/comm)"
 	[[ ! "$pid" ]] && sleep 2
 	[[ "$pid" != "$(cat "$cpid" | tail -n 1)" ]] && echo "$pid" >> "$cpid" && {
