@@ -86,6 +86,7 @@ write_lock() {
 kill_svc() {
 	stop "$1" 2>/dev/null
 	killall -9 "$1" 2>/dev/null
+	killall -9 $(find /system/bin -type f -name "$1") 2>/dev/null
 	killall -9 $(find /vendor/bin -type f -name "$1") 2>/dev/null
 }
 
