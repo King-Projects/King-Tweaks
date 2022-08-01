@@ -30,7 +30,7 @@ exynos=false
 mtk=false
 ppm=false
 big_little=false
-lib_ver="1.3.1-master"
+lib_ver="1.3.2-master"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 zram="/sys/module/zram/parameters/"
@@ -325,7 +325,7 @@ kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 
 [[ "$(command -v busybox)" ]] && {
 	total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
-	total_ram_kb=$(cat /proc/meminfo | awk '/kB/{print $2}' | grep [0-9] | head -1)
+	total_ram_kb=$(grep [0-9] /proc/meminfo | awk '/kB/{print $2}' | head -1)
 	avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')
 } || {
 	total_ram="Please install busybox first"
@@ -3476,14 +3476,14 @@ realme_gt() {
 }
 
 sched_deisolation() {
-	for i in {0..7}; do
+	for i in $(seq 0 7); do
 		write "/sys/devices/system/cpu/sched/set_sched_deisolation" "$i"
 	done
 	chmod 000 "/sys/devices/system/cpu/sched/set_sched_isolation"
 }
 
 sched_isolation() {
-	for i in {0..7}; do
+	for i in $(seq 0 7); do
 		write "/sys/devices/system/cpu/sched/set_sched_isolation" "$i"
 	done
 }
