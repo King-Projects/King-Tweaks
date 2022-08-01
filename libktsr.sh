@@ -3542,8 +3542,6 @@ com.gameloft.android.GloftNOMP
 "
 }
 
-=======
->>>>>>> 0d6d7ce (Bump version to 2.1.0 release)
 # Credits to DavidPisces @ GitHub
 config_f2fs() {
 	for i in ${f2fs}mmcblk*/; do
