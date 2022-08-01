@@ -3454,7 +3454,6 @@ disable_thermal_disguise() {
 	nohup pm enable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
 }
 
-<<<<<<< HEAD
 write_panel() { echo "$1" >>"$bbn_banner"; }
 
 save_panel() {
