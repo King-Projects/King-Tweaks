@@ -303,7 +303,7 @@ arch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}')
 [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]] && mtk=true
 
 # Whether CPU uses BIG.little arch or not
-for i in {1..7}; do
+for i in $(seq 1 7); do
 	[[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
 done
 
@@ -582,7 +582,7 @@ print_info() {
 
 # Stop perf and other userspace processes from tinkering with kernel parameters
 stop_services() {
-	for v in ${0..4}; do
+	for v in $(seq 0 4); do
 		kill_svc vendor.qti.hardware.perf@"$v"."$v"-service
 		kill_svc vendor.oneplus.hardware.brain@"$v"."$v"-service
 	done
@@ -1284,7 +1284,7 @@ misc_cpu_pwr_saving() {
 }
 
 bring_all_cores() {
-	for i in {0..7}; do
+	for i in $(seq 0 7); do
 		write "/sys/devices/system/cpu/cpu$i/online" "1"
 	done
 }
