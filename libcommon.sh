@@ -94,7 +94,7 @@ write_info() { echo "$1" >>"$bbn_info"; }
 
 save_info() {
 	write_info "[*] Bourbon - the essential AIO optimizer 
-Version: 1.4.2-r7-stable
+Version: 1.4.3-r7-stable
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)

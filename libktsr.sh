@@ -30,11 +30,12 @@ exynos=false
 mtk=false
 ppm=false
 big_little=false
-lib_ver="1.3.2-stable"
+lib_ver="1.3.3-stable"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 zram="/sys/module/zram/parameters/"
 lmk="$(pgrep -f lmkd)"
+auto_prof="$(getprop kingd.prof)"
 fpsgo="/sys/module/mtk_fpsgo/parameters/"
 fpsgo_knl="/sys/kernel/fpsgo/parameters/"
 t_msg="/sys/class/thermal/thermal_message/"
@@ -303,7 +304,7 @@ arch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}')
 [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]] && mtk=true
 
 # Whether CPU uses BIG.little arch or not
-for i in $(seq 1 7); do
+for i in 1 2 3 4 5 6 7; do
 	[[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
 done
 
@@ -582,7 +583,7 @@ print_info() {
 
 # Stop perf and other userspace processes from tinkering with kernel parameters
 stop_services() {
-	for v in $(seq 0 4); do
+	for v in 0 1 2 3 4; do
 		kill_svc vendor.qti.hardware.perf@"$v"."$v"-service
 		kill_svc vendor.oneplus.hardware.brain@"$v"."$v"-service
 	done
@@ -600,7 +601,7 @@ stop_services() {
 	kill_svc oneplus_brain_service
 	kill_svc statsd
 	[[ "$miui" == "false" ]] && kill_svc mlid
-	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
+	[[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "gaming" ]] || [[ "$auto_prof" == "extreme" ]] || [[ "$auto_prof" == "gaming" ]] && {
 		kill_svc thermal
 		kill_svc thermald
 		kill_svc thermalservice
@@ -1284,7 +1285,7 @@ misc_cpu_pwr_saving() {
 }
 
 bring_all_cores() {
-	for i in $(seq 0 7); do
+	for i in 0 1 2 3 4 5 6 7; do
 		write "/sys/devices/system/cpu/cpu$i/online" "1"
 	done
 }
@@ -2654,7 +2655,7 @@ sched_latency() {
 	write "${kernel}sched_nr_migrate" "8"
 	[[ -e "${kernel}sched_schedstats" ]] && write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
-	write "${kernel}printk_devlog_i" "off"
+	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "1"
@@ -2704,7 +2705,7 @@ sched_balanced() {
 	write "${kernel}sched_nr_migrate" "32"
 	[[ -e "${kernel}sched_schedstats" ]] && write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
-	write "${kernel}printk_devlog_i" "off"
+	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "1"
@@ -2756,7 +2757,7 @@ sched_extreme() {
 	write "${kernel}sched_nr_migrate" "128"
 	write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
-	write "${kernel}printk_devlog_i" "off"
+	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "0"
@@ -2808,7 +2809,7 @@ sched_battery() {
 	write "${kernel}sched_nr_migrate" "256"
 	write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
-	write "${kernel}printk_devlog_i" "off"
+	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "1"
@@ -2860,7 +2861,7 @@ sched_gaming() {
 	write "${kernel}sched_nr_migrate" "128"
 	write "${kernel}sched_schedstats" "0"
 	[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
-	write "${kernel}printk_devlog_i" "off"
+	write "${kernel}printk_devkmsg" "off"
 	[[ -e "${kernel}timer_migration" ]] && write "${kernel}timer_migration" "0"
 	[[ -e "${kernel}sched_boost" ]] && write "${kernel}sched_boost" "0"
 	[[ -e "/sys/devices/system/cpu/eas/enable" ]] && write "/sys/devices/system/cpu/eas/enable" "0"
@@ -3445,101 +3446,13 @@ enable_thermal_disguise() {
 	disable_migt
 	write "$board_sensor_temp" "36000"
 	chmod 000 "$board_sensor_temp" 2>/dev/null
-	nohup pm clear com.xiaomi.gamecenter.sdk.service >/dev/null 2>&1 &
-	nohup pm disable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
+	pm clear com.xiaomi.gamecenter.sdk.service >/dev/null 2>&1 &
+	pm disable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
 }
 
 disable_thermal_disguise() {
 	chmod 644 "$board_sensor_temp" 2>/dev/null
-	nohup pm enable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
-}
-
-write_panel() { echo "$1" >>"$bbn_banner"; }
-
-save_panel() {
-	write_panel "[*] Bourbon - the essential task optimizer 
-Version: 1.4.1-r7-stable
-Last performed: $(date '+%Y-%m-%d %H:%M:%S')
-FSCC status: $(fscc_status)
-Adjshield status: $(adjshield_status)
-Adjshield config file: $adj_cfg"
-}
-
-adjshield_write_cfg() { echo "$1" >>"$adj_cfg"; }
-
-adjshield_create_default_cfg() {
-	adjshield_write_cfg "# AdjShield Config File
-# Prevent given packages from being killed by LMK by protecting oom_score_adj.
-# List all the package names of the apps which you want to keep alive.
-com.riotgames.league.wildrift
-com.activision.callofduty.shooter
-com.tencent.ig
-com.dts.freefireth
-com.dts.freefiremax
-com.ngame.allstar.eu
-com.pubg.newstate
-com.mobile.legends
-com.ea.gp.fifamobile
-com.gameloft.android.ANMP.GloftA9HM
-com.gameloft.android.ANMP.GloftMVHM
-com.gameloft.android.ANMP.GloftM5HM
-com.netease.idv.googleplay
-com.titan.cd.gb
-com.ea.gp.apexlegendsmobilefps
-com.igg.android.omegalegends
-com.netease.lztgglobal
-com.gamedevltd.modernstrike
-com.gamedevltd.wwh
-com.edkongames.mobs
-com.panzerdog.tacticool
-com.camouflaj.republique
-com.gaijin.xom
-com.feralinteractive.gridas
-com.twoheadedshark.tco
-com.madfingergames.legends
-com.gameinsight.gobandroid
-com.criticalforceentertainment.criticalops
-com.bhvr.deadbydaylight
-com.axlebolt.standoff2
-com.gameloft.android.ANMP.GloftINHM
-com.codemasters.F1Mobile
-com.miHoYo.bh3global
-com.netease.sheltergp
-com.roblox.client
-com.supercell.brawlstars
-com.miniclip.eightballpool
-com.mojang.minecraftpe
-com.supercell.clashroyale
-com.gameloft.android.GloftDMKF
-com.gameloft.android.GloftMBCF
-com.miHoYo.GenshinImpact
-com.garena.game.kgvn
-com.pubg.krmobile
-com.ea.game.pvz2_row
-com.gameloft.android.GloftMOTR
-com.tencent.tmgp.sgame
-com.pixel.gun3d
-com.tencent.iglite
-com.pubg.imobile
-com.playtika.wsop.gp
-com.gameloft.android.GloftR19F
-com.kitkagames.fallbuddies
-com.gameloft.android.ANMP.GloftDMHM
-com.ea.game.nfs14_row
-com.zynga.starwars.hunters
-com.ohbibi.fps
-com.scopely.startrek
-net.wargaming.wot.blitz
-com.blizzard.wtcg.hearthstone
-com.ea.games.r3_row
-com.wb.goog.mkx
-com.kabam.marvelbattle
-com.pixonic.wwr
-com.wb.goog.got.conquest
-com.garena.game.fcsac
-com.pixelfederation.ts2
-com.gameloft.android.GloftNOMP
-"
+	pm enable com.xiaomi.gamecenter.sdk.service/.PidService >/dev/null 2>&1 &
 }
 
 # Credits to DavidPisces @ GitHub
@@ -3563,14 +3476,14 @@ realme_gt() {
 }
 
 sched_deisolation() {
-	for i in $(seq 0 7); do
+	for i in 0 1 2 3 4 5 6 7; do
 		write "/sys/devices/system/cpu/sched/set_sched_deisolation" "$i"
 	done
 	chmod 000 "/sys/devices/system/cpu/sched/set_sched_isolation"
 }
 
 sched_isolation() {
-	for i in $(seq 0 7); do
+	for i in 0 1 2 3 4 5 6 7; do
 		write "/sys/devices/system/cpu/sched/set_sched_isolation" "$i"
 	done
 }
@@ -3592,8 +3505,8 @@ usr_bbn_opt() {
 	change_task_nice "kgsl_worker" "-20"
 	pin_proc_on_perf "kgsl_worker"
 	change_task_nice "mali_jd_thread" "-20"
+	change_task_rt_ff "mali_jd_thread" "60"
 	change_task_nice "mali_event_thread" "-20"
-	pin_proc_on_perf "mali-cmar-backe"
 	# Pin RCU tasks on perf cluster
 	pin_proc_on_perf "rcu_task"
 	# Pin LMKD to perf cluster as it is has the important task of reclaiming memory to the system
@@ -3614,13 +3527,14 @@ usr_bbn_opt() {
 done
 	pin_proc_on_perf "pp_event"
 	pin_proc_on_perf "mdss_fb"
-	pin_proc_on_perf "mdss_display_wake"
+	pin_proc_on_perf "mdss_disp_wake"
 	pin_proc_on_perf "vsync_retire_work"
 	pin_proc_on_perf "pq@"
 	# Pin TS workqueues to perf cluster to reduce latency
 	pin_proc_on_perf "fts_wq"
-	pin_proc_on_perf "ts_workqueu"
-	pin_proc_on_perf "nvt_fwu_wq"
+	pin_proc_on_perf "nvt_ts_workqueu"
+	change_task_rt_ff "nvt_ts_workqueu" "50"
+	change_task_rt_ff "fts_wq" "50"
 	# Pin Samsung HyperHAL, wifi HAL and daemon to perf cluster
 	pin_proc_on_perf "hyper@"
 	pin_proc_on_perf "wifi@"
@@ -3631,7 +3545,7 @@ done
 	# Queue CVP fence request handler with max priority
 	change_task_nice "thread_fence" "-20"
 	# Queue cpu_boost worker with max priority for obvious reasons
-	change_task_rt "cpu_boost_work" "2"
+	change_task_rt_ff "cpu_boost_work" "2"
 	change_task_nice "cpu_boost_work" "-20"
 	# Queue touchscreen related workers with max priority
 	change_task_nice "speedup_resume_wq" "-20"
@@ -3641,17 +3555,16 @@ done
 	change_task_nice "tp_async" "-20"
 	change_task_nice "wakeup_clk_wq" "-20"
 	# Set RT priority correctly for critical tasks
-	change_task_rt "kgsl_worker_thread" "16"
-	change_task_rt "crtc_commit" "16"
-	change_task_rt "crtc_event" "16"
-	change_task_rt "pp_event" "16"
-	change_task_rt "rot_commitq" "5"
-	change_task_rt "rot_doneq" "5"
-	change_task_rt "rot_fenceq" "5"
-	change_task_rt "system_server" "2"
-	change_task_rt "surfaceflinger" "2"
-	change_task_rt "composer" "2"
-	change_task_rt "mali_jd_thread" "60"
+	change_task_rt_ff "kgsl_worker_thread" "16"
+	change_task_rt_ff "crtc_commit" "16"
+	change_task_rt_ff "crtc_event" "16"
+	change_task_rt_ff "pp_event" "16"
+	change_task_rt_ff "rot_commitq" "5"
+	change_task_rt_ff "rot_doneq" "5"
+	change_task_rt_ff "rot_fenceq" "5"
+	change_task_rt_ff "system_server" "2"
+	change_task_rt_ff "surfaceflinger" "2"
+	change_task_rt_ff "composer" "2"
 	# Boost app boot process
 	change_task_nice "zygote" "-20"
 	# Queue VM writeback with max priority
@@ -3743,17 +3656,17 @@ apply_all_auto() {
 	bring_all_cores
 	set_thermal_pol
 	disable_mtk_thrtl
-	io_"$(getprop kingauto.prof)"
-	boost_"$(getprop kingauto.prof)"
-	cpu_"$(getprop kingauto.prof)"
-	hmp_"$(getprop kingauto.prof)"
-	gpu_"$(getprop kingauto.prof)"
-	schedtune_"$(getprop kingauto.prof)"
-	sched_ft_"$(getprop kingauto.prof)"
-	sched_"$(getprop kingauto.prof)"
-	uclamp_"$(getprop kingauto.prof)"
-	vm_lmk_"$(getprop kingauto.prof)"
-	[[ "$(getprop kingauto.prof)" == "extreme" ]] || [[ "$(getprop kingauto.prof)" == "gaming" ]] && {
+	io_"$auto_prof"
+	boost_"$auto_prof"
+	cpu_"$auto_prof"
+	hmp_"$auto_prof"
+	gpu_"$auto_prof"
+	schedtune_"$auto_prof"
+	sched_ft_"$auto_prof"
+	sched_"$auto_prof"
+	uclamp_"$auto_prof"
+	vm_lmk_"$auto_prof"
+	[[ "$auto_prof" == "extreme" ]] || [[ "$auto_prof" == "gaming" ]] && {
 		enable_devfreq_boost
 		dram_max
 		disable_core_ctl
@@ -3784,13 +3697,13 @@ apply_all_auto() {
 		disable_ufs_perf_mode
 		enable_emmc_clk_scl
 	}
-	[[ "$(getprop kingauto.prof)" == "latency" ]] || [[ "$(getprop kingauto.prof)" == "balanced" ]] && misc_cpu_default || misc_cpu_pwr_saving
-	[[ "$(getprop kingauto.prof)" == "extreme" ]] && {
+	[[ "$auto_prof" == "latency" ]] || [[ "$auto_prof" == "balanced" ]] && misc_cpu_default || misc_cpu_pwr_saving
+	[[ "$auto_prof" == "extreme" ]] && {
 		enable_ppm
 		ppm_policy_max
-	} || [[ "$(getprop kingauto.prof)" == "gaming" ]] && disable_ppm
-	[[ "$(getprop kingauto.prof)" == "battery" ]] && [[ "$batt_pctg" -lt "20" ]] && cpu_clk_mid || cpu_clk_default
-	[[ "$(getprop kingauto.prof)" == "battery" ]] && {
+	} || [[ "$auto_prof" == "gaming" ]] && disable_ppm
+	[[ "$auto_prof" == "battery" ]] && [[ "$batt_pctg" -lt "20" ]] && cpu_clk_mid || cpu_clk_default
+	[[ "$auto_prof" == "battery" ]] && {
 		enable_kern_batt_saver
 		enable_lcd_prdc
 		perfmgr_pwr_saving
@@ -3800,6 +3713,7 @@ apply_all_auto() {
 		perfmgr_default
 	}
 }
+
 
 latency() {
 	init=$(date +%s)
