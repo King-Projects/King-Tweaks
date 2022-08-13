@@ -30,11 +30,12 @@ sync
 # Just in case
 sleep 5
 
-# FSCC (similar to PinnerService, Mlock(Unevictable) 200~350MB)
+# Run FSCC (similar to PinnerService, Mlock(Unevictable) 200~350MB)
 fscc_add_obj "$sys_frm/telephony-common.jar"
 fscc_add_obj "$sys_frm/qcnvitems.jar"
 fscc_add_obj "$sys_frm/oat"
 fscc_add_obj "$sys_frm/arm64"
+fscc_add_obj "$sys_frm/miui-okhttp.jar"
 fscc_add_obj "/system/bin/surfaceflinger"
 fscc_add_obj "/system/bin/servicemanager"
 fscc_add_obj "$sys_lib/libbinder.so"
@@ -48,13 +49,22 @@ fscc_add_obj "$sys_lib/libhwui.so"
 fscc_add_obj "$sys_lib/libjpeg.so"
 fscc_add_obj "$sys_lib/libinput.so"
 fscc_add_obj "$sys_lib/libinputreader.so"
+fscc_add_obj "$sys_lib/libvulkan.so"
+fscc_add_obj "$sys_lib/libGLESv3.so"
+fscc_add_obj "$sys_lib/libRScpp.so"
+fscc_add_obj "$sys_lib/libRS.so"
+fscc_add_obj "$sys_lib/libRS_internal.so"
+fscc_add_obj "$sys_lib/libbcinfo.so"
+fscc_add_obj "$sys_lib/libRSDriver.so"
+fscc_add_obj "$sys_lib/libRSCpuRef.so"
+fscc_add_obj "$sys_lib/libblas.so"
 fscc_add_obj "$vdr_lib/libssc.so"
 fscc_add_obj "$vdr_lib/libgsl.so"
 fscc_add_obj "$vdr_lib/sensors.ssc.so"
 fscc_add_obj "$vdr_lib/libCB.so"
+fscc_add_obj "$vdr_lib/librs_adreno.so"
 fscc_add_apex_lib "okhttp.jar"
 fscc_add_apex_lib "bouncycastle.jar"
-
 # Do not pin too many files on low memory devices
 [[ "$total_ram" -ge "2048" ]] && {
 	fscc_add_apk "com.android.systemui"

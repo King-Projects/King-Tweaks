@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # KTSR™ by Pedro (pedrozzz0 @ GitHub)
-# Credits: Ktweak, by Draco (tytydraco @ GitHub), LSpeed, Dan (Paget69 @ XDA), mogoroku @ GitHub, vtools, by helloklf @ GitHub, Cuprum-Turbo-Adjustment, by chenzyadb @ CoolApk, qti-mem-opt & Uperf, by Matt Yang (yc9559 @ CoolApk) and Pandora's Box, by Eight (dlwlrma123 @ GitHub)
+# Credits: Ktweak, by Draco (tytydraco @ GitHub), LSpeed, qti-mem-opt & Uperf, by Matt Yang (yc9559 @ CoolApk) and Pandora's Box, by Eight (dlwlrma123 @ GitHub)
 # If you wanna use the code as part of your project, please maintain the credits to it's respectives authors
 
 #####################
@@ -320,26 +320,31 @@ change_thread_high_prio() { change_thread_nice "$1" "$2" "-19"; }
 
 unpin_thread() { change_thread_cgroup "$1" "$2" "" "cpuset"; }
 
+# 0-3
 pin_thread_on_pwr() {
 	unpin_thread "$1" "$2"
 	change_thread_affinity "$1" "$2" "0f"
 }
 
+# 0-6
 pin_thread_on_mid() {
 	unpin_thread "$1" "$2"
 	change_thread_affinity "$1" "$2" "7f"
 }
 
+# 4-7
 pin_thread_on_perf() {
 	unpin_thread "$1" "$2"
 	change_thread_affinity "$1" "$2" "f0"
 }
 
+# 0-7
 pin_thread_on_all() {
 	unpin_proc "$1"
 	change_task_affinity "$1" "ff"
 }
 
+# $1:task_name $2:thread_name $3:hex_mask
 pin_thread_on_custom() {
 	unpin_thread "$1" "$2"
 	change_thread_affinity "$1" "$2" "$3"
@@ -348,35 +353,36 @@ pin_thread_on_custom() {
 # $1:task_name
 unpin_proc() { change_task_cgroup "$1" "" "cpuset"; }
 
+# 0-3
 pin_proc_on_pwr() {
 	unpin_proc "$1"
 	change_task_affinity "$1" "0f"
 }
 
+# 0-6
 pin_proc_on_mid() {
 	unpin_proc "$1"
 	change_task_affinity "$1" "7f"
 }
 
+# 4-7
 pin_proc_on_perf() {
 	unpin_proc "$1"
 	change_task_affinity "$1" "f0"
 }
 
+# 0-7
 pin_proc_on_all() {
 	unpin_proc "$1"
 	change_task_affinity "$1" "ff"
 }
 
+# $1:task_name $2:hex_mask
 pin_proc_on_custom() {
 	unpin_proc "$1"
 	change_task_affinity "$1" "$2"
 }
 
-# avoid matching grep itself
-# ps -Ao pid,args | grep kswapd
-# 150 [kswapd0]
-# 16490 grep kswapd
 rebuild_ps_cache() { ps_ret="$(ps -Ao pid,args)"; }
 
 # $1:apk_path $return:oat_path

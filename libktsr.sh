@@ -296,7 +296,7 @@ arch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}')
 # GPU model
 [[ "$exynos" == "true" ]] || [[ "$mtk" == "true" ]] && gpu_mdl=$(cat "${gpu}gpuinfo" | awk '{print $1,$2,$3}')
 [[ "$qcom" == "true" ]] && gpu_mdl=$(cat "${gpui}gpu_model")
-[[ "$gpu_mdl" == "" ]] && gpu_mdl=$(dumpsys SurfaceFlinger 2>/dev/null | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
+[[ "$gpu_mdl" == "" ]] && gpu_mdl=$(dumpsys SurfaceFlinger | awk '/GLES/ {print $3,$4,$5}' | tr -d ,)
 
 # Check in which SOC we are running
 [[ "$(getprop ro.boot.hardware | grep qcom)" ]] || [[ "$(getprop ro.soc.manufacturer | grep QTI)" ]] || [[ "$(getprop ro.soc.manufacturer | grep Qualcomm)" ]] || [[ "$(getprop ro.hardware | grep qcom)" ]] || [[ "$(getprop ro.vendor.qti.soc_id)" ]] || [[ "$(getprop gsm.version.ril-impl | grep Qualcomm)" ]] && qcom=true
@@ -316,8 +316,8 @@ dvc_cdn=$(getprop ro.product.device)
 dvc_brnd=$(getprop ro.product.brand)
 
 # Max refresh rate
-rr=$(dumpsys display 2>/dev/null | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
-[[ -z "$rr" ]] && rr=$(dumpsys display 2>/dev/null | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .) || rr=$(dumpsys display 2>/dev/null | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
+rr=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d .)
+[[ -z "$rr" ]] && rr=$(dumpsys display | grep refreshRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .) || rr=$(dumpsys display 2>/dev/null | grep FrameRate | awk -F '=' '{print $6}' | cut -c1-3 | tail -n 1 | tr -d .)
 
 # Kernel info
 kern_ver_name=$(uname -r)
@@ -360,7 +360,7 @@ batt_tmp=$(dumpsys battery 2>/dev/null | awk '/temperature/{print $2}')
 batt_tmp=$((batt_tmp / 10))
 
 # Battery health
-batt_hth=$(dumpsys battery 2>/dev/null | awk '/health/{print $2}')
+batt_hth=$(dumpsys battery | awk '/health/{print $2}')
 [[ -e "/sys/class/power_supply/battery/health" ]] && batt_hth=$(cat /sys/class/power_supply/battery/health)
 case "$batt_hth" in
 	1) batt_hth="Unknown" ;;
@@ -374,7 +374,7 @@ case "$batt_hth" in
 esac
 
 # Battery status
-batt_sts=$(dumpsys battery 2>/dev/null | awk '/status/{print $2}')
+batt_sts=$(dumpsys battery | awk '/status/{print $2}')
 [[ -e "/sys/class/power_supply/battery/status" ]] && batt_sts=$(cat /sys/class/power_supply/battery/status)
 case "$batt_sts" in
 	1) batt_sts="Unknown" ;;
@@ -387,7 +387,7 @@ esac
 
 # Battery total capacity
 batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
-[[ "$batt_cpct" == "" ]] && batt_cpct=$(dumpsys batterystats 2>/dev/null | awk '/Capacity:/{print $2}' | cut -d "," -f 1)
+[[ "$batt_cpct" == "" ]] && batt_cpct=$(dumpsys batterystats | awk '/Capacity:/{print $2}' | cut -d "," -f 1)
 
 # MA → MAh
 [[ "$batt_cpct" -ge "1000000" ]] && batt_cpct=$((batt_cpct / 1000))
@@ -2387,7 +2387,7 @@ schedtune_gaming() {
 		write "${stune}background/schedtune.util_est_en" "0"
 		write "${stune}background/schedtune.ontime_en" "0"
 		write "${stune}background/schedtune.prefer_high_cap" "0"
-		write "${stune}foreground/schedtune.boost" "0"
+		write "${stune}foreground/schedtune.boost" "40"
 		write "${stune}foreground/schedtune.colocate" "0"
 		write "${stune}foreground/schedtune.prefer_idle" "1"
 		write "${stune}foreground/schedtune.sched_boost" "15"
@@ -2422,7 +2422,7 @@ schedtune_gaming() {
 		write "${stune}camera-daemon/schedtune.util_est_en" "0"
 		write "${stune}camera-daemon/schedtune.ontime_en" "0"
 		write "${stune}camera-daemon/schedtune.prefer_high_cap" "0"
-		write "${stune}top-app/schedtune.boost" "100"
+		write "${stune}top-app/schedtune.boost" "60"
 		write "${stune}top-app/schedtune.colocate" "1"
 		write "${stune}top-app/schedtune.prefer_idle" "1"
 		write "${stune}top-app/schedtune.sched_boost" "15"
@@ -3501,18 +3501,19 @@ usr_bbn_opt() {
 	change_thread_nice "system_server" "Input" "-20"
 	# Speed up searching service manager
 	change_task_nice "servicemanag" "-20"
+	# Not important
+	pin_thread_on_pwr "system_server" "VoiceReporter|StatsCompanionS|backup|Sync|Observer|TaskSnapshot|backup-|CachedAppOptimi|PeriodicCleaner"
+	pin_thread_on_pwr "ndroid.systemui" "mi_analytics_up"
 	# Run KGSL/Mali workers with max priority as both are critical tasks
 	change_task_nice "kgsl_worker" "-20"
 	pin_proc_on_perf "kgsl_worker"
 	change_task_nice "mali_jd_thread" "-20"
 	change_task_rt_ff "mali_jd_thread" "60"
 	change_task_nice "mali_event_thread" "-20"
-	# Pin RCU tasks on perf cluster
-	pin_proc_on_perf "rcu_task"
-	# Pin LMKD to perf cluster as it is has the important task of reclaiming memory to the system
-	pin_proc_on_perf "lmkd"
 	# Pin HWC on perf cluster to reduce jitter
 	pin_proc_on_perf "composer"
+	# Let SF use all cores
+	pin_proc_on_all "surfaceflinger"
 	# Let devfreq boost run with max priority and set it to perf cluster as it is a critical task (boosting DDR)
 	change_task_nice "devfreq_boost" "-20"
 	pin_proc_on_perf "devfreq_boost"
@@ -3535,10 +3536,8 @@ done
 	pin_proc_on_perf "nvt_ts_workqueu"
 	change_task_rt_ff "nvt_ts_workqueu" "50"
 	change_task_rt_ff "fts_wq" "50"
-	# Pin Samsung HyperHAL, wifi HAL and daemon to perf cluster
+	# Pin Samsung HyperHAL to perf cluster
 	pin_proc_on_perf "hyper@"
-	pin_proc_on_perf "wifi@"
-	pin_proc_on_perf "wlbtd"
 	# Queue UFS/EMMC clock gating with max priority
 	change_task_nice "ufs_clk_gating" "-20"
 	change_task_nice "mmc_clk_gate" "-20"
@@ -3574,6 +3573,7 @@ done
 	# Those workqueues don't need max priority
 	change_task_nice "ipawq" "0"
 	change_task_nice "iparepwq" "0"
+	change_task_nice "wlan_logging_th" "10"
 }
 
 clear_logs() {
@@ -3713,7 +3713,6 @@ apply_all_auto() {
 		perfmgr_default
 	}
 }
-
 
 latency() {
 	init=$(date +%s)
