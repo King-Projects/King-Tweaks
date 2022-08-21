@@ -90,6 +90,20 @@ kill_svc() {
 	killall -9 $(find /vendor/bin -type f -name "$1") 2>/dev/null
 }
 
+[[ "$(command -v busybox)" ]] && {
+	total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
+	total_ram_kb=$(grep [0-9] /proc/meminfo | awk '/kB/{print $2}' | head -1)
+	avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')
+} || {
+	total_ram=$(free -m | awk '/Mem:/{print $2}')
+	total_ram_kb=$(grep [0-9] /proc/meminfo | awk '/kB/{print $2}' | head -1)
+	avail_ram=$(free -m | awk '/Mem:/{print $7}')
+}
+
+sdk=$(getprop ro.build.version.sdk)
+[[ "$sdk" == "" ]] && sdk=$(getprop ro.vendor.build.version.sdk)
+[[ "$sdk" == "" ]] && sdk=$(getprop ro.vndk.version)
+
 write_info() { echo "$1" >>"$bbn_info"; }
 
 save_info() {

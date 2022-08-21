@@ -180,27 +180,27 @@ menu() {
 		echo ""
 	}
 	[[ "$sdk" -ge "28" ]] && {
-	echo "[33] Set renderer to OpenGL"
-	echo ""
-	echo "[34] Set renderer to Skia OpenGL"
-	echo ""
-	echo "[35] Set renderer to Skia Vulkan"
-	echo ""
+		echo "[33] Set renderer to OpenGL"
+		echo ""
+		echo "[34] Set renderer to Skia OpenGL"
+		echo ""
+		echo "[35] Set renderer to Skia Vulkan"
+		echo ""
 	}
 	[[ "$sdk" -ge "31" ]] && [[ "$(settings get global dynamic_power_savings_enabled)" != "null" ]] && {
-	echo "[36] Set dynamic power savings battery threshold (Option + value you want to set to)"
-	echo ""
-	[[ "$(settings get global dynamic_power_savings_enabled)" != "1" ]] && {
-	echo "[37] Enable dynamic power savings"
-	echo ""
-} || {
-	echo "[38] Disable dynamic power savings"
-	echo ""
+		echo "[36] Set dynamic power savings battery threshold (Option + value you want to set to)"
+		echo ""
+		[[ "$(settings get global dynamic_power_savings_enabled)" != "1" ]] && {
+			echo "[37] Enable dynamic power savings"
+			echo ""
+		} || {
+			echo "[38] Disable dynamic power savings"
+			echo ""
+		}
 	}
-}
 	[[ "$(settings get system screen_off_timeout)" != "null" ]] && {
-	echo "[39] Set custom screen off timeout [Should be input in ms (5 sec = 5000)]"
-	echo ""
+		echo "[39] Set custom screen off timeout [Should be input in ms (5 sec = 5000)]"
+		echo ""
 	}
 	echo "$R[0] Exit$N"
 	echo ""
@@ -486,89 +486,89 @@ menu() {
 			;;
 		"33")
 			[[ "$sdk" -ge "28" ]] && {
-			echo "You may need to reboot to apply the changes"
-			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=opengl/' "$MODDIR/system.prop"
-			echo "${G}[*] Done!$N"
-			sleep 2
-			menu
+				echo "You may need to reboot to apply the changes"
+				sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=opengl/' "$MODDIR/system.prop"
+				echo "${G}[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"34")
 			[[ "$sdk" -ge "28" ]] && {
-			echo "You may need to reboot to apply the changes"
-			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' "$MODDIR/system.prop"
-			echo "$G[*] Done!$N"
-			sleep 2
-			menu
+				echo "You may need to reboot to apply the changes"
+				sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' "$MODDIR/system.prop"
+				echo "$G[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"35")
 			[[ "$sdk" -ge "28" ]] && {
-			echo "You may need to reboot to apply the changes"
-			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiavk/' "$MODDIR/system.prop"
-			echo "$G[*] Done!$N"
-			sleep 2
-			menu
+				echo "You may need to reboot to apply the changes"
+				sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiavk/' "$MODDIR/system.prop"
+				echo "$G[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"36")
 			[[ "$sdk" -ge "31" ]] && {
-			settings put global dynamic_power_savings_disable_threshold $2
-			echo "$G[*] Done!$N"
-			sleep 2
-			menu
+				settings put global dynamic_power_savings_disable_threshold $2
+				echo "$G[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"37")
 			[[ "$sdk" -ge "31" ]] && {
-			settings put global dynamic_power_savings_enabled 1
-			echo "$G[*] Done!$N"
-			sleep 2
-			menu
+				settings put global dynamic_power_savings_enabled 1
+				echo "$G[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"38")
-			[[ "$sdk" -ge "31" ]] && { 
-			settings put global dynamic_power_savings_enabled 0
-			echo "$G[*] Done!$N"
-			sleep 2
-			menu
+			[[ "$sdk" -ge "31" ]] && {
+				settings put global dynamic_power_savings_enabled 0
+				echo "$G[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"39")
-			[[ "$(settings get system screen_off_timeout)" != "null" ]] && { 
-			settings put global screen_off_timeout $2
-			echo "$G[*] Done!$N"
-			sleep 2
-			menu
+			[[ "$(settings get system screen_off_timeout)" != "null" ]] && {
+				settings put global screen_off_timeout $2
+				echo "$G[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Node / Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Node / Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"0")
@@ -602,54 +602,55 @@ while getopts "$opts" opt; do
 	case "$opt" in
 		-)
 			case "$OPTARG" in
-			profile)
-			echo "$B[*] Applying profile...$N"
-			setprop persist.king.tweaks.prof "$2" 2>/dev/null
-			echo "$G[*] Done!$N"
+				profile)
+					echo "$B[*] Applying profile...$N"
+					setprop persist.king.tweaks.prof "$2" 2>/dev/null
+					echo "$G[*] Done!$N"
+					;;
+				clear-ram)
+					[[ "$2" == "1" ]] && {
+						sync
+						echo "3" >"/proc/sys/vm/drop_caches"
+						echo "$G[*] Done!$N"
+						sleep 2
+					} || [[ "$2" == "2" ]] && {
+						sync
+						echo "3" >"/proc/sys/vm/drop_caches"
+						am kill-all
+						echo "$G[*] Done!$N"
+						sleep 3
+					} || [[ "$2" == "3" ]] && {
+						sync
+						echo "3" >"/proc/sys/vm/drop_caches"
+						am kill-all
+						sleep 3
+						while IFS= read -r pkg_nm; do
+							[[ "$pkg_nm" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]] && [[ "$pkg_nm" != "com.pittvandewitt.viperfx" ]] && [[ "$pkg_nm" != "com.topjohnwu.magisk" ]] && [[ "$pkg_nm" != "ridmik.keyboard" ]] && [[ "$pkg_nm" != "com.maxmpz.equalizer" ]] && [[ "$pkg_nm" != "com.miui.screenrecorder" ]] && am force-stop "$pkg_nm"
+						done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
+						echo "$G[*] Done!$N"
+						sleep 2
+					} || { echo "$R[!] Error: unexpected or null output!$N"; }
+					;;
+				game)
+					cmd notification set_dnd priority >/dev/null 2>&1
+					settings put system screen_brightness_mode 0 >/dev/null 2>&1
+					wm set-user-rotation lock >/dev/null 2>&1
+					wm user-rotation lock >/dev/null 2>&1
+					sync
+					echo "3" >"/proc/sys/vm/drop_caches"
+					am kill-all
+					echo "$G[*] Done!$N"
+					;;
+				help)
+					help_me
+					;;
+				*)
+					[[ "$OPTERR" == "1" ]] && [[ "${opts:0:1}" != ":" ]] && {
+						help_me
+					}
+					;;
+			esac
 			;;
-			clear-ram)
-			[[ "$2" == "1" ]] && {
-				sync
-				echo "3" >"/proc/sys/vm/drop_caches"
-				echo "$G[*] Done!$N"
-				sleep 2
-			} || [[ "$2" == "2" ]] && {
-				sync
-				echo "3" >"/proc/sys/vm/drop_caches"
-				am kill-all
-				echo "$G[*] Done!$N"
-				sleep 3
-			} || [[ "$2" == "3" ]] && {
-				sync
-				echo "3" >"/proc/sys/vm/drop_caches"
-				am kill-all
-				sleep 3
-				while IFS= read -r pkg_nm; do
-					[[ "$pkg_nm" != "com.termux" ]] && [[ "$pkg_nm" != "jackpal.androidterm" ]] && [[ "$pkg_nm" != "yarolegovich.materialterminal" ]] && [[ "$pkg_nm" != "com.google.android.inputmethod.latin" ]] && [[ "$pkg_nm" != "com.termoneplus" ]] && [[ "$pkg_nm" != "com.pittvandewitt.viperfx" ]] && [[ "$pkg_nm" != "com.topjohnwu.magisk" ]] && [[ "$pkg_nm" != "ridmik.keyboard" ]] && [[ "$pkg_nm" != "com.maxmpz.equalizer" ]] && [[ "$pkg_nm" != "com.miui.screenrecorder" ]] && am force-stop "$pkg_nm"
-				done <<<"$(pm list packages -e -3 | grep package | cut -f 2 -d ":")"
-				echo "$G[*] Done!$N"
-				sleep 2
-			} || { echo "$R[!] Error: unexpected or null output!$N"; }
-			;;
-			game)
-			cmd notification set_dnd priority >/dev/null 2>&1
-			settings put system screen_brightness_mode 0 >/dev/null 2>&1
-			wm set-user-rotation lock >/dev/null 2>&1
-			wm user-rotation lock >/dev/null 2>&1
-			sync
-			echo "3" >"/proc/sys/vm/drop_caches"
-			am kill-all
-			echo "$G[*] Done!$N"
-			;;
-			help)
-			help_me
-			;;
-			*)
-			[[ "$OPTERR" == "1" ]] && [[ "${opts:0:1}" != ":" ]] && {
-            help_me
-            }
-			;;
-		esac;;
 		p)
 			echo "$B[*] Applying profile...$N"
 			setprop persist.king.tweaks.prof "$2" 2>/dev/null

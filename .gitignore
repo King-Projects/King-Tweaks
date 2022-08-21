@@ -5,5 +5,5 @@ service.sh
 common
 META-INF
 module.prop
-.config.yml
+_config.yml
 ktsr-cleanup.sh

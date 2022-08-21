@@ -30,7 +30,7 @@ sync
 # Just in case
 sleep 5
 
-# Run FSCC (similar to PinnerService, Mlock(Unevictable) 200~350MB)
+# Run FSCC (similar to Android's PinnerService, Mlock(Unevictable) 200~350MB)
 fscc_add_obj "$sys_frm/telephony-common.jar"
 fscc_add_obj "$sys_frm/qcnvitems.jar"
 fscc_add_obj "$sys_frm/oat"
@@ -82,7 +82,7 @@ fscc_start
 adjshield_stop
 adjshield_start
 rebuild_ps_cache
-usr_bbn_opt
+bbn_opt
 
 # Save mode to be applied automatically after reboot
 save_info
@@ -91,7 +91,6 @@ disable_crc
 enable_fp_boost
 config_fs
 config_dyn_fsync
-disable_msm_thermal
 fix_dt2w
 config_tcp
 enable_usb_fast_chrg

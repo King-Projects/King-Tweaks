@@ -5,7 +5,7 @@
 # If you wanna use the code as part of your project, please maintain the credits to it's respectives authors
 
 # TODO: remove this
-source "$modpath/libs/libcommon.sh" 
+source "$modpath/libs/libcommon.sh"
 
 #####################
 # Variables
@@ -30,7 +30,7 @@ exynos=false
 mtk=false
 ppm=false
 big_little=false
-lib_ver="1.3.3-master"
+lib_ver="1.3.4-master"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 zram="/sys/module/zram/parameters/"
@@ -323,16 +323,6 @@ rr=$(dumpsys display | awk '/PhysicalDisplayInfo/{print $4}' | cut -c1-3 | tr -d
 kern_ver_name=$(uname -r)
 kern_bd_dt=$(uname -v | awk '{print $5, $6, $7, $8, $9, $10}')
 
-[[ "$(command -v busybox)" ]] && {
-	total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
-	total_ram_kb=$(grep [0-9] /proc/meminfo | awk '/kB/{print $2}' | head -1)
-	avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')
-} || {
-	total_ram="Please install busybox first"
-	total_ram_kb="Please install busybox first"
-	avail_ram="Please install busybox first"
-}
-
 # CPU scheduling model
 for cpu in $(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_governors); do
 	case "$cpu" in
@@ -400,11 +390,6 @@ batt_cpct=$(cat /sys/class/power_supply/battery/charge_full_design)
 rom_info=$(getprop ro.build.description | awk '{print $1,$3,$4,$5}')
 [[ "$rom_info" == "" ]] && rom_info=$(getprop ro.bootimage.build.description | awk '{print $1,$3,$4,$5}')
 [[ "$rom_info" == "" ]] && rom_info=$(getprop ro.system.build.description | awk '{print $1,$3,$4,$5}')
-
-# Android SDK
-sdk=$(getprop ro.build.version.sdk)
-[[ "$sdk" == "" ]] && sdk=$(getprop ro.vendor.build.version.sdk)
-[[ "$sdk" == "" ]] && sdk=$(getprop ro.vndk.version)
 
 # ARV (Android release version)
 arv=$(getprop ro.build.version.release)
@@ -578,7 +563,7 @@ print_info() {
 		** Telegram channel: https://t.me/kingprojectz
 		** Telegram group: https://t.me/kingprojectzdiscussion
 		** Thanks to all people involved to make this project possible
-" >> "$klog"
+" >>"$klog"
 }
 
 # Stop perf and other userspace processes from tinkering with kernel parameters
@@ -625,8 +610,8 @@ stop_services() {
 
 	[[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values" || [[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
 	[[ -e "/data/system/mcd/df" ]] && rm -rf "/data/system/mcd/df"
-    [[ -e "/data/system/migt/migt" ]] && rm -rf "/data/system/migt/migt"
-  
+	[[ -e "/data/system/migt/migt" ]] && rm -rf "/data/system/migt/migt"
+
 	log_i "Disabled few debug services and userspace daemons that may conflict with KTSR"
 }
 
@@ -650,11 +635,15 @@ disable_core_ctl() {
 	[[ -d "/sys/module/cpufreq_sugov_ext/" ]] && write_lock "/sys/module/cpufreq_sugov_ext/holders/mtk_core_ctl/parameters/policy_enable" "0"
 	[[ -e "/sys/module/mt_hotplug_mechanism/parameters/g_enable" ]] && write_lock "/sys/module/mt_hotplug_mechanism/parameters/g_enable" "0"
 	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write_lock "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
+	[[ -d "/sys/module/msm_thermal/" ]] && {
+		write_lock "/sys/module/msm_thermal/core_control/enabled" "0"
+		write_lock "/sys/module/msm_thermal/parameters/enabled" "N"
+	}
 	log_i "Disabled core control & CPU hotplug"
 }
 
 enable_core_ctl() {
-	for i in 0 2 4 6 7; do
+	for i in 0 2 4 6; do
 		for core_ctl in /sys/devices/system/cpu/cpu$i/core_ctl/; do
 			[[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
 			[[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "0"
@@ -2672,11 +2661,14 @@ sched_latency() {
 	[[ -e "/sys/module/opchain/parameters/chain_on" ]] && write "/sys/module/opchain/parameters/chain_on" "0"
 	[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 	[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
-	write "/sys/kernel/debug/debug_enabled" "0"
+	[[ -d "/sys/kernel/debug/" ]] && {
+		write "/sys/kernel/debug/debug_enabled" "0"
+		write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
+		write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
+	}
+	write "/sys/kernel/mi_reclaim/enable" "0"
 	write "/sys/kernel/rcu_expedited" "0"
 	write "/sys/kernel/rcu_normal" "1"
-	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
-	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
 	write "/sys/devices/system/cpu/sched/hint_enable" "0"
 	write "${kernel}slide_boost_enabled" "0"
 	write "${kernel}launcher_boost_enabled" "0"
@@ -2685,7 +2677,7 @@ sched_latency() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	write "${kernel}sched_force_lb_enable" "0"
+	write_lock "${kernel}sched_force_lb_enable" "0"
 	write "/sys/power/pm_freeze_timeout" "1000"
 	log_i "Tweaked various kernel parameters to a better overall performance"
 }
@@ -2724,11 +2716,14 @@ sched_balanced() {
 	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 	[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 	[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
-	write "/sys/kernel/debug/debug_enabled" "0"
+	[[ -d "/sys/kernel/debug/" ]] && {
+		write "/sys/kernel/debug/debug_enabled" "0"
+		write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
+		write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "1"
+	}
+	write "/sys/kernel/mi_reclaim/enable" "0"
 	write "/sys/kernel/rcu_expedited" "0"
 	write "/sys/kernel/rcu_normal" "1"
-	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
-	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "1"
 	write "/sys/devices/system/cpu/sched/hint_enable" "0"
 	write "${kernel}slide_boost_enabled" "0"
 	write "${kernel}launcher_boost_enabled" "0"
@@ -2737,7 +2732,7 @@ sched_balanced() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	write "${kernel}sched_force_lb_enable" "0"
+	write_lock "${kernel}sched_force_lb_enable" "0"
 	write "/sys/power/pm_freeze_timeout" "1000"
 	log_i "Tweaked various kernel parameters to a better overall performance"
 }
@@ -2776,11 +2771,14 @@ sched_extreme() {
 	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 	[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 	[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
-	write "/sys/kernel/debug/debug_enabled" "0"
+	[[ -d "/sys/kernel/debug/" ]] && {
+		write "/sys/kernel/debug/debug_enabled" "0"
+		write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "1"
+		write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
+	}
+	write "/sys/kernel/mi_reclaim/enable" "0"
 	write "/sys/kernel/rcu_expedited" "0"
 	write "/sys/kernel/rcu_normal" "1"
-	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "1"
-	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
 	write "/sys/devices/system/cpu/sched/hint_enable" "0"
 	write "${kernel}slide_boost_enabled" "0"
 	write "${kernel}launcher_boost_enabled" "0"
@@ -2789,7 +2787,7 @@ sched_extreme() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	write "${kernel}sched_force_lb_enable" "0"
+	write_lock "${kernel}sched_force_lb_enable" "0"
 	write "/sys/power/pm_freeze_timeout" "1000"
 	log_i "Tweaked various kernel parameters to a better overall performance"
 }
@@ -2828,11 +2826,14 @@ sched_battery() {
 	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 	[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 	[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
-	write "/sys/kernel/debug/debug_enabled" "0"
+	[[ -d "/sys/kernel/debug/" ]] && {
+		write "/sys/kernel/debug/debug_enabled" "0"
+		write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
+		write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "1"
+	}
+	write "/sys/kernel/mi_reclaim/enable" "0"
 	write "/sys/kernel/rcu_expedited" "0"
 	write "/sys/kernel/rcu_normal" "1"
-	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
-	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "1"
 	write "/sys/devices/system/cpu/sched/hint_enable" "0"
 	write "${kernel}slide_boost_enabled" "0"
 	write "${kernel}launcher_boost_enabled" "0"
@@ -2841,7 +2842,7 @@ sched_battery() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	write "${kernel}sched_force_lb_enable" "0"
+	write_lock "${kernel}sched_force_lb_enable" "0"
 	write "/sys/power/pm_freeze_timeout" "1000"
 	log_i "Tweaked various kernel parameters to a better overall performance"
 }
@@ -2880,11 +2881,14 @@ sched_gaming() {
 	[[ -e "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" ]] && write "/sys/devices/system/cpu/cpufreq/hotplug/cpu_hotplug_disable" "1"
 	[[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
 	[[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
-	write "/sys/kernel/debug/debug_enabled" "0"
+	[[ -d "/sys/kernel/debug/" ]] && {
+		write "/sys/kernel/debug/debug_enabled" "0"
+		write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "1"
+		write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
+	}
+	write "/sys/kernel/mi_reclaim/enable" "0"
 	write "/sys/kernel/rcu_expedited" "0"
 	write "/sys/kernel/rcu_normal" "1"
-	write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "1"
-	write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
 	write "/sys/devices/system/cpu/sched/hint_enable" "0"
 	write "${kernel}slide_boost_enabled" "0"
 	write "${kernel}launcher_boost_enabled" "0"
@@ -2893,7 +2897,7 @@ sched_gaming() {
 		[[ -e "$bcl_md" ]] && write "$bcl_md" "0"
 	done
 	write "/proc/sys/dev/tty/ldisc_autoload" "0"
-	write "${kernel}sched_force_lb_enable" "0"
+	write_lock "${kernel}sched_force_lb_enable" "0"
 	write "/sys/power/pm_freeze_timeout" "1000"
 	log_i "Tweaked various kernel parameters to a better overall performance"
 }
@@ -3145,15 +3149,6 @@ vm_lmk_gaming() {
 	log_i "Tweaked various VM and LMK parameters for a improved user-experience"
 }
 
-disable_msm_thermal() {
-	[[ -d "/sys/module/msm_thermal/" ]] && {
-		write "/sys/module/msm_thermal/vdd_restriction/enabled" "0"
-		write "/sys/module/msm_thermal/core_control/enabled" "0"
-		write "/sys/module/msm_thermal/parameters/enabled" "N"
-		log_i "Disabled msm_thermal"
-	}
-}
-
 enable_pewq() {
 	[[ -e "/sys/module/workqueue/parameters/power_efficient" ]] && {
 		write "/sys/module/workqueue/parameters/power_efficient" "Y"
@@ -3274,7 +3269,8 @@ enable_lpm() {
 	for lpm in /sys/module/lpm_levels/system/*/*/*/; do
 		[[ -d "/sys/module/lpm_levels/" ]] && {
 			write "/sys/module/lpm_levels/parameters/lpm_prediction" "N"
-			write "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "Y"
+			write "/sys/module/lpm_levels/parameters/lpm_ipi_prediction" "N"
+			write "/sys/module/lpm_levels/parameters/bias_hyst" "2"
 			write "/sys/module/lpm_levels/parameters/sleep_disabled" "N"
 			write "${lpm}idle_enabled" "Y"
 			write "${lpm}suspend_enabled" "Y"
@@ -3490,42 +3486,41 @@ sched_isolation() {
 
 disable_mtk_thrtl() {
 	[[ -e "${t_msg}market_download_limit" ]] && {
-	write "${t_msg}market_download_limit" "0"
-	write "${t_msg}modem_limit" "0"
+		write "${t_msg}market_download_limit" "0"
+		write "${t_msg}modem_limit" "0"
 	}
 }
 
 # Userspace bourbon optimization
-usr_bbn_opt() {
+bbn_opt() {
 	# Input dispatcher/reader
 	change_thread_nice "system_server" "Input" "-20"
 	# Speed up searching service manager
 	change_task_nice "servicemanag" "-20"
-	# Not important
-	pin_thread_on_pwr "system_server" "VoiceReporter|StatsCompanionS|backup|Sync|Observer|TaskSnapshot|backup-|CachedAppOptimi|PeriodicCleaner"
-	pin_thread_on_pwr "ndroid.systemui" "mi_analytics_up"
 	# Run KGSL/Mali workers with max priority as both are critical tasks
 	change_task_nice "kgsl_worker" "-20"
 	pin_proc_on_perf "kgsl_worker"
 	change_task_nice "mali_jd_thread" "-20"
-	change_task_rt_ff "mali_jd_thread" "60"
+	change_task_rt "mali_jd_thread" "50"
 	change_task_nice "mali_event_thread" "-20"
 	# Pin HWC on perf cluster to reduce jitter
 	pin_proc_on_perf "composer"
 	# Let SF use all cores
 	pin_proc_on_all "surfaceflinger"
 	# Let devfreq boost run with max priority and set it to perf cluster as it is a critical task (boosting DDR)
+	# Don't run it with RT_MAX_PRIO - 1 though
 	change_task_nice "devfreq_boost" "-20"
 	pin_proc_on_perf "devfreq_boost"
+	change_task_rt "devfreq_boost" "50"
 	# Pin these kthreads to the perf cluster as they also play a major role in rendering frames to the display
 	# Pin only the first threads as others are non-critical
 	n=80
 	while [[ "$n" -lt "301" ]]; do
-	pin_proc_on_perf "crtc_event:$i"
-	pin_proc_on_perf "crtc_commit:$i"
-	n=$((n+1))
-	break
-done
+		pin_proc_on_perf "crtc_event:$i"
+		pin_proc_on_perf "crtc_commit:$i"
+		n=$((n + 1))
+		break
+	done
 	pin_proc_on_perf "pp_event"
 	pin_proc_on_perf "mdss_fb"
 	pin_proc_on_perf "mdss_disp_wake"
@@ -3534,8 +3529,8 @@ done
 	# Pin TS workqueues to perf cluster to reduce latency
 	pin_proc_on_perf "fts_wq"
 	pin_proc_on_perf "nvt_ts_workqueu"
-	change_task_rt_ff "nvt_ts_workqueu" "50"
-	change_task_rt_ff "fts_wq" "50"
+	change_task_rt "nvt_ts_workqueu" "50"
+	change_task_rt "fts_wq" "50"
 	# Pin Samsung HyperHAL to perf cluster
 	pin_proc_on_perf "hyper@"
 	# Queue UFS/EMMC clock gating with max priority
@@ -3544,7 +3539,7 @@ done
 	# Queue CVP fence request handler with max priority
 	change_task_nice "thread_fence" "-20"
 	# Queue cpu_boost worker with max priority for obvious reasons
-	change_task_rt_ff "cpu_boost_work" "2"
+	change_task_rt "cpu_boost_work" "2"
 	change_task_nice "cpu_boost_work" "-20"
 	# Queue touchscreen related workers with max priority
 	change_task_nice "speedup_resume_wq" "-20"
@@ -3554,16 +3549,16 @@ done
 	change_task_nice "tp_async" "-20"
 	change_task_nice "wakeup_clk_wq" "-20"
 	# Set RT priority correctly for critical tasks
-	change_task_rt_ff "kgsl_worker_thread" "16"
-	change_task_rt_ff "crtc_commit" "16"
-	change_task_rt_ff "crtc_event" "16"
-	change_task_rt_ff "pp_event" "16"
-	change_task_rt_ff "rot_commitq" "5"
-	change_task_rt_ff "rot_doneq" "5"
-	change_task_rt_ff "rot_fenceq" "5"
-	change_task_rt_ff "system_server" "2"
-	change_task_rt_ff "surfaceflinger" "2"
-	change_task_rt_ff "composer" "2"
+	change_task_rt "kgsl_worker_thread" "6"
+	change_task_rt "crtc_commit" "16"
+	change_task_rt "crtc_event" "16"
+	change_task_rt "pp_event" "16"
+	change_task_rt "rot_commitq" "5"
+	change_task_rt "rot_doneq" "5"
+	change_task_rt "rot_fenceq" "5"
+	change_task_rt "system_server" "2"
+	change_task_rt "surfaceflinger" "2"
+	change_task_rt "composer" "2"
 	# Boost app boot process
 	change_task_nice "zygote" "-20"
 	# Queue VM writeback with max priority
