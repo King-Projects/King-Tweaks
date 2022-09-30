@@ -1,6 +1,6 @@
 #!/system/bin/sh
-# KTSR™ by pedro (pedrozzz0 @ GitHub)
-# Thanks: tytydraco @ Github
+# KTSR™, Game Optimization Daemon™ by pedro (pedrozzz0 @ GitHub)
+# Thanks to tytydraco @ GitHub
 # If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
 
 [[ "$1" == "--debug" ]] || [[ "$1" == "-d" ]] && set -x
@@ -12,43 +12,289 @@ source "$modpath/libs/libcommon.sh"
 
 glog="/data/media/0/ktsr/game_opt.log"
 cpid="/data/media/0/ktsr/pid"
+bbn_log="/data/media/0/ktsr/bourbon.log"
+gpu_tune_enable="/data/media/0/ktsr/enable_gpu_tune"
+gpu_tune="/data/media/0/ktsr/gpu_tune"
 
-log_g() {
-	echo "[$(date +%T)]: [*] $1" >>"$glog"
+[[ "$(cat "$gpu_tune_enable")" == "1" ]] && enable_gpu_tune=1 || enable_gpu_tune=0
+
+# Tasks
+uni_task="UnityMain|UnityGfxDeviceW|Apollo-Source|Apollo-File"
+uni_coop_task="UnityPreload|ace_worker|NativeThread|Thread-|UnityMultiRende|AsyncReadManage|UnityChoreograp|Worker Thread|CoreThread"
+etc_task="MIHOYO_NETWORK|Audio|tp_schedule|GVoice|FMOD mixer|FMOD stream|ff_read"
+render_task="GameThread|Thread-|GLThread|RenderThread"
+render_coop_task="NativeThread|SDLThread|RHIThread|TaskGraphNP|MainThread-UE4"
+
+# Games
+list_uni="com.dts.freefire|com.riotgames.|com.tencent.game.|com.tencent.lolm|com.tencent.tmgp.|com.mobile.legends|com.miHoYo.|com.ngame.allstar.eu|com.garena.game.|callofduty.shooter|com.axlebolt.standoff|flightsimulator|com.madfingergames.|com.carxtech.|DriftRacing|omin.protectors|com.sozap.|com.panzerdog.|com.netease.ddsfna|cade.next.mrglo|c.project_drift|headedshark.tco|com.tiramisu.|com.infinityvector.assolutoracing|com.nekki.shadowfight3|ite.sgameGlobal|com.gaijin.xom"
+list_etc="com.StudioFurukawa.|com.dts.freefire|com.riotgames.|com.tencent.game.|com.tencent.lolm|com.tencent.tmgp.|com.mobile.legends|com.miHoYo.|com.ngame.allstar.eu|com.garena.game.|callofduty.shooter|com.axlebolt.standoff|com.supercell.brawlstars|com.firsttouchgames.dls|flightsimulator|ent.criticalops|com.gamedevltd.|com.madfingergames.|com.carxtech.|DriftRacing|omin.protectors|com.sozap.|com.panzerdog.|com.netease.ddsfna|cade.next.mrglo|c.project_drift|headedshark.tco|com.tiramisu.|com.tencent.ig|com.netease.jddsaef|com.netease.g93na|com.netease.g93natw|apexlegendsmobile|com.pubg.imobile|com.netease.mrzhna|hotta.|dw.h5yvzr.yt|n.c1game.naslim|.assolutoracing|squareenix.lis|walkingdead|com.nekki.shadowfight3|ite.sgameGlobal|com.gaijin.xom"
+list_render="com.StudioFurukawa.|com.tencent.mf.uam|com.tencent.tmgp.|com.tencent.ig|com.netease.jddsaef|com.netease.g93na|apexlegendsmobile|com.pubg.imobile|com.netease.mrzhna|hotta.|dw.h5yvzr.yt|com.roblox.client|com.supercell.brawlstars|com.touchgames.dls|ent.criticalops|com.gamedevltd.|n.c1game.naslim|squareenix.lis|walkingdead|ting.action.pvp"
+list_unified="com.StudioFurukawa.|com.tencent.mf.uam|com.gaijin.xom|ting.action.pvp|ite.sgameGlobal|com.dts.freefire|squareenix.lis|com.nekki.shadowfight3|walkingdead|headedshark.tco|com.tiramisu.|com.infinityvector.assolutoracing|n.c1game.naslim|com.gamedevltd.|com.madfingergames.|cade.next.mrglo|com.netease.ddsfna|com.carxtech.|DriftRacing|omin.protectors|com.sozap.|com.panzerdog.|com.firsttouchgames.dls|ent.criticalops|flightsimulator|com.riotgames.|com.garena.game.|com.tencent.lolm|com.tencent.tmgp.|com.mobile.legends|com.tencent.tmgp.|com.miHoYo.|com.ngame.allstar.eu|callofdutyshooter|com.axlebolt.standoff|com.tencent.ig|com.netease.jddsaef|com.netease.g93na|apexlegendsmobile|com.pubg.imobile|com.netease.mrzhna|hotta.|dw.h5yvzr.yt|com.roblox.client|com.supercell.brawlstars"
+
+notif_g_start() { su -lp 2000 -c "cmd notification post -S bigtext -t 'GOD is executing' tag 'Optimizing $game threads...'" >/dev/null 2>&1; }
+
+notif_g_end() { su -lp 2000 -c "cmd notification post -S bigtext -t 'GOD is executing' tag 'Optimization done!'" >/dev/null 2>&1; }
+
+log_g() { echo "[$(date +%T)]: [*] $1" >>"$glog"; }
+
+log_g_i() { echo "$1" >"$glog"; }
+
+log_g_e() { echo "[$(date +'%Y-%m-%d %T')]: [!] $1" >>"$glog"; }
+
+[[ -d "/sys/class/kgsl/kgsl-3d0/" ]] && {
+	gpu="/sys/class/kgsl/kgsl-3d0/"
+	qcom=true
+	gpu_num_pl=$(cat "${gpu}num_pwrlevels")
+	gpu_min_pl=$((gpu_num_pl - 1))
 }
 
-log_i() { echo "$1" > "$glog"; }
+for gpul2 in /sys/devices/*.mali/; do
+	[[ -d "$gpul2" ]] && {
+		gpu="$gpul2"
+		qcom=false
+	}
+done
 
-gameopt() {
+for gpul3 in /sys/devices/platform/*.gpu/; do
+	[[ -d "$gpul3" ]] && {
+		gpu="$gpul3"
+		qcom=false
+	}
+done
+
+for gpul4 in /sys/devices/platform/mali-*/; do
+	[[ -d "$gpul4" ]] && {
+		gpu="$gpul4"
+		qcom=false
+	}
+done
+
+for gpul5 in /sys/devices/platform/*.mali/; do
+	[[ -d "$gpul5" ]] && {
+		gpu="$gpul5"
+		qcom=false
+	}
+done
+
+for gpul6 in /sys/class/misc/mali*/device/devfreq/gpufreq/; do
+	[[ -d "$gpul6" ]] && {
+		gpu="$gpul6"
+		qcom=false
+	}
+done
+
+for gpul7 in /sys/class/misc/mali*/device/devfreq/*.gpu/; do
+	[[ -d "$gpul7" ]] && {
+		gpu="$gpul7"
+		qcom=false
+	}
+done
+
+for gpul8 in /sys/devices/platform/*.mali/misc/mali0/; do
+	[[ -d "$gpul8" ]] && {
+		gpu="$gpul8"
+		qcom=false
+	}
+done
+
+for gpul9 in /sys/devices/platform/mali.*/; do
+	[[ -d "$gpul9" ]] && {
+		gpu="$gpul9"
+		qcom=false
+	}
+done
+
+for gpul10 in /sys/devices/platform/*.mali/devfreq/*.mali/subsystem/*.mali; do
+	[[ -d "$gpul10" ]] && {
+		gpu="$gpul10"
+		qcom=false
+	}
+done
+
+for gpul11 in /sys/class/misc/mali*/device/; do
+	[[ -d "$gpul11" ]] && {
+		gpu="$gpul11"
+		qcom=false
+	}
+done
+
+gameopt_apply() {
 	rebuild_ps_cache
-	pin_thread_on_perf "dts.freefire|league.wildrift|ncent.game.kwgt|tencent.lolm|league.wildrift|cent.tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|o.GenshinImpact|game.allstar.eu|.game.kgth|lofduty.shooter|lebolt.standoff|flightsimulator|es.deadtrigger2|.carxtech.rally|DriftRacing|omin.protectors|om.sozap.badmen|erdog.tacticool|.netease.ddsfna|cade.next.mrglo|c.project_drift|headedshark.tco|amisu.driftmax2|.assolutoracing|garena.game.cod|ki.shadowfight3" "Apollo-Source|Apollo-File|UnityMain|UnityPreload|mali-cmar-backe"
-	pin_thread_on_mid "dts.freefire|league.wildrift|ncent.game.kwgt|tencent.lolm|league.wildrift|cent.tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|o.GenshinImpact|game.allstar.eu|.game.kgth|lofduty.shooter|lebolt.standoff|flightsimulator|es.deadtrigger2|.carxtech.rally|DriftRacing|omin.protectors|om.sozap.badmen|erdog.tacticool|.netease.ddsfna|cade.next.mrglo|c.project_drift|headedshark.tco|amisu.driftmax2|.assolutoracing|garena.game.cod|ki.shadowfight3" "NativeThread|Thread-|UnityGfxDeviceW|UnityMultiRende|ReadManager|UnityChoreograp|Worker Thread"
-	pin_thread_on_pwr "dts.freefire|league.wildrift|ncent.game.kwgt|tencent.lolm|league.wildrift|cent.tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|o.GenshinImpact|game.allstar.eu|.game.kgth|lofduty.shooter|xlebolt.standoff|cell.brawlstars|touchgames.dls|flightsimulator|ent.criticalops|td.modernstrike|es.deadtrigger2|.carxtech.rally|DriftRacing|omin.protectors|om.sozap.badmen|erdog.tacticool|.netease.ddsfna|cade.next.mrglo|c.project_drift|headedshark.tco|amisu.driftmax2|nt.tmgp.pubgmhd|com.tencent.ig|.netease.jddsaef|m.netease.g93na|netease.g93natw|egendsmobilefps|.legendsmobile|om.pubg.imobile|netease.mrzhna|hotta.|dw.h5yvzr.yt|n.c1game.naslim|.assolutoracing|garena.game.cod|squareenix.lis|walkingdead|ki.shadowfight3" "Audio|MIHOYO_NETWORK|tp_schedule|NDK Media|GVoice|FMOD mixer|FMOD stream|ff_read"
-	pin_thread_on_perf "nt.tmgp.pubgmhd|com.tencent.ig|.netease.jddsaef|m.netease.g93na|netease.g93natw|egendsmobilefps|.legendsmobile|om.pubg.imobile|netease.mrzhna|hotta.|dw.h5yvzr.yt|m.roblox.client|cell.brawlstars|touchgames.dls|ent.criticalops|td.modernstrike|n.c1game.naslim|squareenix.lis|walkingdead" "Thread-|GLThread|SDLThread|mali-cmar-backe"
-	pin_thread_on_mid "nt.tmgp.pubgmhd|com.tencent.ig|.netease.jddsaef|m.netease.g93na|netease.g93natw|egendsmobilefps|.legendsmobile|om.pubg.imobile|netease.mrzhna|hotta.|dw.h5yvzr.yt|m.roblox.client|cell.brawlstars|touchgames.dls|ent.criticalops|td.modernstrike|n.c1game.naslim|squareenix.lis|walkingdead" "RenderThread|TaskGraphNP|RHIThread|NativeThread|MainThread-UE4"
+	change_thread_affinity "$list_uni" "$uni_task" "f0"
+	change_thread_affinity "$list_uni" "$uni_coop_task" "ff"
+	change_thread_affinity "$list_etc" "$etc_task" "0f"
+	change_other_thread_affinity "$list_uni" "ff"
+	change_thread_affinity "$list_render" "$render_task" "f0"
+	change_thread_affinity "$list_render" "$render_coop_task" "ff"
+	change_other_thread_affinity "$list_render" "ff"
 }
 
-log_i "[*] Game Optimization Daemon - Improving your experience™
-Version: 0.7-r1
+gpu_tune_apply() {
+	[[ "$qcom" == "true" ]] && {
+		write "${gpu}throttling" "0"
+		write "${gpu}thermal_pwrlevel" "0"
+		write "${gpu}devfreq/adrenoboost" "0"
+		write "${gpu}bus_split" "0"
+		write "${gpu}min_pwrlevel" "0"
+		write "${gpu}force_no_nap" "1"
+		write "${gpu}force_bus_on" "1"
+		write "${gpu}force_clk_on" "1"
+		write "${gpu}force_rail_on" "1"
+		write "${gpu}popp" "0"
+		write "${gpu}pwrnap" "0"
+		write "/sys/kernel/debug/sde_rotator0/clk_always_on" "1"
+		[[ -d "/sys/module/simple_gpu_algorithm/" ]] && write "/sys/module/simple_gpu_algorithm/parameters/simple_gpu_activate" "0"
+		log_g "Tuning GPU performance..."
+		echo "" >>"$glog"
+		echo "1" >"$gpu_tune"
+	} || {
+		write "${gpu}dvfs" "0"
+		write "${gpu}highspeed_load" "76"
+		write "${gpu}highspeed_delay" "0"
+		write "${gpu}power_policy" "always_on"
+		write "${gpu}cl_boost_disable" "0"
+		write "${gpu}tmu" "0"
 
-[$(date +%T)] [*] Game Optimization Logging started
+		[[ -d "/sys/module/ged/" ]] && {
+			write "/sys/module/ged/parameters/ged_boost_enable" "1"
+			write "/sys/module/ged/parameters/boost_gpu_enable" "1"
+			write "/sys/module/ged/parameters/boost_extra" "1"
+			write "/sys/module/ged/parameters/enable_cpu_boost" "1"
+			write "/sys/module/ged/parameters/enable_gpu_boost" "1"
+			write "/sys/module/ged/parameters/enable_game_self_frc_detect" "1"
+			write "/sys/module/ged/parameters/ged_force_mdp_enable" "1"
+			write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
+			write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
+			write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
+			write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "1"
+			write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
+			write "/sys/module/ged/parameters/ged_smart_boost" "0"
+			write "/sys/module/ged/parameters/gpu_debug_enable" "0"
+			write "/sys/module/ged/parameters/gpu_dvfs_enable" "0"
+			write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
+			write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
+			write "/sys/module/ged/parameters/gx_frc_mode" "1"
+			write "/sys/module/ged/parameters/gx_game_mode" "1"
+			write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
+			write "/sys/module/ged/parameters/boost_amp" "1"
+			write "/sys/module/ged/parameters/gx_boost_on" "1"
+			write "/sys/module/ged/parameters/gpu_idle" "0"
+			write "/sys/module/ged/parameters/gpu_cust_boost_freq" "0"
+		}
 
-[$(date +%T)] [*] Game Optimization Daemon enables you to get the best performance out of your favorite games.
+		[[ -d "/proc/gpufreq/" ]] && {
+			write "/proc/gpufreq/gpufreq_opp_stress_test" "1"
+			write "/proc/gpufreq/gpufreq_input_boost" "0"
+			write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "1"
+			write "/proc/gpufreq/gpufreq_limited_oc_ignore" "1"
+			write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "1"
+			write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "1"
+		}
+
+		[[ -d "/sys/kernel/ged/" ]] && write "/sys/kernel/ged/hal/dcs_mode" "0"
+
+		[[ -d "/proc/mali/" ]] && {
+			write "/proc/mali/dvfs_enable" "0"
+			write "/proc/mali/always_on" "1"
+		}
+		log_g "Tuning GPU performance..."
+		echo "" >>"$glog"
+		echo "1" >"$gpu_tune"
+	}
+}
+
+gpu_tune_default() {
+	[[ "$qcom" == "true" ]] && {
+		write "${gpu}throttling" "0"
+		write "${gpu}thermal_pwrlevel" "0"
+		write "${gpu}devfreq/adrenoboost" "0"
+		write "${gpu}bus_split" "1"
+		write "${gpu}min_pwrlevel" "$gpu_min_pl"
+		write "${gpu}force_no_nap" "0"
+		write "${gpu}force_bus_on" "0"
+		write "${gpu}force_clk_on" "0"
+		write "${gpu}force_rail_on" "0"
+		write "${gpu}popp" "0"
+		write "${gpu}pwrnap" "1"
+		write "/sys/kernel/debug/sde_rotator0/clk_always_on" "0"
+		echo "0" >"$gpu_tune"
+	} || {
+		write "${gpu}dvfs" "1"
+		write "${gpu}highspeed_load" "79"
+		write "${gpu}highspeed_delay" "0"
+		write "${gpu}power_policy" "coarse_demand"
+		write "${gpu}tmu" "1"
+
+		[[ -d "/sys/module/ged/" ]] && {
+			write "/sys/module/ged/parameters/ged_boost_enable" "0"
+			write "/sys/module/ged/parameters/boost_gpu_enable" "0"
+			write "/sys/module/ged/parameters/boost_extra" "0"
+			write "/sys/module/ged/parameters/enable_cpu_boost" "0"
+			write "/sys/module/ged/parameters/enable_gpu_boost" "0"
+			write "/sys/module/ged/parameters/enable_game_self_frc_detect" "0"
+			write "/sys/module/ged/parameters/ged_force_mdp_enable" "0"
+			write "/sys/module/ged/parameters/ged_log_perf_trace_enable" "0"
+			write "/sys/module/ged/parameters/ged_log_trace_enable" "0"
+			write "/sys/module/ged/parameters/ged_monitor_3D_fence_debug" "0"
+			write "/sys/module/ged/parameters/ged_monitor_3D_fence_disable" "1"
+			write "/sys/module/ged/parameters/ged_monitor_3D_fence_systrace" "0"
+			write "/sys/module/ged/parameters/ged_smart_boost" "1"
+			write "/sys/module/ged/parameters/gpu_debug_enable" "0"
+			write "/sys/module/ged/parameters/gpu_dvfs_enable" "1"
+			write "/sys/module/ged/parameters/gx_3D_benchmark_on" "0"
+			write "/sys/module/ged/parameters/gx_force_cpu_boost" "0"
+			write "/sys/module/ged/parameters/gx_frc_mode" "0"
+			write "/sys/module/ged/parameters/gx_game_mode" "0"
+			write "/sys/module/ged/parameters/is_GED_KPI_enabled" "1"
+			write "/sys/module/ged/parameters/boost_amp" "0"
+			write "/sys/module/ged/parameters/gx_boost_on" "0"
+			write "/sys/module/ged/parameters/gpu_idle" "100"
+			write "/sys/module/ged/parameters/gpu_cust_boost_freq" "0"
+		}
+
+		[[ -d "/proc/gpufreq/" ]] && {
+			write "/proc/gpufreq/gpufreq_opp_stress_test" "0"
+			write "/proc/gpufreq/gpufreq_opp_freq" "0"
+			write "/proc/gpufreq/gpufreq_input_boost" "0"
+			write "/proc/gpufreq/gpufreq_limited_thermal_ignore" "0"
+			write "/proc/gpufreq/gpufreq_limited_oc_ignore" "0"
+			write "/proc/gpufreq/gpufreq_limited_low_batt_volume_ignore" "0"
+			write "/proc/gpufreq/gpufreq_limited_low_batt_volt_ignore" "0"
+		}
+
+		[[ -d "/proc/mali/" ]] && {
+			write "/proc/mali/dvfs_enable" "1"
+			write "/proc/mali/always_on" "0"
+		}
+		echo "0" >"$gpu_tune"
+	}
+}
+
+log_g_i "[*] Game Optimization Daemon - Improving your gaming experience™
+Version: 1.1.1-r2
+
+[$(date +%T)]: [*] Game Optimization Logging started
+
+[$(date +%T)]: [*] Game Optimization Daemon enables you to get the best performance out of your favorite games.
 "
 
 echo "" >"$cpid"
+echo "" >"$gpu_tune"
 (
-while true; do
-sleep 120
-	pid="$(pgrep -f 'dts.freefire|squareenix.lis|ki.shadowfight3|walkingdead|garena.game.codm|headedshark.tco|amisu.driftmax2|.assolutoracing|n.c1game.naslim|td.modernstrike|es.deadtrigger2|cade.next.mrglo|.netease.ddsfna|.carxtech.rally|DriftRacing|omin.protectors|om.sozap.badmen|erdog.tacticool|touchgames.dls|ent.criticalops|flightsimulator|league.wildrift|ncent.game.kwgt|tencent.lolm|league.wildrift|cent.tmgp.sgame|obile.legends|ncent.tmgp.cf|cent.tmgp.cod|o.GenshinImpact|game.allstar.eu|.game.kgth|lofduty.shooter|lebolt.standoff|nt.tmgp.pubgmhd|com.tencent.ig|.netease.jddsaef|m.netease.g93na|netease.g93natw|egendsmobilefps|.legendsmobile|om.pubg.imobile|netease.mrzhna|hotta.|dw.h5yvzr.yt|m.roblox.client|cell.brawlstars')"
-	[[ ! "$pid" ]] && sleep 2
-	[[ "$pid" != "$(grep -E '[0-9]' "$cpid" | tail -1)" ]] && [[ ! "$pid" == "" ]] && echo "$pid" >> "$cpid" && {
-			game="$(cat /proc/"$pid"/comm)"
+	while true; do
+		sleep 45
+		pid="$(pgrep -f "$list_unified")"
+		game="$(cat /proc/"$pid"/comm)"
+		[[ ! "$pid" ]] && [[ "$game" == "" ]] && [[ "$(cat "$gpu_tune")" == "1" ]] && gpu_tune_default || [[ ! "$pid" ]] && [[ "$game" == "" ]] && sleep 2
+		[[ "$pid" != "$(grep -E '[0-9]' "$cpid" | tail -1)" ]] && [[ ! "$pid" == "" ]] && echo "$pid" >>"$cpid" && {
 			log_g "$game found, optimizing..."
 			echo "" >>"$glog"
-			gameopt
+			notif_g_start
+			gameopt_apply
+			[[ "$enable_gpu_tune" == "1" ]] && gpu_tune_apply
 			log_g "Optimization done"
 			echo "" >>"$glog"
+			notif_g_end
 		} || continue
 	done
 ) &

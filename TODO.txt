@@ -1,5 +1,0 @@
-~~Implement a proper debug flag into the executables~~
-(Maybe integrate pstore logs attaching automatically too?)
-
-Fix kernel panic / random reboots
-(Related to kernel parameters / CPU load maybe? Still need more info though.)
