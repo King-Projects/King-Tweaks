@@ -11,13 +11,13 @@ modpath="/data/adb/modules/KTSR"
 source "$modpath/libs/libcommon.sh"
 source "$modpath/libs/libktsr.sh"
 
+#####################
+# Variables
+#####################
 full_ram=$((total_ram * 25 / 100))
-
 current_prof=none
-
 ta_stune="/dev/stune/top-app/tasks"
 ta_cpuset="/dev/cpuset/top-app/tasks"
-
 scrn_on=1
 
 get_scrn_state() {
@@ -29,83 +29,76 @@ get_scrn_state() {
 
 (
 	while true; do
-		[[ "$current_prof" == "sleeping" ]] && sleep 150 || sleep 60
-		game_pid="$(pgrep -f 'gaijin|squareenix.lis|ki.shadowfight3|walkingdead|garena.game.codm|dts.freefire|.assolutoracing|tencent.lolm|n.c1game.naslim|headedshark.tco|amisu.|td.modernstrike|omin.protectors|flightsimulator|erdog.tacticool|touchgames.dls|encent.tmgp.cod|game.allstar.eu|xelbite.|diablo.immortal|nt.tmgp.pubgmhd|egendsmobilefps|.legendsmobile|HoYo.Yuanshen|om.miHoYo.ys.mi|krunker|Yo.GenshinImpact|m.pubg.newstate|ncent.game.kwgt|fun.mu3.gp.us|sega|capcom|fallout|Parsecs|streetsof|shinobi|begma|techo.google|cats.google|hyperburner|Machinarium|botanicula|samorost3|Samorost|survivalgb|mir4|nexon|g.grayraven.en|arknights|AzurLane|gamefsac|masters.|cent.tmgp.sgame|league.wildrift|sonic|psyonix|tgc|jp.garud|obile.legends|lofduty.shooter|hypergryph|3002013.android|denachina|bilibili|injustice|hanjiasongshu|funny.|sx2.android|dolphinemu|retroarch|Snes9xPlus|lator.gba|lator.gbc|nexomon|pokemongo|emu.drastic|kabam|marvelbattle|val.craft.z|action.cyber|game.rpg|classicboy|ity.RecRoom|fish.lemudroid|3.fzurita|citra_emu|duckstation|slither|es.fallbuddies|digitalsky|idreams.|egacorp.|yingxiong|netease.|swager.google|dcells.mobile|drumstudios.|games.|Games.|ndroid.common|simulator.|gaming.|elbite.|tware.mask|sozap.|dotemu.|playables.|digital.tt|cobalt.google|purple.google|unit.yellow|unit.mercury|unit.green|unit.silver|bethsoft.|cake.|studio.|starvepocket|astragon.|stardewvalley|sports.|ayonline|otion.|eusa.|haegin|igg|gtarcade.|gta.|seleuco|innersloth|oo.|imaginalis|ickteam|game.|Game.|emagroup|eramobile|wb.goog.|lego.|app.game|RecklessRacing|.carxtech.|DriftRacing|ubisoft|ark.|android_google|.ppsspp.ppsspp|tive.|ary.|blackdeser|lebolt.standoff|ent.criticalops|devltd.|flow.|modernstrike|tons.|estinywarfare|kki.|shadowfight|room.|geonShooter|fats.|minecraftpe|lip.|hitmansniper|obile.legends|anmp.gloft|xis.|ble.|ame.|duty.|ami.|vil.|nic.|cell.brawlstars|clashroyale|clashof|boombeach|hayday|f1mobile|pixel.|titan.cd|survival.rpg|bibi.|racer|es505.|boxing|vio.|gns.pay|oblox.client|monsterdash|packjoyride|xion.|.deadbydaylight')"
+		[[ "$current_prof" == "sleeping" ]] && sleep 120 || sleep 45
+		game_pid="$(pgrep -f 'com.gaijin.|squareenix.|com.nekki.|walkingdead|com.garena.game.|com.dts.freefire|.assolutoracing|com.tencent.|n.c1game.naslim|.bilibili|headedshark.tco|com.tiramisu.|com.gamedevltd.|omin.protectors|flightsimulator|com.panzerdog.|com.firsttouchgames.|com.tencent.tmgp.|com.ngame.allstar.eu|com.pixelbite.|diablo.immortal|apexlegendsmobile|com.miHoYo.|com.pubg.newstate|com.tencent.game.|fun.mu3.gp.us|sega|capcom|fallout|Parsecs|streetsof|shinobi|hyperburner|Machinarium|botanicula|samorost3|Samorost|survivalgb|mir4|nexon|g.grayraven.en|com.YoStarEN.|gamefsac|masters.|com.riotgames.league.wildrift|sonic|psyonix|tgc|jp.garud|com.mobile.legends|com.activision.callofduty.shooter|hypergryph|com.denachina.|hanjiasongshu|com.sofunny.|xyz.aethersx2.android|org.dolphinemu.|com.retroarch.|Snes9xPlus|lator.gba|lator.gbc|com.vewointeractive.|pokemongo|com.dsemu.drastic|com.kabam.|zombie.survival.craft.z|action.cyber|game.rpg|classicboy|com.AgainstGravity.RecRoom|com.swordfish.|3.fzurita|citra_emu|com.github.stenzek.duckstation|com.hypah.io.slither|com.kitkagames.|pl.idreams.|com.superevilmegacorp.|com.netease.|com.playdigious.|com.wardrumstudios.|games.|Games.|simulator.|gaming.|com.junesoftware.|com.sozap.|digital.tt|com.TeamTerrible.|com.vectorunit.|com.bethsoft.|cake.|com.kleinentertainment.|com.astragon.|com.chucklefish.|sports.|ayonline|otion.|eusa.|com.haegin.|com.igg.|com.gtarcade.|com.rockstar.|com.seleuco.|com.innersloth.|com.imaginalis.|com.clickteam.|game.|Game.|emagroup|com.wb.goog.|.carxtech.|DriftRacing|com.ubisoft|org.ppsspp.ppsspp|com.pearlabyss.|com.axlebolt.|com.criticalforceentertainment|com.ChillyRoom.|com.mojang.|com.gameloft.|com.supercell|com.codemasters.|survival.rpg|com.ohbibi.|boxing|com.roblox.|com.halfbrick.|com.bhvr.')"
 		[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -E "$game_pid" "$ta_stune")" ]] || [[ ! "$(grep -E "$game_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$game_pid"/oom_score_adj)" == "0" ]] || [[ "$current_prof" == "gaming" ]] && continue || {
 			log_i "User is playing, applying gaming profile..."
 			sync
-			setprop kingd.prof "gaming"
-			change_task_nice "erprint" "0"
+			setprop kingd.prof "game"
 			current_prof=gaming
 			get_scrn_state
-			apply_all_auto
+			apply_all
 		}
-		normal_pid="$(pgrep -f 'com.whatsapp|aoapp.musically|music|adobe.|telegram|idia.geforcenow|.nekox|sney.disneyplus|thirdpartyclient|.challegram|.crunchyroll|mediaclient|.wemesh.android|danmaku.bili|bili.app.in|encent.qqlive|qiyi.video|video.|hijia.newlive|duowan.kiwi|douyu|youku|aweme.|.reader|com.discord|android.youtube|.katana|.orca|.android.chrome|.UCMobile|.mozilla|.duckduckgo|browser|Browser|opera.|soft.|droid.app')"
-		[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -E "$normal_pid" "$ta_stune")" ]] || [[ ! "$(grep -E "$normal_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$normal_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "balanced" ]] && continue || {
+		normal_pid="$(pgrep -f 'whatsapp|music|adobe.|telegram|.nekox|disney.disneyplus|thirdpartyclient|.challegram|.crunchyroll|mediaclient|com.wemesh.|com.tencent.qqlive|qiyi.video|.video|hijia.newlive|duowan.kiwi|douyu|youku|aweme.|.reader|com.discord|youtube|.katana|.orca|.android.chrome|.UCMobile|.mozilla|.duckduckgo|browser|Browser|opera.')"
+		[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -E "$normal_pid" "$ta_stune")" ]] || [[ ! "$(grep -E "$normal_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$normal_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "media" ]] && continue || {
 			log_i "User is using social media, streaming and/or etc apps. Applying battery profile..."
 			sync
-			setprop kingd.prof "battery"
-			change_task_nice "erprint" "0"
-			current_prof=battery
+			setprop kingd.prof "balanced"
+			current_prof=media
 			get_scrn_state
-			apply_all_auto
+			apply_all
 		}
 		bench_pid="$(pgrep -f 'elabs.geekbench|gensuite|id.test.uibench|com.Saplin.CPDT|passmark|app.speedramp|app.beatsync|kinemaster|oid.application|uthrottlingtest|tutu.ABenchMark|benchmark')"
-		[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -E "$bench_pid" "$ta_stune")" ]] || [[ ! "$(grep -E "$bench_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$bench_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "gaming" ]] && continue || {
+		[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -E "$bench_pid" "$ta_stune")" ]] || [[ ! "$(grep -E "$bench_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$bench_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "benchmark" ]] && continue || {
 			log_i "User is running benchmark / heavy apps. Applying extreme profile..."
 			sync
 			setprop kingd.prof "extreme"
-			change_task_nice "erprint" "0"
-			current_prof=extreme
+			current_prof=benchmark
 			get_scrn_state
-			apply_all_auto
+			apply_all
 		}
 
-		[[ ! "$scrn_on" == "0" ]] || [[ ! "$current_prof" != "sleeping" ]] && continue || {
+		[[ ! "$scrn_on" == "0" ]] || [[ ! "$current_prof" != "screen_off" ]] && continue || {
 			log_i "Device screen is turned off. Sleeping..."
 			sync
-			setprop kingd.prof "battery"
-			change_task_nice "erprint" "-20"
-			current_prof=sleeping
+			setprop kingd.prof "pwrsave"
+			current_prof=screen_off
 			get_scrn_state
-			apply_all_auto
+			apply_all
 		}
 
 		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_sts" == "Charging" ]] || [[ ! "$current_prof" != "charging" ]] && continue || {
 			log_i "Device is charging, reducing power consumption by applying battery profile..."
 			sync
-			setprop kingd.prof "battery"
-			change_task_nice "erprint" "0"
+			setprop kingd.prof "pwrsave"
 			current_prof=charging
 			get_scrn_state
-			apply_all_auto
+			apply_all
 		}
 
-		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_pctg" -le "15" ]] || [[ ! "$current_prof" != "lowbatt" ]] && continue || {
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_pctg" -le "15" ]] || [[ ! "$current_prof" != "low_pwr" ]] && continue || {
 			log_i "Device charge is less than 15%, applying battery profile to prolong battery life..."
 			sync
-			setprop kingd.prof "battery"
-			change_task_nice "erprint" "0"
-			current_prof=lowbatt
+			setprop kingd.prof "pwrsave"
+			current_prof=low_pwr
 			get_scrn_state
-			apply_all_auto
+			apply_all
 		}
 
-		[[ ! "$scrn_on" != "0" ]] || [[ "$avail_ram" -le "$full_ram" ]] && {
+		[[ ! "$scrn_on" != "0" ]] && [[ "$avail_ram" -le "$full_ram" ]] && {
 			log_i "RAM available on device is limited, dropping caches to free some of it..."
 			sync
 			write "${vm}drop_caches" "3"
 			get_scrn_state
 		}
 
-		[[ ! "$scrn_on" != "0" ]] || [[ ! "$current_prof" != "nobehaviour" ]] && continue || {
-			log_i "No considerable usage found. Applying battery profile by default..."
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$current_prof" != "inactive" ]] && continue || {
+			log_i "No considerable usage found. Applying power saving profile by default..."
 			sync
-			setprop kingd.prof "battery"
-			change_task_nice "erprint" "0"
-			current_prof=nobehaviour
+			setprop kingd.prof "pwrsave"
+			current_prof=inactive
 			get_scrn_state
-			apply_all_auto
+			apply_all
 		}
 	done
 ) &

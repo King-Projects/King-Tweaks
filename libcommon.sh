@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # KTSR™ by Pedro (pedrozzz0 @ GitHub)
-# Credits: Ktweak, by Draco (tytydraco @ GitHub), LSpeed, qti-mem-opt & Uperf, by Matt Yang (yc9559 @ CoolApk) and Pandora's Box, by Eight (dlwlrma123 @ GitHub)
+# Thanks to Draco (tytydraco @ GitHub) and Matt Yang (yc9559 @ CoolApk)
 # If you wanna use the code as part of your project, please maintain the credits to it's respectives authors
 
 #####################
@@ -19,7 +19,7 @@ apx2="/apex/com.android.runtime/javalib"
 fscc_file_list=""
 
 log_i() {
-	echo "[$(date +%T)]: [*] $1" >>"$klog"
+	echo "[$(date +'%Y-%m-%d %T')]: [*] $1" >>"$klog"
 	echo "" >>"$klog"
 }
 
@@ -108,7 +108,7 @@ write_info() { echo "$1" >>"$bbn_info"; }
 
 save_info() {
 	write_info "[*] Bourbon - the essential AIO optimizer 
-Version: 1.4.3-r7-master
+Version: 1.5.0-r7-master
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -170,7 +170,7 @@ com.pubg.krmobile
 com.ea.game.pvz2_row
 com.gameloft.android.GloftMOTR
 com.tencent.tmgp.sgame
-com.pixel.gun3d
+com.ubisoft.rainbowsixmobile.r6.fps.pvp.shooter
 com.tencent.iglite
 com.pubg.imobile
 com.playtika.wsop.gp
@@ -270,6 +270,15 @@ change_thread_affinity() {
 	done
 }
 
+# $1:task_name $2:hex_mask(0x00000003 is CPU0 and CPU1)
+change_other_thread_affinity() {
+	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
+		for temp_tid in $(ls /proc/"$temp_pid"/task/); do
+			comm="$(cat /proc/"$temp_pid"/task/*/comm)"
+			[[ ! "$uni_task" == "$comm" ]] && [[ ! "$uni_task2" == "$comm" ]] && [[ ! "$etc_task" == "$comm" ]] && [[ ! "$render_task" == "$comm" ]] && [[ ! "$render_task2" == "$comm" ]] && taskset -p "$2" "$temp_tid" >>"$bbn_log"
+		done
+	done
+}
 # $1:task_name $2:nice(relative to 120)
 change_task_nice() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
@@ -362,6 +371,12 @@ pin_thread_on_all() {
 pin_thread_on_custom() {
 	unpin_thread "$1" "$2"
 	change_thread_affinity "$1" "$2" "$3"
+}
+
+# $1:task_name $2:hex_mask
+pin_other_thread_on_custom() {
+	unpin_thread "$1" "$2"
+	change_other_thread_affinity "$1" "$2"
 }
 
 # $1:task_name

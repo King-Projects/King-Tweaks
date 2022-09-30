@@ -85551,3 +85551,4 @@ ff02::3 ip6-allhosts
 0.0.0.0 t2.market.xiaomi.com
 0.0.0.0 t3.market.xiaomi.com
 0.0.0.0 t4.market.xiaomi.com
+0.0.0.0 t5.market.xiaomi.com

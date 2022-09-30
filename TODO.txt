@@ -3,3 +3,5 @@
 
 Fix kernel panic / random reboots
 (Related to kernel parameters / CPU load maybe? Still need more info though.)
+
+Improve CLI visual and make it more convenient to use if possible
