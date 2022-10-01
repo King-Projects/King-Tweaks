@@ -271,7 +271,7 @@ gpu_tune_default() {
 }
 
 log_g_i "[*] Game Optimization Daemon - Improving your gaming experience™
-Version: 1.1.1-r2
+Version: 1.1.2-r2
 
 [$(date +%T)]: [*] Game Optimization Logging started
 
@@ -282,7 +282,7 @@ echo "" >"$cpid"
 echo "" >"$gpu_tune"
 (
 	while true; do
-		sleep 45
+		sleep 60
 		pid="$(pgrep -f "$list_unified")"
 		game="$(cat /proc/"$pid"/comm)"
 		[[ ! "$pid" ]] && [[ "$game" == "" ]] && [[ "$(cat "$gpu_tune")" == "1" ]] && gpu_tune_default || [[ ! "$pid" ]] && [[ "$game" == "" ]] && sleep 2

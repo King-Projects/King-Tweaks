@@ -198,14 +198,14 @@ menu() {
 		}
 	}
 	[[ "$(settings get system screen_off_timeout)" != "null" ]] && {
-		echo "[39] Set custom screen off timeout [Should be input in ms (5 sec = 5000)]"
+		echo "[SSOT] Set custom screen off timeout [Should be input in ms (5 sec = 5000)]"
 		echo ""
 	}
 	[[ ! "$(pgrep -f gameoptd)" ]] && {
-		echo "[EGD] Enable gameoptd"
+		echo "[EGOD] Enable gameoptd"
 		echo ""
 	} || {
-		echo "[DGD] Disable gameoptd"
+		echo "[DGOD] Disable gameoptd"
 		echo ""
 	}
 	echo "$R[E] Exit$N"
@@ -233,7 +233,7 @@ menu() {
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			menu
 			;;
-		"E"|"e")
+		"Ex"|"ex")
 			echo "${B}Applying profile...$N"
 			setprop persist.king.tweaks.prof "4" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"

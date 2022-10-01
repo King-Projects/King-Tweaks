@@ -303,7 +303,7 @@ while true; do
 					;;
 			esac
 			;;
-		"balanced"|"extreme"|"gaming"|"latency"|"pwrsave")
+		"balanced"|"extreme"|"game"|"latency"|"pwrsave")
 			case "$(getprop persist.sys.locale)" in
 				en*)
 					notif_start &
