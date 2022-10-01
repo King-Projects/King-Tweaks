@@ -81,7 +81,7 @@ menu() {
 	echo "$Y* KTSR Command Line Interface (CLI) *$N"
 	echo "$Y*************************************$N"
 	echo ""
-	echo "${G}Version: 1.7.0-r15$N"
+	echo "${G}Version: 1.7.1-r16$N"
 	echo ""
 	echo "$V[*] Current Profile:$N $G$ktsr_prof_en$N"
 	echo ""
@@ -234,7 +234,7 @@ menu() {
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			menu
 			;;
-		"Ex"|"ex")
+		"EX"|"ex")
 			echo "${B}Applying profile...$N"
 			setprop persist.king.tweaks.prof "4" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
