@@ -11,7 +11,7 @@ blue=$(tput setaf 4)
 bold=$(tput bold)
 blink=$(tput blink)
 default=$(tput sgr0)
-v="2.1.0"
+v="2.1"
 
 vcd=$(grep versionCode= module.prop | sed "s/versionCode=//")
 

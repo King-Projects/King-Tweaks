@@ -29,7 +29,7 @@ exynos=false
 mtk=false
 ppm=false
 big_little=false
-lib_ver="1.5.0-stable"
+lib_ver="1.5.1-master"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 zram="/sys/module/zram/parameters/"
@@ -520,49 +520,50 @@ get_god_pid() {
 print_info() {
   echo "General info
 
-		** Date of execution: $(date)
-		** Kernel: $kern_ver_name, $kern_bd_dt
-		** SOC: $soc_mf, $soc
-		** SDK: $sdk
-		** Android version: $avs
-		** Android UID: $(settings get secure android_id)
-		** CPU governor: $cpu_gov
-		** Number of CPUs: $nr_cores
-		** CPU freq: $cpu_min_clk_mhz-${cpu_max_clk_mhz}MHz
-		** CPU scheduling: $cpu_sched
-		** Arch: $arch
-		** GPU freq: $gpu_min_clk_mhz-${gpu_max_clk_mhz}MHz
-		** GPU model: $gpu_mdl
-		** GPU governor: $gpu_gov
-		** Device: $dvc_brnd, $dvc_cdn
-		** ROM: $rom_info
-		** Max refresh rate: ${rr}HZ
-		** KTSR build version: $bd_ver
-		** KTSR build codename: $bd_cdn
-		** KTSR build release: $bd_rel
-		** KTSR build date: $bd_dt
-		** KTSR lib version: $lib_ver
-		** Battery charge level: $batt_pctg%
-		** Battery total capacity: ${batt_cpct}mAh
-		** Battery health: $batt_hth
-		** Battery status: $batt_sts
-		** Battery temperature: $batt_tmp°C
-		** Device RAM: ${total_ram}MB
-		** Root: $root
-		** SQLite version: $sql_ver
-		** SQLite build date: $sql_bd_dt
-		** System uptime: $sys_uptime
-		** SELinux: $slnx_stt
-		** Busybox: $bb_ver
-		** KTSR PID: $$
-		** kingd PID: $(get_kd_pid)
-		** god PID: $(get_god_pid)
+** Date of execution: $(date)
+** Kernel: $kern_ver_name, $kern_bd_dt
+** SOC: $soc_mf, $soc
+** SDK: $sdk
+** Android version: $avs
+** Android UID: $(settings get secure android_id)
+** CPU governor: $cpu_gov
+** Number of CPUs: $nr_cores
+** CPU freq: $cpu_min_clk_mhz-${cpu_max_clk_mhz}MHz
+** CPU scheduling: $cpu_sched
+** Arch: $arch
+** GPU freq: $gpu_min_clk_mhz-${gpu_max_clk_mhz}MHz
+** GPU model: $gpu_mdl
+** GPU governor: $gpu_gov
+** Device: $dvc_brnd, $dvc_cdn
+** ROM: $rom_info
+** Max refresh rate: ${rr}HZ
+** KTSR build version: $bd_ver
+** KTSR build codename: $bd_cdn
+** KTSR build release: $bd_rel
+** KTSR build date: $bd_dt
+** KTSR lib version: $lib_ver
+** Battery charge level: $batt_pctg%
+** Battery total capacity: ${batt_cpct}mAh
+** Battery health: $batt_hth
+** Battery status: $batt_sts
+** Battery temperature: $batt_tmp°C
+** Device RAM: ${total_ram}MB
+** Root: $root
+** SQLite version: $sql_ver
+** SQLite build date: $sql_bd_dt
+** System uptime: $sys_uptime
+** SELinux: $slnx_stt
+** Busybox: $bb_ver
+** KTSR PID: $$
+** kingd PID: $(get_kd_pid)
+** GOD PID: $(get_god_pid)
 
-		** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0
-		** Telegram channel: https://t.me/kingprojectz
-		** Telegram group: https://t.me/kingprojectzdiscussion
-		** Thanks to all people involved to make this project possible
-" >> "$klog"
+** Author: Pedro | https://t.me/pedro3z0 | https://github.com/pedrozzz0
+** Telegram channel: https://t.me/kingprojectz
+** Telegram group: https://t.me/kingprojectzdiscussion
+
+** Thanks to all people involved to make this project possible
+" >>"$klog"
 }
 
 # Stop perf and other userspace processes from tinkering with kernel parameters
@@ -2631,7 +2632,7 @@ core_ctl_set() {
       write "/sys/power/pm_freeze_timeout" "2000"
 
       log_i "Tweaked various kernel parameters to a better overall performance"
-    } || [[ "$king_prof_en" == "pwrsave" ]] || [[ "$auto_prof" == "pwrsave" ]] && {
+    } || [[ "$king_prof_en" == "extreme" ]] || [[ "$auto_prof" == "extreme" ]] && {
       [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
       [[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "20"
       [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
@@ -2682,10 +2683,10 @@ core_ctl_set() {
       done
       write "/proc/sys/dev/tty/ldisc_autoload" "0"
       write_lock "${kernel}sched_force_lb_enable" "0"
-      write "/sys/power/pm_freeze_timeout" "5000"
+      write "/sys/power/pm_freeze_timeout" "1000"
 
       log_i "Tweaked various kernel parameters to a better overall performance"
-    } || [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$auto_prof" == "extreme" ]] && {
+    } || [[ "$ktsr_prof_en" == "pwrsave" ]] || [[ "$auto_prof" == "pwrsave" ]] && {
       [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
       [[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "2"
       [[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
@@ -2736,7 +2737,7 @@ core_ctl_set() {
       done
       write "/proc/sys/dev/tty/ldisc_autoload" "0"
       write_lock "${kernel}sched_force_lb_enable" "0"
-      write "/sys/power/pm_freeze_timeout" "1000"
+      write "/sys/power/pm_freeze_timeout" "5000"
 
       log_i "Tweaked various kernel parameters to a better overall performance"
     } || [[ "$ktsr_prof_en" == "game" ]] || [[ "$auto_prof" == "game" ]] && {
@@ -3503,13 +3504,13 @@ apply_all() {
     ufs_perf_mode 0
     emmc_clk_scl 1
   }
-  [[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$auto_prof" == "latency" ]] || [[ "$auto_prof" == "balanced" ]] && misc_cpu_set 1 || misc_cpu_set 2
+  [[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$auto_prof" == "latency" ]] || [[ "$auto_prof" == "balanced" ]] && misc_cpu_set 1 || [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "game" ]] || [[ "$auto_prof" == "extreme" ]] || [[ "$auto_prof" == "game" ]] && misc_cpu_set 2 || misc_cpu_set 3
   [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$auto_prof" == "extreme" ]] && {
     ppm 1
     ppm_policy_set 2
   } || [[ "$ktsr_prof_en" == "game" ]] || [[ "$auto_prof" == "game" ]] && ppm 0
-  [[ "$ktsr_prof_en" == "battery" ]] && [[ "$batt_pctg" -lt "20" ]] || [[ "$auto_prof" == "battery" ]] && [[ "$batt_pctg" -lt "20" ]] && cpu_clk_set 2 || cpu_clk_set 1
-  [[ "$ktsr_prof_en" == "battery" ]] || [[ "$auto_prof" == "battery" ]] && {
+  [[ "$ktsr_prof_en" == "pwrsave" ]] && [[ "$batt_pctg" -lt "20" ]] || [[ "$auto_prof" == "pwrsave" ]] && [[ "$batt_pctg" -lt "20" ]] && cpu_clk_set 2 || cpu_clk_set 1
+  [[ "$ktsr_prof_en" == "pwrsave" ]] || [[ "$auto_prof" == "pwrsave" ]] && {
     kern_batt_saver 1
     lcd_prdc 1
     perfmgr pwrsave

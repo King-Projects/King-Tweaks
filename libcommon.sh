@@ -93,7 +93,7 @@ kill_svc() {
 write_info() { echo "$1" >>"$bbn_info"; }
 
 save_info() {
-	write_info "[*] Bourbon - the essential AIO optimizer 
+	write_info "[*] Bourbon - the essential task optimizer 
 Version: 1.5.0-r7-stable
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
@@ -128,7 +128,6 @@ com.gamedevltd.modernstrike
 com.gamedevltd.wwh
 com.edkongames.mobs
 com.panzerdog.tacticool
-com.camouflaj.republique
 com.gaijin.xom
 com.feralinteractive.gridas
 com.twoheadedshark.tco
@@ -141,9 +140,7 @@ com.bhvr.deadbydaylight
 com.axlebolt.standoff2
 com.gameloft.android.ANMP.GloftINHM
 com.codemasters.F1Mobile
-com.miHoYo.bh3global
 com.netease.sheltergp
-com.roblox.client
 com.supercell.brawlstars
 com.miniclip.eightballpool
 com.mojang.minecraftpe
@@ -153,7 +150,6 @@ com.gameloft.android.GloftMBCF
 com.miHoYo.GenshinImpact
 com.garena.game.kgvn
 com.pubg.krmobile
-com.ea.game.pvz2_row
 com.gameloft.android.GloftMOTR
 com.tencent.tmgp.sgame
 com.ubisoft.rainbowsixmobile.r6.fps.pvp.shooter
@@ -164,14 +160,11 @@ com.gameloft.android.GloftR19F
 com.kitkagames.fallbuddies
 com.gameloft.android.ANMP.GloftDMHM
 com.ea.game.nfs14_row
-com.zynga.starwars.hunters
-com.ohbibi.fps
 com.scopely.startrek
 net.wargaming.wot.blitz
 com.blizzard.wtcg.hearthstone
 com.ea.games.r3_row
 com.wb.goog.mkx
-com.kabam.marvelbattle
 com.pixonic.wwr
 com.wb.goog.got.conquest
 com.garena.game.fcsac
@@ -407,7 +400,7 @@ fscc_add_obj() {
 	[[ "$sdk" -lt "24" ]] && fscc_list_append "$1" || {
 		while IFS= read -r obj; do
 			[[ "$1" != "$obj" ]] && fscc_list_append "$1"
-		done <<<"$(dumpsys pinner | grep -E -i "$1" | awk '{print $1}')"
+		done <<<"$(dumpsys pinner | grep "$1" | awk '{print $1}')"
 	}
 }
 
