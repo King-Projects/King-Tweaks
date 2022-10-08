@@ -816,7 +816,7 @@ core_ctl_set() {
         write "${queue}iosched/group_idle" "1"
         write "${queue}iosched/quantum" "16"
         write "${queue}read_ahead_kb" "256"
-        write "${queue}nomerges" "2"
+        write "${queue}nomerges" "0"
         write "${queue}rq_affinity" "2"
         write "${queue}nr_requests" "128"
         write "${queue}iosched/back_seek_penalty" "1"
@@ -889,7 +889,7 @@ core_ctl_set() {
         write "${queue}iosched/group_idle" "1"
         write "${queue}iosched/quantum" "16"
         write "${queue}read_ahead_kb" "256"
-        write "${queue}nomerges" "2"
+        write "${queue}nomerges" "0"
         write "${queue}rq_affinity" "2"
         write "${queue}nr_requests" "128"
         write "${queue}iosched/back_seek_penalty" "1"
@@ -1038,7 +1038,7 @@ core_ctl_set() {
         write "$governor/up_rate_limit_us" "0"
         write "$governor/down_rate_limit_us" "0"
         write "$governor/pl" "1"
-        write "$governor/iowait_boost_enable" "0"
+        write "$governor/iowait_boost_enable" "1"
         write "$governor/rate_limit_us" "0"
         write "$governor/hispeed_load" "75"
         write "$governor/hispeed_freq" "$cpu_max_freq"
@@ -1048,7 +1048,7 @@ core_ctl_set() {
         write "$governor/up_rate_limit_us" "0"
         write "$governor/down_rate_limit_us" "0"
         write "$governor/pl" "1"
-        write "$governor/iowait_boost_enable" "0"
+        write "$governor/iowait_boost_enable" "1"
         write "$governor/rate_limit_us" "0"
         write "$governor/hispeed_load" "75"
         write "$governor/hispeed_freq" "$cpu_max_freq"
@@ -2543,8 +2543,9 @@ core_ctl_set() {
       [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
       [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
       [[ -d "/sys/kernel/debug/" ]] && {
-        write "/sys/kernel/debug/debug_enabled" "0"
-        write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
+        write "/sys/kernel/debug/debug_enabled" "N"
+        write "/sys/kernel/debug/msm_cvp/disable_thermal_mitigation" "N"
+        write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "N"
         write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
       }
       write "/sys/kernel/mi_reclaim/enable" "0"
@@ -2597,8 +2598,9 @@ core_ctl_set() {
       [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
       [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
       [[ -d "/sys/kernel/debug/" ]] && {
-        write "/sys/kernel/debug/debug_enabled" "0"
-        write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
+        write "/sys/kernel/debug/debug_enabled" "N"
+        write "/sys/kernel/debug/msm_cvp/disable_thermal_mitigation" "N"
+        write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "N"
         write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "1"
       }
       write "/sys/kernel/mi_reclaim/enable" "0"
@@ -2651,8 +2653,9 @@ core_ctl_set() {
       [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
       [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
       [[ -d "/sys/kernel/debug/" ]] && {
-        write "/sys/kernel/debug/debug_enabled" "0"
-        write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "1"
+        write "/sys/kernel/debug/debug_enabled" "N"
+        write "/sys/kernel/debug/msm_cvp/disable_thermal_mitigation" "Y"
+        write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "Y"
         write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
       }
       write "/sys/kernel/mi_reclaim/enable" "0"
@@ -2705,8 +2708,9 @@ core_ctl_set() {
       [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
       [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
       [[ -d "/sys/kernel/debug/" ]] && {
-        write "/sys/kernel/debug/debug_enabled" "0"
-        write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "0"
+        write "/sys/kernel/debug/debug_enabled" "N"
+        write "/sys/kernel/debug/msm_cvp/disable_thermal_mitigation" "N"
+        write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "N"
         write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "1"
       }
       write "/sys/kernel/mi_reclaim/enable" "0"
@@ -2759,8 +2763,9 @@ core_ctl_set() {
       [[ -e "${kernel}sched_initial_task_util" ]] && write "${kernel}sched_initial_task_util" "0"
       [[ -d "/sys/module/memplus_core/" ]] && write "/sys/module/memplus_core/parameters/memory_plus_enabled" "0"
       [[ -d "/sys/kernel/debug/" ]] && {
-        write "/sys/kernel/debug/debug_enabled" "0"
-        write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "1"
+        write "/sys/kernel/debug/debug_enabled" "N"
+        write "/sys/kernel/debug/msm_cvp/disable_thermal_mitigation" "Y"
+        write "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation" "Y"
         write "/sys/kernel/debug/msm_vidc/fw_low_power_mode" "0"
       }
       write "/sys/kernel/mi_reclaim/enable" "0"
@@ -2869,7 +2874,6 @@ core_ctl_set() {
   vm_lmk_tune() {
     [[ "$ktsr_prof_en" == "latency" ]] || [[ "$auto_prof" == "latency" ]] && {
       sync
-      write "${vm}drop_caches" "3"
       write "${vm}dirty_background_ratio" "10"
       write "${vm}dirty_ratio" "30"
       write "${vm}dirty_expire_centisecs" "3000"
@@ -2902,7 +2906,6 @@ core_ctl_set() {
       log_i "Tweaked various VM / LMK parameters for a improved user-experience"
     } || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$auto_prof" == "balanced" ]] && {
       sync
-      write "${vm}drop_caches" "2"
       write "${vm}dirty_background_ratio" "5"
       write "${vm}dirty_ratio" "30"
       write "${vm}dirty_expire_centisecs" "3000"
@@ -2935,7 +2938,6 @@ core_ctl_set() {
       log_i "Tweaked various VM and LMK parameters for a improved user-experience"
     } || [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$auto_prof" == "extreme" ]] && {
       sync
-      write "${vm}drop_caches" "3"
       write "${vm}dirty_background_ratio" "5"
       write "${vm}dirty_ratio" "20"
       write "${vm}dirty_expire_centisecs" "3000"
@@ -2965,7 +2967,6 @@ core_ctl_set() {
       log_i "Tweaked various VM and LMK parameters for a improved user-experience"
     } || [[ "$ktsr_prof_en" == "pwrsave" ]] || [[ "$auto_prof" == "pwrsave" ]] && {
       sync
-      write "${vm}drop_caches" "1"
       write "${vm}dirty_background_ratio" "15"
       write "${vm}dirty_ratio" "30"
       write "${vm}dirty_expire_centisecs" "500"
@@ -2995,7 +2996,6 @@ core_ctl_set() {
       log_i "Tweaked various VM and LMK parameters for a improved user-experience"
     } || [[ "$ktsr_prof_en" == "game" ]] || [[ "$auto_prof" == "game" ]] && {
       sync
-      write "${vm}drop_caches" "3"
       write "${vm}dirty_background_ratio" "2"
       write "${vm}dirty_ratio" "20"
       write "${vm}dirty_expire_centisecs" "3000"
@@ -3178,13 +3178,13 @@ core_ctl_set() {
       write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "0"
       write "/sys/devices/platform/soc/1d84000.ufshc/hibern8_on_idle_enable" "0"
       write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "0"
-      log_i "Enabled UFS performance mode"
+      log_i "Disabled UFS performance mode"
     }
   } || [[ -d "/sys/class/devfreq/1d84000.ufshc/" ]] && [[ "$1" == "0" ]] && {
     write "/sys/devices/platform/soc/1d84000.ufshc/clkscale_enable" "1"
     write "/sys/devices/platform/soc/1d84000.ufshc/hibern8_on_idle_enable" "1"
     write "/sys/devices/platform/soc/1d84000.ufshc/clkgate_enable" "1"
-    log_i "Disabled UFS performance mode"
+    log_i "Enabled UFS performance mode"
   }
 }
 
