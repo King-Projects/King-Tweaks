@@ -303,7 +303,187 @@ while true; do
 					;;
 			esac
 			;;
-		"balanced"|"extreme"|"game"|"latency"|"pwrsave")
+			"balanced")
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_start &
+					;;
+				pt*)
+					notif_pt_start &
+					;;
+				id-ID)
+					notif_id_start &
+					;;
+				tr*)
+					notif_tr_start &
+					;;
+				fr*)
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
+					;;
+			esac
+
+			apply_prof
+
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_end &
+					;;
+				pt*)
+					notif_pt_end &
+					;;
+				id-ID)
+					notif_id_end &
+					;;
+				tr*)
+					notif_tr_end &
+					;;
+				fr*)
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
+					;;
+			esac
+			;;
+			"extreme")
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_start &
+					;;
+				pt*)
+					notif_pt_start &
+					;;
+				id-ID)
+					notif_id_start &
+					;;
+				tr*)
+					notif_tr_start &
+					;;
+				fr*)
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
+					;;
+			esac
+
+			apply_prof
+
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_end &
+					;;
+				pt*)
+					notif_pt_end &
+					;;
+				id-ID)
+					notif_id_end &
+					;;
+				tr*)
+					notif_tr_end &
+					;;
+				fr*)
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
+					;;
+			esac
+			;;
+			"game")
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_start &
+					;;
+				pt*)
+					notif_pt_start &
+					;;
+				id-ID)
+					notif_id_start &
+					;;
+				tr*)
+					notif_tr_start &
+					;;
+				fr*)
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
+					;;
+			esac
+
+			apply_prof
+
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_end &
+					;;
+				pt*)
+					notif_pt_end &
+					;;
+				id-ID)
+					notif_id_end &
+					;;
+				tr*)
+					notif_tr_end &
+					;;
+				fr*)
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
+					;;
+			esac
+			;;
+			"latency")
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_start &
+					;;
+				pt*)
+					notif_pt_start &
+					;;
+				id-ID)
+					notif_id_start &
+					;;
+				tr*)
+					notif_tr_start &
+					;;
+				fr*)
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
+					;;
+			esac
+
+			apply_prof
+
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_end &
+					;;
+				pt*)
+					notif_pt_end &
+					;;
+				id-ID)
+					notif_id_end &
+					;;
+				tr*)
+					notif_tr_end &
+					;;
+				fr*)
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
+					;;
+			esac
+			;;
+			"pwrsave")
 			case "$(getprop persist.sys.locale)" in
 				en*)
 					notif_start &

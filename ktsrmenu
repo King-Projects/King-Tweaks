@@ -353,8 +353,8 @@ menu() {
 			;;
 		"90")
 			settings put system min_refresh_rate 90 2>/dev/null
-			settings put system peak_refresh_rate 90 2>/dev/null
-			settings put system user_refresh_rate 90 2>/dev/null
+			settings put system peak_refresh_rate 90.0 2>/dev/null
+			settings put system user_refresh_rate 90.0 2>/dev/null
 			settings put system thermal_limit_refresh_rate 90 2>/dev/null
 			settings put global oneplus_screen_refresh_rate 0 2>/dev/null
 			settings put secure coloros_screen_refresh_rate 1 2>/dev/null
@@ -365,8 +365,8 @@ menu() {
 			;;
 		"120")
 			settings put system min_refresh_rate 120 2>/dev/null
-			settings put system peak_refresh_rate 120 2>/dev/null
-			settings put system user_refresh_rate 120 2>/dev/null
+			settings put system peak_refresh_rate 120.0 2>/dev/null
+			settings put system user_refresh_rate 120.0 2>/dev/null
 			settings put system thermal_limit_refresh_rate 120 2>/dev/null
 			settings put global oneplus_screen_refresh_rate 0 2>/dev/null
 			settings put secure coloros_screen_refresh_rate 3 2>/dev/null
@@ -531,7 +531,7 @@ menu() {
 			;;
 		"SDPS"|"sdps")
 			[[ "$sdk" -ge "31" ]] && {
-				settings put global dynamic_power_savings_disable_threshold $2
+				settings put global dynamic_power_savings_disable_threshold "$2"
 				echo "$G[*] Done!$N"
 				sleep 2
 				menu
@@ -567,7 +567,7 @@ menu() {
 			;;
 		"SSOT"|"ssot")
 			[[ "$(settings get system screen_off_timeout)" != "null" ]] && {
-				settings put global screen_off_timeout $2
+				settings put global screen_off_timeout "$2"
 				echo "$G[*] Done!$N"
 				sleep 2
 				menu

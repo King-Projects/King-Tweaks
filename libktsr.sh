@@ -29,7 +29,7 @@ exynos=false
 mtk=false
 ppm=false
 big_little=false
-lib_ver="1.5.1-master"
+lib_ver="1.5.2-master"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 zram="/sys/module/zram/parameters/"
@@ -286,7 +286,7 @@ arch=$(getprop ro.product.cpu.abi | awk -F "-" '{print $1}')
 [[ "$(getprop ro.boot.hardware | grep exynos)" ]] || [[ "$(getprop ro.board.platform | grep universal)" ]] || [[ "$(getprop ro.product.board | grep universal)" ]] && exynos=true
 [[ "$(getprop ro.board.platform | grep mt)" ]] || [[ "$(getprop ro.product.board | grep mt)" ]] || [[ "$(getprop ro.hardware | grep mt)" ]] || [[ "$(getprop ro.boot.hardware | grep mt)" ]] && mtk=true
 
-# Whether CPU uses BIG.little arch or not
+# Check if CPU is BIG.little
 for i in 1 2 3 4 5 6 7; do
   [[ -d "/sys/devices/system/cpu/cpufreq/policy0/" ]] && [[ -d "/sys/devices/system/cpu/cpufreq/policy${i}/" ]] && big_little=true
 done
@@ -388,9 +388,6 @@ root=$(su -v)
   one_ui=true
   samsung=true
 }
-
-# Amount of time that system has been running
-sys_uptime=$(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 
 [[ "$(command -v sqlite3)" ]] && {
   sql_ver=$(sqlite3 -version | awk '{print $1}')
@@ -521,7 +518,7 @@ print_info() {
 ** GPU governor: $gpu_gov
 ** Device: $dvc_brnd, $dvc_cdn
 ** ROM: $rom_info
-** Max refresh rate: ${rr}HZ
+** Max refresh rate: ${rr} HZ
 ** KTSR build version: $bd_ver
 ** KTSR build codename: $bd_cdn
 ** KTSR build release: $bd_rel
@@ -536,7 +533,7 @@ print_info() {
 ** Root: $root
 ** SQLite version: $sql_ver
 ** SQLite build date: $sql_bd_dt
-** System uptime: $sys_uptime
+** System uptime: $(uptime | awk '{print $3,$4}' | cut -d "," -f 1)
 ** SELinux: $slnx_stt
 ** Busybox: $bb_ver
 ** KTSR PID: $$
@@ -550,27 +547,24 @@ print_info() {
 " >>"$klog"
 }
 
-# Stop perf and other userspace processes from tinkering with kernel parameters
+# Stop perf and other userspace services from tinkering with kernel parameters
 stop_services() {
-  for v in 0 1 2 3 4; do
-    kill_svc vendor.qti.hardware.perf@"$v"."$v"-service
-    kill_svc vendor.oneplus.hardware.brain@"$v"."$v"-service
-  done
   kill_svc perfd
   kill_svc mpdecision
-  kill_svc perfservice
-  kill_svc cnss_diag
-  kill_svc tcpdump
-  kill_svc ipacm-diag
-  kill_svc statsd
   kill_svc charge_logger
-  kill_svc oneplus_brain_service
   [[ "$sdk" == "31" ]] && {
     kill_svc vendor.perfservice
     kill_svc vendor.cnss_diag
     kill_svc vendor.tcpdump
     kill_svc vendor.ipacm-diag
-  }
+  } || {
+  kill_svc perfservice
+  kill_svc cnss_diag
+  kill_svc tcpdump
+  kill_svc ipacm-diag
+  kill_svc statsd
+  
+}
   [[ "$miui" == "false" ]] && kill_svc mlid
   [[ -e "/data/system/perfd/default_values" ]] && rm -rf "/data/system/perfd/default_values" || [[ -e "/data/vendor/perfd/default_values" ]] && rm -rf "/data/vendor/perfd/default_values"
   [[ -e "/data/system/mcd/df" ]] && rm -rf "/data/system/mcd/df"
@@ -581,7 +575,7 @@ stop_services() {
 
 core_ctl_set() {
   [[ "$1" == "1" ]] && {
-    for i in 0 2 4 6; do
+    for i in 0 4 6; do
       for core_ctl in /sys/devices/system/cpu/cpu$i/core_ctl/; do
         [[ -e "${core_ctl}enable" ]] && write "${core_ctl}enable" "1"
         [[ -e "${core_ctl}disable" ]] && write "${core_ctl}disable" "0"
@@ -931,7 +925,7 @@ core_ctl_set() {
         write "$governor/up_rate_limit_us" "0"
         write "$governor/down_rate_limit_us" "0"
         write "$governor/pl" "1"
-        write "$governor/iowait_boost_enable" "0"
+        write "$governor/iowait_boost_enable" "1"
         write "$governor/rate_limit_us" "0"
         write "$governor/hispeed_load" "85"
         write "$governor/hispeed_freq" "$cpu_max_freq"
@@ -941,7 +935,7 @@ core_ctl_set() {
         write "$governor/up_rate_limit_us" "0"
         write "$governor/down_rate_limit_us" "0"
         write "$governor/pl" "1"
-        write "$governor/iowait_boost_enable" "0"
+        write "$governor/iowait_boost_enable" "1"
         write "$governor/rate_limit_us" "0"
         write "$governor/hispeed_load" "85"
         write "$governor/hispeed_freq" "$cpu_max_freq"
@@ -984,7 +978,7 @@ core_ctl_set() {
         write "$governor/up_rate_limit_us" "500"
         write "$governor/down_rate_limit_us" "20000"
         write "$governor/pl" "1"
-        write "$governor/iowait_boost_enable" "0"
+        write "$governor/iowait_boost_enable" "1"
         write "$governor/rate_limit_us" "20000"
         write "$governor/hispeed_load" "85"
         write "$governor/hispeed_freq" "$cpu_max_freq"
@@ -994,7 +988,7 @@ core_ctl_set() {
         write "$governor/up_rate_limit_us" "500"
         write "$governor/down_rate_limit_us" "20000"
         write "$governor/pl" "1"
-        write "$governor/iowait_boost_enable" "0"
+        write "$governor/iowait_boost_enable" "1"
         write "$governor/rate_limit_us" "20000"
         write "$governor/hispeed_load" "85"
         write "$governor/hispeed_freq" "$cpu_max_freq"
@@ -1038,9 +1032,9 @@ core_ctl_set() {
         write "$governor/up_rate_limit_us" "0"
         write "$governor/down_rate_limit_us" "0"
         write "$governor/pl" "1"
-        write "$governor/iowait_boost_enable" "0"
+        write "$governor/iowait_boost_enable" "1"
         write "$governor/rate_limit_us" "0"
-        write "$governor/hispeed_load" "75"
+        write "$governor/hispeed_load" "79"
         write "$governor/hispeed_freq" "$cpu_max_freq"
       done
 
@@ -1048,9 +1042,9 @@ core_ctl_set() {
         write "$governor/up_rate_limit_us" "0"
         write "$governor/down_rate_limit_us" "0"
         write "$governor/pl" "1"
-        write "$governor/iowait_boost_enable" "0"
+        write "$governor/iowait_boost_enable" "1"
         write "$governor/rate_limit_us" "0"
-        write "$governor/hispeed_load" "75"
+        write "$governor/hispeed_load" "79"
         write "$governor/hispeed_freq" "$cpu_max_freq"
       done
 
@@ -1070,7 +1064,7 @@ core_ctl_set() {
         write "$governor/sampling_rate_min" "0"
         write "$governor/max_freq_hysteresis" "79000"
         write "$governor/min_sample_time" "0"
-        write "$governor/go_hispeed_load" "75"
+        write "$governor/go_hispeed_load" "79"
         write "$governor/hispeed_freq" "$cpu_max_freq"
         write "$governor/sched_freq_inc_notify" "200000"
         write "$governor/sched_freq_dec_notify" "400000"
@@ -1088,8 +1082,8 @@ core_ctl_set() {
       done
 
       for governor in $(find /sys/devices/system/cpu/ -name *util* -type d); do
-        write "$governor/up_rate_limit_us" "5000"
-        write "$governor/down_rate_limit_us" "20000"
+        write "$governor/up_rate_limit_us" "4000"
+        write "$governor/down_rate_limit_us" "16000"
         write "$governor/pl" "1"
         write "$governor/iowait_boost_enable" "0"
         write "$governor/rate_limit_us" "20000"
@@ -1098,8 +1092,8 @@ core_ctl_set() {
       done
 
       for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d); do
-        write "$governor/up_rate_limit_us" "5000"
-        write "$governor/down_rate_limit_us" "20000"
+        write "$governor/up_rate_limit_us" "4000"
+        write "$governor/down_rate_limit_us" "16000"
         write "$governor/pl" "1"
         write "$governor/iowait_boost_enable" "0"
         write "$governor/rate_limit_us" "20000"
@@ -1111,7 +1105,7 @@ core_ctl_set() {
         write "$governor/timer_rate" "20000"
         write "$governor/boost" "0"
         write "$governor/io_is_busy" "0"
-        write "$governor/timer_slack" "5000"
+        write "$governor/timer_slack" "4000"
         write "$governor/input_boost" "0"
         write "$governor/use_migration_notif" "1"
         write "$governor/ignore_hispeed_on_notif" "0"
@@ -1142,22 +1136,22 @@ core_ctl_set() {
       done
 
       for governor in $(find /sys/devices/system/cpu/ -name *util* -type d); do
-        write "$governor/up_rate_limit_us" "0"
-        write "$governor/down_rate_limit_us" "0"
+        write "$governor/up_rate_limit_us" "500"
+        write "$governor/down_rate_limit_us" "24000"
         write "$governor/pl" "1"
-        write "$governor/iowait_boost_enable" "0"
+        write "$governor/iowait_boost_enable" "1"
         write "$governor/rate_limit_us" "0"
-        write "$governor/hispeed_load" "75"
+        write "$governor/hispeed_load" "79"
         write "$governor/hispeed_freq" "$cpu_max_freq"
       done
 
       for governor in $(find /sys/devices/system/cpu/ -name *sched* -type d); do
-        write "$governor/up_rate_limit_us" "0"
-        write "$governor/down_rate_limit_us" "0"
+        write "$governor/up_rate_limit_us" "500"
+        write "$governor/down_rate_limit_us" "24000"
         write "$governor/pl" "1"
-        write "$governor/iowait_boost_enable" "0"
+        write "$governor/iowait_boost_enable" "1"
         write "$governor/rate_limit_us" "0"
-        write "$governor/hispeed_load" "75"
+        write "$governor/hispeed_load" "79"
         write "$governor/hispeed_freq" "$cpu_max_freq"
       done
 
@@ -1309,7 +1303,6 @@ core_ctl_set() {
         write "${gpu}force_clk_on" "0"
         write "${gpu}force_rail_on" "0"
         write "${gpu}popp" "0"
-        write "${gpu}idle_timer" "80"
         write "${gpu}pwrnap" "1"
         write "/sys/kernel/debug/sde_rotator0/clk_always_on" "0"
       elif [[ "$qcom" == "false" ]]; then
@@ -1453,7 +1446,6 @@ core_ctl_set() {
         write "${gpu}force_clk_on" "0"
         write "${gpu}force_rail_on" "0"
         write "${gpu}popp" "0"
-        write "${gpu}idle_timer" "80"
         write "${gpu}pwrnap" "1"
         write "/sys/kernel/debug/sde_rotator0/clk_always_on" "0"
       elif [[ "$qcom" == "false" ]]; then
@@ -1600,7 +1592,6 @@ core_ctl_set() {
         write "${gpu}force_clk_on" "0"
         write "${gpu}force_rail_on" "0"
         write "${gpu}popp" "0"
-        write "${gpu}idle_timer" "7500"
         write "${gpu}pwrnap" "1"
         write "/sys/kernel/debug/sde_rotator0/clk_always_on" "0"
       elif [[ "$qcom" == "false" ]]; then
@@ -1743,7 +1734,6 @@ core_ctl_set() {
         write "${gpu}force_clk_on" "0"
         write "${gpu}force_rail_on" "0"
         write "${gpu}popp" "0"
-        write "${gpu}idle_timer" "80"
         write "${gpu}pwrnap" "1"
         write "/sys/kernel/debug/sde_rotator0/clk_always_on" "0"
       elif [[ "$qcom" == "false" ]]; then
@@ -1890,7 +1880,6 @@ core_ctl_set() {
         write "${gpu}force_clk_on" "1"
         write "${gpu}force_rail_on" "1"
         write "${gpu}popp" "0"
-        write "${gpu}idle_timer" "10000"
         write "${gpu}pwrnap" "0"
         write "/sys/kernel/debug/sde_rotator0/clk_always_on" "1"
       elif [[ "$qcom" == "false" ]]; then
@@ -2023,7 +2012,7 @@ core_ctl_set() {
       write "${stune}background/schedtune.prefer_high_cap" "0"
       write "${stune}foreground/schedtune.boost" "0"
       write "${stune}foreground/schedtune.colocate" "0"
-      write "${stune}foreground/schedtune.prefer_idle" "0"
+      write "${stune}foreground/schedtune.prefer_idle" "1"
       write "${stune}foreground/schedtune.sched_boost" "0"
       write "${stune}foreground/schedtune.sched_boost_no_override" "1"
       write "${stune}foreground/schedtune.prefer_perf" "0"
@@ -2151,8 +2140,8 @@ core_ctl_set() {
       write "${stune}background/schedtune.util_est_en" "0"
       write "${stune}background/schedtune.ontime_en" "0"
       write "${stune}background/schedtune.prefer_high_cap" "0"
-      write "${stune}foreground/schedtune.boost" "50"
-      write "${stune}foreground/schedtune.colocate" "0"
+      write "${stune}foreground/schedtune.boost" "0"
+      write "${stune}foreground/schedtune.colocate" "1"
       write "${stune}foreground/schedtune.prefer_idle" "1"
       write "${stune}foreground/schedtune.sched_boost" "0"
       write "${stune}foreground/schedtune.sched_boost_no_override" "1"
@@ -2190,7 +2179,6 @@ core_ctl_set() {
       write "${stune}top-app/schedtune.boost" "50"
       write "${stune}top-app/schedtune.colocate" "1"
       write "${stune}top-app/schedtune.prefer_idle" "1"
-      write "${stune}top-app/schedtune.sched_boost" "15"
       write "${stune}top-app/schedtune.sched_boost_no_override" "1"
       write "${stune}top-app/schedtune.prefer_perf" "1"
       write "${stune}top-app/schedtune.util_est_en" "1"
@@ -2280,10 +2268,9 @@ core_ctl_set() {
       write "${stune}background/schedtune.util_est_en" "0"
       write "${stune}background/schedtune.ontime_en" "0"
       write "${stune}background/schedtune.prefer_high_cap" "0"
-      write "${stune}foreground/schedtune.boost" "40"
-      write "${stune}foreground/schedtune.colocate" "0"
+      write "${stune}foreground/schedtune.boost" "0"
+      write "${stune}foreground/schedtune.colocate" "1"
       write "${stune}foreground/schedtune.prefer_idle" "1"
-      write "${stune}foreground/schedtune.sched_boost" "15"
       write "${stune}foreground/schedtune.sched_boost_no_override" "1"
       write "${stune}foreground/schedtune.prefer_perf" "0"
       write "${stune}foreground/schedtune.util_est_en" "1"
@@ -2340,27 +2327,27 @@ core_ctl_set() {
 
   uclamp_tune() {
     [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]] && [[ "$ktsr_prof_en" == "latency" ]] || [[ "$auto_prof" == "latency" ]] && {
-      write "${kernel}sched_util_clamp_min" "392"
+      write "${kernel}sched_util_clamp_min" "1024"
       write "${kernel}sched_util_clamp_max" "1024"
       write "${cpuctl}top-app/cpu.uclamp.max" "max"
-      write "${cpuctl}top-app/cpu.uclamp.min" "20"
-      write "${cpuctl}top-app/cpu.uclamp.boosted" "1"
+      write "${cpuctl}top-app/cpu.uclamp.min" "128"
+      write "${cpuctl}top-app/cpu.uclamp.boosted" "0"
       write "${cpuctl}top-app/cpu.uclamp.latency_sensitive" "1"
       write "${cpuctl}foreground/cpu.uclamp.max" "max"
       write "${cpuctl}foreground/cpu.uclamp.min" "10"
       write "${cpuctl}foreground/cpu.uclamp.boosted" "0"
       write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "0"
-      write "${cpuctl}background/cpu.uclamp.max" "50"
+      write "${cpuctl}background/cpu.uclamp.max" "max"
       write "${cpuctl}background/cpu.uclamp.min" "0"
       write "${cpuctl}background/cpu.uclamp.boosted" "0"
       write "${cpuctl}background/cpu.uclamp.latency_sensitive" "0"
-      write "${cpuctl}system-background/cpu.uclamp.max" "40"
+      write "${cpuctl}system-background/cpu.uclamp.max" "max"
       write "${cpuctl}system-background/cpu.uclamp.min" "0"
       write "${cpuctl}system-background/cpu.uclamp.boosted" "0"
       write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
       log_i "Tweaked Uclamp parameters"
     } || [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]] && [[ "$ktsr_prof_en" == "balanced" ]] && {
-      write "${kernel}sched_util_clamp_min" "256"
+      write "${kernel}sched_util_clamp_min" "1024"
       write "${kernel}sched_util_clamp_max" "1024"
       write "${cpuctl}top-app/cpu.uclamp.max" "max"
       write "${cpuctl}top-app/cpu.uclamp.min" "10"
@@ -2370,11 +2357,11 @@ core_ctl_set() {
       write "${cpuctl}foreground/cpu.uclamp.min" "5"
       write "${cpuctl}foreground/cpu.uclamp.boosted" "0"
       write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "0"
-      write "${cpuctl}background/cpu.uclamp.max" "50"
+      write "${cpuctl}background/cpu.uclamp.max" "768"
       write "${cpuctl}background/cpu.uclamp.min" "0"
       write "${cpuctl}background/cpu.uclamp.boosted" "0"
       write "${cpuctl}background/cpu.uclamp.latency_sensitive" "0"
-      write "${cpuctl}system-background/cpu.uclamp.max" "40"
+      write "${cpuctl}system-background/cpu.uclamp.max" "1024"
       write "${cpuctl}system-background/cpu.uclamp.min" "0"
       write "${cpuctl}system-background/cpu.uclamp.boosted" "0"
       write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
@@ -2387,34 +2374,34 @@ core_ctl_set() {
       write "${cpuctl}top-app/cpu.uclamp.boosted" "1"
       write "${cpuctl}top-app/cpu.uclamp.latency_sensitive" "1"
       write "${cpuctl}foreground/cpu.uclamp.max" "max"
-      write "${cpuctl}foreground/cpu.uclamp.min" "max"
-      write "${cpuctl}foreground/cpu.uclamp.boosted" "1"
+      write "${cpuctl}foreground/cpu.uclamp.min" "0"
+      write "${cpuctl}foreground/cpu.uclamp.boosted" "0"
       write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "1"
-      write "${cpuctl}background/cpu.uclamp.max" "50"
+      write "${cpuctl}background/cpu.uclamp.max" "512"
       write "${cpuctl}background/cpu.uclamp.min" "0"
       write "${cpuctl}background/cpu.uclamp.boosted" "0"
       write "${cpuctl}background/cpu.uclamp.latency_sensitive" "0"
-      write "${cpuctl}system-background/cpu.uclamp.max" "40"
+      write "${cpuctl}system-background/cpu.uclamp.max" "1024"
       write "${cpuctl}system-background/cpu.uclamp.min" "0"
       write "${cpuctl}system-background/cpu.uclamp.boosted" "0"
       write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
       log_i "Tweaked Uclamp parameters"
     } || [[ -e "${cpuctl}top-app/cpu.uclamp.max" ]] && [[ "$ktsr_prof_en" == "pwrsave" ]] || [[ "$auto_prof" == "pwrsave" ]] && {
-      write "${kernel}sched_util_clamp_min" "256"
-      write "${kernel}sched_util_clamp_max" "768"
+      write "${kernel}sched_util_clamp_min" "1024"
+      write "${kernel}sched_util_clamp_max" "1024"
       write "${cpuctl}top-app/cpu.uclamp.max" "max"
-      write "${cpuctl}top-app/cpu.uclamp.min" "5"
-      write "${cpuctl}top-app/cpu.uclamp.boosted" "1"
+      write "${cpuctl}top-app/cpu.uclamp.min" "0"
+      write "${cpuctl}top-app/cpu.uclamp.boosted" "0"
       write "${cpuctl}top-app/cpu.uclamp.latency_sensitive" "1"
       write "${cpuctl}foreground/cpu.uclamp.max" "max"
       write "${cpuctl}foreground/cpu.uclamp.min" "0"
       write "${cpuctl}foreground/cpu.uclamp.boosted" "0"
       write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "0"
-      write "${cpuctl}background/cpu.uclamp.max" "50"
+      write "${cpuctl}background/cpu.uclamp.max" "768"
       write "${cpuctl}background/cpu.uclamp.min" "0"
       write "${cpuctl}background/cpu.uclamp.boosted" "0"
       write "${cpuctl}background/cpu.uclamp.latency_sensitive" "0"
-      write "${cpuctl}system-background/cpu.uclamp.max" "40"
+      write "${cpuctl}system-background/cpu.uclamp.max" "max"
       write "${cpuctl}system-background/cpu.uclamp.min" "0"
       write "${cpuctl}system-background/cpu.uclamp.boosted" "0"
       write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
@@ -2427,14 +2414,14 @@ core_ctl_set() {
       write "${cpuctl}top-app/cpu.uclamp.boosted" "1"
       write "${cpuctl}top-app/cpu.uclamp.latency_sensitive" "1"
       write "${cpuctl}foreground/cpu.uclamp.max" "max"
-      write "${cpuctl}foreground/cpu.uclamp.min" "max"
-      write "${cpuctl}foreground/cpu.uclamp.boosted" "1"
-      write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "1"
-      write "${cpuctl}background/cpu.uclamp.max" "50"
+      write "${cpuctl}foreground/cpu.uclamp.min" "0"
+      write "${cpuctl}foreground/cpu.uclamp.boosted" "0"
+      write "${cpuctl}foreground/cpu.uclamp.latency_sensitive" "0"
+      write "${cpuctl}background/cpu.uclamp.max" "512"
       write "${cpuctl}background/cpu.uclamp.min" "0"
       write "${cpuctl}background/cpu.uclamp.boosted" "0"
       write "${cpuctl}background/cpu.uclamp.latency_sensitive" "0"
-      write "${cpuctl}system-background/cpu.uclamp.max" "40"
+      write "${cpuctl}system-background/cpu.uclamp.max" "max"
       write "${cpuctl}system-background/cpu.uclamp.min" "0"
       write "${cpuctl}system-background/cpu.uclamp.boosted" "0"
       write "${cpuctl}system-background/cpu.uclamp.latency_sensitive" "0"
@@ -2448,10 +2435,6 @@ core_ctl_set() {
       write "${fs}dir-notify-enable" "0"
       write "${fs}lease-break-time" "15"
       write "${fs}leases-enable" "1"
-      write "${fs}file-max" "2097152"
-      write "${fs}inotify/max_queued_events" "131072"
-      write "${fs}inotify/max_user_watches" "131072"
-      write "${fs}inotify/max_user_instances" "1024"
       log_i "Tweaked FS"
     }
   }
@@ -2558,9 +2541,7 @@ core_ctl_set() {
         [[ -e "$bcl_md" ]] && write "$bcl_md" "0"
       done
       write "/proc/sys/dev/tty/ldisc_autoload" "0"
-      write_lock "${kernel}sched_force_lb_enable" "0"
-      write "/sys/power/pm_freeze_timeout" "1000"
-
+         
       log_i "Tweaked various kernel parameters to a better overall performance"
     } || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$auto_prof" == "balanced" ]] && {
       [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
@@ -2612,9 +2593,7 @@ core_ctl_set() {
         [[ -e "$bcl_md" ]] && write "$bcl_md" "0"
       done
       write "/proc/sys/dev/tty/ldisc_autoload" "0"
-      write_lock "${kernel}sched_force_lb_enable" "0"
-      write "/sys/power/pm_freeze_timeout" "2000"
-
+          
       log_i "Tweaked various kernel parameters to a better overall performance"
     } || [[ "$king_prof_en" == "extreme" ]] || [[ "$auto_prof" == "extreme" ]] && {
       [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
@@ -2666,9 +2645,7 @@ core_ctl_set() {
         [[ -e "$bcl_md" ]] && write "$bcl_md" "0"
       done
       write "/proc/sys/dev/tty/ldisc_autoload" "0"
-      write_lock "${kernel}sched_force_lb_enable" "0"
-      write "/sys/power/pm_freeze_timeout" "1000"
-
+  
       log_i "Tweaked various kernel parameters to a better overall performance"
     } || [[ "$ktsr_prof_en" == "pwrsave" ]] || [[ "$auto_prof" == "pwrsave" ]] && {
       [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
@@ -2720,9 +2697,7 @@ core_ctl_set() {
         [[ -e "$bcl_md" ]] && write "$bcl_md" "0"
       done
       write "/proc/sys/dev/tty/ldisc_autoload" "0"
-      write_lock "${kernel}sched_force_lb_enable" "0"
-      write "/sys/power/pm_freeze_timeout" "5000"
-
+      
       log_i "Tweaked various kernel parameters to a better overall performance"
     } || [[ "$ktsr_prof_en" == "game" ]] || [[ "$auto_prof" == "game" ]] && {
       [[ -e "${kernel}sched_child_runs_first" ]] && write "${kernel}sched_child_runs_first" "0"
@@ -2774,11 +2749,9 @@ core_ctl_set() {
         [[ -e "$bcl_md" ]] && write "$bcl_md" "0"
       done
       write "/proc/sys/dev/tty/ldisc_autoload" "0"
-      write_lock "${kernel}sched_force_lb_enable" "0"
-      write "/sys/power/pm_freeze_timeout" "1000"
-
+   
       log_i "Tweaked various kernel parameters to a better overall performance"
-    }
+      }
   }
 
   fp_boost() {
@@ -2824,14 +2797,14 @@ core_ctl_set() {
     }
   }
 
-  # Try to set an more efficient CPU min frequency
-  # 1:default 2:mid
+  # Try to set a more efficient CPU minimum frequency
+  # 1:default 2:mid(reduce max freq to half)
   cpu_clk_set() {
     [[ "$1" == "1" ]] && {
       for pl in /sys/devices/system/cpu/cpufreq/policy*/; do
         write "${pl}scaling_max_freq" "$cpu_max_freq"
         write "${pl}user_scaling_max_freq" "$cpu_max_freq"
-        for i in 576000 652800 691200 710400 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1689600 1708800 1766400; do
+        for i in 576000 652800 691200 710400 748800 768000 787200 806400 825600 844800 852600 864000 902400 940800 960000 979200 998400 1036800 1075200 1113600 1152000 1209600 1459200 1478400 1516800 1651200 1689600 1708800 1766400; do
           [[ "$(grep "$i" "${pl}scaling_available_frequencies")" ]] && {
             write "${pl}scaling_min_freq" "$i"
             write "${pl}user_scaling_min_freq" "$i"
@@ -3149,16 +3122,6 @@ core_ctl_set() {
     }
   }
 
-  lcd_prdc() {
-    [[ -e "/sys/class/lcd/panel/power_reduce" ]] && [[ "$1" == "1" ]] && {
-      write "/sys/class/lcd/panel/power_reduce" "1"
-      log_i "Enabled LCD power reduce"
-    } || [[ -e "/sys/class/lcd/panel/power_reduce" ]] && [[ "$1" == "0" ]] && {
-      write "/sys/class/lcd/panel/power_reduce" "0"
-      log_i "Disabled LCD power reduce"
-    }
-  }
-
   enable_usb_fast_chrg() {
     [[ -e "/sys/kernel/fast_charge/force_fast_charge" ]] && {
       write "/sys/kernel/fast_charge/force_fast_charge" "1"
@@ -3210,7 +3173,6 @@ emmc_clk_scl() {
   }
 }
 
-# Disable unnecessary kernel debugging
 disable_debug() {
   for i in debug_mask log_level* debug_level* *debug_mode enable_ramdumps edac_mc_log* enable_event_log *log_level* *log_ue* *log_ce* log_ecn_error snapshot_crashdumper seclog* compat-log *log_enabled tracing_on mballoc_debug; do
     for o in $(find /sys/ -type f -name "$i"); do
@@ -3221,7 +3183,7 @@ disable_debug() {
   write "/sys/kernel/debug/sde_rotator0/evtlog/enable" "0"
   write "/sys/kernel/debug/dri/0/debug/enable" "0"
 
-  log_i "Disabled misc debugging for reduced overhead"
+  log_i "Disabled some kernel debugging for reduced overhead"
 }
 
 perfmgr() {
@@ -3341,33 +3303,32 @@ disable_mtk_thrtl() {
 # Userspace bourbon optimization
 bbn_opt() {
   # Input dispatcher/reader
-  change_thread_nice "system_server" "Input" "-20"
-  # Render threads should have all cores
+  change_thread_high_prio "system_server" "Input"
+  # Render thread
   pin_thread_on_all "$launcher_pkg" "RenderThread|GLThread" "ff"
   pin_thread_on_pwr "$launcher_pkg" "GPU completion|HWC release|hwui|FramePolicy|ScrollPolicy|ged-swd" "0f"
-  # Speed up searching service manager
-  change_task_nice "servicemanag" "-20"
+  # Service manager
+  change_task_high_prio "servicemanag"
   # Not important
-  pin_thread_on_pwr "system_server" "VoiceReporter|TaskSnapshot|Greezer|CachedApp|SystemPressure|SensorService|[Mm]emory"
-  pin_thread_on_pwr "ndroid.systemui" "mi_analytics_up"
-  # khugepaged takes care of memory management, but it's not that performance-critical, so pin it in the little cluster.
-  pin_thread_on_pwr "khugepaged"
-  # Run KGSL/Mali workers with max priority as both are critical tasks
-  change_task_nice "kgsl_worker" "-20"
+  change_task_nice "ipawq" "0"
+  change_task_nice "iparepwq" "0"
+  change_task_nice "wlan_logging_th" "10"
+  # Graphics workers with max priority
+  change_task_high_prio "kgsl_worker"
   pin_proc_on_perf "kgsl_worker"
-  change_task_nice "mali_jd_thread" "-20"
+  change_task_high_prio "mali_jd_thread"
   change_task_rt "mali_jd_thread" "50"
-  change_task_nice "mali_event_thread" "-20"
-  # Pin HWC on perf cluster to reduce jitter
+  change_task_high_prio "mali_event_thread"
+  # HWC on perf cluster to reduce jitter
   pin_proc_on_perf "composer"
-  # Let SF use all cores
+  # SF should have all cores
   pin_proc_on_all "surfaceflinger"
-  # Devfreq boost should run with max priority and into the perf cluster as it is a critical task (boosting DDR)
+  # Devfreq boost (boosting DDR)
   # Don't run it with RT_MAX_PRIO - 1 though
-  change_task_nice "devfreq_boost" "-20"
+  change_task_high_prio "devfreq_boost"
   pin_proc_on_perf "devfreq_boost"
   change_task_rt "devfreq_boost" "50"
-  # Pin these kthreads to the perf cluster as they also play a major role in rendering frames to the display
+  # Render threads
   # Pin only the first threads as others are non-critical
   n=80
   while [[ "$n" -lt "301" ]]; do
@@ -3381,31 +3342,26 @@ bbn_opt() {
   pin_proc_on_perf "mdss_disp_wake"
   pin_proc_on_perf "vsync_retire_work"
   pin_proc_on_perf "pq@"
-  # Improve I/O performance by pinning the block daemon into the perf cluster
-  pin_proc_on_perf "kblockd"
-  # Pin TS workqueues to perf cluster to reduce latency
+  # TS workqueues on perf cluster to reduce latency
   pin_proc_on_perf "fts_wq"
   pin_proc_on_perf "nvt_ts_workqueu"
   change_task_rt "nvt_ts_workqueu" "50"
   change_task_rt "fts_wq" "50"
-  # Pin Samsung HyperHAL to perf cluster
+  # Samsung HyperHAL to perf cluster
   pin_proc_on_perf "hyper@"
-  # Queue UFS/EMMC clock gating with max priority
-  change_task_nice "ufs_clk_gating" "-20"
-  change_task_nice "mmc_clk_gate" "-20"
-  # Queue CVP fence request handler with max priority
-  change_task_nice "thread_fence" "-20"
-  # Queue CPU boost worker with max priority for obvious reasons
+  # CVP fence request handler
+  change_task_high_prio "thread_fence"
+  # CPU boost worker
   change_task_rt "cpu_boost_work" "2"
-  change_task_nice "cpu_boost_work" "-20"
-  # Queue touchscreen related workers with max priority
-  change_task_nice "speedup_resume_wq" "-20"
-  change_task_nice "load_tp_fw_wq" "-20"
-  change_task_nice "tcm_freq_hop" "-20"
-  change_task_nice "touch_delta_wq" "-20"
-  change_task_nice "tp_async" "-20"
-  change_task_nice "wakeup_clk_wq" "-20"
-  # Set RT priority correctly for critical tasks
+  change_task_high_prio "cpu_boost_work"
+  # Touchscreen related workers
+  change_task_high_prio "speedup_resume_wq"
+  change_task_high_prio "load_tp_fw_wq"
+  change_task_high_prio "tcm_freq_hop"
+  change_task_high_prio "touch_delta_wq"
+  change_task_high_prio "tp_async"
+  change_task_high_prio "wakeup_clk_wq"
+  # RT priority adequately for critical tasks
   change_task_rt "kgsl_worker_thread" "6"
   change_task_rt "crtc_commit" "16"
   change_task_rt "crtc_event" "16"
@@ -3417,23 +3373,24 @@ bbn_opt() {
   change_task_rt "surfaceflinger" "2"
   change_task_rt "composer" "2"
   # Boost app boot process
-  change_task_nice "zygote" "-20"
-  # Queue VM writeback with max priority
-  change_task_nice "writeback" "-20"
+  change_task_high_prio "zygote"
+  # VM writeback
+  change_task_high_prio "writeback"
   # Affects IO latency/throughput
-  change_task_nice "kblockd" "-20"
+  pin_proc_on_perf "kblockd"
+  change_task_high_prio "kblockd"
+  change_task_high_prio "rcu_tasks_kthre"
+  change_task_high_prio "ufs_clk_gating"
+  change_task_high_prio "mmc_clk_gate"
+  change_task_high_prio "rcu_tasks_kthre"
   # System thread
-  change_task_nice "system" "-20"
-  # Those workqueues don't need any priority
-  change_task_nice "ipawq" "0"
-  change_task_nice "iparepwq" "0"
-  change_task_nice "wlan_logging_th" "10"
-  # Give cryptd, khugepaged as much CPU time as possible
-  change_task_nice "cryptd" "-20"
-  change_task_nice "khugepaged" "-20"
+  change_task_high_prio "system"
+  # cryptd, khugepaged should have as much CPU time as possible
+  change_task_high_prio "cryptd"
+  change_task_high_prio "khugepaged"
 }
 
-# Remove logs if size is >= 1 MB
+# Remove logs when size is >= 1 MB
 clear_logs() {
   kdbg_max_size=1000000
   sqlite_opt_max_size=1000000
@@ -3445,6 +3402,7 @@ apply_all() {
   print_info
   stop_services
   bring_all_cores
+  core_ctl_set 0
   thermal_pol_set
   disable_mtk_thrtl
   io_tune
@@ -3460,7 +3418,6 @@ apply_all() {
   [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "game" ]] || [[ "$auto_prof" == "extreme" ]] || [[ "$auto_prof" == "game" ]] && {
     devfreq_boost 1
     dram_boost 1
-    core_ctl_set 0
     sched_isolation 0
     misc_cpu_tune 3
     pewq 0
@@ -3475,7 +3432,6 @@ apply_all() {
   } || {
     devfreq_boost 0
     dram_boost 0
-    core_ctl_set 1
     sched_isolation 1
     ppm 1
     ppm_policy_set 1
@@ -3488,19 +3444,17 @@ apply_all() {
     ufs_perf_mode 0
     emmc_clk_scl 1
   }
-  [[ "$ktsr_prof_en" == "latency" ]] || [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$auto_prof" == "latency" ]] || [[ "$auto_prof" == "balanced" ]] && misc_cpu_set 1 || [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "game" ]] || [[ "$auto_prof" == "extreme" ]] || [[ "$auto_prof" == "game" ]] && misc_cpu_set 2 || misc_cpu_set 3
+  [[ "$ktsr_prof_en" == "balanced" ]] || [[ "$ktsr_prof_en" == "latency" ]] || [[ "$auto_prof" == "balanced" ]] || [[ "$auto_prof" == "latency" ]] && misc_cpu_set 1 || [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$ktsr_prof_en" == "game" ]] || [[ "$auto_prof" == "extreme" ]] || [[ "$auto_prof" == "game" ]] && misc_cpu_set 2 || misc_cpu_set 3
   [[ "$ktsr_prof_en" == "extreme" ]] || [[ "$auto_prof" == "extreme" ]] && {
     ppm 1
     ppm_policy_set 2
   } || [[ "$ktsr_prof_en" == "game" ]] || [[ "$auto_prof" == "game" ]] && ppm 0
   [[ "$ktsr_prof_en" == "pwrsave" ]] && [[ "$batt_pctg" -lt "20" ]] || [[ "$auto_prof" == "pwrsave" ]] && [[ "$batt_pctg" -lt "20" ]] && cpu_clk_set 2 || cpu_clk_set 1
   [[ "$ktsr_prof_en" == "pwrsave" ]] || [[ "$auto_prof" == "pwrsave" ]] && {
-    kern_batt_saver 1
-    lcd_prdc 1
+    kern_pwrsave 1
     perfmgr pwrsave
   } || {
-    kern_batt_saver 0
-    lcd_prdc 0
+    kern_pwrsave 0
     perfmgr default
   }
 }
