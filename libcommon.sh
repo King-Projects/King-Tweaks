@@ -93,8 +93,8 @@ kill_svc() {
 write_info() { echo "$1" >>"$bbn_info"; }
 
 save_info() {
-	write_info "[*] Bourbon - the essential task optimizer 
-Version: 1.5.0-r7-stable
+	write_info "[*] Bourbon - the essential task optimizer
+Version: 1.5.2-r7-stable
 Last performed: $(date '+%Y-%m-%d %H:%M:%S')
 FSCC status: $(fscc_status)
 Adjshield status: $(adjshield_status)
@@ -258,6 +258,7 @@ change_other_thread_affinity() {
 		done
 	done
 }
+
 # $1:task_name $2:nice(relative to 120)
 change_task_nice() {
 	for temp_pid in $(echo "$ps_ret" | grep -i -E "$1" | awk '{print $1}'); do
@@ -314,11 +315,10 @@ change_thread_rt() {
 }
 
 # $1:task_name
-# audio thread nice => -19
-change_task_high_prio() { change_task_nice "$1" "-19"; }
+change_task_high_prio() { change_task_nice "$1" "-20"; }
 
 # $1:task_name $2:thread_name
-change_thread_high_prio() { change_thread_nice "$1" "$2" "-19"; }
+change_thread_high_prio() { change_thread_nice "$1" "$2" "-20"; }
 
 unpin_thread() { change_thread_cgroup "$1" "$2" "" "cpuset"; }
 
@@ -391,15 +391,11 @@ rebuild_ps_cache() { ps_ret="$(ps -Ao pid,args)"; }
 # OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
 fscc_path_apk_to_oat() { echo "${1%/*}/oat"; }
 
-# $1:file/dir
-# Only append if object isn't already on file list
-fscc_list_append() { [[ ! "$fscc_file_list" == *"$1"* ]] && fscc_file_list="$fscc_file_list $1"; }
-
 # Only append if object doesn't already exists either on pinner service to avoid unnecessary memory expenses
 fscc_add_obj() {
-	[[ "$sdk" -lt "24" ]] && fscc_list_append "$1" || {
+	[[ "$sdk" -lt "24" ]] && [[ ! "$fscc_file_list" == *"$1"* ]] && fscc_file_list="$1" || [[ ! "$fscc_file_list" == *"$1"* ]] || [[ ! -z "fscc_file_list" ]] && fscc_file_list+=" $1" {
 		while IFS= read -r obj; do
-			[[ "$1" != "$obj" ]] && fscc_list_append "$1"
+			[[ "$1" != "$obj" ]] || [[ ! "$fscc_file_list" == *"$1"* ]] || [[ -z "fscc_file_list" ]] && fscc_file_list="$1" || [[ "$1" != "$obj" ]] || [[ ! "$fscc_file_list" == *"$1"* ]] || [[ ! -z "fscc_file_list" ]] && fscc_file_list+=" $1"
 		done <<<"$(dumpsys pinner | grep "$1" | awk '{print $1}')"
 	}
 }

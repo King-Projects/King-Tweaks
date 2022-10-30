@@ -14,7 +14,7 @@ source "$modpath/libs/libktsr.sh"
 #####################
 # Variables
 #####################
-full_ram=$((total_ram * 25 / 100))
+full_ram=$((total_ram * 24 / 100))
 current_prof=none
 ta_stune="/dev/stune/top-app/tasks"
 ta_cpuset="/dev/cpuset/top-app/tasks"
@@ -39,7 +39,7 @@ get_scrn_state() {
 			get_scrn_state
 			apply_all
 		}
-		normal_pid="$(pgrep -f 'whatsapp|music|adobe.|telegram|.nekox|disney.disneyplus|thirdpartyclient|.challegram|.crunchyroll|mediaclient|com.wemesh.|com.tencent.qqlive|qiyi.video|.video|hijia.newlive|duowan.kiwi|douyu|youku|aweme.|.reader|com.discord|youtube|.katana|.orca|.android.chrome|.UCMobile|.mozilla|.duckduckgo|browser|Browser|opera.')"
+		normal_pid="$(pgrep -f 'whatsapp|music|adobe.|gram|.nekox|disney.disneyplus|thirdpartyclient|.crunchyroll|mediaclient|.wemesh|.qqlive|.video|hijia.newlive|duowan.kiwi|douyu|youku|aweme.|.reader|com.discord|youtube|.katana|.orca|.chrome|.UCMobile|.mozilla|.duckduckgo|browser|Browser')"
 		[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -E "$normal_pid" "$ta_stune")" ]] || [[ ! "$(grep -E "$normal_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$normal_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "media" ]] && continue || {
 			log_i "User is using social media, streaming and/or etc apps. Applying battery profile..."
 			sync
