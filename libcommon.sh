@@ -179,7 +179,7 @@ adjshield_start() {
 	rm -rf "$bbn_log"
 	rm -rf "$bbn_info"
 	# check interval: 120 seconds - Deprecated, use event driven instead
-	${modpath}system/bin/adjshield -o $adj_log -c $adj_cfg &
+	"${modpath}"system/bin/adjshield -o $adj_log -c $adj_cfg &
 }
 
 adjshield_stop() { kill_svc adjshield; }
@@ -393,9 +393,9 @@ fscc_path_apk_to_oat() { echo "${1%/*}/oat"; }
 
 # Only append if object doesn't already exists either on pinner service to avoid unnecessary memory expenses
 fscc_add_obj() {
-	[[ "$sdk" -lt "24" ]] && [[ ! "$fscc_file_list" == *"$1"* ]] && fscc_file_list="$1" || [[ ! "$fscc_file_list" == *"$1"* ]] || [[ ! -z "fscc_file_list" ]] && fscc_file_list+=" $1" {
+	[[ "$sdk" -lt "24" ]] && [[ ! "$fscc_file_list" == *"$1"* ]] && [[ "$fscc_file_list" == "" ]] && fscc_file_list="$1" || [[ "$sdk" -lt "24" ]] && [[ ! "$fscc_file_list" == *"$1"* ]] && [[ ! "fscc_file_list" == "" ]] && fscc_file_list+=" $1" || {
 		while IFS= read -r obj; do
-			[[ "$1" != "$obj" ]] || [[ ! "$fscc_file_list" == *"$1"* ]] || [[ -z "fscc_file_list" ]] && fscc_file_list="$1" || [[ "$1" != "$obj" ]] || [[ ! "$fscc_file_list" == *"$1"* ]] || [[ ! -z "fscc_file_list" ]] && fscc_file_list+=" $1"
+			[[ "$1" != "$obj" ]] && [[ ! "$fscc_file_list" == *"$1"* ]] && [[ "$fscc_file_list" == "" ]] && fscc_file_list="$1" || [[ "$1" != "$obj" ]] && [[ ! "$fscc_file_list" == *"$1"* ]] && [[ ! "$fscc_file_list" == "" ]] && fscc_file_list+=" $1"
 		done <<<"$(dumpsys pinner | grep "$1" | awk '{print $1}')"
 	}
 }
@@ -452,7 +452,7 @@ fscc_add_apex_lib() { fscc_add_obj "$(find /apex -name "$1" | head -1)"; }
 
 # After appending fscc_file_list
 # Multiple parameters, cannot be warped by ""
-fscc_start() { ${modpath}system/bin/fscache-ctrl -fdlb0 $fscc_file_list; }
+fscc_start() { "${modpath}"system/bin/fscache-ctrl -fdlb0 "$fscc_file_list"; }
 
 fscc_stop() { kill_svc fscache-ctrl; }
 
