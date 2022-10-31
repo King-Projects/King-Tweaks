@@ -81,7 +81,7 @@ menu() {
 	echo "$Y* KTSR Command Line Interface (CLI) *$N"
 	echo "$Y*************************************$N"
 	echo ""
-	echo "${G}Version: 1.7.1-r16$N"
+	echo "${G}Version: 1.7.2-r16$N"
 	echo ""
 	echo "$V[*] Current Profile:$N $G$ktsr_prof_en$N"
 	echo ""
@@ -101,13 +101,13 @@ menu() {
 	echo ""
 	echo "[*] Other misc options: "
 	echo ""
-	echo "[O] Optimize apps package"
+	echo "$G[O] Optimize apps package$N"
 	echo ""
 	[[ "$low_power_mode" == "Disabled" ]] && {
-		echo "[LPM] Enable low power mode"
+		echo "$G[LPM] Enable battery saver$N"
 		echo ""
 	} || {
-		echo "[DLPM] Disable low power mode"
+		echo "$G[DLPM] Disable battery saver$N"
 		echo ""
 	}
 	[[ "$data_saver" == "Disabled" ]] && {
@@ -118,15 +118,15 @@ menu() {
 		echo ""
 	}
 	[[ "$loc_mode_pwr_saving" == "Disabled" ]] && {
-		echo "[LMP] Enable power-saving location mode"
+		echo "$G[LMP] Enable power-saving location mode$N"
 		echo ""
 	} || {
-		echo "[DLMP] Disable power-saving location mode"
+		echo "$R[DLMP] Disable power-saving location mode$N"
 		echo ""
 	}
 	echo "[C] Clean trash files, E.G: System logs, debug logs, etc."
 	echo ""
-	echo "[T] Access our telegram group"
+	echo "$B[T] Access our telegram group$N"
 	echo ""
 	[[ -e "/sys/module/mdss_mdp/parameters/custom_hz" ]] && {
 		echo "[50] 50 HZ Refresh Rate"
@@ -146,8 +146,7 @@ menu() {
 	} || [[ "$(settings get system peak_refresh_rate)" ]] && [[ "$(settings get system peak_refresh_rate | cut -c1-3 | tr -d .)" -ne "120" ]] && {
 		echo "[120] 120 HZ Refresh Rate"
 		echo ""
-	}
-	echo "[RRR] Reset Refresh Rate config"
+	} || [[ "$(settings get system peak_refresh_rate)" ]] && echo "[RRR] Reset Refresh Rate config"
 	echo ""
 	echo "$G[FR1] Free RAM [Balanced] (Will only drop caches).$N"
 	echo ""
@@ -164,18 +163,18 @@ menu() {
 	}
 	echo "[RBS] Reset battery stats"
 	echo ""
-	echo "[H] How to use the CLI"
+	echo "$B[H] How to use the CLI$N"
 	echo ""
 	[[ "$sdk" -ge "31" ]] && {
-		echo "[AD] Apply downscale on a app"
+		echo "$G[AD] Apply downscale on a app$N"
 		echo ""
-		echo "[RD] Reset downscale from a app"
+		echo "$R[RD] Reset downscale from a app$N"
 		echo ""
 	}
 	[[ "$(pm list package com.google.android.gms)" ]] && {
-		echo "[EG] Enable Gapps"
+		echo "$G[EG] Enable Gapps$N"
 		echo ""
-		echo "[DG] Disable Gapps"
+		echo "$R[DG] Disable Gapps$N"
 		echo ""
 	}
 	[[ "$sdk" -ge "28" ]] && {
@@ -202,10 +201,10 @@ menu() {
 		echo ""
 	}
 	[[ ! "$(pgrep -f gameoptd)" ]] && {
-		echo "[EGOD] Enable gameoptd"
+		echo "$G[EGOD] Enable gameoptd$N"
 		echo ""
 	} || {
-		echo "[DGOD] Disable gameoptd"
+		echo "$R[DGOD] Disable gameoptd$N"
 		echo ""
 	}
 	echo "$R[E] Exit$N"
@@ -213,55 +212,55 @@ menu() {
 	echo -n "$Y[*] Select the desired option:$N "
 	read -r option
 	case "$option" in
-		"A"|"a")
+		"A" | "a")
 			echo "${B}Applying profile...$N"
 			setprop persist.king.tweaks.prof "1" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 2
 			menu
 			;;
-		"P"|"p")
+		"P" | "p")
 			echo "${B}Applying profile...$N"
 			setprop persist.king.tweaks.prof "2" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 2
 			menu
 			;;
-		"B"|"b")
+		"B" | "b")
 			echo "${B}Applying profile...$N"
 			setprop persist.king.tweaks.prof "3" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			menu
 			;;
-		"EX"|"ex")
+		"EX" | "ex")
 			echo "${B}Applying profile...$N"
 			setprop persist.king.tweaks.prof "4" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 2
 			menu
 			;;
-		"G"|"g")
+		"G" | "g")
 			echo "${B}Applying profile...$N"
 			setprop persist.king.tweaks.prof "5" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 2
 			menu
 			;;
-		"L"|"l")
+		"L" | "l")
 			echo "${B}Applying profile...$N"
 			setprop persist.king.tweaks.prof "6" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 2
 			menu
 			;;
-		"O"|"o")
+		"O" | "o")
 			echo "${B}Optimizing packages, this may take some time...$N"
 			pm compile -a -f --compile-layouts
 			cmd package bg-dexopt-job
 			sleep 2
 			menu
 			;;
-		"ELPM"|"elpm")
+		"ELPM" | "elpm")
 			settings put global low_power 1 2>/dev/null
 			settings put global low_power_sticky 1 2>/dev/null
 			settings put global app_standby_enabled 1 2>/dev/null
@@ -272,7 +271,7 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"DLPM"|"dlpm")
+		"DLPM" | "dlpm")
 			settings put global low_power 0 2>/dev/null
 			settings reset global low_power 2>/dev/null
 			settings put global low_power_sticky 0 2>/dev/null
@@ -289,19 +288,19 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"EDS"|"eds")
+		"EDS" | "eds")
 			cmd netpolicy set restrict-background true 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 2
 			menu
 			;;
-		"DDS"|"dds")
+		"DDS" | "dds")
 			cmd netpolicy set restrict-background false 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 2
 			menu
 			;;
-		"ELMP"|"elmp")
+		"ELMP" | "elmp")
 			echo "${B}Applying settings...${N}"
 			settings put secure location_mode "0" 2>/dev/null
 			settings put global assisted_gps_enabled "0" 2>/dev/null
@@ -309,20 +308,20 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"DLMP"|"dlmp")
+		"DLMP" | "dlmp")
 			settings put global assisted_gps_enabled "1" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!"
 			sleep 2
 			menu
 			;;
-		"C"|"c")
+		"C" | "c")
 			echo "${B}Cleaning debug logs and system trash...$N"
 			cleantrash 2>/dev/null
 			echo "$G[*] Done!$N"
 			sleep 2
 			menu
 			;;
-		"T"|"t")
+		"T" | "t")
 			am start -a android.intent.action.VIEW -d https://t.me/kingprojectzdiscussion
 			menu
 			;;
@@ -374,7 +373,7 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"RRR"|"rrr")
+		"RRR" | "rrr")
 			settings reset system min_refresh_rate >/dev/null 2>&1
 			settings reset system peak_refresh_rate >/dev/null 2>&1
 			settings reset system user_refresh_rate >/dev/null 2>&1
@@ -386,14 +385,14 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"FR1"|"fr1")
+		"FR1" | "fr1")
 			sync
 			echo "3" >"/proc/sys/vm/drop_caches"
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 4
 			menu
 			;;
-		"FR2"|"fr2")
+		"FR2" | "fr2")
 			sync
 			echo "3" >"/proc/sys/vm/drop_caches"
 			am kill-all
@@ -401,7 +400,7 @@ menu() {
 			sleep 4
 			menu
 			;;
-		"FR3"|"fr3")
+		"FR3" | "fr3")
 			sync
 			echo "3" >"/proc/sys/vm/drop_caches"
 			am kill-all
@@ -413,19 +412,19 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"EDTP"|"edtp")
+		"EDTP" | "edtp")
 			echo "2" >"/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 2
 			menu
 			;;
-		"DDTP"|"ddtp")
+		"DDTP" | "ddtp")
 			echo "0" >"/sys/class/thermal/thermal_message/sconfig" 2>/dev/null
 			[[ $? == "0" ]] && echo "$G[*] Done!$N" || echo "$R[!] Something went wrong!$N"
 			sleep 2
 			menu
 			;;
-		"RBS"|"rbs")
+		"RBS" | "rbs")
 			dumpsys batterystats --reset >/dev/null 2>&1
 			rm -f /data/system/batterystats-checkin.bin 2>/dev/null
 			rm -f /data/system/batterystats-daily.xml 2>/dev/null
@@ -437,10 +436,10 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"H"|"h")
+		"H" | "h")
 			am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
 			;;
-		"AD"|"ad")
+		"AD" | "ad")
 			echo "Value range supported: [0.3-0.9]"
 			echo "A lower value means lower resolution"
 			echo "[*] Enter a value from the supported range: "
@@ -453,7 +452,7 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"RD"|"rd")
+		"RD" | "rd")
 			echo "E.G: [com.android.camera]"
 			echo "[*] Enter a package name:"
 			read -r pkg
@@ -462,7 +461,7 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"EG"|"eg")
+		"EG" | "eg")
 			echo "[*] Enabling Gapps..."
 			pm enable com.google.android.gsf 2>/dev/null
 			pm enable com.google.android.gsf.login 2>/dev/null
@@ -476,7 +475,7 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"DG"|"dg")
+		"DG" | "dg")
 			echo "Killing Gapps..."
 			pm disable com.google.android.gsf 2>/dev/null
 			pm disable com.google.android.gsf.login 2>/dev/null
@@ -490,7 +489,7 @@ menu() {
 			sleep 2
 			menu
 			;;
-		"OGL"|"ogl")
+		"OGL" | "ogl")
 			[[ "$sdk" -ge "28" ]] && {
 				echo "You may need to reboot to apply the changes"
 				sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=opengl/' "$MODDIR/system.prop"
@@ -503,7 +502,7 @@ menu() {
 				menu
 			}
 			;;
-		"SOGL"|"sogl")
+		"SOGL" | "sogl")
 			[[ "$sdk" -ge "28" ]] && {
 				echo "You may need to reboot to apply the changes"
 				sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' "$MODDIR/system.prop"
@@ -516,7 +515,7 @@ menu() {
 				menu
 			}
 			;;
-		"SVK"|"svk")
+		"SVK" | "svk")
 			[[ "$sdk" -ge "28" ]] && {
 				echo "You may need to reboot to apply the changes"
 				sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiavk/' "$MODDIR/system.prop"
@@ -529,7 +528,7 @@ menu() {
 				menu
 			}
 			;;
-		"SDPS"|"sdps")
+		"SDPS" | "sdps")
 			[[ "$sdk" -ge "31" ]] && {
 				settings put global dynamic_power_savings_disable_threshold "$2"
 				echo "$G[*] Done!$N"
@@ -541,7 +540,7 @@ menu() {
 				menu
 			}
 			;;
-		"EDPS"|"edps")
+		"EDPS" | "edps")
 			[[ "$sdk" -ge "31" ]] && {
 				settings put global dynamic_power_savings_enabled 1
 				echo "$G[*] Done!$N"
@@ -553,7 +552,7 @@ menu() {
 				menu
 			}
 			;;
-		"DDPS"|"ddps")
+		"DDPS" | "ddps")
 			[[ "$sdk" -ge "31" ]] && {
 				settings put global dynamic_power_savings_enabled 0
 				echo "$G[*] Done!$N"
@@ -565,7 +564,7 @@ menu() {
 				menu
 			}
 			;;
-		"SSOT"|"ssot")
+		"SSOT" | "ssot")
 			[[ "$(settings get system screen_off_timeout)" != "null" ]] && {
 				settings put global screen_off_timeout "$2"
 				echo "$G[*] Done!$N"
@@ -577,13 +576,13 @@ menu() {
 				menu
 			}
 			;;
-		"EGOD"|"egod")
+		"EGOD" | "egod")
 			[[ ! "$(pgrep -f gameoptd)" ]] && gameoptd &
 			;;
-		"DGOD"|"dgod")
+		"DGOD" | "dgod")
 			[[ "$(pgrep -f gameoptd)" ]] && killall gameoptd
 			;;
-		"E"|"e")
+		"E" | "e")
 			echo "${G}Hope that see ya soon! ;)$N"
 			;;
 		*)

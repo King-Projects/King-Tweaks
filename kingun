@@ -1,0 +1,618 @@
+#!/system/bin/sh
+# KTSR™ by Pedro (pedrozzz0 @ GitHub)
+# Thanks to veez21 @ GitHub
+# If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
+
+# Magisk Module ID
+ID="KTSR"
+
+# Detect root
+_name=$(basename "$0")
+ls /data >/dev/null 2>&1 || {
+	echo "[!] $ID needs to run as root"
+	echo "type 'su' then '$_name'"
+	exit 1
+}
+
+# Import magisk util_functions.sh
+[[ -f "/data/adb/magisk/util_functions.sh" ]] && . /data/adb/magisk/util_functions.sh || {
+	echo "[!] util_functions.sh not detected"
+	exit 1
+}
+
+# Magisk Mod Directory
+[[ -d "/sbin/.magisk" ]] && MOUNTPATH="/sbin/.magisk/modules" || MOUNTPATH="$(find /dev -mindepth 2 -maxdepth 2 -type d -name ".magisk")/modules"
+MODDIR="$MOUNTPATH/$ID"
+[[ ! -d "$MODDIR" ]] && {
+	echo "[!] Module not detected"
+	exit 1
+}
+
+# Set path to your busybox if applicable
+_bb=
+
+# Load mod-util.sh
+. "$MODDIR/mod-util.sh" || exit $?
+
+# Set Log Files
+mount -o remount,rw /cache 2>/dev/null
+mount -o rw,remount /cache 2>/dev/null
+
+# Logs should go in this file
+LOG="/data/media/0/ktsr/$ID-unlocker-CLI.log"
+oldLOG="/data/media/0/ktsr/$ID-unlocker-CLI-old.log"
+
+# Verbose output goes here
+VERLOG="/data/media/0/ktsr/$ID-unlocker-verbose.log"
+oldVERLOG="/data/media/0/ktsr/$ID-unlocker-verbose-old.log"
+stdoutLOG="/data/media/0/ktsr/$ID-unlocker-CLI-STDOUT.log"
+oldstdoutLOG="/data/media/0/ktsr/$ID-unlocker-CLI-STDOUT-old.log"
+
+# Start logging verbosely
+mv -f "$VERLOG" "$oldVERLOG" 2>/dev/null
+mv -f "$LOG" "$oldLOG" 2>/dev/null
+mv -f "$stdoutLOG" "$oldstdoutLOG" 2>/dev/null
+
+set -x 2>"$VERLOG"
+
+case "$(getprop ro.product.model)" in
+	IN2023) opt="PUBGM 90 FPS" ;;
+	SM-G9880) opt="Game for Peace 90 FPS" ;;
+	ASUS_Z01QD) opt="Free Fire 90 FPS" ;;
+	SM-G9910) opt="LOL WR 120 FPS" ;;
+	SM-G965F) opt="Asphalt 9 and BDM Max Settings" ;;
+	SO-52A) opt="CODM 120 FPS" ;;
+	A2218) opt="LOL WR Max Settings" ;;
+	GM1917) opt="Asphalt 9 and Sky Children of the Light 60 FPS" ;;
+	M2102K1C) opt="BGMI 90 FPS" ;;
+	ZS673KS-1B063IN) opt="LifeAfter 120 FPS" ;;
+	*) opt="None" ;;
+esac
+
+menu() {
+	clear
+	echo ""
+	echo "$Y**********************************************$N"
+	echo "$Y* King Unlocker Command Line Interface (CLI) *$N"
+	echo "$Y**********************************************$N"
+	echo ""
+	echo "${G}Version: 1.0.0-r1$N"
+	echo ""
+	echo "$V[*] Current unlocker:$N $G$opt$N"
+	echo ""
+	echo "$Bl[*] Available unlockers:$N "
+	echo ""
+	echo " 1 - Disable any unlocker "
+	echo ""
+	echo " 2 - CODM 120 FPS "
+	echo ""
+	echo " 3 - Asphalt 9 and BDM Max Settings "
+	echo ""
+	echo " 4 - LOL WR Max Settings "
+	echo ""
+	echo " 5 - Fortnite 60 FPS (Override all FPS modes lower than 60 and doesn't change device model) "
+	echo ""
+	echo " 6 - PUBGM 90 FPS and Fortnite 60 FPS "
+	echo ""
+	echo " 7 - CODM 120 FPS and Fortnite 60 FPS "
+	echo ""
+	echo " 8 - LOL WR Max Settings and Fortnite 60 FPS "
+	echo ""
+	echo " 9 - PUBGM 90 FPS and Fortnite 60 FPS "
+	echo ""
+	echo " 10 - CODM 120 FPS and Fortnite 60 FPS "
+	echo ""
+	echo " 11 - Fortnite 60 FPS and CODM 120 FPS "
+	echo ""
+	echo " 12 - Asphalt 9, CODM, BDM Max Settings and Fortnite 60 FPS "
+	echo ""
+	echo " 13 - LOL WR 120 FPS "
+	echo ""
+	echo " 14 - PUBGM (Global) 90 FPS "
+	echo ""
+	echo " 15 - Asphalt 9 and Sky Children of the Light 60 FPS "
+	echo ""
+	echo " 16 - Game for Peace 90 FPS "
+	echo ""
+	echo " 17 - Forsaken World 60 FPS "
+	echo ""
+	echo " 18 - LifeAfter 120 FPS "
+	echo ""
+	echo " 19 - Super Clone 120 FPS "
+	echo ""
+	echo " 20 - Dead by Daylight 120 FPS "
+	echo ""
+	echo " 21 - PUBG: NS 90 FPS "
+	echo ""
+	echo " 22 - BGMI 90 FPS "
+	echo ""
+	echo " 23 - Free Fire 90 FPS "
+	echo ""
+	echo "$R[E] Exit$N"
+	echo ""
+	echo -n "$Y[*] Select the desired option:$N "
+	read -r option
+	case "$option" in
+		1)
+			sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer/' "${modpath}system.prop"
+			sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer/' "${modpath}system1.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model/' "${modpath}system1.prop"
+			;;
+		2)
+			sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system1.prop"
+			;;
+		3)
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system1.prop"
+			;;
+		4)
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system1.prop"
+			;;
+		5)
+			am force-stop com.epicgames.fortnite
+			sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			;;
+		6)
+			am force-stop com.epicgames.fortnite
+			sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system1.prop"
+			;;
+		7)
+			am force-stop com.epicgames.fortnite
+			sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system1.prop"
+			;;
+		8)
+			am force-stop com.epicgames.fortnite
+			sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i '/ro.product.model/s/.*/ro.product.model=A2218/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=A2218/' "${modpath}system1.prop"
+			;;
+		9)
+			am force-stop com.epicgames.fortnite
+			sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system1.prop"
+			;;
+		10)
+			am force-stop com.epicgames.fortnite
+			sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system1.prop"
+			;;
+		11)
+			am force-stop com.epicgames.fortnite
+			sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system1.prop"
+			;;
+		12)
+			am force-stop com.epicgames.fortnite
+			sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system1.prop"
+			;;
+		13)
+			am force-stop com.epicgames.fortnite
+			sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+			;;
+		14)
+			sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=samsung/' "${modpath}system.prop"
+			sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=samsung/' "${modpath}system1.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9910/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9910/' "${modpath}system1.prop"
+			;;
+		15)
+			sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system1.prop"
+			;;
+		16)
+			sed -i '/ro.product.model/s/.*/ro.product.model=GM1917/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=GM1917/' "${modpath}system1.prop"
+			;;
+		17)
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system1.prop"
+			;;
+		18)
+			sed -i '/ro.product.model/s/.*/ro.product.model=ZS673KS-1B063IN/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=ZS673KS-1B063IN/' "${modpath}system1.prop"
+			;;
+		19)
+			am force-stop com.netease.mrzhna 2>/dev/null
+			sed -i 's/"frame": 1,/"frame": 4,/g' "$LIFE"
+			sed -i 's/"frame": 2,/"frame": 4,/g' "$LIFE"
+			sed -i 's/"frame": 3,/"frame": 4,/g' "$LIFE"
+			;;
+		20)
+			am force-stop com.lnrgame.roguelike 2>/dev/null
+			sed -i 's/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":30,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":120,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/g' "$SC"
+			sed -i 's/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":45,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":120,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/g' "$SC"
+			sed -i 's/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":60,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":120,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/g' "$SC"
+			;;
+		21)
+			am force-stop com.bhvr.deadbydaylight 2>/dev/null
+			sed -i 's/FrameRateLimit=30/FrameRateLimit=120/g' "$DBD"
+			sed -i 's/FrameRateLimit=60/FrameRateLimit=120/g' "$DBD"
+			;;
+		22)
+			am force-stop com.pubg.newstate 2>/dev/null
+			sed -i 's/FrameRateLimit=30.000000/FrameRateLimit=90.000000/g' "$NS"
+			sed -i 's/FrameRateLimit=60.000000/FrameRateLimit=90.000000/g' "$NS"
+			sed -i 's/AudioQualityLevel=2/AudioQualityLevel=0/g' "$NS"
+			sed -i 's/AudioQualityLevel=1/AudioQualityLevel=0/g' "$NS"
+			sed -i 's/LastConfirmedAudioQualityLevel=2/LastConfirmedAudioQualityLevel=0/g' "$NS"
+			sed -i 's/LastConfirmedAudioQualityLevel=1/LastConfirmedAudioQualityLevel=0/g' "$NS"
+			sed -i '/ro.product.model/s/.*/ro.product.model=M2102K1C/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=M2102K1C/' "${modpath}system1.prop"
+			;;
+		23)
+			sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=asus/' "${modpath}system.prop"
+			sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=asus/' "${modpath}system1.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=ASUS_Z01QD/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=ASUS_Z01QD/' "${modpath}system1.prop"
+			;;
+		"E" | "e")
+			echo "${G}Hope that see ya soon! ;)$N"
+			;;
+		*)
+			abort "$R[!] Unexpected response, aborting...$N"
+			;;
+	esac
+}
+
+[[ $# -eq "0" ]] && menu
+
+help_me() {
+	echo "$MODTITLE $VER($REL)
+by $AUTHOR
+Usage: $_name
+or: $_name [options]...
+Telegram group: https://t.me/kingprojectz
+Supported options:
+-u --unlocker [1-23] [switch between unlockers without opening the terminal GUI, for a fast and seamless experience] (reboot needed)
+-h --help [show this message]"
+	am start -a android.intent.action.VIEW -d https://github.com/pedrozzz0/King-Tweaks/wiki/KTW
+	exit
+}
+
+opts=":u:h:"
+while getopts "$opts" opt; do
+	case "$opt" in
+		-)
+			case "$OPTARG" in
+				unlocker)
+					echo "$B[*] Applying unlocker...$N"
+					case "$2" in
+						1)
+							sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer/' "${modpath}system.prop"
+							sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer/' "${modpath}system1.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model/' "${modpath}system1.prop"
+							;;
+						2)
+							sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system1.prop"
+							;;
+						3)
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system1.prop"
+							;;
+						4)
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system1.prop"
+							;;
+						5)
+							am force-stop com.epicgames.fortnite
+							sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							;;
+						6)
+							am force-stop com.epicgames.fortnite
+							sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system1.prop"
+							;;
+						7)
+							am force-stop com.epicgames.fortnite
+							sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system1.prop"
+							;;
+						8)
+							am force-stop com.epicgames.fortnite
+							sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i '/ro.product.model/s/.*/ro.product.model=A2218/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=A2218/' "${modpath}system1.prop"
+							;;
+						9)
+							am force-stop com.epicgames.fortnite
+							sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system1.prop"
+							;;
+						10)
+							am force-stop com.epicgames.fortnite
+							sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system1.prop"
+							;;
+						11)
+							am force-stop com.epicgames.fortnite
+							sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system1.prop"
+							;;
+						12)
+							am force-stop com.epicgames.fortnite
+							sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system1.prop"
+							;;
+						13)
+							am force-stop com.epicgames.fortnite
+							sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+							;;
+						14)
+							sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=samsung/' "${modpath}system.prop"
+							sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=samsung/' "${modpath}system1.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9910/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9910/' "${modpath}system1.prop"
+							;;
+						15)
+							sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system1.prop"
+							;;
+						16)
+							sed -i '/ro.product.model/s/.*/ro.product.model=GM1917/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=GM1917/' "${modpath}system1.prop"
+							;;
+						17)
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system1.prop"
+							;;
+						18)
+							sed -i '/ro.product.model/s/.*/ro.product.model=ZS673KS-1B063IN/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=ZS673KS-1B063IN/' "${modpath}system1.prop"
+							;;
+						19)
+							am force-stop com.netease.mrzhna 2>/dev/null
+							sed -i 's/"frame": 1,/"frame": 4,/g' "$LIFE"
+							sed -i 's/"frame": 2,/"frame": 4,/g' "$LIFE"
+							sed -i 's/"frame": 3,/"frame": 4,/g' "$LIFE"
+							;;
+						20)
+							am force-stop com.lnrgame.roguelike 2>/dev/null
+							sed -i 's/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":30,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":120,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/g' "$SC"
+							sed -i 's/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":45,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":120,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/g' "$SC"
+							sed -i 's/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":60,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":120,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/g' "$SC"
+							;;
+						21)
+							am force-stop com.bhvr.deadbydaylight 2>/dev/null
+							sed -i 's/FrameRateLimit=30/FrameRateLimit=120/g' "$DBD"
+							sed -i 's/FrameRateLimit=60/FrameRateLimit=120/g' "$DBD"
+							;;
+						22)
+							am force-stop com.pubg.newstate 2>/dev/null
+							sed -i 's/FrameRateLimit=30.000000/FrameRateLimit=90.000000/g' "$NS"
+							sed -i 's/FrameRateLimit=60.000000/FrameRateLimit=90.000000/g' "$NS"
+							sed -i 's/AudioQualityLevel=2/AudioQualityLevel=0/g' "$NS"
+							sed -i 's/AudioQualityLevel=1/AudioQualityLevel=0/g' "$NS"
+							sed -i 's/LastConfirmedAudioQualityLevel=2/LastConfirmedAudioQualityLevel=0/g' "$NS"
+							sed -i 's/LastConfirmedAudioQualityLevel=1/LastConfirmedAudioQualityLevel=0/g' "$NS"
+							sed -i '/ro.product.model/s/.*/ro.product.model=M2102K1C/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=M2102K1C/' "${modpath}system1.prop"
+							;;
+						23)
+							sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=asus/' "${modpath}system.prop"
+							sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=asus/' "${modpath}system1.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=ASUS_Z01QD/' "${modpath}system.prop"
+							sed -i '/ro.product.model/s/.*/ro.product.model=ASUS_Z01QD/' "${modpath}system1.prop"
+							;;
+					esac
+					echo "${Y}Reboot to apply all changes.$N"
+					;;
+				help)
+					help_me
+					;;
+				*)
+					[[ "$OPTERR" == "1" ]] && [[ "${opts:0:1}" != ":" ]] && {
+						help_me
+					}
+					;;
+			esac
+			;;
+		u)
+			echo "$B[*] Applying unlocker...$N"
+			case "$2" in
+				1)
+					sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer/' "${modpath}system.prop"
+					sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer/' "${modpath}system1.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model/' "${modpath}system1.prop"
+					;;
+				2)
+					sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system1.prop"
+					;;
+				3)
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system1.prop"
+					;;
+				4)
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system1.prop"
+					;;
+				5)
+					am force-stop com.epicgames.fortnite
+					sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					;;
+				6)
+					am force-stop com.epicgames.fortnite
+					sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system1.prop"
+					;;
+				7)
+					am force-stop com.epicgames.fortnite
+					sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system1.prop"
+					;;
+				8)
+					am force-stop com.epicgames.fortnite
+					sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i '/ro.product.model/s/.*/ro.product.model=A2218/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=A2218/' "${modpath}system1.prop"
+					;;
+				9)
+					am force-stop com.epicgames.fortnite
+					sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system1.prop"
+					;;
+				10)
+					am force-stop com.epicgames.fortnite
+					sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system1.prop"
+					;;
+				11)
+					am force-stop com.epicgames.fortnite
+					sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SO-52A/' "${modpath}system1.prop"
+					;;
+				12)
+					am force-stop com.epicgames.fortnite
+					sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G965F/' "${modpath}system1.prop"
+					;;
+				13)
+					am force-stop com.epicgames.fortnite
+					sed -i 's/MobileFPSMode=Mode_20Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_30Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					sed -i 's/MobileFPSMode=Mode_45Fps/MobileFPSMode=Mode_60Fps/g' "$FTN"
+					;;
+				14)
+					sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=samsung/' "${modpath}system.prop"
+					sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=samsung/' "${modpath}system1.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9910/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9910/' "${modpath}system1.prop"
+					;;
+				15)
+					sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=IN2023/' "${modpath}system1.prop"
+					;;
+				16)
+					sed -i '/ro.product.model/s/.*/ro.product.model=GM1917/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=GM1917/' "${modpath}system1.prop"
+					;;
+				17)
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system1.prop"
+					;;
+				18)
+					sed -i '/ro.product.model/s/.*/ro.product.model=ZS673KS-1B063IN/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=ZS673KS-1B063IN/' "${modpath}system1.prop"
+					;;
+				19)
+					am force-stop com.netease.mrzhna 2>/dev/null
+					sed -i 's/"frame": 1,/"frame": 4,/g' "$LIFE"
+					sed -i 's/"frame": 2,/"frame": 4,/g' "$LIFE"
+					sed -i 's/"frame": 3,/"frame": 4,/g' "$LIFE"
+					;;
+				20)
+					am force-stop com.lnrgame.roguelike 2>/dev/null
+					sed -i 's/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":30,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":120,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/g' "$SC"
+					sed -i 's/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":45,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":120,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/g' "$SC"
+					sed -i 's/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":60,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/{"isFPSOn":true,"isEffectSoundOn":true,"isMusicSoundOn":true,"targetFPS":120,"isFixTouchJoystickPosition":true,"isFixTouchJoystickCompletely":true}/g' "$SC"
+					;;
+				21)
+					am force-stop com.bhvr.deadbydaylight 2>/dev/null
+					sed -i 's/FrameRateLimit=30/FrameRateLimit=120/g' "$DBD"
+					sed -i 's/FrameRateLimit=60/FrameRateLimit=120/g' "$DBD"
+					;;
+				22)
+					am force-stop com.pubg.newstate 2>/dev/null
+					sed -i 's/FrameRateLimit=30.000000/FrameRateLimit=90.000000/g' "$NS"
+					sed -i 's/FrameRateLimit=60.000000/FrameRateLimit=90.000000/g' "$NS"
+					sed -i 's/AudioQualityLevel=2/AudioQualityLevel=0/g' "$NS"
+					sed -i 's/AudioQualityLevel=1/AudioQualityLevel=0/g' "$NS"
+					sed -i 's/LastConfirmedAudioQualityLevel=2/LastConfirmedAudioQualityLevel=0/g' "$NS"
+					sed -i 's/LastConfirmedAudioQualityLevel=1/LastConfirmedAudioQualityLevel=0/g' "$NS"
+					sed -i '/ro.product.model/s/.*/ro.product.model=M2102K1C/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=M2102K1C/' "${modpath}system1.prop"
+					;;
+				23)
+					sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=asus/' "${modpath}system.prop"
+					sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=asus/' "${modpath}system1.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=ASUS_Z01QD/' "${modpath}system.prop"
+					sed -i '/ro.product.model/s/.*/ro.product.model=ASUS_Z01QD/' "${modpath}system1.prop"
+					;;
+			esac
+			echo "${Y}Reboot to apply all changes.$N"
+			;;
+		h)
+			help_me
+			;;
+	esac
+done
+shift $((OPTIND - 1))
