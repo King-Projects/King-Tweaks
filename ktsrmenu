@@ -196,7 +196,7 @@ menu() {
 			echo ""
 		}
 	}
-}
+
 	[[ "$(settings get system screen_off_timeout)" != "null" ]] && {
 		echo "[SSOT] Set custom screen off timeout [Should be input in ms (5 sec = 5000)]"
 		echo ""
@@ -492,65 +492,65 @@ menu() {
 			;;
 		"OGL" | "ogl")
 			[[ "$sdk" -ge "28" ]] && {
-			echo "You may need to reboot to apply the changes"
-			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=opengl/' "$MODDIR/system.prop"
-			echo "${G}[*] Done!$N"
-			sleep 2
-			menu
+				echo "You may need to reboot to apply the changes"
+				sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=opengl/' "$MODDIR/system.prop"
+				echo "${G}[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"SOGL" | "sogl")
 			[[ "$sdk" -ge "28" ]] && {
-			echo "You may need to reboot to apply the changes"
-			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' "$MODDIR/system.prop"
-			echo "$G[*] Done!$N"
-			sleep 2
-			menu
+				echo "You may need to reboot to apply the changes"
+				sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiagl/' "$MODDIR/system.prop"
+				echo "$G[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"SVK" | "svk")
 			[[ "$sdk" -ge "28" ]] && {
-			echo "You may need to reboot to apply the changes"
-			sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiavk/' "$MODDIR/system.prop"
-			echo "$G[*] Done!$N"
-			sleep 2
-			menu
+				echo "You may need to reboot to apply the changes"
+				sed -i 's/debug.hwui.renderer.*/debug.hwui.renderer=skiavk/' "$MODDIR/system.prop"
+				echo "$G[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"SDPS" | "sdps")
 			[[ "$sdk" -ge "31" ]] && {
-			settings put global dynamic_power_savings_disable_threshold $2
-			echo "$G[*] Done!$N"
-			sleep 2
-			menu
+				settings put global dynamic_power_savings_disable_threshold $2
+				echo "$G[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"EDPS" | "edps")
 			[[ "$sdk" -ge "31" ]] && {
-			settings put global dynamic_power_savings_enabled 1
-			echo "$G[*] Done!$N"
-			sleep 2
-			menu
+				settings put global dynamic_power_savings_enabled 1
+				echo "$G[*] Done!$N"
+				sleep 2
+				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"DDPS" | "ddps")
@@ -560,9 +560,9 @@ menu() {
 				sleep 2
 				menu
 			} || {
-			echo "$R[!] Android version not supported!$N"
-			sleep 2
-			menu
+				echo "$R[!] Android version not supported!$N"
+				sleep 2
+				menu
 			}
 			;;
 		"SSOT" | "ssot")
@@ -663,7 +663,7 @@ while getopts "$opts" opt; do
 					;;
 			esac
 			;;
-			clear-ram)
+		clear-ram)
 			[[ "$2" == "1" ]] && {
 				sync
 				echo "3" >"/proc/sys/vm/drop_caches"
@@ -687,7 +687,7 @@ while getopts "$opts" opt; do
 				sleep 2
 			} || { echo "$R[!] Error: unexpected or null output!$N"; }
 			;;
-			game)
+		game)
 			cmd notification set_dnd priority >/dev/null 2>&1
 			settings put system screen_brightness_mode 0 >/dev/null 2>&1
 			wm set-user-rotation lock >/dev/null 2>&1
@@ -697,15 +697,14 @@ while getopts "$opts" opt; do
 			am kill-all
 			echo "$G[*] Done!$N"
 			;;
-			help)
+		help)
 			help_me
 			;;
-			*)
+		*)
 			[[ "$OPTERR" == "1" ]] && [[ "${opts:0:1}" != ":" ]] && {
-            help_me
-            }
+				help_me
+			}
 			;;
-		esac;;
 		p)
 			echo "$B[*] Applying profile...$N"
 			setprop persist.king.tweaks.prof "$2" 2>/dev/null
