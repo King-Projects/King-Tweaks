@@ -76,7 +76,7 @@ menu() {
 	echo "$Y* King Unlocker Command Line Interface (CLI) *$N"
 	echo "$Y**********************************************$N"
 	echo ""
-	echo "${G}Version: 1.0.0-r1$N"
+	echo "${G}Version: 1.1.0-r2$N"
 	echo ""
 	echo "$V[*] Current unlocker:$N $G$opt$N"
 	echo ""
@@ -234,8 +234,10 @@ menu() {
 			sed -i '/ro.product.model/s/.*/ro.product.model=GM1917/' "${modpath}system1.prop"
 			;;
 		17)
-			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system.prop"
-			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9880/' "${modpath}system1.prop"
+			sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=samsung/' "${modpath}system.prop"
+			sed -i '/ro.product.manufacturer/s/.*/ro.product.manufacturer=samsung/' "${modpath}system1.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9910/' "${modpath}system.prop"
+			sed -i '/ro.product.model/s/.*/ro.product.model=SM-G9910/' "${modpath}system1.prop"
 			;;
 		18)
 			sed -i '/ro.product.model/s/.*/ro.product.model=ZS673KS-1B063IN/' "${modpath}system.prop"

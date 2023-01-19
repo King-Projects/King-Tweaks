@@ -77,7 +77,7 @@ get_scrn_state() {
 		}
 
 		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_pctg" -le "15" ]] || [[ ! "$current_prof" != "low_pwr" ]] && continue || {
-			log_i "Device charge is less than 15%, applying battery profile to prolong battery life..."
+			log_i "Device is charged less than 15%, applying battery profile to prolong battery life..."
 			sync
 			setprop kingd.prof "pwrsave"
 			current_prof=low_pwr

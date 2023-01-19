@@ -12,7 +12,7 @@ source "$modpath/libs/libcommon.sh"
 modpath="/data/adb/modules/KTSR/"
 klog="/data/media/0/ktsr/ktsr.log"
 kdbg="/data/media/0/ktsr/ktsr_dbg.log"
-tcp="/proc/sys/net/ipv4/"
+tcp_v4="/proc/sys/net/ipv4/"
 kernel="/proc/sys/kernel/"
 vm="/proc/sys/vm/"
 cpuset="/dev/cpuset/"
@@ -29,7 +29,7 @@ exynos=false
 mtk=false
 ppm=false
 big_little=false
-lib_ver="1.5.2-master"
+lib_ver="1.6.0-master"
 migt="/sys/module/migt/parameters/"
 board_sensor_temp="/sys/class/thermal/thermal_message/board_sensor_temp"
 zram="/sys/module/zram/parameters/"
@@ -2500,14 +2500,14 @@ sched_tune() {
 		[[ -e "${kernel}perf_cpu_time_max_percent" ]] && write "${kernel}perf_cpu_time_max_percent" "15"
 		[[ -e "${kernel}sched_autogroup_enabled" ]] && write "${kernel}sched_autogroup_enabled" "0"
 		write "${kernel}sched_tunable_scaling" "0"
-		[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "$sched_period_latency"
-		[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "$((sched_period_latency / sched_tasks_latency))"
-		[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "$((sched_period_latency / sched_tasks_latency))"
-		[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "2000000"
-		[[ -e "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" ]] && write "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" "2000000"
+		[[ -e "${kernel}sched_latency_ns" ]] && write "${kernel}sched_latency_ns" "16000000"
+		[[ -e "${kernel}sched_min_granularity_ns" ]] && write "${kernel}sched_min_granularity_ns" "1600000"
+		[[ -e "${kernel}sched_wakeup_granularity_ns" ]] && write "${kernel}sched_wakeup_granularity_ns" "2000000"
+		[[ -e "${kernel}sched_migration_cost_ns" ]] && write "${kernel}sched_migration_cost_ns" "1000000"
+		[[ -e "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" ]] && write "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" "1000000"
 		[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 		[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
-		write "${kernel}sched_nr_migrate" "8"
+		write "${kernel}sched_nr_migrate" "64"
 		[[ -e "${kernel}sched_schedstats" ]] && write "${kernel}sched_schedstats" "0"
 		[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 		write "${kernel}printk_devkmsg" "off"
@@ -2557,7 +2557,7 @@ sched_tune() {
 		[[ -e "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" ]] && write "/proc/perfmgr/boost_ctrl/eas_ctrl/m_sched_migrate_cost_n" "2500000"
 		[[ -e "${kernel}sched_min_task_util_for_colocation" ]] && write "${kernel}sched_min_task_util_for_colocation" "0"
 		[[ -e "${kernel}sched_min_task_util_for_boost" ]] && write "${kernel}sched_min_task_util_for_boost" "0"
-		write "${kernel}sched_nr_migrate" "32"
+		write "${kernel}sched_nr_migrate" "96"
 		[[ -e "${kernel}sched_schedstats" ]] && write "${kernel}sched_schedstats" "0"
 		[[ -e "${kernel}sched_cstate_aware" ]] && write "${kernel}sched_cstate_aware" "1"
 		write "${kernel}printk_devkmsg" "off"
@@ -3046,34 +3046,43 @@ touchboost() {
 }
 
 config_tcp() {
-	avail_con="$(cat "${tcp}tcp_available_congestion_control")"
+	avail_con="$(cat "${tcp_v4}tcp_available_congestion_control")"
 
 	for tcpcc in bbr2 bbr westwood cubic bic; do
 		if [[ "$avail_con" == *"$tcpcc"* ]]; then
-			write "${tcp}tcp_congestion_control" "$tcpcc"
+			write "${tcp_v4}tcp_congestion_control" "$tcpcc"
 			break
 		fi
 	done
 
-	write "${tcp}ip_no_pmtu_disc" "0"
-	write "${tcp}tcp_ecn" "1"
-	write "${tcp}tcp_timestamps" "0"
-	write "${tcp}route/flush" "1"
-	write "${tcp}tcp_rfc1337" "1"
-	write "${tcp}tcp_tw_reuse" "1"
-	write "${tcp}tcp_sack" "1"
-	write "${tcp}tcp_fack" "1"
-	write "${tcp}tcp_fastopen" "3"
-	write "${tcp}tcp_tw_recycle" "1"
-	write "${tcp}tcp_no_metrics_save" "1"
-	write "${tcp}tcp_syncookies" "0"
-	write "${tcp}tcp_window_scaling" "1"
-	write "${tcp}tcp_keepalive_probes" "10"
-	write "${tcp}tcp_keepalive_intvl" "30"
-	write "${tcp}tcp_fin_timeout" "30"
-	write "${tcp}tcp_mtu_probing" "1"
-	write "${tcp}tcp_slow_start_after_idle" "0"
-	write "/proc/sys/net/core/netdev_max_backlog" "16384"
+	write "${tcp_v4}ip_no_pmtu_disc" "0"
+	write "${tcp_v4}tcp_ecn" "1"
+	write "${tcp_v4}tcp_timestamps" "0"
+	write "${tcp_v4}route/flush" "1"
+	write "${tcp_v4}tcp_rfc1337" "1"
+	write "${tcp_v4}tcp_tw_reuse" "1"
+	write "${tcp_v4}tcp_sack" "1"
+	write "${tcp_v4}tcp_fack" "1"
+	write "${tcp_v4}tcp_fastopen" "3"
+	write "${tcp_v4}tcp_tw_recycle" "1"
+	write "${tcp_v4}tcp_no_metrics_save" "1"
+	write "${tcp_v4}tcp_syncookies" "0"
+	write "${tcp_v4}tcp_window_scaling" "1"
+	write "${tcp_v4}tcp_keepalive_probes" "10"
+	write "${tcp_v4}tcp_keepalive_intvl" "30"
+	write "${tcp_v4}tcp_fin_timeout" "30"
+	write "${tcp_v4}tcp_mtu_probing" "1"
+	write "${tcp_v4}tcp_slow_start_after_idle" "0"
+	write "/proc/sys/net/core/rmem_default" "327680"
+    write "/proc/sys/net/core/rmem_max" "8388608"
+    write "/proc/sys/net/core/wmem_default" "327680"
+    write "/proc/sys/net/core/wmem_max" "8388608"
+    write "/proc/sys/net/core/optmem_max" "20480"
+    write "/proc/sys/net/core/netdev_max_backlog" "10000"
+    write "${tcp_v4}tcp_rmem" "2097152 4194304 8388608"
+    write "${tcp_v4}tcp_wmem" "262144 524288 8388608"
+    write "${tcp_v4}tcp_mem" "44259 59012 88518"
+    write "${tcp_v4}udp_mem" "88518 118025 177036"
 	log_i "Applied TCP tweaks"
 }
 
@@ -3379,7 +3388,6 @@ bbn_opt() {
 	# VM writeback
 	change_task_high_prio "writeback"
 	# Affects IO latency/throughput
-	pin_proc_on_perf "kblockd"
 	change_task_high_prio "kblockd"
 	change_task_high_prio "rcu_tasks_kthre"
 	change_task_high_prio "ufs_clk_gating"
@@ -3387,9 +3395,6 @@ bbn_opt() {
 	change_task_high_prio "rcu_tasks_kthre"
 	# System thread
 	change_task_high_prio "system"
-	# cryptd, khugepaged should have as much CPU time as possible
-	change_task_high_prio "cryptd"
-	change_task_high_prio "khugepaged"
 }
 
 # Remove logs when size is >= 1 MB
