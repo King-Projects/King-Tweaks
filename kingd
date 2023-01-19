@@ -1,0 +1,104 @@
+#!/system/bin/sh
+# KTSR™ by pedro (pedrozzz0 @ GitHub)
+# If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
+
+# For debug purposes
+[[ "$1" == "-d" ]] || [[ "$1" == "--debug" ]] && set -x
+
+modpath="/data/adb/modules/KTSR"
+
+# Load libraries
+source "$modpath/libs/libcommon.sh"
+source "$modpath/libs/libktsr.sh"
+
+#####################
+# Variables
+#####################
+full_ram=$((total_ram * 24 / 100))
+current_prof=none
+ta_stune="/dev/stune/top-app/tasks"
+ta_cpuset="/dev/cpuset/top-app/tasks"
+scrn_on=1
+
+get_scrn_state() {
+	scrn_state=$(dumpsys power | grep state=O | cut -d "=" -f 2)
+	[[ "$scrn_state" == "" ]] && scrn_state=$(dumpsys window policy | grep screenState | awk -F '=' '{print $2}')
+	[[ "$scrn_state" == "OFF" ]] && scrn_on=0 || scrn_on=1
+	[[ "$scrn_state" == "SCREEN_STATE_OFF" ]] && scrn_on=0 || scrn_on=1
+}
+
+(
+	while true; do
+		[[ "$current_prof" == "sleeping" ]] && sleep 120 || sleep 45
+		game_pid="$(pgrep -f 'com.gaijin.|squareenix.|com.nekki.|walkingdead|com.garena.game.|com.dts.freefire|.assolutoracing|com.tencent.|n.c1game.naslim|.bilibili|headedshark.tco|com.tiramisu.|com.gamedevltd.|omin.protectors|flightsimulator|com.panzerdog.|com.firsttouchgames.|com.tencent.tmgp.|com.ngame.allstar.eu|com.pixelbite.|diablo.immortal|apexlegendsmobile|com.miHoYo.|com.pubg.newstate|com.tencent.game.|fun.mu3.gp.us|sega|capcom|fallout|Parsecs|streetsof|shinobi|hyperburner|Machinarium|botanicula|samorost3|Samorost|survivalgb|mir4|nexon|g.grayraven.en|com.YoStarEN.|gamefsac|masters.|com.riotgames.league.wildrift|sonic|psyonix|tgc|jp.garud|com.mobile.legends|com.activision.callofduty.shooter|hypergryph|com.denachina.|hanjiasongshu|com.sofunny.|xyz.aethersx2.android|org.dolphinemu.|com.retroarch.|Snes9xPlus|lator.gba|lator.gbc|com.vewointeractive.|pokemongo|com.dsemu.drastic|com.kabam.|zombie.survival.craft.z|action.cyber|game.rpg|classicboy|com.AgainstGravity.RecRoom|com.swordfish.|3.fzurita|citra_emu|com.github.stenzek.duckstation|com.hypah.io.slither|com.kitkagames.|pl.idreams.|com.superevilmegacorp.|com.netease.|com.playdigious.|com.wardrumstudios.|games.|Games.|simulator.|gaming.|com.junesoftware.|com.sozap.|digital.tt|com.TeamTerrible.|com.vectorunit.|com.bethsoft.|cake.|com.kleinentertainment.|com.astragon.|com.chucklefish.|sports.|ayonline|otion.|eusa.|com.haegin.|com.igg.|com.gtarcade.|com.rockstar.|com.seleuco.|com.innersloth.|com.imaginalis.|com.clickteam.|game.|Game.|emagroup|com.wb.goog.|.carxtech.|DriftRacing|com.ubisoft|org.ppsspp.ppsspp|com.pearlabyss.|com.axlebolt.|com.criticalforceentertainment|com.ChillyRoom.|com.mojang.|com.gameloft.|com.supercell|com.codemasters.|survival.rpg|com.ohbibi.|boxing|com.roblox.|com.halfbrick.|com.bhvr.')"
+		[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -E "$game_pid" "$ta_stune")" ]] || [[ ! "$(grep -E "$game_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$game_pid"/oom_score_adj)" == "0" ]] || [[ "$current_prof" == "gaming" ]] && continue || {
+			log_i "User is playing, applying gaming profile..."
+			sync
+			setprop kingd.prof "game"
+			current_prof=gaming
+			get_scrn_state
+			apply_all
+		}
+		normal_pid="$(pgrep -f 'whatsapp|music|adobe.|gram|.nekox|disney.disneyplus|thirdpartyclient|.crunchyroll|mediaclient|.wemesh|.qqlive|.video|hijia.newlive|duowan.kiwi|douyu|youku|aweme.|.reader|com.discord|youtube|.katana|.orca|.chrome|.UCMobile|.mozilla|.duckduckgo|browser|Browser')"
+		[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -E "$normal_pid" "$ta_stune")" ]] || [[ ! "$(grep -E "$normal_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$normal_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "media" ]] && continue || {
+			log_i "User is using social media, streaming and/or etc apps. Applying battery profile..."
+			sync
+			setprop kingd.prof "balanced"
+			current_prof=media
+			get_scrn_state
+			apply_all
+		}
+		bench_pid="$(pgrep -f 'elabs.geekbench|gensuite|id.test.uibench|com.Saplin.CPDT|passmark|app.speedramp|app.beatsync|kinemaster|oid.application|uthrottlingtest|tutu.ABenchMark|benchmark')"
+		[[ ! "$scrn_on" != "0" ]] && [[ ! "$(grep -E "$bench_pid" "$ta_stune")" ]] || [[ ! "$(grep -E "$bench_pid" "$ta_cpuset")" ]] && [[ ! "$(cat /proc/"$bench_pid"/oom_score_adj)" == "0" ]] || [[ ! "$current_prof" != "benchmark" ]] && continue || {
+			log_i "User is running benchmark / heavy apps. Applying extreme profile..."
+			sync
+			setprop kingd.prof "extreme"
+			current_prof=benchmark
+			get_scrn_state
+			apply_all
+		}
+
+		[[ ! "$scrn_on" == "0" ]] || [[ ! "$current_prof" != "screen_off" ]] && continue || {
+			log_i "Device screen is turned off. Sleeping..."
+			sync
+			setprop kingd.prof "pwrsave"
+			current_prof=screen_off
+			get_scrn_state
+			apply_all
+		}
+
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_sts" == "Charging" ]] || [[ ! "$current_prof" != "charging" ]] && continue || {
+			log_i "Device is charging, reducing power consumption by applying battery profile..."
+			sync
+			setprop kingd.prof "pwrsave"
+			current_prof=charging
+			get_scrn_state
+			apply_all
+		}
+
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$batt_pctg" -le "15" ]] || [[ ! "$current_prof" != "low_pwr" ]] && continue || {
+			log_i "Device charge is less than 15%, applying battery profile to prolong battery life..."
+			sync
+			setprop kingd.prof "pwrsave"
+			current_prof=low_pwr
+			get_scrn_state
+			apply_all
+		}
+
+		[[ ! "$scrn_on" != "0" ]] && [[ "$avail_ram" -le "$full_ram" ]] && {
+			log_i "RAM available on device is limited, dropping caches to free some of it..."
+			sync
+			write "${vm}drop_caches" "3"
+			get_scrn_state
+		}
+
+		[[ ! "$scrn_on" != "0" ]] || [[ ! "$current_prof" != "inactive" ]] && continue || {
+			log_i "No considerable usage found. Applying power saving profile by default..."
+			sync
+			setprop kingd.prof "pwrsave"
+			current_prof=inactive
+			get_scrn_state
+			apply_all
+		}
+	done
+) &

@@ -1,0 +1,532 @@
+#!/system/bin/sh
+# KTSR™ by pedro (pedrozzz0 @ GitHub)
+# Thanks to Matt Yang @ yc9559 GitHub
+# If you wanna use it as part of your project, please maintain the credits to it respective's author(s).
+
+# For debug purposes
+[[ "$1" == "--debug" ]] || [[ "$1" == "-d" ]] && set -x
+
+modpath="/data/adb/modules/KTSR"
+
+# Load libraries
+source "$modpath/libs/libcommon.sh"
+source "$modpath/libs/libktsr.sh"
+
+# Check for root permissions and bail if not granted
+[[ "$(id -u)" != "0" ]] && {
+	log_e "No root permissions. Exiting..."
+	exit 1
+}
+
+# Clear logs and create directory first
+[[ -e "$klog" ]] && rm -rf "$klog"
+[[ ! -d "/data/media/0/ktsr" ]] && mkdir -p "/data/media/0/ktsr"
+[[ -d "/data/media/0/KTSR/" ]] && {
+	rm -rf "/data/media/KTSR"
+	touch "$klog"
+}
+[[ -e "$kdbg" ]] && rm -rf "$kdbg"
+clear_logs
+
+sync
+
+# System framework JARs
+fscc_add_obj "$sys_frm/telephony-common.jar"
+fscc_add_obj "$sys_frm/qcnvitems.jar"
+fscc_add_obj "$sys_frm/oat"
+fscc_add_obj "$sys_frm/arm64"
+fscc_add_obj "$sys_frm/miui-okhttp.jar"
+
+# System binaries (services)
+fscc_add_obj "$sys_bin/surfaceflinger"
+fscc_add_obj "$sys_bin/linker"
+fscc_add_obj "$sys_bin/linker64"
+
+# System libaries (shared binaries)
+fscc_add_obj "$sys_lib/libbinder.so"
+fscc_add_obj "$sys_lib/libgui.so"
+fscc_add_obj "$sys_lib/libsurfaceflinger.so"
+fscc_add_obj "$sys_lib/libandroid_servers.so"
+fscc_add_obj "$sys_lib/libandroid_runtime.so"
+fscc_add_obj "$sys_lib/libandroidfw.so"
+fscc_add_obj "$sys_lib/libandroid.so"
+fscc_add_obj "$sys_lib/libhwui.so"
+fscc_add_obj "$sys_lib/libjpeg.so"
+fscc_add_obj "$sys_lib/libinput.so"
+fscc_add_obj "$sys_lib/libinputreader.so"
+fscc_add_obj "$sys_lib/libvulkan.so"
+fscc_add_obj "$sys_lib/libEGL.so"
+fscc_add_obj "$sys_lib/libGLESv2.so"
+fscc_add_obj "$sys_lib/libGLESv3.so"
+fscc_add_obj "$sys_lib/libRScpp.so"
+fscc_add_obj "$sys_lib/libRS.so"
+fscc_add_obj "$sys_lib/libRS_internal.so"
+fscc_add_obj "$sys_lib/libbcinfo.so"
+fscc_add_obj "$sys_lib/libRSDriver.so"
+fscc_add_obj "$sys_lib/libRSCpuRef.so"
+fscc_add_obj "$sys_lib/libc.so"
+fscc_add_obj "$sys_lib/libc++.so"
+fscc_add_obj "$sys_lib/libstdc++.so"
+fscc_add_obj "$sys_lib/libcrypto.so"
+fscc_add_obj "$sys_lib/libblas.so"
+fscc_add_obj "$sys_lib/libpng.so"
+fscc_add_obj "$sys_lib/libasyncio.so"
+fscc_add_obj "$sys_lib/libappfuse.so"
+fscc_add_obj "$sys_lib/libmedia.so"
+fscc_add_obj "$sys_lib/libaudioflinger.so"
+
+# Vendor libraries (shared binaries)
+fscc_add_obj "$vdr_lib/libssc.so"
+fscc_add_obj "$vdr_lib/sensors.ssc.so"
+fscc_add_obj "$vdr_lib/libCB.so"
+fscc_add_obj "$vdr_lib/librs_adreno.so"
+
+# APEX JARs
+fscc_add_apex_lib "okhttp.jar"
+fscc_add_apex_lib "bouncycastle.jar"
+fscc_add_apex_lib "core-libart.jar"
+
+# APEX libraries (shared binaries)
+fscc_add_apex_lib "linker"
+fscc_add_apex_lib "linker64"
+fscc_add_apex_lib "dalvikvm"
+fscc_add_apex_lib "dex2oat"
+
+# Do not pin SystemUI apk/dex and Bionic APEX libraries on low memory devices
+[[ "$total_ram" -ge "2048" ]] && {
+	fscc_add_apk "com.android.systemui"
+	fscc_add_dex "com.android.systemui"
+	fscc_add_apex_lib "bionic/libbase.so"
+	fscc_add_apex_lib "bionic/libc.so"
+	fscc_add_apex_lib "bionic/libm.so"
+	fscc_add_apex_lib "bionic/libdl.so"
+	fscc_add_apex_lib "bionic/libdl_android.so"
+}
+
+# Pin launcher, input method and these APEX libs only if we really have enough RAM for it
+[[ "$total_ram" -ge "4096" ]] && {
+	fscc_add_app_home
+	fscc_add_app_ime
+	fscc_add_apex_lib "libcrypto.so"
+	fscc_add_apex_lib "libjavacrypto.so"
+	fscc_add_apex_lib "libart.so"
+	fscc_add_apex_lib "libc++.so"
+	fscc_add_apex_lib "libopenjdk.so"
+	fscc_add_apex_lib "libopenjdkvm.so"
+	fscc_add_apex_lib "libopenjdkvmti.so"
+}
+
+# Run FSCC (similar to Android's PinnerService, Mlock(Unevictable) 200~350MB)
+fscc_stop
+fscc_start
+
+# Run adjshield
+[[ ! -f "$adj_cfg" ]] && adjshield_create_default_cfg
+adjshield_stop
+adjshield_start
+rebuild_ps_cache
+bbn_opt
+
+# Save mode to be applied automatically after reboot
+save_info
+
+disable_crc
+config_fs
+config_dyn_fsync
+fix_dt2w
+config_tcp
+enable_usb_fast_chrg
+enable_sam_fast_chrg
+disable_spd_freqs
+config_pwr_spd
+disable_debug
+[[ -d "$f2fs" ]] && config_f2fs
+gameoptd &
+ktsr_prof=$(getprop persist.king.tweaks.prof)
+while true; do
+	sleep 2
+	if "$boot_run_once"; then
+		[[ "$(getprop persist.king.tweaks.prof)" == "$ktsr_prof" ]] && continue
+	else
+		boot_run_once=true
+	fi
+	ktsr_prof=$(getprop persist.king.tweaks.prof)
+
+	case "$ktsr_prof" in
+		1)
+			ktsr_prof_id=otomatis
+			;;
+		2)
+			ktsr_prof_id="power saving"
+			;;
+		3)
+			ktsr_prof_id=seimbang
+			;;
+		4)
+			ktsr_prof_id=ekstrim
+			;;
+		5)
+			ktsr_prof_id=game
+			;;
+		6)
+			ktsr_prof_id=latensi
+			;;
+	esac
+
+	case "$ktsr_prof" in
+		1)
+			ktsr_prof_pt=automático
+			;;
+		2)
+			ktsr_prof_pt="economia de bateria"
+			;;
+		3)
+			ktsr_prof_pt=balanceado
+			;;
+		4)
+			ktsr_prof_pt=extremo
+			;;
+		5)
+			ktsr_prof_pt=jogo
+			;;
+		6)
+			ktsr_prof_pt=latência
+			;;
+	esac
+
+	case "$ktsr_prof" in
+		1)
+			ktsr_prof_en=automatic
+			;;
+		2)
+			ktsr_prof_en=pwrsave
+			;;
+		3)
+			ktsr_prof_en=balanced
+			;;
+		4)
+			ktsr_prof_en=extreme
+			;;
+		5)
+			ktsr_prof_en=game
+			;;
+		6)
+			ktsr_prof_en=latency
+			;;
+	esac
+
+	case "$ktsr_prof" in
+		1)
+			ktsr_prof_tr=gecikme
+			;;
+		2)
+			ktsr_prof_tr="power saving"
+			;;
+		3)
+			ktsr_prof_tr=dengeli
+			;;
+		4)
+			ktsr_prof_tr=aşırı
+			;;
+		5)
+			ktsr_prof_tr=game
+			;;
+		6)
+			ktsr_prof_tr=gecikme
+			;;
+	esac
+
+	case "$ktsr_prof" in
+		1)
+			ktsr_prof_fr=automatique
+			;;
+		2)
+			ktsr_prof_fr="power saving"
+			;;
+		3)
+			ktsr_prof_fr=modéré
+			;;
+		4)
+			ktsr_prof_fr=extrême
+			;;
+		5)
+			ktsr_prof_fr=game
+			;;
+		6)
+			ktsr_prof_fr=latence
+			;;
+	esac
+
+	case "$ktsr_prof_en" in
+		"automatic")
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_start &
+					;;
+				pt*)
+					notif_pt_start &
+					;;
+				id-ID)
+					notif_id_start &
+					;;
+				tr*)
+					notif_tr_start &
+					;;
+				fr*)
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
+					;;
+			esac
+
+			automatic
+
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_end &
+					;;
+				pt*)
+					notif_pt_end &
+					;;
+				id-ID)
+					notif_id_end &
+					;;
+				tr*)
+					notif_tr_end &
+					;;
+				fr*)
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
+					;;
+			esac
+			;;
+		"balanced")
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_start &
+					;;
+				pt*)
+					notif_pt_start &
+					;;
+				id-ID)
+					notif_id_start &
+					;;
+				tr*)
+					notif_tr_start &
+					;;
+				fr*)
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
+					;;
+			esac
+
+			apply_prof
+
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_end &
+					;;
+				pt*)
+					notif_pt_end &
+					;;
+				id-ID)
+					notif_id_end &
+					;;
+				tr*)
+					notif_tr_end &
+					;;
+				fr*)
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
+					;;
+			esac
+			;;
+		"extreme")
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_start &
+					;;
+				pt*)
+					notif_pt_start &
+					;;
+				id-ID)
+					notif_id_start &
+					;;
+				tr*)
+					notif_tr_start &
+					;;
+				fr*)
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
+					;;
+			esac
+
+			apply_prof
+
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_end &
+					;;
+				pt*)
+					notif_pt_end &
+					;;
+				id-ID)
+					notif_id_end &
+					;;
+				tr*)
+					notif_tr_end &
+					;;
+				fr*)
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
+					;;
+			esac
+			;;
+		"game")
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_start &
+					;;
+				pt*)
+					notif_pt_start &
+					;;
+				id-ID)
+					notif_id_start &
+					;;
+				tr*)
+					notif_tr_start &
+					;;
+				fr*)
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
+					;;
+			esac
+
+			apply_prof
+
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_end &
+					;;
+				pt*)
+					notif_pt_end &
+					;;
+				id-ID)
+					notif_id_end &
+					;;
+				tr*)
+					notif_tr_end &
+					;;
+				fr*)
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
+					;;
+			esac
+			;;
+		"latency")
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_start &
+					;;
+				pt*)
+					notif_pt_start &
+					;;
+				id-ID)
+					notif_id_start &
+					;;
+				tr*)
+					notif_tr_start &
+					;;
+				fr*)
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
+					;;
+			esac
+
+			apply_prof
+
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_end &
+					;;
+				pt*)
+					notif_pt_end &
+					;;
+				id-ID)
+					notif_id_end &
+					;;
+				tr*)
+					notif_tr_end &
+					;;
+				fr*)
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
+					;;
+			esac
+			;;
+		"pwrsave")
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_start &
+					;;
+				pt*)
+					notif_pt_start &
+					;;
+				id-ID)
+					notif_id_start &
+					;;
+				tr*)
+					notif_tr_start &
+					;;
+				fr*)
+					notif_fr_start &
+					;;
+				*)
+					notif_start &
+					;;
+			esac
+
+			apply_prof
+
+			case "$(getprop persist.sys.locale)" in
+				en*)
+					notif_end &
+					;;
+				pt*)
+					notif_pt_end &
+					;;
+				id-ID)
+					notif_id_end &
+					;;
+				tr*)
+					notif_tr_end &
+					;;
+				fr*)
+					notif_fr_end &
+					;;
+				*)
+					notif_end &
+					;;
+			esac
+			;;
+	esac
+done
