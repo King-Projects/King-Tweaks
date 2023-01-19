@@ -81,7 +81,7 @@ menu() {
 	echo "$Y* KTSR Command Line Interface (CLI) *$N"
 	echo "$Y*************************************$N"
 	echo ""
-	echo "${G}Version: 1.7.2-r16$N"
+	echo "${G}Version: 1.8.0-r16$N"
 	echo ""
 	echo "$V[*] Current Profile:$N $G$ktsr_prof_en$N"
 	echo ""
@@ -196,6 +196,7 @@ menu() {
 			echo ""
 		}
 	}
+
 	[[ "$(settings get system screen_off_timeout)" != "null" ]] && {
 		echo "[SSOT] Set custom screen off timeout [Should be input in ms (5 sec = 5000)]"
 		echo ""
@@ -661,6 +662,11 @@ while getopts "$opts" opt; do
 					}
 					;;
 			esac
+			;;
+		*)
+			[[ "$OPTERR" == "1" ]] && [[ "${opts:0:1}" != ":" ]] && {
+				help_me
+			}
 			;;
 		p)
 			echo "$B[*] Applying profile...$N"
